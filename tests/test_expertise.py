@@ -79,11 +79,14 @@ def test_answers_refine_question_and_fixes():
 
 
 def test_only_needed_questions_are_asked():
-    # a beginner's misspelt topic is read (not asked again); NHANES has no stress/work measure, so proxies are offered honestly
+    # a beginner's misspelt topic is read (not asked again); "work" is offered as real NHANES items (CDC catalog)
     c = expertise.clarify("I have high cholestrol, how does it relate to the amount of work and stress I have everyday")
     assert "cholesterol" in c["question_used"] and c["level_used"] == "novice"
     assert [q["id"] for q in c["questions"]] == ["term0", "term1", "population"]
-    assert all("did not measure" in q["text"] for q in c["questions"][:2])
+    from q2e.knowledge import get_knowledge
+    if get_knowledge().catalog_size:
+        work = c["questions"][0]
+        assert any(o["id"].startswith("v_OCQ") and "Official NHANES survey item" in o["hint"] for o in work["options"])
     assert any(u["label"] == "Health topic" for u in c["understood"])
     # a precise expert question and a short business question need few or no follow-ups
     assert len(expertise.clarify("Among adults 20-59 in NHANES 2015-2018, is HbA1c >= 6.5% associated with ferritin "

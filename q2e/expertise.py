@@ -131,7 +131,7 @@ LAY_TERMS = {
     "sugar": ["glycemic_control", "diabetes", "sugar_intake"], "salt": ["sodium_intake", "hypertension"],
     "pressure": ["hypertension", "systolic_bp"], "heart": ["cvd", "coronary_disease"], "tired": ["daytime_sleepiness", "anemia"],
     "sleepy": ["daytime_sleepiness"], "sad": ["depression"], "kidneys": ["ckd"],
-    # NHANES (as loaded in Q2E) has no stress or work/job measure; these are the closest things it does measure
+    # stand-ins for stress/work: offered after any official items that use the word itself
     "stress": ["depression", "short_sleep"], "stressed": ["depression", "short_sleep"], "anxiety": ["depression"],
     "work": ["sedentary", "physical_activity", "short_sleep"], "job": ["sedentary", "physical_activity", "short_sleep"],
     "working": ["sedentary", "physical_activity", "short_sleep"],
@@ -140,9 +140,26 @@ LAY_TERMS = {
     "food": ["energy_intake", "food_insecurity"], "poor": ["income", "food_insecurity"], "money": ["income"],
     "cholesterol": ["total_cholesterol", "ldl"], "blood": ["hemoglobin", "anemia"],
 }
-# Words with no direct NHANES measure: said plainly so the suggestions are never passed off as the same thing.
-NOT_MEASURED = {"stress": "stress", "stressed": "stress", "anxiety": "anxiety", "work": "work hours or job type",
-                "job": "work hours or job type", "working": "work hours or job type"}
+# LAY_TERMS entries above that are stand-ins (not the same thing), so they are never treated as the topic itself
+PROXY_WORDS = {"stress", "stressed", "anxiety", "work", "job", "working"}
+
+
+def not_measured(word: str, k: Knowledge) -> bool:
+    """True only if no official NHANES variable label (CDC variable lists, all cycles) mentions the word."""
+    pat = re.compile(r"\b" + re.escape(word.lower()))
+    return not any(pat.search(str(r.get("label", "")).lower()) for r in k.dictionary.values())
+
+
+# NHANES cycle letters used in CDC file names (e.g. OCQ_J = 2017-2018; P_ = 2017-March 2020 pre-pandemic)
+CYCLE_YEARS = {"A": (1999, 2000), "B": (2001, 2002), "C": (2003, 2004), "D": (2005, 2006), "E": (2007, 2008),
+               "F": (2009, 2010), "G": (2011, 2012), "H": (2013, 2014), "I": (2015, 2016), "J": (2017, 2018),
+               "P": (2017, 2020), "L": (2021, 2023)}
+
+
+def _years(var: str, k: Knowledge) -> str:
+    """Survey years an NHANES variable was collected, e.g. '1999-2004' or '2017-2020'."""
+    spans = [CYCLE_YEARS[c] for c in k.dictionary.get(var, {}).get("cycles", []) if c in CYCLE_YEARS]
+    return f"{min(s[0] for s in spans)}-{max(s[1] for s in spans)}" if spans else ""
 
 
 def fix_spelling(question: str, k: Knowledge) -> tuple[str, list[dict]]:
@@ -260,8 +277,9 @@ def _concept_hint(cid: str, k: Knowledge) -> str:
     return f"A health topic measured in NHANES: {c.get('label', cid).lower()}."
 
 
-def term_suggestions(term: str, k: Knowledge, limit: int = 3) -> list[dict]:
-    """Closest things Q2E knows to an unknown word: everyday meanings, spelling-alike topics, then NHANES variables."""
+def term_suggestions(term: str, k: Knowledge, limit: int = 4) -> list[dict]:
+    """Closest things NHANES has for an unknown word: official survey items that use the word itself (from the CDC
+    variable lists), then everyday meanings and spelling-alike topics, then other text-search matches."""
     syn_to_concept = {s: c["id"] for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]}
     out, seen = [], set()
 
@@ -271,18 +289,45 @@ def term_suggestions(term: str, k: Knowledge, limit: int = 3) -> list[dict]:
             syn = k.concepts[cid]["synonyms"][0]
             out.append({"id": f"c_{cid}", "label": _label(cid, k), "hint": _concept_hint(cid, k), "replace": syn})
 
+    def add_var(hit: dict):
+        v = hit["variable"]
+        if v in seen:
+            return
+        seen.add(v)
+        yrs = _years(v, k)
+        lab = _plain_label(hit["label"]) or v
+        out.append({"id": f"v_{v}", "label": lab, "replace": lab.lower(),
+                    "hint": f"Official NHANES survey item {v}{f', asked in {yrs}' if yrs else ''}: {_plain_label(hit['label'], full=True)}"})
+
+    def latest(h: dict) -> int:
+        return max((CYCLE_YEARS[c][1] for c in k.dictionary.get(h["variable"], {}).get("cycles", []) if c in CYCLE_YEARS), default=0)
+
+    # most recent survey years first, so suggestions work with the cycles users usually pick
+    hits = sorted((h for h in k.var_index().search(term, top_k=25) if h.get("confidence", 0) >= 0.6),
+                  key=lambda h: (latest(h) < 2015, -h.get("confidence", 0), -latest(h)))
+    words = [w for w in term.lower().split() if len(w) > 2]
+    on_topic = [h for h in hits if any(re.search(r"\b" + re.escape(w), _plain_label(h["label"]).lower()) for w in words)]
+    for h in on_topic[:2]:                           # official items whose wording contains the user's word
+        add_var(h)
     for w in term.lower().split():
         for cid in LAY_TERMS.get(w, []):
             add_concept(cid)
     for s in difflib.get_close_matches(term.lower(), list(syn_to_concept), n=6, cutoff=0.72):
         add_concept(syn_to_concept[s])
-    for hit in k.var_index().search(term, top_k=4):
-        if hit.get("confidence", 0) >= 0.6 and hit["variable"] not in seen and len(out) < limit:
-            seen.add(hit["variable"])
-            lab = hit["label"].split("(")[0].strip()
-            out.append({"id": f"v_{hit['variable']}", "label": lab,
-                        "hint": f"Survey question/measurement {hit['variable']}: {hit['label']}.", "replace": lab.lower()})
+    for h in on_topic[2:]:
+        if len(out) < limit:
+            add_var(h)
     return out[:limit]
+
+
+def _plain_label(label: str, full: bool = False) -> str:
+    """CDC wording uses placeholders like '{you/SP}' or '{work/works}': keep the first form ('you', 'work')."""
+    text = re.sub(r"\{([^/}]*)(?:/[^}]*)?\}", r"\1", label)
+    text = re.sub(r"\(SP Interview Version\)\s*|\(Family Interview Version\).*$", "", text).strip()
+    if not full:
+        parts = [p for p in re.split(r"(?<=[.?!])\s+", text.split("(")[0]) if p.strip()]
+        text = next((p for p in reversed(parts) if p.rstrip().endswith("?")), parts[-1] if parts else text)
+    return re.sub(r"\s+", " ", text).strip(" ?.")
 
 
 def _any_hint(cid: str, k: Knowledge) -> str:
@@ -299,7 +344,7 @@ def missed_topics(question: str, parsed: dict, k: Knowledge) -> list[str]:
     unclear = {w for t in unclear_terms(parsed) for w in t.split()}    # these get their own "did you mean" question
     out = []
     for w in re.findall(r"[a-z]+", question.lower()):
-        if w in NOT_MEASURED or w not in LAY_TERMS or w in kept_text or w in unclear:
+        if w in PROXY_WORDS or w not in LAY_TERMS or w in kept_text or w in unclear:
             continue
         cid = LAY_TERMS[w][0]
         if cid in k.concepts and cid not in kept and cid not in out \
@@ -390,7 +435,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
         sugg = term_suggestions(ph, k)
         if not sugg or i == 2:
             continue
-        missing = next((NOT_MEASURED[w] for w in ph.split() if w in NOT_MEASURED), None)
+        missing = f"\"{ph}\"" if all(not_measured(w, k) for w in ph.split()) else None
         if missing:
             text = {"novice": f"The survey did not measure {missing}. Which of these, which it did measure, is closest to what you mean by \"{ph}\"?",
                     "intermediate": f"NHANES has no {missing} measure. Closest measured proxy for \"{ph}\"?",
@@ -399,6 +444,14 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                              f"{missing}. Pick the closest one, or leave it out.",
                    "intermediate": f"These are proxies, not measures of {missing}; results must be read that way.",
                    "expert": "Proxy choice affects construct validity; state it as a limitation."}
+        elif any(o["id"].startswith("v_") and ph.split()[0] in o["hint"].lower() for o in sugg):
+            text = {"novice": f"NHANES asked people about \"{ph}\" in a few different ways. Which is closest to what you mean?",
+                    "intermediate": f"\"{ph}\" matches several official NHANES items. Which one?",
+                    "expert": f"\"{ph}\": candidate NHANES items / concepts?"}
+            why = {"novice": "These are the survey's own questions (with the years they were asked) or close health topics. "
+                             "Pick the one that fits, or leave it out.",
+                   "intermediate": "Official CDC variables; check the survey years match the cycles you study.",
+                   "expert": "Uncurated catalog items need codebook review before approval."}
         else:
             text = {"novice": f"We couldn't find \"{ph}\" in the health survey. Did you mean one of these?",
                     "intermediate": f"\"{ph}\" is not an NHANES term. Closest matches:",
@@ -584,7 +637,8 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
     return {
         "missing": missing[:3],
         "what_happened": (f"You asked about {shown}, but the national survey Q2E uses (NHANES) did not measure "
-                          f"{'it' if len(missing) == 1 else 'these'}, so there is nothing to study yet.") if missing else
+                          f"{'it' if len(missing) == 1 else 'these'}: none of its {len(k.dictionary):,} official variables "
+                          f"mention {'it' if len(missing) == 1 else 'them'}. So there is nothing to study yet.") if missing else
                          "We could not find a health condition or measurement in your idea, so there is nothing to study yet.",
         "what_to_do": "Rewrite your idea around something NHANES did measure. Click an example below to use it, "
                       "or swap in one of the closest topics.",

@@ -33,7 +33,7 @@ class Knowledge:
         self.catalog_size = 0
         cat = root / "nhanes" / "catalog.csv"
         if cat.exists():
-            with open(cat, newline="") as fh:
+            with open(cat, newline="", encoding="utf-8") as fh:
                 for r in csv.DictReader(fh):
                     v = r["variable"]
                     if v in self.dictionary or not r.get("cycles"):
@@ -69,6 +69,7 @@ class Knowledge:
         self.component_synonyms: list[dict] = c.get("component_synonyms", [])
         self.not_in_nhanes: list[dict] = c.get("not_in_nhanes", [])
         self._var_index = None
+        self._curated_index = None
         self.examples: list[dict] = yaml.safe_load((root / "examples.yaml").read_text())["examples"]
 
     # ------------------------------------------------------------------
@@ -125,6 +126,14 @@ class Knowledge:
             from .matcher import BM25Index, entries_from_nhanes
             self._var_index = BM25Index(entries_from_nhanes(self.dictionary))
         return self._var_index
+
+    def curated_index(self):
+        """BM25 index over hand-checked variables only. The question parser auto-picks from this one, because
+        with the full CDC catalog a lone word ("weather", "learn") would match some unrelated survey item."""
+        if self._curated_index is None:
+            from .matcher import BM25Index, entries_from_nhanes
+            self._curated_index = BM25Index(entries_from_nhanes({v: r for v, r in self.dictionary.items() if r.get("curated")}))
+        return self._curated_index
 
     def table_description(self, table: str) -> str:
         for t in self.tables:

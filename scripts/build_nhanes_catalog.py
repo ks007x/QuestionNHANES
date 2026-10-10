@@ -182,7 +182,7 @@ def main() -> int:
         ap.error("nothing to do: use --cdc and/or --from-labels")
     cat = build(rows)
     a.out.parent.mkdir(parents=True, exist_ok=True)
-    with open(a.out, "w", newline="") as fh:
+    with open(a.out, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["variable", "file", "label", "component", "cycles", "files", "weight_level", "type_guess"])
         w.writeheader()
         w.writerows(cat)

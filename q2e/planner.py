@@ -153,11 +153,12 @@ def dictionary_lookup(phrase: str, k: Knowledge) -> dict | None:
         return None
     if len(want) == 1:
         w = next(iter(want))
-        idx0 = k.var_index()
+        idx0 = k.curated_index()
         df = sum(1 for d in idx0.docs if w in d)
         if w in _GENERIC or df > 3 or len(w) < 5:
             return None     # a lone generic word ("treatment", "cell") is not a variable
-    idx = k.var_index()
+    # a lone word only auto-matches hand-checked variables; specific multi-word phrases may use the full CDC catalog
+    idx = k.curated_index() if len(phrase.split()) == 1 else k.var_index()
     for h in idx.search([phrase], top_k=5):
         doc = set(idx.docs[[e.variable for e in idx.entries].index(h["variable"])])
         if want <= doc and h["confidence"] >= 0.5:
