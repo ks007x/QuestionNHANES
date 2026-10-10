@@ -192,3 +192,8 @@ label.field select, label.field input { width: 100%; }
 .acheck.ok .ai { background: var(--ok-bg); color: var(--ok); } .acheck.caution .ai { background: var(--warn-bg); color: var(--warn); }
 .acheck.fail .ai { background: var(--bad-bg); color: var(--bad); } .acheck.unknown .ai { background: var(--info-bg); color: var(--info); }
 .answer { border-top: 3px solid var(--accent); }
+
+/* Interviewer follow-up questions: full-screen, one section at a time */
+.cq-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 3vh 4vw; background: var(--paper); }
+.cq-overlay .card { width: min(780px, 100%); max-height: 94vh; overflow: auto; margin: 0; }
+body:has(.cq-overlay) { overflow: hidden; }

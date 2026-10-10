@@ -163,13 +163,17 @@ function clarifyCard(c) {
        <input type="radio" name="cq_${q.id}" value="${esc(o.id)}" data-act="cqopt" ${a.option === o.id ? "checked" : ""} style="margin-top:3px">
        <span><b>${esc(o.label)}</b>${o.hint ? `<br><span class="tiny muted">${esc(o.hint)}</span>` : ""}</span></label>`).join("");
   const last = step === n - 1;
-  return `<div class="card" id="clarifyCard" style="margin-top:14px">
+  return `<div class="cq-overlay"><div class="card" id="clarifyCard">
     <div class="row" style="justify-content:space-between">
       <h3 class="sub" style="margin:0">Question ${step + 1} of ${n}</h3>
-      <label class="small muted">Explanations for
-        <select id="levelSel" data-act="level">${["novice", "intermediate", "expert"].map((l) =>
-          `<option value="${l}" ${c.level_used === l ? "selected" : ""}>${LEVEL_NAMES[l]}${l === ex.level ? " (detected)" : ""}</option>`).join("")}</select></label>
+      <div class="row" style="gap:10px">
+        <label class="small muted">Explanations for
+          <select id="levelSel" data-act="level">${["novice", "intermediate", "expert"].map((l) =>
+            `<option value="${l}" ${c.level_used === l ? "selected" : ""}>${LEVEL_NAMES[l]}${l === ex.level ? " (detected)" : ""}</option>`).join("")}</select></label>
+        <button class="btn sm" data-act="cqClose" title="Close and go back to change your research idea">✕ Edit my idea</button>
+      </div>
     </div>
+    <p class="tiny muted" style="margin:6px 0 0">Your idea: “${esc(c.question)}”</p>
     <div style="margin-top:6px">${dots}</div>
     ${step === 0 && c.notice ? `<div class="banner info" style="margin:10px 0 0">${esc(c.notice)}</div>` : ""}
     <div style="margin-top:14px"><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
@@ -182,7 +186,7 @@ function clarifyCard(c) {
     ${step === 0 ? `<details class="tiny muted" style="margin-top:10px"><summary style="cursor:pointer">Why these questions?</summary>
       <p style="margin:4px 0">We wrote them to match how your idea is worded. If they feel too simple or too technical, change "Explanations for" above.</p>
       <ul style="margin:4px 0 0 16px">${ex.signals.map((s) => `<li>${s.effect === "+" ? "More technical:" : "Less technical:"} ${esc(s.text)}</li>`).join("") || "<li>No strong signals either way.</li>"}</ul></details>` : ""}
-  </div>`;
+  </div></div>`;
 }
 /* A question counts as answered when a choice is picked (plus any text that choice needs), or when text was typed. */
 function answered(q, a) {
@@ -581,7 +585,7 @@ const A = {
     try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
     if (c && c.questions.length) {
       S.clarify = { ...c, question: q, step: 0, answers: {} };
-      await rerender(); $("#clarifyCard")?.scrollIntoView({ behavior: "smooth", block: "center" }); return;
+      return rerender();
     }
     await createProject(q, null, el);
   },
@@ -591,6 +595,7 @@ const A = {
       S.clarify = { ...c, question: S.clarify.question, step: 0, answers: S.clarify.answers }; rerender();
     } catch (e) { toast(e.message, true); }
   },
+  cqClose: () => { S.clarify = null; rerender(); },
   cqBack: () => { if (S.clarify.step > 0) { S.clarify.step--; rerender(); } },
   cqNext: () => { const c = S.clarify; const q = c.questions[c.step]; if (answered(q, c.answers[q.id] || {})) { c.step++; rerender(); } },
   clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: S.clarify.answers, level: S.clarify.level_used }, el),
