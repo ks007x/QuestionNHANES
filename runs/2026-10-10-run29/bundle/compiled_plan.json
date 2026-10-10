@@ -1,0 +1,928 @@
+{
+  "plan_id": "plan_df2b1ce74c",
+  "plan_version": 1,
+  "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+  "title": "Association of Abdominal Obesity (Waist Circumference) With Glycemic Control (HbA1c) Among US Adults: NHANES 2017-March 2020 pre-pandemic",
+  "study_type": "association",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc",
+    "local_dir": "data",
+    "synthetic_dir": null,
+    "cache_dir": "data/cache",
+    "allow_download": true
+  },
+  "cycles_meta": {
+    "P": {
+      "label": "NHANES 2017-March 2020 pre-pandemic",
+      "file_pattern": "P_{stem}",
+      "url_folder": "2017",
+      "years": 3.2,
+      "weights": {
+        "interview": "WTINTPRP",
+        "mec": "WTMECPRP",
+        "diet": "WTDRD1PP",
+        "fasting": "WTSAFPRP"
+      },
+      "weight_files": {
+        "diet": "DR1TOT",
+        "fasting": "GLU"
+      },
+      "psu": "SDMVPSU",
+      "strata": "SDMVSTRA",
+      "overlaps": [
+        "J"
+      ],
+      "note": "Pre-pandemic file combines 2017-2018 with partial 2019-2020 data. Do not combine with J."
+    }
+  },
+  "subsample_weights": {},
+  "weight_level": "mec",
+  "raw_variables": [
+    {
+      "variable": "BMXBMI",
+      "file": "BMX",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 10.0,
+      "max": 90.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Body mass index",
+      "stems": {}
+    },
+    {
+      "variable": "BMXHT",
+      "file": "BMX",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 40.0,
+      "max": 220.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Standing height",
+      "stems": {}
+    },
+    {
+      "variable": "BMXWAIST",
+      "file": "BMX",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 40.0,
+      "max": 200.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Waist circumference",
+      "stems": {}
+    },
+    {
+      "variable": "DIQ050",
+      "file": "DIQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking insulin now (1=yes; 2=no)",
+      "stems": {}
+    },
+    {
+      "variable": "DIQ070",
+      "file": "DIQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking diabetic pills (1=yes; 2=no)",
+      "stems": {}
+    },
+    {
+      "variable": "DMDEDUC2",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "stems": {}
+    },
+    {
+      "variable": "INDFMPIR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Ratio of family income to poverty",
+      "stems": {}
+    },
+    {
+      "variable": "LBXGH",
+      "file": "GHB",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 3.0,
+      "max": 18.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Glycohemoglobin (HbA1c)",
+      "stems": {}
+    },
+    {
+      "variable": "LBXHGB",
+      "file": "CBC",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 3.0,
+      "max": 22.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Hemoglobin",
+      "stems": {}
+    },
+    {
+      "variable": "RIAGENDR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Gender (1=Male; 2=Female)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDAGEYR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 80.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Age in years at screening (top-coded at 80)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDEXPRG",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        3.0
+      ],
+      "weight_level": "interview",
+      "label": "Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDRETH1",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDRETH3",
+      "file": "DEMO",
+      "cycles": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 7.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "stems": {}
+    },
+    {
+      "variable": "SMQ020",
+      "file": "SMQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Smoked at least 100 cigarettes in life (1=yes; 2=no)",
+      "stems": {}
+    },
+    {
+      "variable": "SMQ040",
+      "file": "SMQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Do you now smoke cigarettes (1=every day; 2=some days; 3=not at all)",
+      "stems": {}
+    }
+  ],
+  "derived": [
+    {
+      "name": "hba1c",
+      "expr": "LBXGH",
+      "type": "continuous",
+      "label": "HbA1c",
+      "levels": null
+    },
+    {
+      "name": "waist",
+      "expr": "BMXWAIST",
+      "type": "continuous",
+      "label": "Waist circumference",
+      "levels": null
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "label": "Age",
+      "levels": null
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "label": "Female sex",
+      "levels": null
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "label": "Sex",
+      "levels": null
+    },
+    {
+      "name": "race_eth",
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "type": "categorical",
+      "label": "Race and ethnicity",
+      "levels": null
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "label": "Family income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "label": "Income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "label": "Educational attainment",
+      "levels": null
+    },
+    {
+      "name": "smoking",
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "type": "categorical",
+      "label": "Smoking status",
+      "levels": null
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "label": "Body mass index",
+      "levels": null
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "label": "Age group",
+      "levels": null
+    },
+    {
+      "name": "abd_obesity_atp3",
+      "expr": "ifelse(female == 1, waist > 88, waist > 102)",
+      "type": "binary",
+      "label": "Abdominal obesity - waist >102 cm (men) / >88 cm (women)",
+      "levels": null
+    },
+    {
+      "name": "poor_glycemic_control",
+      "expr": "hba1c >= 6.5",
+      "type": "binary",
+      "label": "Elevated HbA1c (>=6.5%)",
+      "levels": null
+    },
+    {
+      "name": "pregnant",
+      "expr": "coalesce(RIDEXPRG, 2) == 1",
+      "type": "binary",
+      "label": "Pregnant at examination",
+      "levels": null
+    },
+    {
+      "name": "insulin_use",
+      "expr": "DIQ050 == 1",
+      "type": "binary",
+      "label": "Current insulin use",
+      "levels": null
+    },
+    {
+      "name": "dm_pills",
+      "expr": "DIQ070 == 1",
+      "type": "binary",
+      "label": "Current oral diabetes medication",
+      "levels": null
+    },
+    {
+      "name": "hgb",
+      "expr": "LBXHGB",
+      "type": "continuous",
+      "label": "Hemoglobin",
+      "levels": null
+    },
+    {
+      "name": "anemia",
+      "expr": "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))",
+      "type": "binary",
+      "label": "Anemia (WHO hemoglobin thresholds)",
+      "levels": null
+    },
+    {
+      "name": "height_cm",
+      "expr": "BMXHT",
+      "type": "continuous",
+      "label": "Standing height",
+      "levels": null
+    },
+    {
+      "name": "whtr_05",
+      "expr": "waist / height_cm >= 0.5",
+      "type": "binary",
+      "label": "Central adiposity - waist-to-height ratio >=0.5",
+      "levels": null
+    },
+    {
+      "name": "waist_per10",
+      "expr": "waist / 10",
+      "type": "continuous",
+      "label": "Waist circumference",
+      "levels": null
+    }
+  ],
+  "variables_meta": {
+    "hba1c": {
+      "label": "HbA1c",
+      "units": "%"
+    },
+    "waist": {
+      "label": "Waist circumference",
+      "units": "cm"
+    },
+    "age": {
+      "label": "Age",
+      "units": "years"
+    },
+    "female": {
+      "label": "Female sex",
+      "units": ""
+    },
+    "sex": {
+      "label": "Sex",
+      "units": ""
+    },
+    "race_eth": {
+      "label": "Race and ethnicity",
+      "units": ""
+    },
+    "pir": {
+      "label": "Family income-to-poverty ratio",
+      "units": "ratio"
+    },
+    "pir_cat": {
+      "label": "Income-to-poverty ratio",
+      "units": ""
+    },
+    "educ": {
+      "label": "Educational attainment",
+      "units": ""
+    },
+    "smoking": {
+      "label": "Smoking status",
+      "units": ""
+    },
+    "bmi": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "agecat": {
+      "label": "Age group",
+      "units": "y"
+    },
+    "abd_obesity_atp3": {
+      "label": "Abdominal obesity - waist >102 cm (men) / >88 cm (women)",
+      "units": ""
+    },
+    "poor_glycemic_control": {
+      "label": "Elevated HbA1c (>=6.5%)",
+      "units": ""
+    },
+    "pregnant": {
+      "label": "Pregnant at examination",
+      "units": ""
+    },
+    "insulin_use": {
+      "label": "Current insulin use",
+      "units": ""
+    },
+    "dm_pills": {
+      "label": "Current oral diabetes medication",
+      "units": ""
+    },
+    "hgb": {
+      "label": "Hemoglobin",
+      "units": "g/dL"
+    },
+    "anemia": {
+      "label": "Anemia (WHO hemoglobin thresholds)",
+      "units": ""
+    },
+    "height_cm": {
+      "label": "Standing height",
+      "units": "cm"
+    },
+    "whtr_05": {
+      "label": "Central adiposity - waist-to-height ratio >=0.5",
+      "units": ""
+    },
+    "waist_per10": {
+      "label": "Waist circumference",
+      "units": "cm",
+      "per": "10 cm"
+    },
+    "BMXBMI": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "BMXHT": {
+      "label": "Standing height",
+      "units": "cm"
+    },
+    "BMXWAIST": {
+      "label": "Waist circumference",
+      "units": "cm"
+    },
+    "DIQ050": {
+      "label": "Taking insulin now (1=yes; 2=no)",
+      "units": ""
+    },
+    "DIQ070": {
+      "label": "Taking diabetic pills (1=yes; 2=no)",
+      "units": ""
+    },
+    "DMDEDUC2": {
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "units": ""
+    },
+    "INDFMPIR": {
+      "label": "Ratio of family income to poverty",
+      "units": "ratio"
+    },
+    "LBXGH": {
+      "label": "Glycohemoglobin (HbA1c)",
+      "units": "%"
+    },
+    "LBXHGB": {
+      "label": "Hemoglobin",
+      "units": "g/dL"
+    },
+    "RIAGENDR": {
+      "label": "Gender (1=Male; 2=Female)",
+      "units": ""
+    },
+    "RIDAGEYR": {
+      "label": "Age in years at screening (top-coded at 80)",
+      "units": "years"
+    },
+    "RIDEXPRG": {
+      "label": "Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain)",
+      "units": ""
+    },
+    "RIDRETH1": {
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "units": ""
+    },
+    "RIDRETH3": {
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "units": ""
+    },
+    "SMQ020": {
+      "label": "Smoked at least 100 cigarettes in life (1=yes; 2=no)",
+      "units": ""
+    },
+    "SMQ040": {
+      "label": "Do you now smoke cigarettes (1=every day; 2=some days; 3=not at all)",
+      "units": ""
+    }
+  },
+  "population": [
+    {
+      "id": "c1",
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion"
+    },
+    {
+      "id": "c2",
+      "label": "Pregnant at examination",
+      "expr": "pregnant == 1",
+      "kind": "exclusion"
+    }
+  ],
+  "outcome": {
+    "name": "hba1c",
+    "type": "continuous",
+    "label": "HbA1c"
+  },
+  "exposure": {
+    "name": "waist_per10",
+    "type": "continuous",
+    "label": "Waist circumference",
+    "arms": null,
+    "original": "waist"
+  },
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "smoking",
+    "bmi"
+  ],
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "analysis": {
+    "estimand": "association",
+    "table1_vars": [
+      "agecat",
+      "sex",
+      "race_eth",
+      "pir_cat",
+      "educ",
+      "smoking",
+      "bmi",
+      "hba1c",
+      "waist"
+    ],
+    "table1_by": "abd_obesity_atp3",
+    "prevalence": {
+      "outcomes": [
+        "poor_glycemic_control"
+      ],
+      "by": [
+        "sex",
+        "agecat",
+        "race_eth"
+      ]
+    },
+    "model": {
+      "family": "gaussian",
+      "primary_set": "full"
+    },
+    "adjustment_sets": [
+      {
+        "id": "crude",
+        "label": "Unadjusted",
+        "covariates": []
+      },
+      {
+        "id": "demographic",
+        "label": "Adjusted for age, sex, and race and ethnicity",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth"
+        ]
+      },
+      {
+        "id": "full",
+        "label": "Fully adjusted (primary)",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth",
+          "pir_cat",
+          "educ",
+          "smoking",
+          "bmi"
+        ]
+      }
+    ],
+    "interactions": [
+      "sex",
+      "agecat"
+    ],
+    "missing": {
+      "method": "complete_case",
+      "m": 10
+    },
+    "sensitivity": [
+      {
+        "type": "alt_outcome",
+        "label": "Binary outcome: Elevated HbA1c (>=6.5%) (PR)",
+        "outcome": "poor_glycemic_control",
+        "family": "quasipoisson",
+        "id": "s1"
+      },
+      {
+        "type": "exclude",
+        "label": "Exclude participants on glucose-lowering therapy",
+        "expr": "coalesce(insulin_use, 0) == 1 | coalesce(dm_pills, 0) == 1",
+        "id": "s2"
+      },
+      {
+        "type": "exclude",
+        "label": "Exclude anemia (HbA1c unreliable)",
+        "expr": "coalesce(anemia, 0) == 1",
+        "id": "s3"
+      },
+      {
+        "type": "mi",
+        "label": "Multiple imputation of missing covariates (m = 10)",
+        "m": 10,
+        "id": "s4"
+      },
+      {
+        "type": "exposure_quartiles",
+        "label": "Exposure in weighted quartiles (Q4 vs Q1, P for trend)",
+        "id": "s5"
+      },
+      {
+        "type": "alt_exposure",
+        "label": "Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women)",
+        "exposure": "abd_obesity_atp3",
+        "id": "s6"
+      },
+      {
+        "type": "alt_exposure",
+        "label": "Alternative exposure: Central adiposity - waist-to-height ratio >=0.5",
+        "exposure": "whtr_05",
+        "id": "s7"
+      },
+      {
+        "type": "unweighted",
+        "label": "Unweighted analysis (design ignored)",
+        "id": "s8"
+      }
+    ],
+    "benchmarks": [],
+    "distribution_var": null
+  },
+  "options": {
+    "seed": 2026,
+    "alpha": 0.05
+  },
+  "unavailable_measures": []
+}
