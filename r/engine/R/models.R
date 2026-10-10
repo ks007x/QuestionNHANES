@@ -166,3 +166,29 @@ fit_mi <- function(des, spec, outcome, terms, fam, m = 10, seed = 2026) {
        names = names(stats::coef(comb)), n_imputed_rows = n_inc, m = m, exp = fi$exp,
        missing_by_var = as.list(colSums(is.na(sub))))
 }
+
+
+# Multi-arm comparison: every arm vs the reference (control) group, every pair of arms, and a global Wald test.
+arm_contrasts <- function(fit, design, x, fi) {
+  cf <- stats::coef(fit); V <- stats::vcov(fit)
+  lv <- levels(design$variables[[x]])
+  if (is.null(lv) || length(lv) < 2) return(NULL)
+  ref <- lv[1]
+  nm <- paste0(x, lv[-1]); nm <- nm[nm %in% names(cf)]
+  df <- max(survey::degf(design), 1)          # design degrees of freedom, as for the other model tests
+  tq <- stats::qt(0.975, df)
+  tf <- if (isTRUE(fi$exp)) exp else identity
+  one <- function(L, label, vs) {
+    b <- sum(L * cf[names(L)]); se <- sqrt(as.numeric(t(L) %*% V[names(L), names(L), drop = FALSE] %*% L))
+    p <- 2 * stats::pt(-abs(b / se), df)
+    list(comparison = label, versus = vs, est = tf(b), lcl = tf(b - tq * se), ucl = tf(b + tq * se), p = p)
+  }
+  vs_ref <- lapply(nm, function(n) one(setNames(1, n), sub(paste0("^", x), "", n), ref))
+  pairs <- list()
+  if (length(nm) >= 2) for (i in seq_along(nm)) for (j in seq_along(nm)) if (i < j) {
+    L <- setNames(c(1, -1), c(nm[i], nm[j]))
+    pairs[[length(pairs) + 1]] <- one(L, sub(paste0("^", x), "", nm[i]), sub(paste0("^", x), "", nm[j]))
+  }
+  p_overall <- tryCatch(as.numeric(survey::regTermTest(fit, stats::as.formula(paste0("~", x)), df = df)$p[1]), error = function(e) NA)
+  list(reference = ref, levels = lv, effect = fi$effect, vs_reference = vs_ref, pairwise = pairs, p_overall = p_overall, df = df)
+}

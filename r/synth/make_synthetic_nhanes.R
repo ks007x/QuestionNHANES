@@ -35,6 +35,7 @@ psu_eff <- stats::setNames(stats::rnorm(length(unique(psu_id)), 0, 0.12), unique
 RIAGENDR <- sample(1:2, n, replace = TRUE, prob = c(0.49, 0.51))
 RIDAGEYR <- pmin(80L, as.integer(round(c(stats::runif(round(n * 0.28), 0, 18), stats::runif(n - round(n * 0.28), 18, 86)))))[sample(n)]
 RIDRETH3 <- sample(c(1, 2, 3, 4, 6, 7), n, replace = TRUE, prob = c(.14, .10, .34, .25, .11, .06))
+RIDRETH1 <- ifelse(RIDRETH3 %in% c(6, 7), 5, RIDRETH3)
 INDFMPIR <- round(pmin(5, 5 * stats::rbeta(n, 1.6, 1.4) - 0.25 * (RIDRETH3 %in% c(1, 2, 4))), 2)
 INDFMPIR[INDFMPIR < 0] <- 0
 INDFMPIR <- na_frac(INDFMPIR, 0.10)
@@ -237,7 +238,7 @@ wr <- function(df, name) {
   df <- as.data.frame(df)
   haven::write_xpt(df, file.path(outdir, paste0(name, ".xpt")), version = 5, name = substr(gsub("[^A-Z]", "", name), 1, 8))
 }
-wr(data.frame(SEQN, RIDSTATR, RIAGENDR, RIDAGEYR, RIDRETH3, DMDEDUC2, INDFMPIR, RIDEXPRG, DMDBORN4, DMQMILIZ, SDMVPSU, SDMVSTRA, WTINTPRP, WTMECPRP), "P_DEMO")
+wr(data.frame(SEQN, RIDSTATR, RIAGENDR, RIDAGEYR, RIDRETH3, RIDRETH1, DMDEDUC2, INDFMPIR, RIDEXPRG, DMDBORN4, DMQMILIZ, SDMVPSU, SDMVSTRA, WTINTPRP, WTMECPRP), "P_DEMO")
 ex <- examined
 wr(data.frame(SEQN, LBXHGB, LBXMCVSI, LBXRDW, LBXPLTSI, LBXWBCSI, LBDNENO, LBDLYMNO, LBDMONO, LBDEONO, LBXRBCSI, LBXHCT, LBXMCHSI, LBXMPSI)[ex, ], "P_CBC")
 wr(data.frame(SEQN, LBXFER)[ex & RIDAGEYR >= 1, ], "P_FERTIN")

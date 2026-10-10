@@ -98,6 +98,14 @@ run_pipeline <- function(plan_path, outdir) {
   primary_id <- model_spec$primary_set %||% (if (length(spec$analysis$adjustment_sets)) spec$analysis$adjustment_sets[[length(spec$analysis$adjustment_sets)]]$id else NULL)
   prim <- Filter(function(m) identical(m$id, primary_id), models)
   results$primary_model <- if (length(prim)) prim[[1]] else NULL
+  if (!is.null(spec$exposure$arms) && !is.null(primary_id) && !is.null(fits[[primary_id]])) {
+    results$arms <- tryCatch(arm_contrasts(fits[[primary_id]], d_cc, x, family_info(fam)), error = function(e) list(error = conditionMessage(e)))
+    if (!is.null(results$arms$levels)) {
+      cnt <- table(des$variables[[x]][des$variables$.in_cc], useNA = "no")
+      results$arms$n_by_group <- as.list(cnt)
+      tr(sprintf("svycontrast-style arm comparisons on %s (reference: %s); regTermTest(~%s) for the global test", x, results$arms$reference, x))
+    }
+  }
   results$models <- models
   log(sprintf("Fitted %d models (family %s)", length(models), fam))
 
@@ -105,7 +113,7 @@ run_pipeline <- function(plan_path, outdir) {
     if (is.null(msum)) return(NULL)
     et <- exposure_terms(msum, x)
     if (!length(et)) return(NULL)
-    et[[length(et)]]
+    if (!is.null(spec$exposure$arms)) et[[1]] else et[[length(et)]]   # multi-arm: first arm vs control
   }
   pe <- NULL
   if (!is.null(x) && !is.null(results$primary_model)) {

@@ -76,6 +76,7 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         if name in custom:
             c = custom[name]
             expr, vtype, label, units = c["expr"], c.get("type", "binary"), c.get("label", name), c.get("units", "")
+            levels = c.get("levels")
         elif name in k.definitions:
             d = k.definitions[name]
             if d.get("status") == "proposed":
@@ -206,7 +207,8 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         "variables_meta": meta,
         "population": [{"id": c["id"], "label": c["label"], "expr": c["expr"], "kind": c.get("kind", "inclusion")} for c in population],
         "outcome": {"name": outcome, "type": plan["outcome"]["type"], "label": meta.get(outcome, {}).get("label", outcome)},
-        "exposure": ({"name": exp_name, "type": plan["exposure"]["type"], "label": meta.get(exp_name, {}).get("label", exp_name)}
+        "exposure": ({"name": exp_name, "type": plan["exposure"]["type"], "label": meta.get(exp_name, {}).get("label", exp_name),
+                      "arms": plan.get("arms")}
                      if exposure else None),
         "covariates": [c for c in plan.get("covariates", []) if c != exposure],
         "subgroups": plan.get("subgroups", []),

@@ -120,6 +120,10 @@ def _concept(cid: str, k: Knowledge) -> dict:
         var = cid[5:]
         row = k.dictionary.get(var, {})
         return {"id": cid, "label": row.get("label", var), "domain": "default", "dict_var": var, "synonyms": []}
+    if cid.startswith("arms:"):
+        first = cid[5:].split("+")[0]
+        base = k.concepts.get(first, {})
+        return {"id": cid, "label": "Comparison groups", "domain": base.get("domain", "default"), "synonyms": []}
     raise KeyError(cid)
 
 
@@ -400,11 +404,23 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         outcome = clinical[0] if clinical else None
     subgroup_concepts = [c["concept"] for c in demographic if not exposure or c["concept"] != exposure["concept"]]
     out_of_scope = [f"'{n['phrase']}': {n['reason']}" for n in not_in]
+    from . import arms as _arms
+    arm_spec = _arms.detect(q, clinical, k, lambda cid: _concept(cid, k))
+    extra = [c["concept"] for c in clinical[2:]] if study_type == "association" else [c["concept"] for c in clinical[1:]]
+    if arm_spec:
+        study_type = "association"
+        outcome = next(c for c in clinical if c["concept"] == arm_spec["outcome"])
+        exposure = {"concept": "arms:" + "+".join(arm_spec["arms"])}
+        extra = [c["concept"] for c in clinical if c["concept"] not in arm_spec["arms"] and c["concept"] != arm_spec["outcome"]]
+        notes.append(f"Comparison of {len(arm_spec['arms'])} group(s) against "
+                     f"{'healthy controls' if arm_spec['control_mode'] == 'healthy' else 'controls negative for every group'} for "
+                     f"{_concept(arm_spec['outcome'], k)['label'].lower()}.")
     return {
         "study_type": study_type,
+        "arms": arm_spec,
         "outcome_concept": outcome["concept"] if outcome else None,
         "exposure_concept": exposure["concept"] if exposure else None,
-        "extra_concepts": [c["concept"] for c in clinical[2:]] if study_type == "association" else [c["concept"] for c in clinical[1:]],
+        "extra_concepts": extra,
         "populations": pop_ids,
         "subgroup_concepts": subgroup_concepts,
         "hints": hints,
@@ -727,12 +743,19 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     hints = parsed["hints"]
     outcome = choose_variable(parsed["outcome_concept"], "outcome", hints, k)
     exposure = None
-    if parsed["study_type"] == "association" and parsed.get("exposure_concept"):
+    if parsed.get("arms"):
+        from . import arms as _arms
+        exposure = _arms.build_exposure(parsed["arms"], outcome, k, lambda cid: _concept(cid, k), choose_variable,
+                                        both=parsed["arms"].get("both", "separate"))
+    elif parsed["study_type"] == "association" and parsed.get("exposure_concept"):
         exposure = choose_variable(parsed["exposure_concept"], "exposure", hints, k, prefer_continuous=parsed.get("direction_continuous", False))
     cycle_note = None
     if user_cycles is None and (dataset or {}).get("type", "nhanes") == "nhanes":
         core = [v for v in (outcome, exposure) if v]
         custom = {v["custom"]["name"]: v["custom"] for v in core if v.get("custom")}
+        for v in core:
+            for c in v.get("arm_custom") or []:
+                custom[c["name"]] = c
         usable = usable_cycles([v["variable"] for v in core], k, custom)
         if usable and not set(cycles) <= usable:
             new = best_cycles(usable, k)
@@ -968,6 +991,8 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         if exposure:
             for alt in exposure.get("alternatives", []):
                 add_s({"type": "alt_exposure", "label": f"Alternative exposure: {k.label(alt)}", "exposure": alt})
+            if exposure.get("alt_sensitivity"):
+                add_s(dict(exposure["alt_sensitivity"]))
     add_s({"type": "unweighted", "label": "Unweighted analysis (design ignored)"})
 
     # ---------------- table 1 ----------------
@@ -1074,11 +1099,15 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         "model": {"family": family, "rationale": rationale, "primary_set": "full"},
         "adjustment_sets": adjustment_sets,
         "missing_data": {"method": "complete_case", "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."},
-        "prevalence_outcomes": prevalence_outcomes, "prevalence_by": subgroups,
+        "prevalence_outcomes": prevalence_outcomes,
+        "prevalence_by": (["arms"] + [g for g in subgroups if g != "arms"]) if exposure and exposure.get("arms") else subgroups,
         "sensitivity": sens,
-        "table1_vars": t1, "table1_by": t1_by,
+        "table1_vars": t1, "table1_by": "arms" if exposure and exposure.get("arms") else t1_by,
         "benchmarks": benchmarks,
-        "custom_variables": [v["custom"] for v in [outcome, exposure] + co_primary if v and v.get("custom")],
+        "custom_variables": [v["custom"] for v in [outcome, exposure] + co_primary if v and v.get("custom")]
+                            + ([exposure["alt_seroneg"]] if exposure and exposure.get("alt_seroneg") else [])
+                            + (list(exposure.get("arm_custom") or []) if exposure else []),
+        "arms": exposure.get("arms") if exposure else None,
         "co_primary": [{"variable": v["variable"], "label": v["label"], "concept": v["concept"]} for v in co_primary],
         "rationale": {"statistician": rationale, "epidemiologist": epi_rationale},
         "limitations": limitations,
@@ -1406,7 +1435,29 @@ def apply_fix(plan: dict, fix: dict, k: Knowledge | None = None) -> dict:
     elif op == "soften_text":
         from .language_guard import soften
         p[fix["field"]] = soften(p[fix["field"]])
+    elif op == "set_arms":
+        # edit a multi-arm comparison: control definition, how multi-positive people are handled, which arms
+        parsed = dict(p.get("parsed", {}))
+        spec = dict(parsed.get("arms") or {})
+        if not spec:
+            raise ValueError("This plan has no comparison groups.")
+        for key in ("control_mode", "both", "arms"):
+            if key in fix:
+                spec[key] = fix[key]
+        if spec.get("control_mode") not in ("seronegative", "healthy") or spec.get("both", "separate") not in ("separate", "exclude"):
+            raise ValueError("control_mode must be seronegative|healthy and both must be separate|exclude")
+        if not spec.get("arms"):
+            raise ValueError("At least one arm is required.")
+        parsed["arms"] = spec
+        parsed["hints"] = parsed.get("hints", {"prefer": [], "upgrade": {}})
+        rebuilt = build_plan(p["question"], parsed, None, {**p["dataset"], "cycles_explicit": False}, k)
+        rebuilt["plan_id"] = p["plan_id"]
+        rebuilt["version"] = p.get("version", 1)
+        rebuilt["approvals"] = []
+        return rebuilt
     elif op == "swap_roles":
+        if p.get("arms"):
+            raise ValueError("Swap is not available for a multi-arm comparison; edit the comparison groups instead.")
         if p.get("exposure"):
             new_out = choose_variable(p["exposure"]["concept"], "outcome", {}, k)
             new_exp = choose_variable(p["outcome"]["concept"], "exposure", {}, k, prefer_continuous=True)
