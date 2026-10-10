@@ -1,0 +1,134 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T19:07:47+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "Toxoplasma vs Toxocara vs healthy control for eosinophilia"
+      },
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "c1cf1e4d0370e0926e271e0f52903504226b133ab3d9d58988455e0c34d8a47a"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T19:07:47+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_9650f9b433",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "prev": "c1cf1e4d0370e0926e271e0f52903504226b133ab3d9d58988455e0c34d8a47a",
+      "hash": "31d351a4fb0b371ea55b2277e409388b0a62602376f8cda2764d1f5a31ab88ec"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T19:07:49+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "prev": "31d351a4fb0b371ea55b2277e409388b0a62602376f8cda2764d1f5a31ab88ec",
+      "hash": "a4a5799fc6ef5c864c53ecac291fdbabbaf2560aa4ce32abf38e75b5ed2445af"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T19:07:49+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_856e396b",
+        "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+        "data_source": "cdc"
+      },
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "prev": "a4a5799fc6ef5c864c53ecac291fdbabbaf2560aa4ce32abf38e75b5ed2445af",
+      "hash": "fac357e22d606067532aded227354c13513d2369b5511d545a4bbcd575b8866a"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T19:08:05+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_856e396b",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "a822ae599f010f7f0b173dc9e6d899e43ece73c2a1e839b1967f68a166f03c0b",
+        "qc": {
+          "pass": 15,
+          "warn": 3,
+          "fail": 0,
+          "info": 2
+        },
+        "data_files": [
+          {
+            "file": "DEMO_G",
+            "md5": "f4b048688d73dd5ef8d167526e888b56"
+          },
+          {
+            "file": "BMX_G",
+            "md5": "b00e503455cf22a080b1de168673c74e"
+          },
+          {
+            "file": "DIQ_G",
+            "md5": "ffba08e08a59907aa7405b2d6e2a3e3a"
+          },
+          {
+            "file": "CBC_G",
+            "md5": "7048e5e63d747481ffeb1c6505323c15"
+          },
+          {
+            "file": "GHB_G",
+            "md5": "b14501f6d1357b2a3272db3b471be485"
+          },
+          {
+            "file": "BIOPRO_G",
+            "md5": "d2973177b945bbb0306fc5692b528801"
+          },
+          {
+            "file": "MCQ_G",
+            "md5": "1d12338ae6df629d5171918e24c90679"
+          },
+          {
+            "file": "SSTOCA_G",
+            "md5": "a31583c82e422971a9e1496681074905"
+          },
+          {
+            "file": "SSTOXO_G",
+            "md5": "ba2612a962eabfd15df26aa7a65a6b1c"
+          },
+          {
+            "file": "ALB_CR_G",
+            "md5": "d456924fffb6c84dc3b72eeff9e1a97b"
+          }
+        ]
+      },
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "prev": "fac357e22d606067532aded227354c13513d2369b5511d545a4bbcd575b8866a",
+      "hash": "b874880a4835a29cc59afc265e901e66a7e3922037fd841860934ace3faaff84"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "at": "2026-10-10T19:07:47+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "b874880a4835a29cc59afc265e901e66a7e3922037fd841860934ace3faaff84"
+  },
+  "signoff": null
+}
