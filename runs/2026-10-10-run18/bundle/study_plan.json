@@ -1,0 +1,578 @@
+{
+  "plan_id": "plan_bd81209f19",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T17:49:30+00:00",
+  "question": "What is the prevalence of hypereosinophilia?",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years), what is the survey-weighted prevalence of hypereosinophilia (absolute eosinophil count >=1.5 x10^9/L (ICOG-EO / WHO threshold)), overall and by sex and age group?",
+  "title": "Prevalence of Hypereosinophilia Among US Adults: A Cross-Sectional Analysis of NHANES 2017-March 2020 pre-pandemic",
+  "hypothesis": "Hypereosinophilia is common in this population and varies by sex and age group.",
+  "study_type": "prevalence",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years)",
+    "exposure": "Not applicable (descriptive prevalence); subgroups: Sex and Age group",
+    "comparator": "Subgroup contrasts (prevalence ratios)",
+    "outcome": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+    "covariates": "Sex, Age group, Race and ethnicity, Income-to-poverty ratio, and Body mass index",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "hypereosinophilia",
+    "concept_label": "Hypereosinophilia",
+    "variable": "hypereosinophilia_15",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+    "definition_id": "hypereosinophilia_15",
+    "alternatives": [
+      "eosinophilia_05"
+    ],
+    "companions": [],
+    "domain": "hematology"
+  },
+  "exposure": null,
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat"
+  ],
+  "interactions": [],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). ",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "full",
+      "label": "Mutually adjusted correlates",
+      "covariates": [
+        "sex",
+        "agecat",
+        "race_eth",
+        "pir_cat",
+        "bmi"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "hypereosinophilia_15",
+    "eosinophilia_05"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat"
+  ],
+  "sensitivity": [
+    {
+      "type": "alt_outcome",
+      "label": "Alternative outcome definition: AEC >=0.5",
+      "outcome": "eosinophilia_05",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s2",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "bmi",
+    "aec"
+  ],
+  "table1_by": "hypereosinophilia_15",
+  "benchmarks": [],
+  "custom_variables": [],
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). ",
+    "epidemiologist": "Correlates model includes Age, Sex, Race and ethnicity, Income-to-poverty ratio, and Body mass index to describe independent associations with hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L; these are descriptive, not causal, contrasts. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations.",
+    "Operational definition (AEC >=1.5): ICOG-EO requires >1.5 x10^9/L on two examinations at least 1 month apart (or tissue hypereosinophilia); NHANES has one CBC, so this is single-measurement hypereosinophilia.",
+    "Operational definition (AEC >=1.5): Very rare in the general population - expect wide confidence intervals and possible NCHS suppression; consider eosinophilia (>=0.5) as the primary outcome."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Investigator",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    }
+  ],
+  "acknowledgements": {
+    "opnotes_hypereosinophilia_15": {
+      "at": "2026-10-10T17:49:32+00:00",
+      "by": "Karan (investigator)"
+    }
+  },
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Karan (investigator)",
+      "at": "2026-10-10T17:49:32.442901+00:00",
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "prevalence",
+    "outcome_concept": "hypereosinophilia",
+    "exposure_concept": null,
+    "extra_concepts": [],
+    "populations": [],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": false,
+    "out_of_scope": [],
+    "notes": [],
+    "matched_phrases": [
+      {
+        "concept": "hypereosinophilia",
+        "phrase": "hypereosinophilia"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [],
+    "association_cue": false,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "hypereosinophilia_15",
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 1.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "P": [
+          "P_CBC"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Valent P, et al. Contemporary consensus proposal on criteria and classification of eosinophilic disorders and related syndromes (ICOG-EO). J Allergy Clin Immunol. 2012;130:607-612.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "eosinophilia_05",
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 0.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "P": [
+          "P_CBC"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Conventional laboratory definition.",
+      "status": "verified",
+      "confidence": 1.0
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 4,
+      "caution": 2,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 2 prespecified sensitivity analyses are reported regardless of result; 2 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "pass",
+        "title": "Descriptive estimand - no comparison group",
+        "detail": "Survey-weighted prevalence in a defined target population; subgroup contrasts are descriptive.",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 57 on the topic in any data source.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [],
+  "feasibility": {
+    "score": 100,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable",
+    "status": "ok",
+    "n_fail": 0,
+    "n_caution": 0,
+    "suggestions": [],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in A, B, C, D, E, F, G, H, I, J, L, P; selected P.",
+        "suggestion": "Pooling A, B, C, D, E, F, G, H, I, L could increase precision."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as a prevalence question. Outcome: Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L. Population: Age >=18 years."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 8 analysis variables (2 direct NHANES measures, 6 derived/guideline definitions) onto 7 raw variables in 3 files: P_BMX, P_CBC, P_DEMO."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). "
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 1 major, 0 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (3 pass, 3 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable (0 blocking, 0 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "novelty": {
+    "score": 95,
+    "label": "High",
+    "summary": "0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 57 on the topic in any data source.",
+    "checked": "2026-10-10"
+  }
+}

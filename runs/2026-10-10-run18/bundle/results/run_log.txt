@@ -1,0 +1,17 @@
+17:49:34  Plan plan_bd81209f19 (hash 9b36fec3d5b9) loaded
+17:49:34  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_DEMO.xpt
+17:49:35  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BMX.xpt
+17:49:36  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_CBC.xpt
+17:49:36  Loaded 15,560 records from 3 file(s)
+17:49:36  Derived 12 analysis variables
+17:49:36  Analytic population: 8,506
+17:49:38  Computed 12 prevalence estimates
+17:49:38  Fitted 1 models (family quasipoisson)
+17:49:38  Ran 2 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+17:49:41  QC: 19 checks, 0 fail, 4 warn
+17:49:41  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_bd96f06ff2/runs/run_910014ce/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

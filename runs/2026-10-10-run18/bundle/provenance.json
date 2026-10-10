@@ -1,0 +1,106 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T17:49:30+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "What is the prevalence of hypereosinophilia?"
+      },
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "aa7a85b86bac4a774a3a78a66ef3d1aaeb9e58fbaa4e173cc0d7f91a3401ee61"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T17:49:30+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_bd81209f19",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "prev": "aa7a85b86bac4a774a3a78a66ef3d1aaeb9e58fbaa4e173cc0d7f91a3401ee61",
+      "hash": "085e600d683a74c3f7adc086949388396a8145ae7c31df658afc96c0a8a5f203"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T17:49:32+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "prev": "085e600d683a74c3f7adc086949388396a8145ae7c31df658afc96c0a8a5f203",
+      "hash": "d6efb671b94ed28b15d358bea44ed5358671a1d0068a886d68217e41777f2a0d"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T17:49:32+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_910014ce",
+        "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+        "data_source": "cdc"
+      },
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "prev": "d6efb671b94ed28b15d358bea44ed5358671a1d0068a886d68217e41777f2a0d",
+      "hash": "37cc26abe6394e02110072f6559ee4662c91cea8f64827e3fac2e6933202c64e"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T17:49:41+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_910014ce",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "d06d5c706921d8153d3227b7ccc68c1b7a694f03070b735286aeffad23c1a340",
+        "qc": {
+          "pass": 14,
+          "warn": 4,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_CBC",
+            "md5": "498bb01dcc4f8ed6f66260aa85e97657"
+          }
+        ]
+      },
+      "plan_hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "prev": "37cc26abe6394e02110072f6559ee4662c91cea8f64827e3fac2e6933202c64e",
+      "hash": "5f2991ee82f6c924a82c6952ae7fd06d2a6c76aac86fb2b7ef54d7f1f5ffd481"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "9b36fec3d5b9b9e0473297b54dd73d091848718c61f7616bc3298bdf0cb1e350",
+      "at": "2026-10-10T17:49:30+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "5f2991ee82f6c924a82c6952ae7fd06d2a6c76aac86fb2b7ef54d7f1f5ffd481"
+  },
+  "signoff": null
+}
