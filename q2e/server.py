@@ -167,6 +167,8 @@ class Edit(BaseModel):
     fix: dict[str, Any]
     actor: str = "investigator"
     note: str | None = None
+    step: str | None = Field(default=None, max_length=120)
+    step_title: str | None = Field(default=None, max_length=160)
 
 
 @app.post("/api/projects/{pid}/edit")
@@ -187,7 +189,7 @@ def edit_project(pid: str, body: Edit):
     proj["plan"] = new_plan
     store.snapshot(proj, body.actor, body.note or f"edit: {body.fix.get('op')}")
     store.event(proj, body.actor, "plan_edited", {"fix": body.fix})
-    _record_edit(proj, body.actor, body.fix, old_plan, v_before)
+    _record_edit(proj, body.actor, body.fix, old_plan, v_before, body.step, body.step_title)
     store.save(proj)
     return _public(proj)
 
@@ -196,7 +198,8 @@ def edit_project(pid: str, body: Edit):
 EDIT_NAMES = {"title": "Title", "refined_question": "Refined research question", "hypothesis": "Hypothesis"}
 
 
-def _record_edit(proj: dict, actor: str, fix: dict, old_plan: dict, v_before: int | None) -> None:
+def _record_edit(proj: dict, actor: str, fix: dict, old_plan: dict, v_before: int | None,
+                 step: str | None = None, step_title: str | None = None) -> None:
     """Every manual edit also goes into the readable amendment history."""
     changes = protocol_chat.diff_plans(old_plan, proj["plan"])
     if not changes:
@@ -204,15 +207,15 @@ def _record_edit(proj: dict, actor: str, fix: dict, old_plan: dict, v_before: in
         what = EDIT_NAMES.get(path.split(".")[-1], (fix.get("op") or "edit").replace("_", " ").capitalize())
         changes = [{"what": what, "before": "-", "after": "edited"}]
     am = protocol_chat.new_amendment(actor, "Edited on the protocol page", changes, v_before, proj["plan"].get("version"),
-                                     [], None, _now(), source="edit", edit_ops=[fix])
+                                     [], None, _now(), source="edit", edit_ops=[fix], step=step, step_title=step_title)
     proj.setdefault("amendments", []).append(am)
 
 
 class ChatMsg(BaseModel):
     message: str = Field(min_length=2, max_length=1000)
     actor: str = "analyst"
-    step: str | None = Field(default=None, max_length=60)          # which walkthrough step it was said on, e.g. "protocol:population"
-    step_title: str | None = Field(default=None, max_length=80)
+    step: str | None = Field(default=None, max_length=120)         # which item it was said on, e.g. "protocol:population:pregnancy"
+    step_title: str | None = Field(default=None, max_length=160)
 
 
 @app.post("/api/projects/{pid}/comments")

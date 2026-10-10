@@ -233,8 +233,17 @@ body:has(.cq-overlay) { overflow: hidden; }
 .sp-title { margin: 0 0 12px; }
 .sp-title h2 { margin: 2px 0 0; font: 600 22px var(--serif); }
 .sp-n { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
-.sp-talk { margin-top: 16px; border: 1px solid var(--accent); background: var(--accent-2); }
-.sp-talk textarea { width: 100%; box-sizing: border-box; }
+.attn { border: 1px solid var(--accent); background: var(--accent-2); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; }
+.attn h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent-ink); }
+.pt { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+.pt.sev-blocker { border-left-color: var(--bad); } .pt.sev-major { border-left-color: var(--warn, #C98A1B); } .pt.sev-minor, .pt.sev-info { border-left-color: var(--accent); }
+.pt-row { display: flex; gap: 8px; align-items: flex-start; }
+.pt-open { margin-top: 6px; }
+.pt-input { margin-top: 8px; }
+.pt-input textarea { width: 100%; box-sizing: border-box; }
+.pt .pc-list, .check .pc-list, .issue .pc-list, .bench .pc-list { margin-top: 8px; max-height: 200px; }
+.other-talk { margin-top: 14px; }
+.other-talk > .btn { opacity: .8; }
 .sp-nav { margin-top: 16px; position: sticky; bottom: 0; z-index: 2; }
 .steps li.active { flex-wrap: wrap; }
 .steps .substeps { list-style: none; padding: 4px 0 0 30px; margin: 0; width: 100%; }

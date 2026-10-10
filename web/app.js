@@ -319,26 +319,83 @@ S.reach = (() => { try { return JSON.parse(store.get("q2e.reach", "{}")) || {}; 
 const CAN_CHANGE = ["protocol", "map", "plan"];
 function stepKey(stage) { return `${S.project.id}:${stage}`; }
 function saveSteps() { store.set("q2e.sub", JSON.stringify(S.sub)); store.set("q2e.reach", JSON.stringify(S.reach)); }
-function talkBox(stage, part) {
-  const step = `${stage}:${part.id}`;
-  const canChange = CAN_CHANGE.includes(stage) && !S.project.signoff;
-  const msgs = (S.project.protocol_chat || []).filter((m) => m.step === step).slice(-8);
-  const list = msgs.map((m) => {
-    const ai = m.who === "Protocol agent";
-    return `<div class="pc-msg ${ai ? "" : "me"} ${m.kind === "comment" ? "note" : ""}"><div class="who">${esc(ai ? "AI" : m.who || "analyst")}${m.kind === "comment" ? " · comment" : ""} <small>${when(m.at)}</small></div>
-      <div class="txt">${nice(m.text || "")}</div>
-      ${(m.summary || []).length ? `<ul class="small">${m.summary.map((s) => `<li>${nice(s)}</li>`).join("")}</ul>` : ""}
-      ${(m.options || []).length ? `<div class="examples">${m.options.map((o) => `<button data-act="pcSend" data-msg="${esc(o.send)}" title="${esc(o.hint || "")}">${esc(o.label)}</button>`).join("")}</div>` : ""}</div>`;
-  }).join("");
-  return `<div class="card sp-talk"><h3 class="sub" style="margin-top:0">Your input on this step <span class="tiny muted" style="font-weight:400">(optional)</span></h3>
-    <p class="small muted" style="margin:0 0 8px">${canChange
-      ? "Want something different? Write it in plain words and press <b>Ask the AI to change it</b>: the AI changes the protocol right away and you can undo it. Or press <b>Save as a comment</b> to leave a note for the lead investigator."
-      : "Write a note and press <b>Save as a comment</b>. It is saved with the date and time so the lead investigator can see it."}</p>
-    ${list ? `<div class="pc-list" id="pcList">${list}</div>` : ""}
-    <textarea id="pcInput" rows="2" maxlength="1000" placeholder="${canChange ? esc("e.g. " + ((part.examples || [])[0] || "only adults over 40")) : "e.g. I checked this and it looks right"}"></textarea>
-    <div class="row" style="margin-top:8px">${canChange ? `<button class="btn primary sm" data-act="pcSend" id="pcBtn">Ask the AI to change it</button>` : ""}
-      <button class="btn sm" data-act="comment">Save as a comment</button></div>
-    ${canChange && (part.examples || []).length ? `<div class="examples" style="margin-top:6px"><span class="tiny muted">Try:</span> ${part.examples.map((e) => `<button data-act="pcSend" data-msg="${esc(e)}">${esc(e)}</button>`).join("")}</div>` : ""}</div>`;
+/* Input lives on the specific items that need the analyst (they differ for every study), not in one general box. */
+function canChangeHere() { return CAN_CHANGE.includes(route().stage) && !S.project.signoff; }
+function msgHtml(m) {
+  const ai = m.who === "Protocol agent";
+  return `<div class="pc-msg ${ai ? "" : "me"} ${m.kind === "comment" ? "note" : ""}"><div class="who">${esc(ai ? "AI" : m.who || "analyst")}${m.kind === "comment" ? " · comment" : ""} <small>${when(m.at)}</small></div>
+    <div class="txt">${nice(m.text || "")}</div>
+    ${(m.summary || []).length ? `<ul class="small">${m.summary.map((s) => `<li>${nice(s)}</li>`).join("")}</ul>` : ""}
+    ${(m.options || []).length ? `<div class="examples">${m.options.map((o) => `<button data-act="pcSend" data-msg="${esc(o.send)}" data-pt="${esc(m.step || "")}" title="${esc(o.hint || "")}">${esc(o.label)}</button>`).join("")}</div>` : ""}</div>`;
+}
+/* Plain-language name for a Reviewer fix; null when there is no one-click fix worth suggesting. */
+function fixLabel(fix) {
+  if (!fix) return null;
+  const k = S.meta.knowledge; const p = S.project.plan;
+  const lab = (n) => (k.blocks.find((b) => b.name === n) || {}).label || n;
+  if (fix.op === "set_cycles") return "Use " + fix.value.map((c) => ((k.cycles[c] || {}).label || c).replace("NHANES ", "")).join(" + ");
+  if (fix.op === "remove_covariate") return "Stop adjusting for " + lab(fix.name);
+  if (fix.op === "set" && fix.path === "model.family" && fix.value === "quasipoisson") return "Report prevalence ratios instead";
+  if (fix.op === "set" && fix.path === "exposure.scale") return "Report the effect per 1 unit";
+  if (fix.op === "add_sensitivity" && fix.item) return "Add extra check: " + fix.item.label;
+  if (fix.op === "enable_criterion") { const c = p.population.find((x) => x.id === fix.id); return c ? "Turn on rule: " + c.label : null; }
+  if (fix.op === "soften_text") return "Rephrase without cause-and-effect wording";
+  return null;
+}
+/* The conversation + input for ONE item. key ties messages to the item; title is what the history shows. */
+function ptTalk(key, title) {
+  const can = canChangeHere();
+  const msgs = (S.project.protocol_chat || []).filter((m) => m.step === key).slice(-6);
+  const thread = msgs.length ? `<div class="pc-list">${msgs.map(msgHtml).join("")}</div>` : "";
+  const data = `data-pt="${esc(key)}" data-ptitle="${esc(title)}"`;
+  if (S.openPt !== key) return `${thread}<button class="btn sm ghost pt-open" data-act="ptOpen" ${data}>${can ? "✎ Change or comment" : "💬 Comment"}</button>`;
+  return `${thread}<div class="pt-input">
+    <textarea id="pcInput" rows="2" maxlength="1000" ${data} placeholder="${can ? "Say what you want changed, or write a note for the lead investigator" : "Write a note for the lead investigator"}"></textarea>
+    <div class="row" style="margin-top:6px">${can ? `<button class="btn primary sm" data-act="pcSend" id="pcBtn" ${data}>Ask the AI to change it</button>` : ""}
+      <button class="btn sm" data-act="comment" ${data}>Save as a comment</button><button class="btn sm ghost" data-act="ptClose">Cancel</button></div></div>`;
+}
+/* One Reviewer finding, shown where it matters, with its fix (if any) and the analyst's input. */
+function issuePoint(i) {
+  const key = `issue:${i.id}`; const lbl = canChangeHere() ? fixLabel(i.fix) : null;
+  const ack = i.fix && i.fix.op === "acknowledge" && canChangeHere();
+  return `<div class="pt sev-${esc(i.severity)}"><div class="pt-row"><span class="sev ${esc(i.severity)}">${esc(i.severity)}</span>
+      <div style="flex:1"><b class="small">${nice(i.title)}</b><div class="small muted">${nice(i.detail)}</div></div></div>
+    ${lbl ? `<div class="examples" style="margin:6px 0 0"><span class="tiny muted">Suggested fix:</span> <button data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">${esc(lbl)}</button></div>` : ""}
+    ${ack ? `<div style="margin-top:6px"><button class="btn sm" data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">✓ I accept this</button></div>` : ""}
+    ${ptTalk(key, i.title)}</div>`;
+}
+/* Any item that is not a Reviewer finding (e.g. an uncertain variable match or a failed QC check). */
+function notePoint(key, title, detail, sev = "minor") {
+  return `<div class="pt sev-${sev}"><div class="pt-row"><span class="sev ${sev}">check</span>
+      <div style="flex:1"><b class="small">${nice(title)}</b>${detail ? `<div class="small muted">${nice(detail)}</div>` : ""}</div></div>${ptTalk(key, title)}</div>`;
+}
+/* Which step each Reviewer finding belongs to. */
+function issueStep(id) {
+  if (/^(avail_|cycle_overlap)/.test(id)) return "map:table";
+  if (/^unmapped_/.test(id)) return "map:columns";
+  if (/^custom_/.test(id)) return "map:proposed";
+  if (/^(verify_|opnotes_)/.test(id)) return "protocol:variables-inline";
+  if (/^overlap_/.test(id)) return "protocol:variables";
+  if (/^(pregnancy|small_pop)$/.test(id)) return "protocol:population";
+  if (/^causal_/.test(id)) return "protocol:question";
+  if (id === "answerability") return "protocol:feasible";
+  if (/^(or_common|scale)$/.test(id)) return "plan:model";
+  if (/^(mediator_|collinearity|multiplicity)/.test(id)) return "plan:adjust";
+  if (/^(iron_inflammation|a1c_anemia|mi)$/.test(id)) return "plan:sensitivity";
+  if (/^audit_/.test(id)) return "plan:audit";
+  return "plan:review";
+}
+function attention(stage, partId, extra = "") {
+  const its = (S.project.plan.review || []).filter((i) => issueStep(i.id) === `${stage}:${partId}` && (i.fix || i.severity !== "info"));
+  if (!its.length && !extra) return "";
+  return `<div class="attn"><h4>Needs your attention here</h4>${its.map(issuePoint).join("")}${extra}</div>`;
+}
+/* Small, collapsed way to raise anything else on a step (the analyst can always change things). */
+function otherTalk(stage, part) {
+  const key = `${stage}:${part.id}`;
+  const has = (S.project.protocol_chat || []).some((m) => m.step === key);
+  if (S.openPt !== key && !has) return `<div class="other-talk"><button class="btn sm ghost" data-act="ptOpen" data-pt="${esc(key)}" data-ptitle="${esc(part.title)}">${canChangeHere() ? "Something else to change or note on this step?" : "Add a note on this step"}</button></div>`;
+  return `<div class="card other-talk"><h3 class="sub" style="margin-top:0">Other notes on this step</h3>${ptTalk(key, part.title)}</div>`;
 }
 function historyBar() {
   const ams = S.project.amendments || [];
@@ -371,8 +428,9 @@ function stepper(stage, v) {
     <h1 class="page" style="margin-bottom:4px">${v.title}</h1>${v.lede ? `<p class="lede" style="margin-top:0">${v.lede}</p>` : ""}</div>
   ${dots}
   <div class="sp-step"><div class="sp-title"><span class="sp-n">Step ${i + 1} of ${parts.length}</span><h2>${esc(part.title)}</h2>${part.help ? `<p class="small muted" style="margin:2px 0 0">${part.help}</p>` : ""}</div>
+    ${part.noTalk || part.noAttn ? "" : attention(stage, part.id, part.attn || "")}
     ${part.html}</div>
-  ${part.noTalk ? "" : talkBox(stage, part)}
+  ${part.noTalk ? "" : otherTalk(stage, part)}
   <div class="card sp-nav"><div class="row" style="justify-content:space-between">${back}${fwd}</div>
     ${i === parts.length - 1 && nextS && !nextOk ? `<p class="tiny muted" style="margin:8px 0 0;text-align:right">${esc(LOCK_REASON[nextS.id] || "Finish this section first.")}</p>` : ""}</div>`;
 }
@@ -427,16 +485,17 @@ function viewProtocol() {
       ${d ? `<p class="small" style="margin:10px 0 4px">${nice(d.criteria_text)}</p><p class="tiny muted" style="margin:0">${esc(d.source.citation || "")} <span class="status ${esc(d.status)}">${esc(d.status)}</span></p>
         ${(d.operational_notes || []).length ? `<ul class="small" style="margin:8px 0 0;padding-left:18px">${d.operational_notes.map((n) => `<li>${nice(n)}</li>`).join("")}</ul>` : ""}` : `<p class="small muted">Building block (${esc(v.type)}${v.units ? ", " + esc(v.units) : ""})</p>`}
       ${role === "exposure" && v.type === "continuous" ? `<div class="row" style="margin-top:10px"><span class="small">Effect reported per</span><input type="number" step="any" value="${v.scale || 1}" style="width:90px" data-act="scale"><span class="small muted">${esc(v.units || "")}</span></div>` : ""}
-      ${issues.map((i) => `<div class="row" style="margin-top:10px"><span class="sev ${i.severity}">${i.severity}</span><span class="small" style="flex:1">${nice(i.title)}</span>${i.fix ? `<button class="btn sm" data-act="fix" data-id="${i.id}">Acknowledge</button>` : `<span class="chip ok">acknowledged</span>`}</div>`).join("")}
+      ${String(v.concept || "").startsWith("dict:") ? `<div style="margin-top:10px">${notePoint(`protocol:variables:${role}`, `Is this the right NHANES survey item for your ${role}?`,
+        `The AI matched your words to the official NHANES item <b>${esc(v.concept.slice(5))}</b>: “${esc(v.concept_label || "")}”. If you meant something else, say so.`)}</div>` : ""}
+      ${issues.map((i) => `<div style="margin-top:10px">${i.fix ? issuePoint(i) : `<div class="row"><span class="sev ${i.severity}">${i.severity}</span><span class="small" style="flex:1">${nice(i.title)}</span><span class="chip ok">accepted</span></div>`}</div>`).join("")}
     </div>`;
   };
   const pop = p.population.map((c) => `<div class="crit"><label class="toggle"><input type="checkbox" data-act="crit" data-id="${c.id}" ${c.enabled ? "checked" : ""}><span></span></label>
     <div class="lbl"><span class="chip ${c.kind === "exclusion" ? "warn" : "accent"}" style="font-size:11px">${c.kind}</span> ${nice(c.label)}<div class="tiny muted">${esc(c.source || "")} · <code>${esc(c.expr)}</code></div></div></div>`).join("");
   return { title: "Your research protocol", tag: `plan v${p.version}`,
-    lede: "The AI drafted your study. Check it one step at a time. If something is not what you want, tell the AI in the box under each step.",
+    lede: "The AI drafted your study. Check it one step at a time. Items that need your attention are marked, and you can change or comment on them right there.",
     parts: [
       { id: "question", title: "Your study question", help: "Check that this says what you want to study. Click any underlined text to edit it yourself.",
-        examples: ["only adults over 40", "use 2015-2018 data"],
         html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
         <div class="card"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional</div>
           <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
@@ -448,7 +507,8 @@ function viewProtocol() {
           <details style="margin-top:12px"><summary class="small">Study summary in research terms (PICO)</summary><dl class="kv" style="margin-top:8px">${Object.entries(p.pico).map(([k2, v]) => `<dt>${esc(k2[0].toUpperCase() + k2.slice(1))}</dt><dd>${nice(v)}</dd>`).join("")}</dl></details>
         </div>` },
       { id: "feasible", title: "Can NHANES answer it?", help: "How well the NHANES data fits your question, and how often it has been studied before.",
-        examples: ["use 2015-2018 data"],
+        attn: f.score < 50 ? notePoint("protocol:feasible:score", `Feasibility is only ${f.score}/100`,
+          f.components.filter((c) => c.score < c.max).map((c) => `${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}`).join("<br>"), "major") : "",
         html: `<div class="row" style="gap:14px;align-items:stretch;flex-wrap:wrap">
           <div class="card gauge"><div class="ring" style="--p:${f.score}"><div>${f.score}</div></div><div><b>${esc(f.label)} feasibility</b><div class="tiny muted">in ${p.dataset.type === "nhanes" ? "NHANES" : "uploaded data"}</div>
             <details><summary class="tiny">why this score</summary><ul class="tiny" style="padding-left:16px;margin:4px 0">${f.components.map((c) => `<li>${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}</li>`).join("")}</ul></details></div></div>
@@ -456,10 +516,8 @@ function viewProtocol() {
           <div style="margin-top:14px">${answerCard(p.answerability, { probeButton: true, probe: p.probe })}</div>` },
       { id: "variables", title: p.exposure ? "What you are comparing" : "What you are measuring",
         help: p.exposure ? "The <b>exposure</b> is the thing you think has an effect; the <b>outcome</b> is the health result you measure." : "The <b>outcome</b> is the health result you measure.",
-        examples: p.exposure ? ["swap the exposure and outcome"] : [],
         html: `<div class="grid ${p.exposure ? "g2" : ""}">${p.exposure ? varCard("exposure") : ""}${varCard("outcome")}</div>` },
       { id: "population", title: "Who is in the study", help: "These rules decide which people are counted. Switch a rule on or off, or add your own.",
-        examples: ["only adults over 40", "between 20 and 60"],
         html: `<div class="card">${pop}
           <details style="margin-top:10px"><summary>Add your own rule</summary><div class="grid g4" style="margin-top:8px;align-items:end">
             <label class="field">Label<input type="text" id="critLabel" placeholder="e.g. Age 20-79 years"></label>
@@ -493,7 +551,6 @@ function viewMap() {
     parts: [
       { id: "table", title: "Your variables and their sources",
         help: "Each row is one thing your study uses. <b>Availability</b> shows which survey years have it (✓ yes, ✗ no). Click <b>expr</b> to see the exact formula.",
-        examples: ["use 2015-2018 data"],
         html: `<div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Variable</th><th>Role</th><th>Source</th><th>Raw variables</th><th>Files</th><th>Availability</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>` },
       generic && { id: "columns", title: "Match your columns", help: "Tell Q2E which column in your file holds each item.", html: generic },
       custom.length && { id: "proposed", title: "Approve the AI's suggested variables", help: "The AI suggested these. They will not be used until you approve them.",
@@ -526,7 +583,6 @@ function viewPlan() {
     lede: "The AI statistician drafted this and an AI reviewer checked it. Go through it step by step; the last step is your approval.",
     parts: [
       { id: "model", title: "How the result is measured", help: "Which statistical model is used and what number it reports (for example an odds ratio).",
-        examples: ["report odds ratios", "report prevalence ratios"],
         html: `<div class="card"><h3 class="sub" style="margin-top:0">Estimand & model</h3>
       <label class="field">Model family<select data-act="family">${[["quasipoisson", "Survey quasi-Poisson (prevalence ratio)"], ["quasibinomial", "Survey logistic (odds ratio)"], ["gaussian", "Survey linear (mean difference)"]].map(([v, l]) => `<option value="${v}" ${p.model.family === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
       <p class="small" style="margin:10px 0 0">${nice(p.rationale.statistician)}</p>
@@ -535,7 +591,6 @@ function viewPlan() {
       <h3 class="sub">Missing data</h3><p class="small" style="margin:0">${esc(p.missing_data.rationale)}</p>
     </div>` },
       { id: "adjust", title: "What the analysis takes into account", help: "<b>Covariates</b> are other factors the analysis adjusts for so the comparison is fair. Use × to remove one or <b>+ add</b> to add one.",
-        examples: ["adjust for alcohol", "don't adjust for income", "use 2015-2018 data"],
         html: `<div class="card"><h3 class="sub" style="margin-top:0">Variables</h3>
       <p class="small" style="margin:0 0 6px"><b>Covariates</b> <span class="muted">${esc(p.rationale.epidemiologist).slice(0, 220)}…</span></p>${pills("covariates", p.covariates, blockOpts)}
       ${Object.entries(p.covariate_notes || {}).map(([c, n]) => `<p class="tiny muted" style="margin:6px 0 0"><b>${esc(c)}</b>: ${nice(n)}</p>`).join("")}
@@ -550,8 +605,8 @@ function viewPlan() {
       { id: "audit", title: "Design audit", help: "Checks against common criticisms of this kind of study (e.g. TriNetX-style EHR studies).",
         html: auditCard(p.design_audit) || `<p class="small muted">No audit available.</p>` },
       { id: "review", title: "AI reviewer's concerns", help: `${blockers.length || pendingAck.length ? "<b>Action needed:</b> press the button next to each item marked blocker or major before you can approve." : "Read each point. Press <b>Apply fix</b> or <b>Acknowledge</b> where offered."}`,
-        html: `<div class="card">${issues.length ? issues.map((i) => `<div class="issue"><span class="sev ${i.severity}">${i.severity}</span><div><b class="small">${nice(i.title)}</b> <span class="tiny muted">${esc(i.agent)}</span><div class="small muted">${nice(i.detail)}</div></div>
-          <div>${i.fix ? `<button class="btn sm" data-act="fix" data-id="${i.id}">${i.fix.op === "acknowledge" ? "Acknowledge" : "Apply fix"}</button>` : ""}</div></div>`).join("") : `<p class="muted small">No issues.</p>`}</div>` },
+        noAttn: true,
+        html: `<div class="card">${issues.length ? issues.map(issuePoint).join("") : `<p class="muted small">No issues - the reviewer found nothing to fix.</p>`}</div>` },
       { id: "approve", title: "Approve the plan", help: "Approving locks this exact version of the plan so it can be run. Any later change needs approval again.",
         html: `<div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
@@ -590,7 +645,8 @@ function viewRun() {
       { id: "checks", title: "Automatic quality checks", help: "Green passed. <b>Yellow</b> means look carefully. <b>Red</b> failed and needs a written reason at sign-off.",
         html: `${staleBanner}${R.meta.synthetic ? `<div class="banner warn">Synthetic NHANES-like data - pipeline demonstration only; estimates are not population estimates.</div>` : ""}
     <div class="row" style="margin-bottom:12px"><span class="chip ok">${cnt("pass")} pass</span><span class="chip warn">${cnt("warn")} warn</span><span class="chip bad">${cnt("fail")} fail</span><span class="chip info">${cnt("info")} info</span><span class="small muted">${R.meta.seconds}s · ${esc(R.meta.r_version)}</span></div>
-    <div class="checks">${c.map((x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)} · ${x.status.toUpperCase()}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p></div>`).join("")}</div>` },
+    <div class="checks">${c.map((x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)} · ${x.status.toUpperCase()}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p>
+      ${x.status === "warn" || x.status === "fail" ? ptTalk(`qc:${x.id || x.title}`, `Quality check: ${x.title}`) : ""}</div>`).join("")}</div>` },
       { id: "flow", title: "Who was included", help: "How many people were in the data, how many were left out and why, and how the survey design was handled.",
         html: `<div class="grid g2"><div class="card"><h3 class="sub" style="margin-top:0">Participant flow</h3><div class="flow">${R.flow.map((f, i) => `${i ? `<div class="arrow">${f.excluded ? `<span>− ${f.excluded.toLocaleString()} ${esc(f.kind === "exclusion" ? "excluded" : "not eligible")}</span>` : ""}</div>` : ""}<div class="box"><b>${f.n.toLocaleString()}</b> <span class="small">${nice(f.label)}</span></div>`).join("")}</div></div>
       <div class="card"><h3 class="sub" style="margin-top:0">Survey design</h3><dl class="kv"><dt>Weight</dt><dd><code>${esc(R.design.weight_variable)}</code> (${esc(R.design.weight_level)})</dd><dt>Cycles</dt><dd>${esc(R.design.cycles.join(", "))}</dd><dt>Strata / PSUs</dt><dd>${R.design.n_strata} / ${R.design.n_psu} (design df ${R.design.design_df})</dd><dt>Analytic df</dt><dd>${R.design.analytic_df}</dd><dt>Represents</dt><dd>${fx(R.design.sum_weights_millions, 1)} million people</dd><dt>Variance</dt><dd>Taylor linearization; lonely PSU: ${esc(R.design.lonely_psu)}</dd></dl>
@@ -616,7 +672,8 @@ function benchCards() {
       <div class="small">Published <b>${pct(b.published)}</b> (${pct(b.published_lcl)}-${pct(b.published_ucl)}) · ${esc(b.label)}</div>
       <div class="bar"><i class="pub" style="left:${pos(b.published_lcl)};width:calc(${pos(b.published_ucl)} - ${pos(b.published_lcl)})"></i><em style="left:${pos(b.published)}"></em></div>
       <div class="small">Q2E <b>${pct(b.replicated)}</b> (${pct(b.replicated_lcl)}-${pct(b.replicated_ucl)}) · n=${b.replicated_n.toLocaleString()}</div>
-      <div class="bar"><i class="rep" style="left:${pos(b.replicated_lcl)};width:calc(${pos(b.replicated_ucl)} - ${pos(b.replicated_lcl)})"></i><em style="left:${pos(b.replicated)}"></em></div></div>`;
+      <div class="bar"><i class="rep" style="left:${pos(b.replicated_lcl)};width:calc(${pos(b.replicated_ucl)} - ${pos(b.replicated_lcl)})"></i><em style="left:${pos(b.replicated)}"></em></div>
+      ${b.overlap ? "" : ptTalk(`bench:${b.outcome_label}`, `Differs from literature: ${b.outcome_label}`)}</div>`;
   }).join("");
 }
 function table1() {
@@ -668,7 +725,8 @@ function auditCard(a) {
   if (!a) return "";
   const cls = { pass: "ok", caution: "warn", fail: "bad" };
   return `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>${esc(a.grade)}</b><span class="tiny muted">${a.counts.pass} pass · ${a.counts.caution} caution · ${a.counts.fail} fail</span></div>
-  ${a.checks.map((c) => `<div class="issue"><span class="chip ${cls[c.status]}">${esc(c.area)}</span><div><b class="small">${esc(c.title)}</b> <span class="tiny muted">answers: ${esc(c.critique)}</span><div class="small muted">${esc(c.detail)}${c.fix && c.fix.op === "note" ? " " + esc(c.fix.text) : ""}</div></div><div></div></div>`).join("")}</div>`;
+  ${a.checks.map((c, i) => `<div class="issue"><span class="chip ${cls[c.status]}">${esc(c.area)}</span><div><b class="small">${esc(c.title)}</b> <span class="tiny muted">answers: ${esc(c.critique)}</span><div class="small muted">${esc(c.detail)}${c.fix && c.fix.op === "note" ? " " + esc(c.fix.text) : ""}</div>
+    ${c.status !== "pass" ? ptTalk(`audit:${i}:${c.area}`, `Design audit: ${c.title}`) : ""}</div><div></div></div>`).join("")}</div>`;
 }
 
 function noveltyGauge() {
@@ -752,8 +810,8 @@ async function createProject(q, extra, el) {
     rerender();
   }
 }
-async function edit(fix, note) {
-  try { S.project = await api(`/api/projects/${S.project.id}/edit`, { method: "POST", body: { fix, actor: store.get("q2e.name", "") || "investigator", note } }); rerender(); }
+async function edit(fix, note, step, stepTitle) {
+  try { S.project = await api(`/api/projects/${S.project.id}/edit`, { method: "POST", body: { fix, actor: store.get("q2e.name", "") || "investigator", note, step: step || null, step_title: stepTitle || null } }); rerender(); }
   catch (e) { toast(e.message, true); }
 }
 const A = {
@@ -865,23 +923,29 @@ const A = {
     S.sub[key] = i; S.reach[key] = Math.max(S.reach[key] || 0, i); saveSteps(); render();
   },
   histToggle: () => { S.histOpen = !S.histOpen; rerender(); },
+  ptOpen: (el) => { S.openPt = el.dataset.pt; rerender().then(() => { const i = $("#pcInput"); if (i) i.focus(); }); },
+  ptClose: () => { S.openPt = null; rerender(); },
+  ptFix: (el) => {
+    const i = (S.project.plan.review || []).find((x) => x.id === el.dataset.id); if (!i || !i.fix) return;
+    edit({ ...i.fix, by: store.get("q2e.name", "") || "investigator" }, `fix: ${i.title}`, el.dataset.pt, el.dataset.ptitle);
+  },
   pcSend: async (el) => {
     const inp = $("#pcInput"); const msg = (el.dataset.msg || (inp && inp.value) || "").trim();
     if (msg.length < 2) return toast("Type what you want to change first", true);
+    const pt = el.dataset.pt || (inp && inp.dataset.pt) || ""; const ptitle = el.dataset.ptitle || (inp && inp.dataset.ptitle) || "";
     const btn = $("#pcBtn"); if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Working…`; }
-    const st = S.curStep || {};
     try {
-      S.project = await api(`/api/projects/${S.project.id}/protocol-chat`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: `${st.stage}:${st.id}`, step_title: st.title } });
-      await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight;
+      S.project = await api(`/api/projects/${S.project.id}/protocol-chat`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: pt || null, step_title: ptitle || null } });
+      S.openPt = null; await rerender();
     } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = "Ask the AI to change it"; } }
   },
-  comment: async () => {
+  comment: async (el) => {
     const inp = $("#pcInput"); const msg = ((inp && inp.value) || "").trim();
     if (msg.length < 2) return toast("Type your comment first", true);
-    const st = S.curStep || {};
+    const pt = (el && el.dataset && el.dataset.pt) || (inp && inp.dataset.pt) || ""; const ptitle = (el && el.dataset && el.dataset.ptitle) || (inp && inp.dataset.ptitle) || "";
     try {
-      S.project = await api(`/api/projects/${S.project.id}/comments`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: `${st.stage}:${st.id}`, step_title: st.title } });
-      toast("Comment saved with today's date and time"); await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight;
+      S.project = await api(`/api/projects/${S.project.id}/comments`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: pt || null, step_title: ptitle || null } });
+      S.openPt = null; toast("Comment saved with today's date and time"); await rerender();
     } catch (e) { toast(e.message, true); }
   },
   amUndo: async (el) => {
@@ -956,7 +1020,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey && e.target.id === "pcInput") {
     e.preventDefault();
-    if ($("#pcBtn")) A.pcSend(e.target); else A.comment();
+    if ($("#pcBtn")) A.pcSend(e.target); else A.comment(e.target);
   }
 });
 document.addEventListener("change", (e) => {
