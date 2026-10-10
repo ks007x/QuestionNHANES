@@ -50,6 +50,20 @@ function unlocked(stage) {
   if (stage === "signoff") return lr && lr.status === "completed";
   return false;
 }
+/* Back / Next arrows between whole sections. Next is locked until the section it leads to is unlocked. */
+const LOCK_REASON = { run: "Approve the analysis plan first (bottom of the Analysis plan page).",
+                      results: "Run the analysis first and wait for it to finish.", signoff: "Run the analysis first and wait for it to finish." };
+function stageNav(stage) {
+  const i = STEPS.findIndex((s) => s.id === stage); const prev = STEPS[i - 1]; const next = STEPS[i + 1];
+  const nextOk = next && unlocked(next.id);
+  const back = prev ? `<button class="btn" data-act="go" data-stage="${prev.id}">← Back: ${esc(prev.label)}</button>`
+    : `<button class="btn" data-act="backToAsk" title="Return to your research idea and follow-up answers">← Back: Your idea & answers</button>`;
+  const fwd = next ? `<button class="btn primary" data-act="${nextOk ? "go" : ""}" data-stage="${next.id}" ${nextOk ? "" : "disabled"}>Next: ${esc(next.label)} →</button>` : "";
+  return `<div class="card" style="margin-top:18px">
+    <div class="row" style="justify-content:space-between">${back}${fwd}</div>
+    ${next && !nextOk ? `<p class="tiny muted" style="margin:8px 0 0;text-align:right">${esc(LOCK_REASON[next.id] || "Finish this section first.")}</p>` : ""}
+  </div>`;
+}
 function stageDone(stage) {
   const p = S.project; if (!p) return false; const lr = latestRun();
   const appr = p.approved_current || !!lr;
@@ -103,7 +117,7 @@ async function render() {
   const views = { ask: viewAsk, projects: viewProjects, library: viewLibrary };
   if (r.view === "project") {
     const fn = { protocol: viewProtocol, map: viewMap, plan: viewPlan, run: viewRun, results: viewResults, signoff: viewSignoff }[r.stage] || viewProtocol;
-    main.innerHTML = fn();
+    main.innerHTML = fn() + stageNav(r.stage);
     if (r.stage === "run" && S.run?.status === "running") startPolling();
   } else main.innerHTML = await views[r.view]();
   window.scrollTo({ top: 0 });
@@ -174,6 +188,9 @@ function clarifyCard(c) {
       </div>
     </div>
     <p class="tiny muted" style="margin:6px 0 0">Your idea: “${esc(c.question)}”</p>
+    ${c.fromProject ? `<div class="banner info" style="margin:10px 0 0;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <span>These are your earlier answers. Changing them creates a new version of the study; the current one stays in Projects.</span>
+      <button class="btn sm" data-act="backToStudy">Return to my study →</button></div>` : ""}
     <div style="margin-top:6px">${dots}</div>
     ${step === 0 && c.notice ? `<div class="banner info" style="margin:10px 0 0">${esc(c.notice)}</div>` : ""}
     <div style="margin-top:14px"><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
@@ -596,6 +613,19 @@ const A = {
     } catch (e) { toast(e.message, true); }
   },
   cqClose: () => { S.clarify = null; rerender(); },
+  backToStudy: () => { S.clarify = null; go("protocol"); },
+  backToAsk: async () => {
+    // Reopen the follow-up questions with this study's earlier answers, on the last question
+    const cl = S.project?.plan?.clarification; const idea = cl?.original_question || S.project?.question || "";
+    store.set("q2e.q", idea); S.clarify = null;
+    if (cl?.answers) {
+      try {
+        const c = await api("/api/clarify", { method: "POST", body: { question: idea, cycles: S.ask.cycles, level: cl.level_used } });
+        if (c.questions.length) S.clarify = { ...c, question: idea, step: c.questions.length - 1, answers: { ...cl.answers }, fromProject: true };
+      } catch (e) { toast(e.message, true); }
+    }
+    location.hash = "#/";
+  },
   cqBack: () => { if (S.clarify.step > 0) { S.clarify.step--; rerender(); } },
   cqNext: () => { const c = S.clarify; const q = c.questions[c.step]; if (answered(q, c.answers[q.id] || {})) { c.step++; rerender(); } },
   clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: S.clarify.answers, level: S.clarify.level_used }, el),

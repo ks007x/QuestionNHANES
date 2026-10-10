@@ -95,6 +95,8 @@ def test_api_clarify_and_create_with_answers():
                                        "source": "synthetic", "answers": {"direction": {"option": "swap"}}}).json()
     plan = pj["plan"]
     assert plan["clarification"]["record"]
+    assert plan["clarification"]["answers"] == {"direction": {"option": "swap"}}      # can be reopened later
+    assert plan["clarification"]["original_question"].startswith("Is hypertension")
     assert plan["exposure"]["concept"] == "diabetes" and plan["outcome"]["concept"] == "hypertension"
     assert plan["agent_dialogue"][0]["agent"] == "Interviewer"
     assert any(e["action"] == "clarification_answered" for e in pj["events"]) and pj["chain"]["valid"]
