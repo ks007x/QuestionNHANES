@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expressions, generic, literature, planner, privacy, report, voice
+from . import __version__, agents, answerability, expressions, generic, literature, planner, privacy, report, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -343,6 +343,19 @@ def project_literature(pid: str):
 
 
 # ------------------------------------------------------------------ knowledge / guidelines
+@app.get("/api/projects/{pid}/where-next")
+def project_where_next(pid: str, live: bool = True):
+    proj = _project(pid)
+    results = None
+    runs = [r for r in proj.get("runs", []) if r.get("status") == "completed"]
+    if runs:
+        try:
+            results = load_results(pid, runs[-1]["id"])
+        except KeyError:
+            results = None
+    return venues.where_next(proj["plan"], results, live=live)
+
+
 @app.get("/api/guidelines")
 def guidelines():
     k = get_knowledge()

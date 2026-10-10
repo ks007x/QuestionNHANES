@@ -1,0 +1,86 @@
+# Venues for "Where next?": journals, conferences and funders, tagged by Q2E concept domain.
+# Domains: cardio, hematology, iron, liver, kidney, nutrition, glycemia, anthropometry, behaviour, social,
+#          environment, function, inflammation, respiratory, mental_health, general.
+# Conference abstract deadlines move every year. `deadline_month` is the TYPICAL month the abstract window
+# closes and is shown to users as an estimate with a link to the official page - always verify there.
+
+journals:
+  - {name: "JAMA Network Open", domains: [general], open_access: true, design_fit: 1.0, url: "https://jamanetwork.com/journals/jamanetworkopen", note: "Broad general-medicine scope; publishes many NHANES cross-sectional analyses"}
+  - {name: "JAMA Internal Medicine", domains: [general], open_access: false, design_fit: 0.7, url: "https://jamanetwork.com/journals/jamainternalmedicine", note: "High bar; research letters suit concise national estimates"}
+  - {name: "Annals of Internal Medicine", domains: [general], open_access: false, design_fit: 0.6, url: "https://www.acpjournals.org/journal/aim", note: "High bar; brief research reports for national prevalence findings"}
+  - {name: "American Journal of Epidemiology", domains: [general], open_access: false, design_fit: 0.8, url: "https://academic.oup.com/aje", note: "Methods-forward epidemiology"}
+  - {name: "American Journal of Preventive Medicine", domains: [general, behaviour, social], open_access: false, design_fit: 0.9, url: "https://www.ajpmonline.org/", note: "Population health and prevention"}
+  - {name: "Preventive Medicine", domains: [general, behaviour, social], open_access: false, design_fit: 0.9, url: "https://www.sciencedirect.com/journal/preventive-medicine", note: "Prevention and population surveys"}
+  - {name: "BMJ Open", domains: [general], open_access: true, design_fit: 0.9, url: "https://bmjopen.bmj.com/", note: "Broad open-access scope"}
+  - {name: "PLOS ONE", domains: [general], open_access: true, design_fit: 0.8, url: "https://journals.plos.org/plosone/", note: "Soundness-based review"}
+  - {name: "Diabetes Care", domains: [glycemia], open_access: false, design_fit: 0.8, url: "https://diabetesjournals.org/care", note: "Leading clinical diabetes journal; epidemiology section"}
+  - {name: "Journal of Clinical Endocrinology & Metabolism", domains: [glycemia, anthropometry], open_access: false, design_fit: 0.8, url: "https://academic.oup.com/jcem", note: "Endocrine and metabolic epidemiology"}
+  - {name: "Obesity", domains: [anthropometry, nutrition], open_access: false, design_fit: 0.9, url: "https://onlinelibrary.wiley.com/journal/1930739x", note: "Obesity Society journal"}
+  - {name: "Hypertension", domains: [cardio], open_access: false, design_fit: 0.7, url: "https://www.ahajournals.org/journal/hyp", note: "AHA blood-pressure journal"}
+  - {name: "Journal of the American Heart Association", domains: [cardio, anthropometry], open_access: true, design_fit: 0.9, url: "https://www.ahajournals.org/journal/jaha", note: "Open-access AHA journal; frequent NHANES analyses"}
+  - {name: "American Journal of Kidney Diseases", domains: [kidney], open_access: false, design_fit: 0.8, url: "https://www.ajkd.org/", note: "NKF journal; national CKD epidemiology"}
+  - {name: "Clinical Journal of the American Society of Nephrology", domains: [kidney], open_access: false, design_fit: 0.7, url: "https://journals.lww.com/cjasn", note: "ASN clinical journal"}
+  - {name: "Kidney Medicine", domains: [kidney], open_access: true, design_fit: 0.9, url: "https://www.kidneymedicinejournal.org/", note: "Open-access NKF journal"}
+  - {name: "Blood Advances", domains: [hematology, iron], open_access: true, design_fit: 0.8, url: "https://ashpublications.org/bloodadvances", note: "Open-access ASH journal"}
+  - {name: "American Journal of Hematology", domains: [hematology, iron], open_access: false, design_fit: 0.8, url: "https://onlinelibrary.wiley.com/journal/10968652", note: "Clinical hematology"}
+  - {name: "Hepatology", domains: [liver], open_access: false, design_fit: 0.6, url: "https://journals.lww.com/hep", note: "AASLD flagship"}
+  - {name: "Hepatology Communications", domains: [liver], open_access: true, design_fit: 0.9, url: "https://journals.lww.com/hepcomm", note: "Open-access AASLD journal"}
+  - {name: "Clinical Gastroenterology and Hepatology", domains: [liver], open_access: false, design_fit: 0.8, url: "https://www.cghjournal.org/", note: "AGA clinical journal; MASLD epidemiology"}
+  - {name: "American Journal of Clinical Nutrition", domains: [nutrition, iron], open_access: false, design_fit: 0.8, url: "https://ajcn.nutrition.org/", note: "ASN nutrition journal"}
+  - {name: "Nutrients", domains: [nutrition, iron, anthropometry], open_access: true, design_fit: 0.9, url: "https://www.mdpi.com/journal/nutrients", note: "Open-access nutrition; fast turnaround"}
+  - {name: "SLEEP", domains: [behaviour], open_access: false, design_fit: 0.7, url: "https://academic.oup.com/sleep", note: "Sleep Research Society journal", keywords: [sleep, insomnia, apnea, sleepiness]}
+  - {name: "Sleep Health", domains: [behaviour], open_access: false, design_fit: 0.9, url: "https://www.sleephealthjournal.org/", note: "Population sleep health", keywords: [sleep, insomnia, apnea, sleepiness]}
+  - {name: "Medicine & Science in Sports & Exercise", domains: [behaviour], open_access: false, design_fit: 0.7, url: "https://journals.lww.com/acsm-msse", note: "Physical activity epidemiology", keywords: [physical activity, sedentary, exercise]}
+  - {name: "Journal of Affective Disorders", domains: [mental_health], open_access: false, design_fit: 0.9, url: "https://www.sciencedirect.com/journal/journal-of-affective-disorders", note: "Depression epidemiology"}
+  - {name: "Journal of the American Geriatrics Society", domains: [function], open_access: false, design_fit: 0.8, url: "https://agsjournals.onlinelibrary.wiley.com/journal/15325415", note: "Aging and functional status"}
+  - {name: "Journals of Gerontology, Series A", domains: [function], open_access: false, design_fit: 0.8, url: "https://academic.oup.com/biomedgerontology", note: "Biological and medical sciences of aging"}
+  - {name: "Environmental Health Perspectives", domains: [environment], open_access: true, design_fit: 0.8, url: "https://ehp.niehs.nih.gov/", note: "NIEHS open-access journal; biomonitoring"}
+  - {name: "Environmental Research", domains: [environment], open_access: false, design_fit: 0.9, url: "https://www.sciencedirect.com/journal/environmental-research", note: "Exposure biomonitoring analyses"}
+  - {name: "CHEST", domains: [respiratory], open_access: false, design_fit: 0.7, url: "https://journal.chestnet.org/", note: "Pulmonary epidemiology"}
+  - {name: "Journal of Health Care for the Poor and Underserved", domains: [social], open_access: false, design_fit: 0.8, url: "https://www.press.jhu.edu/journals/journal-health-care-poor-and-underserved", note: "Health disparities"}
+
+conferences:
+  - {name: "ASH Annual Meeting", society: "American Society of Hematology", domains: [hematology, iron], deadline_month: 8, meeting_month: 12, url: "https://www.hematology.org/meetings/annual-meeting"}
+  - {name: "AHA Scientific Sessions", society: "American Heart Association", domains: [cardio, anthropometry, glycemia], deadline_month: 6, meeting_month: 11, url: "https://professional.heart.org/en/meetings/scientific-sessions"}
+  - {name: "AHA EPI|Lifestyle Scientific Sessions", society: "American Heart Association", domains: [cardio, anthropometry, nutrition, behaviour, general], deadline_month: 10, meeting_month: 3, url: "https://professional.heart.org/en/meetings/epi-lifestyle"}
+  - {name: "ACC Annual Scientific Session", society: "American College of Cardiology", domains: [cardio], deadline_month: 10, meeting_month: 3, url: "https://accscientificsession.acc.org/"}
+  - {name: "ADA Scientific Sessions", society: "American Diabetes Association", domains: [glycemia, anthropometry], deadline_month: 1, meeting_month: 6, url: "https://professional.diabetes.org/scientific-sessions"}
+  - {name: "ENDO", society: "Endocrine Society", domains: [glycemia, anthropometry, nutrition], deadline_month: 1, meeting_month: 6, url: "https://www.endocrine.org/meetings-and-events"}
+  - {name: "ObesityWeek", society: "The Obesity Society / ASMBS", domains: [anthropometry, nutrition], deadline_month: 5, meeting_month: 11, url: "https://obesityweek.org/"}
+  - {name: "ASN Kidney Week", society: "American Society of Nephrology", domains: [kidney], deadline_month: 5, meeting_month: 10, url: "https://www.asn-online.org/education/kidneyweek/"}
+  - {name: "NKF Spring Clinical Meetings", society: "National Kidney Foundation", domains: [kidney], deadline_month: 12, meeting_month: 4, url: "https://www.kidney.org/spring-clinical"}
+  - {name: "The Liver Meeting", society: "AASLD", domains: [liver], deadline_month: 6, meeting_month: 11, url: "https://www.aasld.org/the-liver-meeting"}
+  - {name: "Digestive Disease Week (DDW)", society: "AGA / AASLD / ASGE / SSAT", domains: [liver, nutrition], deadline_month: 12, meeting_month: 5, url: "https://ddw.org/"}
+  - {name: "NUTRITION (ASN Annual Meeting)", society: "American Society for Nutrition", domains: [nutrition, iron], deadline_month: 3, meeting_month: 6, url: "https://nutrition.org/nutrition-annual-meeting/"}
+  - {name: "SLEEP Annual Meeting", society: "APSS (AASM / SRS)", domains: [behaviour], deadline_month: 12, meeting_month: 6, url: "https://www.sleepmeeting.org/", keywords: [sleep, insomnia, apnea, sleepiness]}
+  - {name: "ATS International Conference", society: "American Thoracic Society", domains: [respiratory, behaviour], deadline_month: 11, meeting_month: 5, url: "https://conference.thoracic.org/"}
+  - {name: "AGS Annual Scientific Meeting", society: "American Geriatrics Society", domains: [function], deadline_month: 12, meeting_month: 5, url: "https://meeting.americangeriatrics.org/"}
+  - {name: "SGIM Annual Meeting", society: "Society of General Internal Medicine", domains: [general, social], deadline_month: 1, meeting_month: 5, url: "https://www.sgim.org/meetings"}
+  - {name: "SER Annual Meeting", society: "Society for Epidemiologic Research", domains: [general], deadline_month: 2, meeting_month: 6, url: "https://epiresearch.org/annual-meeting/"}
+  - {name: "APHA Annual Meeting", society: "American Public Health Association", domains: [general, social, environment, behaviour], deadline_month: 3, meeting_month: 11, url: "https://www.apha.org/events-and-meetings/annual"}
+  - {name: "ISEE Annual Conference", society: "International Society for Environmental Epidemiology", domains: [environment], deadline_month: 3, meeting_month: 8, url: "https://www.iseepi.org/"}
+  - {name: "APA Annual Meeting", society: "American Psychiatric Association", domains: [mental_health], deadline_month: 10, meeting_month: 5, url: "https://www.psychiatry.org/psychiatrists/meetings/annual-meeting"}
+
+# NIH institutes by domain (secondary analyses of public data typically fit R03, R21, K-awards and F32 fellowships)
+nih_institutes:
+  - {ic: "NIDDK", name: "National Institute of Diabetes and Digestive and Kidney Diseases", domains: [glycemia, kidney, liver, anthropometry, nutrition, iron], url: "https://www.niddk.nih.gov/research-funding"}
+  - {ic: "NHLBI", name: "National Heart, Lung, and Blood Institute", domains: [cardio, hematology, iron, respiratory, behaviour], url: "https://www.nhlbi.nih.gov/grants-and-training"}
+  - {ic: "NIA", name: "National Institute on Aging", domains: [function], url: "https://www.nia.nih.gov/research/grants-funding"}
+  - {ic: "NIMH", name: "National Institute of Mental Health", domains: [mental_health], url: "https://www.nimh.nih.gov/funding"}
+  - {ic: "NIMHD", name: "National Institute on Minority Health and Health Disparities", domains: [social], url: "https://www.nimhd.nih.gov/funding/"}
+  - {ic: "NIEHS", name: "National Institute of Environmental Health Sciences", domains: [environment], url: "https://www.niehs.nih.gov/funding"}
+  - {ic: "NCI", name: "National Cancer Institute", domains: [behaviour], url: "https://www.cancer.gov/grants-training"}
+
+mechanisms:
+  - {code: "R03", label: "Small Research Grant", fit: "Secondary analysis of existing data; 2 years; modest budget", url: "https://grants.nih.gov/funding/activity-codes/R03"}
+  - {code: "R21", label: "Exploratory/Developmental Research Grant", fit: "Exploratory aims; no preliminary data required", url: "https://grants.nih.gov/funding/activity-codes/R21"}
+  - {code: "K23 / K08", label: "Mentored Career Development Award", fit: "Early-career physician-scientists; NHANES findings serve as preliminary data", url: "https://researchtraining.nih.gov/programs/career-development"}
+  - {code: "F32", label: "Postdoctoral Individual NRSA Fellowship", fit: "Postdoctoral training with a defined research plan", url: "https://researchtraining.nih.gov/programs/fellowships/F32"}
+
+foundations:
+  - {name: "American Heart Association research awards", domains: [cardio, anthropometry, behaviour], url: "https://professional.heart.org/en/research-programs"}
+  - {name: "American Diabetes Association research grants", domains: [glycemia], url: "https://diabetes.org/research"}
+  - {name: "ASH research awards", domains: [hematology, iron], url: "https://www.hematology.org/awards"}
+  - {name: "National Kidney Foundation research grants", domains: [kidney], url: "https://www.kidney.org/professionals/research"}
+  - {name: "AASLD Foundation awards", domains: [liver], url: "https://www.aasld.org/aasld-foundation"}
+  - {name: "Robert Wood Johnson Foundation", domains: [social, general], url: "https://www.rwjf.org/en/grants.html"}

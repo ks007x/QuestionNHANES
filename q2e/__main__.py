@@ -55,6 +55,11 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     (out / "manuscript.html").write_text(report.build_html(proj, run, results))
     (out / "manuscript.md").write_text(report.build_markdown(proj, run, results))
     (out / "bundle.zip").write_bytes(build_bundle(proj, run, None, None, store))
+    try:
+        from . import venues
+        (out / "where_next.md").write_text(venues.to_markdown(venues.where_next(proj["plan"], results, live=settings.allow_download)))
+    except Exception as e:  # noqa: BLE001
+        print("   (where-next suggestions skipped:", e, ")")
     pe = results.get("primary_estimate") or {}
     print(f"\n   Primary: {pe.get('label')}: {pe.get('est'):.4f} ({pe.get('lcl'):.4f}-{pe.get('ucl'):.4f}) [{pe.get('effect')}]")
     for c in results["checks"]:

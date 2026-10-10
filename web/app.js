@@ -90,7 +90,7 @@ async function render() {
   clearInterval(S.poll);
   try {
     if (r.view === "project") {
-      if (!S.project || S.project.id !== r.pid) { S.project = await api(`/api/projects/${r.pid}`); S.results = null; S.lit = null; }
+      if (!S.project || S.project.id !== r.pid) { S.project = await api(`/api/projects/${r.pid}`); S.results = null; S.lit = null; S.where = null; }
       const lr = latestRun();
       if (lr && (!S.run || S.run.id !== lr.id || S.run.status === "running")) S.run = await api(`/api/projects/${r.pid}/runs/${lr.id}`);
       if (lr && S.run?.status === "completed" && (!S.results || S.results._rid !== lr.id)) {
@@ -411,6 +411,7 @@ function viewResults() {
   ${R.interactions.length ? `<h2 class="sec">Effect modification</h2><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}
   <h2 class="sec">Sensitivity analyses</h2><div class="tablewrap"><table class="t"><thead><tr><th>Analysis</th><th>n</th><th>Estimate</th><th>Note</th></tr></thead><tbody>${srows}</tbody></table></div>
   <h2 class="sec">Prior literature</h2><div class="card">${S.lit ? (S.lit.error ? `<p class="small" style="color:var(--bad)">${esc(S.lit.error)}</p>` : S.lit.results.map((r) => `<p class="small" style="margin:0 0 6px"><a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="muted">${esc(r.first_author)} · ${esc(r.journal)} · ${esc(r.pubdate)}</span></p>`).join("") || `<p class="muted small">No matches.</p>`) + `<p class="tiny muted">Query: <code>${esc(S.lit.query)}</code></p>` : `<button class="btn sm" data-act="lit">Search PubMed for related NHANES studies</button>`}</div>
+  <h2 class="sec">Where next? Journals, conferences and funding</h2>${whereNext()}
   <h2 class="sec">Outputs</h2><div class="card row">
     <a class="btn primary" href="${base}/report.html" target="_blank">Manuscript (JAMA Netw Open style)</a>
     ${S.meta.llm.enabled ? `<a class="btn" href="${base}/report.html?llm=true" target="_blank">Manuscript + AI narrative</a>` : ""}
@@ -418,6 +419,27 @@ function viewResults() {
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>
   <div class="row" style="margin-top:20px"><button class="btn primary" data-act="go" data-stage="signoff">Investigator sign-off →</button></div>`;
+}
+
+function whereNext() {
+  const W = S.where;
+  if (!W) return `<div class="card"><p class="small muted" style="margin:0 0 10px">Score journals by how often they publish NHANES studies like this one, list the next conference abstract windows, and find NIH funding that pays for this topic.</p><button class="btn sm" data-act="where">Find journals, deadlines &amp; funding</button></div>`;
+  const chipFor = (u) => u === "this month" ? "bad" : u === "soon" ? "warn" : "info";
+  const jr = W.journals.map((j) => `<tr><td><b>${j.score}</b></td><td>${j.url ? `<a href="${j.url}" target="_blank" rel="noopener">${esc(j.journal)}</a>` : esc(j.journal)}${j.open_access ? ' <span class="chip ok">OA</span>' : ""}</td><td class="small muted">${esc(j.why)}</td></tr>`).join("");
+  const cr = W.conferences.map((c) => `<tr><td><span class="chip ${chipFor(c.urgency)}">${esc(c.deadline_estimate)}</span></td><td><a href="${c.url}" target="_blank" rel="noopener">${esc(c.conference)}</a><div class="tiny muted">${esc(c.society)} · meets ${esc(c.meeting)}</div></td><td class="small">${c.days_until_estimate} d</td></tr>`).join("");
+  const F = W.funding;
+  const rep = F.reporter ? `<p class="small" style="margin:8px 0 4px"><b>${F.reporter.total}</b> recently funded NIH projects on this topic · ${Object.entries(F.reporter.by_institute).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")} · ${Object.entries(F.reporter.by_mechanism).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</p>${F.reporter.examples.map((p) => `<p class="tiny" style="margin:0 0 3px">${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">${esc(p.number)}</a>` : esc(p.number)} · ${esc(p.title || "")} <span class="muted">(${esc(p.ic || "")}, FY${p.fiscal_year})</span></p>`).join("")}` : "";
+  const opp = F.opportunities?.opportunities?.length ? `<p class="small" style="margin:10px 0 4px"><b>Open / forecasted NIH opportunities</b></p>${F.opportunities.opportunities.map((o) => `<p class="tiny" style="margin:0 0 3px"><a href="${o.url}" target="_blank" rel="noopener">${esc(o.number)}</a> · ${esc(o.title)} <span class="muted">(${esc(o.status)}, closes ${esc(o.close_date)})</span></p>`).join("")}` : "";
+  return `${W.errors.length ? `<p class="tiny muted">Live sources unavailable (${esc(W.errors.join("; "))}) - showing curated results.</p>` : ""}
+  <div class="grid g2">
+    <div class="card"><h3 class="sub" style="margin-top:0">Journal match score</h3><div class="tablewrap"><table class="t"><thead><tr><th>Score</th><th>Journal</th><th>Evidence</th></tr></thead><tbody>${jr}</tbody></table></div></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Next abstract deadlines</h3><div class="tablewrap"><table class="t"><thead><tr><th>Deadline (est.)</th><th>Conference</th><th>In</th></tr></thead><tbody>${cr}</tbody></table></div><p class="tiny muted">Typical windows - confirm exact dates on each official page.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Funding leads</h3>
+    <p class="small" style="margin:0 0 4px">${F.institutes.map((i) => `<a href="${i.url}" target="_blank" rel="noopener">NIH ${esc(i.ic)}</a>`).join(" · ")}${F.foundations.length ? " · " + F.foundations.map((f) => `<a href="${f.url}" target="_blank" rel="noopener">${esc(f.name)}</a>`).join(" · ") : ""}</p>
+    <p class="tiny muted" style="margin:0 0 6px">${F.mechanisms.map((m) => `<b>${esc(m.code)}</b> ${esc(m.fit)}`).join(" · ")}</p>${rep}${opp}
+    <details style="margin-top:10px"><summary class="small">Specific Aims seed (uses this study as preliminary data)</summary><pre class="tiny" style="white-space:pre-wrap">${esc(W.aims_seed)}</pre></details>
+    <p class="tiny muted" style="margin-top:8px">${esc(W.method)}</p></div>`;
 }
 
 /* ------------------------------------------------------------------ SIGN-OFF */
@@ -545,6 +567,7 @@ const A = {
     } else if (window.speechSynthesis) { speechSynthesis.speak(new SpeechSynthesisUtterance(txt)); } else toast("No speech output available", true);
   },
   lit: async () => { S.lit = await api(`/api/projects/${S.project.id}/literature`); rerender(); },
+  where: async () => { toast("Searching PubMed, NIH RePORTER and Grants.gov..."); S.where = await api(`/api/projects/${S.project.id}/where-next`); rerender(); },
   sign: async () => {
     const by = $("#signer").value.trim(); if (!by) return toast("Enter your name", true);
     const att = [...document.querySelectorAll(".att")]; if (att.some((a) => !a.checked)) return toast("All attestations are required", true);
