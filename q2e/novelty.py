@@ -39,8 +39,7 @@ def _count(term: str, mindate: str | None = None) -> int:
     q = {"term": term, "retmax": 0}
     if mindate:
         q.update({"mindate": mindate, "maxdate": "3000", "datetype": "pdat"})
-    r = httpx.get(f"{literature.EUTILS}/esearch.fcgi", params=literature._params(q), timeout=20)
-    r.raise_for_status()
+    r = literature.eutils_get("esearch.fcgi", literature._params(q))
     return int(r.json().get("esearchresult", {}).get("count", 0))
 
 

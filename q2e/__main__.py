@@ -32,6 +32,10 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
         nv = _nov.novelty(plan)
         print(f"   novelty {nv['score']}/100 ({nv['label']}) - {nv.get('summary') or nv.get('error')}" if nv.get("score") is not None
               else f"   novelty not checked ({nv.get('error')})")
+        if nv.get("score") is not None:
+            proj["plan"]["novelty"] = {"score": nv["score"], "label": nv["label"], "summary": nv["summary"], "checked": nv["checked"]}
+            proj["plan"] = agents.refresh_plan(proj["plan"])
+            store.save(proj)
     for d in plan["agent_dialogue"]:
         print(f"   [{d['agent']}] {d['message'][:160]}")
     # CLI mode: acknowledge operational assumptions explicitly on behalf of the named approver
