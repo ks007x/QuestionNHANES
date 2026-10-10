@@ -45,6 +45,7 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 .chip.bad { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
 .chip.info { color: var(--info); background: var(--info-bg); border-color: transparent; }
 .chip.accent { color: var(--accent-ink); background: var(--accent-2); border-color: transparent; }
+.chip.ai-chip { color: var(--info); background: var(--info-bg); border-color: transparent; margin-bottom: 6px; }
 .navlink { color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 6px; }
 .navlink:hover { background: var(--line-2); }
 

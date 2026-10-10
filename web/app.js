@@ -278,7 +278,7 @@ async function loadOptionNovelty(qid) {
   c.nov = c.nov || {}; if (c.nov[qid]) return;
   c.nov[qid] = { loading: true }; rerender();
   try {
-    const r = await api("/api/clarify/novelty", { method: "POST", body: { question: c.question, cycles: S.ask.cycles, level: c.level_used, qid, answers: c.answers } });
+    const r = await api("/api/clarify/novelty", { method: "POST", body: { question: c.question, cycles: S.ask.cycles, level: c.level_used, provider: S.ask.provider || null, qid, answers: c.answers } });
     if (S.clarify === c) { c.nov[qid] = r; rerender(); }
   } catch (e) { if (S.clarify === c) { c.nov[qid] = { options: {} }; rerender(); } }
 }
@@ -312,7 +312,8 @@ function clarifyCard(c) {
     ${step === 0 && (c.understood || []).length ? `<div class="tiny" style="margin-top:10px;padding:8px 10px;border:1px solid var(--line, #444);border-radius:8px">
       <b>What we understood from your idea</b> <span class="muted">(so we won't ask about these again; if something is wrong, use "Edit my idea")</span>
       <ul style="margin:4px 0 0 16px">${c.understood.map((u) => `<li><b>${esc(u.label)}:</b> ${esc(u.value)}${u.hint ? ` <span class="muted">- ${esc(u.hint)}</span>` : ""}</li>`).join("")}</ul></div>` : ""}
-    <div style="margin-top:14px"><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
+    ${step === 0 && c.ai && c.ai.note ? `<div class="banner warn" style="margin:10px 0 0">${esc(c.ai.note)}</div>` : ""}
+    <div style="margin-top:14px">${q.source === "ai" ? `<span class="chip ai-chip" title="Written by the AI interviewer (${esc((c.ai && c.ai.model) || "")}). Every choice was checked against the NHANES catalog before it was shown.">🤖 Asked by AI · choices checked against NHANES</span><br>` : ""}<b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
     <div style="display:grid;gap:8px;margin-top:10px">${opts}</div>
     ${q.free_text ? `<input type="text" id="cqt_${q.id}" value="${esc(a.text || "")}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:10px;width:100%">` : ""}
     <div class="row" style="margin-top:16px;justify-content:space-between">
@@ -1099,7 +1100,7 @@ const A = {
     const q = $("#q").value.trim(); if (q.length < 8) return toast("Describe your research idea first", true);
     store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
     let c = null;
-    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
+    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles, provider: S.ask.provider || null } }); } catch {}
     S.rewrite = null;
     if (c && c.needs_rewrite) {
       S.rewrite = c.needs_rewrite; S.clarify = null;
@@ -1116,7 +1117,7 @@ const A = {
   },
   level: async (el) => {
     try {
-      const c = await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value } });
+      const c = await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value, provider: S.ask.provider || null } });
       S.clarify = { ...c, question: S.clarify.question, step: 0, answers: S.clarify.answers }; rerender();
     } catch (e) { toast(e.message, true); }
   },
@@ -1144,7 +1145,7 @@ const A = {
     store.set("q2e.q", idea); S.clarify = null;
     if (cl?.answers) {
       try {
-        const c = await api("/api/clarify", { method: "POST", body: { question: idea, cycles: S.ask.cycles, level: cl.level_used } });
+        const c = await api("/api/clarify", { method: "POST", body: { question: idea, cycles: S.ask.cycles, level: cl.level_used, provider: S.ask.provider || null } });
         if (c.questions.length) S.clarify = { ...c, question: idea, step: c.questions.length - 1, answers: { ...cl.answers }, fromProject: true };
       } catch (e) { toast(e.message, true); }
     }

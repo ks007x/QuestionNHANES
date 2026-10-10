@@ -949,8 +949,12 @@ def personal_notice(question: str) -> str:
     return ""
 
 
-def clarify(question: str, cycles: list[str] | None = None, level: str | None = None) -> dict[str, Any]:
-    """Main entry point for the API: detect the level (unless overridden) and build questions."""
+def clarify(question: str, cycles: list[str] | None = None, level: str | None = None,
+            provider: str | None = None) -> dict[str, Any]:
+    """Main entry point for the API: detect the level (unless overridden) and build questions.
+    Rule-based questions come first; the AI interviewer (when an LLM is configured) may add checked ones after them."""
+    from . import ai_interview
+    from .llm import LLMClient
     k = get_knowledge()
     clean, _ = privacy.scrub(question)
     clean, spelling = fix_spelling(clean, k)
@@ -963,8 +967,15 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
     if not parsed.get("outcome_concept") and not parsed.get("hard_stop") \
             and (no_match or not any(q["id"].startswith("term") for q in qs)):
         rewrite, qs = rewrite_help(clean, parsed, k), []
+    read = understood(clean, parsed, spelling, qs, k)
+    ai_note = None
+    if not rewrite and not parsed.get("hard_stop"):
+        extra, ai_note = ai_interview.suggest(clean, read, qs, k, provider)
+        qs = qs + extra
+    st = LLMClient(provider).status()
     return {"expertise": ex, "level_used": used, "notice": personal_notice(clean), "question_used": clean,
-            "understood": understood(clean, parsed, spelling, qs, k), "questions": qs, "needs_rewrite": rewrite}
+            "understood": read, "questions": qs, "needs_rewrite": rewrite,
+            "ai": {"enabled": st["enabled"], "provider": st["provider"], "model": st["model"], "note": ai_note}}
 
 
 DOMAIN_NAMES = {
@@ -1097,11 +1108,11 @@ def _swap_word(text: str, old: str, new: str) -> str:
 
 
 def apply_answers(question: str, answers: dict[str, dict], level: str | None = None,
-                  cycles: list[str] | None = None) -> dict[str, Any]:
+                  cycles: list[str] | None = None, provider: str | None = None) -> dict[str, Any]:
     """answers = {question_id: {"option": option_id, "text": free text}}.
 
     Returns {question: refined text, fixes: [planner.apply_fix ops], record: what was asked and answered}."""
-    info = clarify(question, cycles, level)
+    info = clarify(question, cycles, level, provider)
     refined, fixes, record = info["question_used"].rstrip(), [], []
     if refined and refined[-1] not in ".?!":
         refined += "."      # so each answer is added as its own sentence
@@ -1122,7 +1133,8 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
         elif text and ft.get("template") and (not ft.get("requires_option") or ft["requires_option"] == a.get("option")):
             refined += ft["template"].format(text=text)
         if opt or text:
-            record.append({"id": q["id"], "question": q["text"], "answer": (opt or {}).get("label", "") + (f" {text}" if text else "")})
+            record.append({"id": q["id"], "question": q["text"], "answer": (opt or {}).get("label", "") + (f" {text}" if text else ""),
+                           "source": q.get("source", "rules")})
     return {"question": refined.strip(), "fixes": fixes, "record": record,
             "expertise": info["expertise"], "level_used": info["level_used"], "understood": info["understood"]}
 

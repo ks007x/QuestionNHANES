@@ -22,7 +22,9 @@ def _load_dotenv() -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         k, v = line.split("=", 1)
-        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        v = v.strip().strip('"').strip("'")
+        if v:       # blank lines like AWS_SESSION_TOKEN= must not override real credentials with ""
+            os.environ.setdefault(k.strip(), v)
 
 
 _load_dotenv()

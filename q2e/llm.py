@@ -106,22 +106,31 @@ class BedrockProvider(BaseProvider):
     name = "bedrock"
 
     def __init__(self):
-        self.model = _env("Q2E_BEDROCK_MODEL_ID", "anthropic.claude-sonnet-5-5")
+        self.model = _env("Q2E_BEDROCK_MODEL_ID")
         self.region = _env("AWS_REGION", "us-east-1")
 
     def available(self):
         try:
-            import boto3  # noqa: F401
+            import boto3
         except ImportError:
             return False, "boto3 not installed (pip install boto3)"
+        if not self.model:
+            return False, "Q2E_BEDROCK_MODEL_ID not set (run: python -m q2e bedrock-check)"
+        if boto3.Session().get_credentials() is None:
+            return False, "No AWS credentials (set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN in .env)"
         return True, ""
 
     def complete(self, system, user, max_tokens=2000):
         import boto3
-        client = boto3.client("bedrock-runtime", region_name=self.region)
-        resp = client.converse(modelId=self.model, system=[{"text": system}],
-                               messages=[{"role": "user", "content": [{"text": user}]}],
-                               inferenceConfig={"maxTokens": max_tokens, "temperature": 0.1})
+        from botocore.config import Config
+        client = boto3.client("bedrock-runtime", region_name=self.region,
+                              config=Config(read_timeout=120, retries={"max_attempts": 2}))
+        try:
+            resp = client.converse(modelId=self.model, system=[{"text": system}],
+                                   messages=[{"role": "user", "content": [{"text": user}]}],
+                                   inferenceConfig={"maxTokens": max_tokens, "temperature": 0.1})
+        except Exception as e:  # noqa: BLE001 - botocore raises many types; show the AWS message
+            raise LLMError(f"Bedrock: {e}") from e
         return "".join(c.get("text", "") for c in resp["output"]["message"]["content"])
 
 
@@ -147,6 +156,51 @@ class OpenAICompatibleProvider(BaseProvider):
         if r.status_code >= 400:
             raise LLMError(f"{self.name} {r.status_code}: {r.text[:300]}")
         return r.json()["choices"][0]["message"]["content"]
+
+
+def bedrock_check() -> int:
+    """Print what this AWS login can use on Bedrock and test the model in Q2E_BEDROCK_MODEL_ID."""
+    try:
+        import boto3
+    except ImportError:
+        print("boto3 is not installed. Run: pip install boto3")
+        return 1
+    region = _env("AWS_REGION", "us-east-1")
+    if boto3.Session().get_credentials() is None:
+        print("No AWS credentials found. Put AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (and AWS_SESSION_TOKEN if your "
+              "student account gives one) in the .env file, then run this again.")
+        return 1
+    print(f"AWS region: {region}")
+    bed = boto3.client("bedrock", region_name=region)
+    try:
+        profiles = bed.list_inference_profiles().get("inferenceProfileSummaries", [])
+        print("\nModels to use through an inference profile (copy the id into Q2E_BEDROCK_MODEL_ID):")
+        for p in profiles:
+            print(f"  {p['inferenceProfileId']:<60} {p.get('inferenceProfileName', '')}")
+    except Exception as e:  # noqa: BLE001
+        print(f"(could not list inference profiles: {e})")
+    try:
+        models = bed.list_foundation_models(byOutputModality="TEXT").get("modelSummaries", [])
+        on_demand = [m for m in models if "ON_DEMAND" in m.get("inferenceTypesSupported", [])]
+        print("\nModels that can be called directly:")
+        for m in on_demand:
+            print(f"  {m['modelId']:<60} {m.get('providerName', '')} {m.get('modelName', '')}")
+    except Exception as e:  # noqa: BLE001
+        print(f"(could not list models: {e})")
+    model = _env("Q2E_BEDROCK_MODEL_ID")
+    if not model:
+        print("\nQ2E_BEDROCK_MODEL_ID is empty. Pick an id above (a Claude model is best), put it in .env, run this again.")
+        return 1
+    print(f"\nTesting {model} ...")
+    try:
+        text = BedrockProvider().complete("Reply with JSON only.", 'Return {"ok": true}.', max_tokens=50)
+        print("Model replied:", text.strip()[:200])
+        print("Bedrock works. Set Q2E_LLM_PROVIDER=bedrock in .env and restart the server.")
+        return 0
+    except LLMError as e:
+        print(f"The test call failed: {e}\nIf it says 'access denied', enable this model under Bedrock > Model access in "
+              "the AWS console, or try another id from the list.")
+        return 1
 
 
 def get_provider(name: str | None = None) -> BaseProvider:

@@ -98,12 +98,14 @@ class ClarifyQ(BaseModel):
     question: str = Field(min_length=4, max_length=2000)
     cycles: list[str] | None = None
     level: str | None = None     # optional override of the detected expertise level
+    provider: str | None = None  # AI used by the interviewer (None = server default)
 
 
 class OptionNovelty(BaseModel):
     question: str = Field(min_length=4, max_length=2000)
     cycles: list[str] | None = None
     level: str | None = None
+    provider: str | None = None
     qid: str
     answers: dict[str, dict[str, str]] | None = None
 
@@ -112,7 +114,7 @@ class OptionNovelty(BaseModel):
 def clarify_novelty(body: OptionNovelty):
     """Novelty score for the study each follow-up choice would produce (PubMed/MEDLINE, cached)."""
     from . import novelty as _nov
-    info = expertise.clarify(body.question, body.cycles, body.level)
+    info = expertise.clarify(body.question, body.cycles, body.level, body.provider)
     q = next((x for x in info["questions"] if x["id"] == body.qid), None)
     if not q:
         _bad("Unknown follow-up question", 404)
@@ -122,7 +124,7 @@ def clarify_novelty(body: OptionNovelty):
             continue
         try:
             ans = {**(body.answers or {}), body.qid: {"option": o["id"]}}
-            r = expertise.apply_answers(body.question, ans, body.level, body.cycles)
+            r = expertise.apply_answers(body.question, ans, body.level, body.cycles, body.provider)
             plan = planner.draft(r["question"], body.cycles or None)
             if r.get("fixes"):
                 plan = expertise.apply_fixes(plan, r["fixes"])
@@ -136,7 +138,7 @@ def clarify_novelty(body: OptionNovelty):
 @app.post("/api/clarify")
 def clarify(body: ClarifyQ):
     """Detect the user's expertise from their wording and return adaptive follow-up questions."""
-    return expertise.clarify(body.question, body.cycles, body.level)
+    return expertise.clarify(body.question, body.cycles, body.level, body.provider)
 
 
 @app.post("/api/projects")
@@ -148,7 +150,7 @@ def create_project(body: NewProject):
             _bad(f"Unknown cycle {c}")
     clar = None
     if body.answers is not None:
-        clar = expertise.apply_answers(body.question, body.answers, body.level, cycles)
+        clar = expertise.apply_answers(body.question, body.answers, body.level, cycles, body.provider)
         clar.update(original_question=body.question, answers=body.answers)   # lets the user reopen and change them later
         body.question = clar["question"]
     dataset = None
@@ -187,6 +189,11 @@ def create_project(body: NewProject):
         plan["agent_dialogue"].insert(0, {"agent": "Interviewer", "source": "rules", "message":
                                           f"From the wording I estimated your experience as {clar['level_used']} (score {ex['score']}/100). "
                                           f"Read from your idea: {read or 'nothing specific'}. Follow-up questions: {asked}."})
+        ai_asked = [r for r in clar["record"] if r.get("source") == "ai"]
+        if ai_asked:
+            plan["agent_dialogue"].insert(1, {"agent": "Interviewer (AI)", "source": "llm", "message":
+                                              "I asked: " + "; ".join(f"{r['question']} → {r['answer']}" for r in ai_asked)
+                                              + ". Every choice I offered was checked against the NHANES catalog before it was shown."})
     proj = store.create(body.question, plan, body.actor)
     if clar:
         store.event(proj, body.actor, "clarification_answered", plan["clarification"])

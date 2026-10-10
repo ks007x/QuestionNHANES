@@ -98,6 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8000)
     sub.add_parser("synth")
+    sub.add_parser("bedrock-check", help="test the AWS Bedrock login and list the models it can use")
     sub.add_parser("mcp", help="run the MCP (Model Context Protocol) server on stdio")
     ig = sub.add_parser("integrations", help="write tool manifests for Azure/AWS/ElevenLabs/MCP")
     ig.add_argument("--base-url", default=settings.public_url); ig.add_argument("--out", default="integrations/generated")
@@ -110,6 +111,9 @@ def main(argv: list[str] | None = None) -> int:
         import uvicorn
         uvicorn.run("q2e.server:app", host=a.host, port=a.port)
         return 0
+    if a.cmd == "bedrock-check":
+        from .llm import bedrock_check
+        return bedrock_check()
     if a.cmd == "mcp":
         from .mcp_server import serve_stdio
         serve_stdio()

@@ -40,3 +40,50 @@ def test_llm_merge(monkeypatch):
     assert any(i["severity"] == "blocker" and i["id"].startswith("custom_") for i in plan["review"])   # needs human approval
     assert plan["rationale"]["statistician_llm"]
     assert all(c["payload_sha256"] for c in plan["llm"]["calls"]) and len(plan["llm"]["calls"]) == 3
+
+
+class InterviewerProvider(FakeProvider):
+    calls = 0
+
+    def complete(self, system, user, max_tokens=2000):
+        assert "QUESTIONS Q2E IS ALREADY ASKING" in user
+        InterviewerProvider.calls += 1
+        return json.dumps({"questions": [
+            {"text": "Which group of people should be studied?", "why": "Hypertension differs a lot by group.",
+             "options": [{"group": "women"}, {"group": "diabetes"}, {"group": "martians"},       # not in the catalog
+                         {"age_from": 40, "age_to": 59}, {"outcome": "made_up_topic"}]},
+            {"text": "Should results be split by a subgroup?", "why": "", "options": [{"subgroup": "nonsense"}, {"group": "aliens"}]},
+            {"text": "Does salt cause hypertension?", "why": "", "options": [{"group": "men"}, {"group": "women"}]},  # causal
+        ]})
+
+
+def test_ai_interviewer_only_offers_choices_nhanes_has(monkeypatch):
+    from q2e import ai_interview, expertise
+    monkeypatch.setattr(llm, "get_provider", lambda name=None: InterviewerProvider())
+    monkeypatch.setattr(llm.privacy, "provider_allowed", lambda p: (True, "ok"))
+    ai_interview._CACHE.clear()
+    idea = "How common is hypertension among US adults?"
+    c = expertise.clarify(idea, provider="fake")
+    assert c["ai"]["enabled"]
+    ai = [q for q in c["questions"] if q.get("source") == "ai"]
+    assert len(ai) == 1                          # no real choices / causal wording -> question dropped
+    labels = [o["label"] for o in ai[0]["options"]]
+    assert labels == ["Women", "People with diabetes", "Age 40 to 59"]     # made-up groups and topics removed
+    # answering uses the same (cached) questions, and the choice reaches the study
+    r = expertise.apply_answers(idea, {ai[0]["id"]: {"option": ai[0]["options"][2]["id"]}}, provider="fake")
+    assert "Study people aged 40 to 59." in r["question"] and r["record"][-1]["source"] == "ai"
+    assert InterviewerProvider.calls == 1
+
+
+def test_ai_interviewer_failure_falls_back_to_rules(monkeypatch):
+    from q2e import ai_interview, expertise
+
+    class Down(FakeProvider):
+        def complete(self, system, user, max_tokens=2000):
+            raise RuntimeError("expired token")
+    monkeypatch.setattr(llm, "get_provider", lambda name=None: Down())
+    monkeypatch.setattr(llm.privacy, "provider_allowed", lambda p: (True, "ok"))
+    ai_interview._CACHE.clear()
+    c = expertise.clarify("How common is hypertension in seniors?", provider="fake")
+    assert "ages" in [q["id"] for q in c["questions"]]          # rule-based questions still asked
+    assert not any(q.get("source") == "ai" for q in c["questions"]) and "unavailable" in c["ai"]["note"]
