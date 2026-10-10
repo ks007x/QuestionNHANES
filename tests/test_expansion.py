@@ -106,6 +106,19 @@ def test_blinded_probe_and_precision():
     assert any(e["action"] == "feasibility_probe" for e in proj["events"])
 
 
+def test_missing_r_gives_a_clear_message(monkeypatch):
+    from fastapi.testclient import TestClient
+    from q2e import runner
+    from q2e.server import app
+    monkeypatch.setattr(runner, "find_rscript", lambda *_: None)
+    c = TestClient(app)
+    pj = c.post("/api/projects", json={"question": "Is sodium intake associated with hypertension in US adults?", "source": "synthetic"}).json()
+    r = c.post(f"/api/projects/{pj['id']}/probe")
+    assert r.status_code == 409 and "R is not installed" in r.json()["error"] and "cran.r-project.org" in r.json()["error"]
+    assert c.get("/api/r-status").json()["ready"] is False
+    assert len(c.get(f"/api/projects/{pj['id']}").json()["runs"]) == 0
+
+
 def test_hard_stop_cdiff_after_allohct():
     from fastapi.testclient import TestClient
     from q2e.server import app

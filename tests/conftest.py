@@ -22,5 +22,7 @@ def _isolated_workspace(tmp_path_factory):
     yield
 
 
-HAS_R = shutil.which("Rscript") is not None
+from q2e.config import find_rscript  # noqa: E402
+
+HAS_R = find_rscript(os.environ.get("Q2E_RSCRIPT", "")) is not None
 requires_r = pytest.mark.skipif(not HAS_R, reason="Rscript not available")

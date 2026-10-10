@@ -9,7 +9,7 @@ import uuid
 from pathlib import Path
 
 from .compiler import compile_plan, plan_hash, write_compiled
-from .config import settings
+from .config import R_DOWNLOAD_URL, find_rscript, settings
 from .store import store
 
 RUNS: dict[str, dict] = {}
@@ -24,13 +24,34 @@ class RunError(RuntimeError):
     pass
 
 
+R_MISSING = ("R is not installed on this computer. Q2E uses R (the free statistics program) to analyse the data, "
+             f"for both runs and the feasibility probe. Install R from {R_DOWNLOAD_URL} (default options), "
+             "then run: Rscript r/install_packages.R - no restart of Q2E is needed.")
+
+
+def r_status() -> dict:
+    path = find_rscript(settings.rscript_override)
+    return {"ready": bool(path), "path": path, "message": None if path else R_MISSING, "download": R_DOWNLOAD_URL}
+
+
+def require_r() -> str:
+    path = find_rscript(settings.rscript_override)
+    if not path:
+        raise RunError(R_MISSING)
+    return path
+
+
 def ensure_synthetic() -> Path:
     d = settings.synthetic_dir
     demo = d / "P_DEMO.xpt"
     stale = demo.exists() and settings.synth_script.exists() and settings.synth_script.stat().st_mtime > demo.stat().st_mtime
     if not demo.exists() or stale:
-        subprocess.run([settings.rscript, str(settings.synth_script), str(d), "12000"], check=True,
-                       capture_output=True, text=True, timeout=300)
+        try:
+            subprocess.run([require_r(), str(settings.synth_script), str(d), "12000"], check=True,
+                           capture_output=True, text=True, timeout=300)
+        except subprocess.CalledProcessError as e:
+            raise RunError("R could not build the practice (synthetic) data. Usually an R package is missing - run: "
+                           f"Rscript r/install_packages.R\nR said: {(e.stderr or e.stdout or '').strip()[-400:]}") from e
     return d
 
 
@@ -46,6 +67,7 @@ def start_run(pid: str, actor: str = "investigator", wait: bool = False) -> dict
     blockers = [i for i in proj["plan"].get("review", []) if i["severity"] == "blocker"]
     if blockers:
         raise RunError("Resolve reviewer blockers first: " + "; ".join(b["title"] for b in blockers))
+    require_r()
     compiled = compile_plan(proj["plan"])
     if compiled["dataset"].get("source") == "synthetic":
         ensure_synthetic()
@@ -69,8 +91,8 @@ def start_run(pid: str, actor: str = "investigator", wait: bool = False) -> dict
 
 def _execute(pid: str, rid: str, run_dir: Path) -> None:
     run = RUNS[rid]
-    cmd = [settings.rscript, str(settings.engine_script), "--plan", str(run_dir / "compiled_plan.json"), "--out", str(run_dir / "out")]
     try:
+        cmd = [require_r(), str(settings.engine_script), "--plan", str(run_dir / "compiled_plan.json"), "--out", str(run_dir / "out")]
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=str(settings.root))
         for line in proc.stdout:  # type: ignore[union-attr]
             run["log"].append(line.rstrip())
@@ -139,14 +161,18 @@ def load_results(pid: str, rid: str) -> dict:
 def run_probe(pid: str, actor: str = "investigator") -> dict:
     """Blinded feasibility probe (counts only) - allowed before approval."""
     proj = store.get(pid)
+    rscript = require_r()
     compiled = compile_plan(proj["plan"])
     if compiled["dataset"].get("source") == "synthetic":
         ensure_synthetic()
     probe_id = "probe_" + uuid.uuid4().hex[:8]
     d = store.path(pid) / "probes" / probe_id
     write_compiled(compiled, d / "compiled_plan.json")
-    cmd = [settings.rscript, str(settings.engine_script), "--plan", str(d / "compiled_plan.json"), "--out", str(d / "out"), "--probe"]
-    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(settings.root), timeout=settings.run_timeout)
+    cmd = [rscript, str(settings.engine_script), "--plan", str(d / "compiled_plan.json"), "--out", str(d / "out"), "--probe"]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(settings.root), timeout=settings.run_timeout)
+    except subprocess.TimeoutExpired as e:
+        raise RunError(f"The feasibility probe took longer than {settings.run_timeout} seconds and was stopped.") from e
     if proc.returncode != 0:
         err = d / "out" / "error.json"
         msg = json.loads(err.read_text())["error"] if err.exists() else (proc.stderr or proc.stdout)[-500:]

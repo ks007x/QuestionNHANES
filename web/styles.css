@@ -21,6 +21,12 @@
   --ok: #6CC08F; --ok-bg: #16281E; --warn: #E2A653; --warn-bg: #2C2213; --bad: #F08A80; --bad-bg: #2E1716; --info: #A0AEBB; --info-bg: #1F262E;
   --shadow: 0 1px 2px rgba(0,0,0,.3);
 }
+:root { color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+:root[data-theme="dark"] { color-scheme: dark; }
+/* Dropdown lists are drawn by the browser; without this they get light text on a white list in dark mode. */
+option, optgroup { background: var(--panel); color: var(--ink); }
+option:disabled { color: var(--ink-3); }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.5 var(--sans); }
 a { color: var(--accent); }

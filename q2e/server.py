@@ -22,7 +22,7 @@ from .config import settings
 from .knowledge import get_knowledge
 from .llm import LLMClient, LLMError
 from .matcher import BM25Index, entries_from_nhanes
-from .runner import RunError, get_run, load_results, run_probe, start_run
+from .runner import RunError, get_run, load_results, r_status, run_probe, start_run
 from .store import store
 
 settings.ensure_dirs()
@@ -73,7 +73,12 @@ def meta():
             "boundary": privacy.boundary_summary(client.provider.name), "voice": voice.enabled(),
             "data": {"local_dir": str(local), "local_files": len(list(local.glob("*.xpt")) + list(local.glob("*.XPT"))) if local.exists() else 0,
                      "synthetic_ready": (settings.synthetic_dir / "P_DEMO.xpt").exists(), "allow_download": settings.allow_download},
-            "datasets": generic.list_datasets()}
+            "datasets": generic.list_datasets(), "r": r_status()}
+
+
+@app.get("/api/r-status")
+def r_check():
+    return r_status()
 
 
 # ------------------------------------------------------------------ projects
@@ -378,6 +383,8 @@ def probe(pid: str, actor: str = "investigator"):
         run_probe(pid, actor)
     except (RunError, CompileError) as e:
         _bad(f"Feasibility probe failed: {e}", 409)
+    except (OSError, ValueError, KeyError) as e:
+        _bad(f"Feasibility probe failed unexpectedly ({type(e).__name__}: {e}). Nothing in your plan was changed.", 500)
     proj = store.get(pid)
     proj["plan"] = agents.refresh_plan(proj["plan"])
     store.save(proj)

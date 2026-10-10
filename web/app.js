@@ -20,6 +20,15 @@ async function api(path, opts = {}) {
   if (!r.ok) throw new Error((data && data.error) || (data && data.detail && JSON.stringify(data.detail)) || r.statusText);
   return data;
 }
+const rReady = () => !S.meta || !S.meta.r || S.meta.r.ready;
+function rMissing(what) {
+  if (rReady()) return "";
+  return `<div class="banner warn"><b>${esc(what)} needs R, which is not installed on this computer.</b>
+    R is the free statistics program that does the actual analysis. To fix it:
+    <ol class="small" style="margin:6px 0 6px 18px"><li>Download and install R from <a href="${esc(S.meta.r.download)}" target="_blank" rel="noopener">${esc(S.meta.r.download)}</a> (keep the default options).</li>
+    <li>In a terminal in the Q2E folder run <code>Rscript r/install_packages.R</code> (one time, installs the survey tools).</li>
+    <li>Press <button class="btn sm" data-act="rcheck">Check again</button>. No restart needed.</li></ol></div>`;
+}
 function toast(msg, err = false) {
   const t = document.createElement("div"); t.className = "toast" + (err ? " err" : ""); t.textContent = msg;
   document.body.appendChild(t); setTimeout(() => t.remove(), err ? 7000 : 3200);
@@ -283,8 +292,9 @@ function answerCard(av, opts = {}) {
       <span class="chip ${cls}" style="font-size:13px;font-weight:600">${esc(av.verdict)}</span></div>
     <div class="achecks">${checks.map((c) => `<div class="acheck ${c.status}"><span class="ai">${ST_ICON[c.status] || "·"}</span><div><b>${nice(c.title)}</b> <span class="tiny muted">${esc(c.dimension)}</span>
       <div class="small muted">${nice(c.message)}</div>${c.suggestion ? `<div class="small">→ ${nice(c.suggestion)}</div>` : ""}</div></div>`).join("")}</div>
-    ${opts.probeButton ? `<div class="row" style="margin-top:12px"><button class="btn ${av.probed ? "" : "primary"} sm" data-act="probe">${av.probed ? "Re-run" : "Run"} blinded feasibility probe</button>
-      <span class="tiny muted">Counts only, using real data. No effect estimates; the outcome rate is shown only as a 5-point band, so the protocol can't be tuned to results.</span></div>` : ""}
+    ${opts.probeButton ? `${rMissing("The feasibility probe")}<div class="row" style="margin-top:12px"><button class="btn ${av.probed ? "" : "primary"} sm" data-act="probe" ${rReady() ? "" : "disabled"}>${av.probed ? "Re-run" : "Run"} blinded feasibility probe</button>
+      <span class="tiny muted">Counts only, using real data. No effect estimates; the outcome rate is shown only as a 5-point band, so the protocol can't be tuned to results.</span></div>
+      ${S.probeErr ? `<div class="banner bad" style="margin-top:8px">${esc(S.probeErr)}</div>` : ""}` : ""}
     ${pr ? `<details style="margin-top:10px" ${pr.stale ? "" : "open"}><summary>Probe results ${pr.stale ? "(stale: plan changed since probe)" : ""} · ${esc(pr.at?.slice(0, 16).replace("T", " ") || "")}${pr.synthetic ? " · synthetic data" : ""}</summary>
       <table class="t" style="margin-top:8px"><thead><tr><th>Cycle</th><th>Records</th><th>Positive weight</th><th>Eligible</th><th>Outcome measured</th>${S.project?.plan?.exposure ? "<th>Exposure measured</th>" : ""}<th>Analytic</th><th>Complete case</th></tr></thead>
       <tbody>${pr.per_cycle.map((c) => `<tr><td>${esc(c.cycle)}</td><td class="num">${c.n_records.toLocaleString()}</td><td class="num">${c.n_weighted.toLocaleString()}</td><td class="num">${c.n_population.toLocaleString()}</td><td class="num">${c.n_outcome.toLocaleString()}</td>${S.project?.plan?.exposure ? `<td class="num">${c.n_exposure?.toLocaleString() ?? ""}</td>` : ""}<td class="num">${c.n_analytic.toLocaleString()}</td><td class="num">${c.n_complete_case.toLocaleString()}</td></tr>`).join("")}</tbody></table>
@@ -635,7 +645,7 @@ function viewPlan() {
       { id: "approve", title: "Approve the plan", help: "Approving locks this exact version of the plan so it can be run. Any later change needs approval again.",
         html: `<div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
-      <button class="btn primary" data-act="run">Run analysis in R →</button>` :
+      ${rMissing("Running the analysis")}<button class="btn primary" data-act="run" ${rReady() ? "" : "disabled"}>Run analysis in R →</button>` :
     `${blockers.length || pendingAck.length ? `<div class="banner warn" style="margin-top:0"><b>Before you can approve:</b> deal with the ${blockers.length + pendingAck.length} item(s) below.
       Press <b>✓ I accept this</b> (or the suggested fix) on each one. They disappear from this list as you go.</div>
       ${[...blockers, ...pendingAck].map(issuePoint).join("")}` : `<p class="small" style="margin-top:0">✓ Nothing is blocking approval.</p>`}
@@ -658,13 +668,15 @@ function viewRun() {
   const lr = latestRun(); const r = S.run;
   const head = { title: "Run & check the analysis", lede: "Your approved plan is run by the R engine, and every result is checked automatically before you see it." };
   if (!lr) return { ...head, parts: [{ id: "start", title: "Start the analysis", help: "Approve the plan first (last step of the Analysis plan), then run it.",
-    html: `<div class="empty"><button class="btn primary" data-act="run" ${S.project.approved_current ? "" : "disabled"}>Run analysis</button></div>` }] };
+    html: `${rMissing("Running the analysis")}<div class="empty"><button class="btn primary" data-act="run" ${S.project.approved_current && rReady() ? "" : "disabled"}>Run analysis</button></div>` }] };
   const stale = lr.plan_hash !== S.project.plan_hash;
   const staleBanner = stale ? `<div class="banner warn">The plan has changed since this run (run plan ${esc(lr.plan_hash.slice(0, 10))}). Re-approve and re-run to update results. ${S.project.approved_current ? `<button class="btn sm" data-act="run">Re-run now</button>` : ""}</div>` : "";
   if (r.status === "running") return { ...head, parts: [{ id: "running", title: "Running…", help: "This usually takes under a minute. The page updates by itself.", noTalk: true,
     html: `${staleBanner}<div class="card"><p><span class="spinner"></span> Executing approved plan in the R engine (survey package)…</p><div class="console" id="console">${esc(r.log.join("\n"))}</div></div>` }] };
   if (r.status === "failed") return { ...head, parts: [{ id: "failed", title: "The run failed", help: "Read the message below. You can leave a comment for the lead investigator.",
-    html: `${staleBanner}<div class="banner bad"><b>Run failed:</b> ${esc(r.error)}</div>${/not found|download/i.test(r.error || "") ? `<div class="banner info">NHANES files were not available. Place the .xpt files in <code>${esc(S.meta.data.local_dir)}</code>, enable CDC downloads, or switch the data source to <b>Synthetic</b> in the analysis plan for an offline demo.</div>` : ""}<div class="console">${esc(r.log.join("\n"))}</div>` }] };
+    html: `${staleBanner}<div class="banner bad"><b>Run failed:</b> ${esc(r.error)}</div>${/WinError 2|cannot find the file|No such file or directory: '?Rscript|R is not installed/i.test(r.error || "")
+      ? (rReady() ? `<div class="banner info">The missing file was <b>R</b> (the statistics program). R is installed now, so press <button class="btn sm" data-act="run" ${S.project.approved_current ? "" : "disabled"}>Run again</button></div>` : rMissing("Running the analysis"))
+      : /not found|download/i.test(r.error || "") ? `<div class="banner info">NHANES files were not available. Place the .xpt files in <code>${esc(S.meta.data.local_dir)}</code>, enable CDC downloads, or switch the data source to <b>Synthetic</b> in the analysis plan for an offline demo.</div>` : ""}<div class="console">${esc(r.log.join("\n"))}</div>` }] };
   if (!S.results) return { ...head, parts: [{ id: "wait", title: "Loading results…", html: `<p class="small muted">One moment.</p>`, noTalk: true }] };
   {
     const R = S.results; const c = R.checks; const cnt = (s) => c.filter((x) => x.status === s).length;
@@ -876,10 +888,16 @@ const A = {
     try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch (e) { toast(e.message, true); }
     rerender();
   },
+  rcheck: async () => {
+    try { S.meta.r = await api("/api/r-status"); toast(S.meta.r.ready ? `R found: ${S.meta.r.path}` : "R is still not found. Finish installing it, then check again.", !S.meta.r.ready); }
+    catch (e) { toast(e.message, true); }
+    rerender();
+  },
   probe: async (el) => {
     el.disabled = true; el.innerHTML = `<span class="spinner"></span> Probing data (counts only)…`;
+    S.probeErr = null;
     try { S.project = await api(`/api/projects/${S.project.id}/probe?actor=${encodeURIComponent(store.get("q2e.name", "investigator"))}`, { method: "POST" }); toast("Feasibility probe complete"); }
-    catch (e) { toast(e.message, true); }
+    catch (e) { S.probeErr = e.message; toast("Feasibility probe failed - see the message under the button", true); }
     rerender();
   },
   design: async (el) => {
