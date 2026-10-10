@@ -80,6 +80,22 @@ python -m q2e examples            # all five demo questions → manuscripts + bu
 The AI provider is forced to `offline` in this workflow, so no study content is sent to any external model. Downloaded
 files are cached between runs; they are never committed to the repository.
 
+## Understanding broad questions (full CDC catalog)
+
+- **13,152 NHANES variables, 1999-2023**, from the CDC variable lists (`knowledge/nhanes/catalog.csv`, rebuilt by the
+  *Build NHANES variable catalog* GitHub workflow), including each variable's file name in every cycle
+  (eosinophils: `LAB25` 1999-2000 ... `CBC_L` 2021-2023).
+- **Automatic cycle choice**: questions go to the most recent cycle that measured the variables with usable weights
+  (Toxocara/Toxoplasma -> 2011-2012), or leave the cycle buttons on *Auto* and pick your own.
+- **Automatic subsample weights**: surplus-specimen and laboratory subsamples are analysed with their own weights
+  (e.g. `WTSSTT2Y` for Toxocara/Toxoplasma 2011-2012; `WTPH2YR` phlebotomy weights in 2021-2023).
+- **Umbrella terms**: "parasite" expands to the parasites NHANES measured (Toxocara, Toxoplasma; composite plus each
+  one), with an honest note that stool ova and parasites, Strongyloides and malaria were never measured.
+- **Precise catalog matching**: "hepatitis E" never matches hepatitis C; "B12 deficiency" picks serum B12, "dietary
+  B12" the 24-hour recall; incidental words inside long questionnaire items are ignored.
+- **Teach Q2E**: on the Map page, search the dictionary and click **Teach** to map a phrase to a variable. The mapping
+  is recorded with the teacher's name and used for every future question on that server.
+
 ## Novelty, design audit and AI-tool integration
 
 - **Novelty score** (next to feasibility on the protocol page): PubMed/MEDLINE count of NHANES papers already answering
