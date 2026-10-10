@@ -211,6 +211,7 @@ function clarifyCard(c) {
 /* A question counts as answered when a choice is picked (plus any text that choice needs), or when text was typed. */
 function answered(q, a) {
   const text = (a.text || "").trim(); const ft = q.free_text;
+  if (a.option && a.option === q.blocking_option) return false;   // e.g. "None of these": the idea needs rewording first
   if (a.option) return !(ft && ft.requires_option === a.option && !text);
   return !!(ft && !ft.requires_option && text);
 }

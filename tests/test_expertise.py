@@ -15,9 +15,13 @@ def test_levels_detected_from_wording():
     assert mid["expertise"]["level"] == "intermediate"
 
 
-def test_precise_question_gets_fewer_follow_ups():
-    novice, expert = expertise.clarify(NOVICE_Q), expertise.clarify(EXPERT_Q)
-    assert len(expert["questions"]) <= len(novice["questions"])
+def test_questions_follow_doubts_not_level():
+    # anything the idea already states is not asked again, at any level
+    expert = [q["id"] for q in expertise.clarify(EXPERT_Q)["questions"]]
+    assert "population" not in expert and "bmi" not in expert and "topic" not in expert
+    # a beginner who does not say who to study is asked, in plain words
+    novice = expertise.clarify(NOVICE_Q)
+    assert any(q["id"] == "population" for q in novice["questions"])
     assert all(q["why"] for q in novice["questions"])          # everyone is told why we ask
 
 
@@ -78,8 +82,8 @@ def test_only_needed_questions_are_asked():
     # a beginner's misspelt topic is read (not asked again); NHANES has no stress/work measure, so proxies are offered honestly
     c = expertise.clarify("I have high cholestrol, how does it relate to the amount of work and stress I have everyday")
     assert "cholesterol" in c["question_used"] and c["level_used"] == "novice"
-    assert [q["id"] for q in c["questions"]] == ["term0", "term1"]
-    assert all("did not measure" in q["text"] for q in c["questions"])
+    assert [q["id"] for q in c["questions"]] == ["term0", "term1", "population"]
+    assert all("did not measure" in q["text"] for q in c["questions"][:2])
     assert any(u["label"] == "Health topic" for u in c["understood"])
     # a precise expert question and a short business question need few or no follow-ups
     assert len(expertise.clarify("Among adults 20-59 in NHANES 2015-2018, is HbA1c >= 6.5% associated with ferritin "
@@ -95,6 +99,16 @@ def test_extra_topic_the_parser_dropped_is_asked_about():
     r = expertise.apply_answers(q, {"focus": {"option": "o_ckd"}})
     p = expertise.apply_fixes(agents.design_study(r["question"]), r["fixes"])
     assert p["outcome"]["concept"] == "ckd"
+
+
+def test_uncertain_text_search_match_is_confirmed():
+    c = expertise.clarify("is coffee bad for kidneys")
+    chk = next(q for q in c["questions"] if q["id"] == "check_outcome")
+    assert chk["options"][0]["id"] == "keep" and chk["blocking_option"] == "edit"
+    assert any(o["id"] == "c_ckd" for o in chk["options"])
+    from q2e import agents
+    r = expertise.apply_answers("is coffee bad for kidneys", {"check_outcome": {"option": "c_ckd"}})
+    assert expertise.apply_fixes(agents.design_study(r["question"]), r["fixes"])["outcome"]["concept"] == "ckd"
 
 
 def test_free_text_only_used_with_matching_option():

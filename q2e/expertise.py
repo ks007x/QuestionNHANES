@@ -32,7 +32,7 @@ from .language_guard import scan_causal
 
 LEVELS = ("novice", "intermediate", "expert")
 # Only a safety ceiling: questions are asked only for real gaps, so most ideas get fewer (often none).
-MAX_QUESTIONS = 5
+MAX_QUESTIONS = 6
 
 # Words a researcher / clinician would use; each one found nudges the score up.
 TECH_TERMS = [
@@ -285,6 +285,13 @@ def term_suggestions(term: str, k: Knowledge, limit: int = 3) -> list[dict]:
     return out[:limit]
 
 
+def _any_hint(cid: str, k: Knowledge) -> str:
+    """Explanation for a curated topic or a single NHANES survey item."""
+    if cid.startswith("dict:"):
+        return f"NHANES survey item {cid[5:]}: {_label(cid, k)}."
+    return _concept_hint(cid, k)
+
+
 def missed_topics(question: str, parsed: dict, k: Knowledge) -> list[str]:
     """Known health topics named in the idea that the parser did not keep (it holds at most two)."""
     kept = [c for c in (parsed.get("outcome_concept"), parsed.get("exposure_concept")) if c]
@@ -344,9 +351,29 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             "novice": "A study measures one main thing and compares it across the others, so we need to know which one matters most to you.",
             "intermediate": "The other topics can be studied as exposures or covariates.",
             "expert": "Remaining concepts are available as exposure/covariates."},
-            [{"id": f"o_{c}", "label": _label(c, k), "hint": "" if c.startswith("dict:") else _concept_hint(c, k),
+            [{"id": f"o_{c}", "label": _label(c, k), "hint": _any_hint(c, k),
               "fixes": [] if c == out_c else [{"op": "set_outcome", "concept": c}]}
              for c in cands[:5]]))
+
+    # (a3) a topic was matched to a single survey item by text search (less certain) -> confirm it
+    for role, cid in (("outcome", out_c), ("exposure", exp_c)):
+        if missed or not cid or not cid.startswith("dict:"):
+            continue
+        item = _label(cid, k)
+        alts = [s for s in term_suggestions(item, k) if s["id"].startswith("c_")][:3]
+        opts = [{"id": "keep", "label": f"Yes: {item}", "hint": _any_hint(cid, k)}]
+        opts += [{"id": s["id"], "label": s["label"], "hint": s["hint"],
+                  "fixes": [{"op": "set_outcome" if role == "outcome" else "set_exposure", "concept": s["id"][2:]}]}
+                 for s in alts]
+        qs.append(_question(f"check_{role}", level, {
+            "novice": f"We matched part of your idea to this survey question: \"{item}\". Is that what you meant?",
+            "intermediate": f"Your {'outcome' if role == 'outcome' else 'exposure'} was matched to the NHANES item \"{item}\". Correct?",
+            "expert": f"{role.capitalize()} mapped by text search to {cid[5:]} ({item}). Confirm?"}, {
+            "novice": "This match came from searching the survey's wording, so we want to be sure it is right before using it.",
+            "intermediate": "Text-search matches are less certain than named health topics.",
+            "expert": "Low-specificity mapping; confirm or select a curated concept."},
+            opts + [{"id": "edit", "label": "None of these", "hint": "Close this panel with \"Edit my idea\" and describe it in other words."}]))
+        qs[-1]["blocking_option"] = "edit"
 
     # (b) a personal goal ("how can I stop it?") -> offer factors NHANES can link to the condition
     goal = bool(out_c and not exp_c and GOAL_PATTERN.search(q))
@@ -414,8 +441,8 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             {"placeholder": "The other factor (e.g. sleep, smoking, waist size)", "template": " Is it associated with {text}?",
              "requires_option": "assoc"}))
 
-    # (e) who is being studied? Beginners get Q2E's usual group (shown in "What we understood") instead of a question.
-    if level != "novice" and not parsed.get("populations") \
+    # (e) who is being studied? (asked at every level when the idea does not say)
+    if not parsed.get("populations") \
             and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
         qs.append(_question("population", level, {
             "novice": "Which group of people do you want to learn about?",
@@ -446,21 +473,24 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
               "fixes": [{"op": "swap_roles"}]}]))
 
     # (g) the outcome has several guideline definitions and none was named
-    if out_c and not out_c.startswith("dict:") and level != "novice" and not parsed.get("hints", {}).get("matched"):
+    if out_c and not out_c.startswith("dict:") and not parsed.get("hints", {}).get("matched"):
         defs = [d for d in k.concepts.get(out_c, {}).get("definitions", []) if d in k.definitions]
         if len(defs) > 1:
             opts = [{"id": d, "label": k.definitions[d].get("label", d),
                      "hint": str(k.definitions[d].get("short") or k.definitions[d].get("criteria_text") or "")[:160],
                      "fixes": [{"op": "set_definition", "role": "outcome", "value": d, "concept": out_c}]} for d in defs[:4]]
-            opts.append({"id": "auto", "label": "Use the default definition", "hint": "Q2E's standard choice for this topic."})
+            opts.append({"id": "auto", "label": "Use the default definition" if level != "novice" else "Let Q2E choose",
+                         "hint": "Q2E's standard choice for this topic."})
             qs.append(_question("definition", level, {
+                "novice": f"Doctors' guidelines draw the line for {_label(out_c, k).lower()} in different places. Which one should we use?",
                 "intermediate": f"Several guideline definitions exist for {_label(out_c, k).lower()}. Which one?",
-                "expert": f"Case definition for {_label(out_c, k).lower()}?"}, {
+                "expert": f"Case definition for {_label(out_c, k).lower()}?"            }, {
+                "novice": "Each guideline uses a different cut-off number, which changes who is counted as having it - and so the result.",
                 "intermediate": "Different guidelines use different cut-offs, which changes who counts as a case.",
                 "expert": "Affects case ascertainment and comparability with published estimates."}, opts))
 
-    # (h) association: compare people at similar body weight? (a modelling choice, so beginners get the standard set)
-    if level != "novice" and plan and plan.get("exposure") and not parsed.get("adjust_bmi") and "bmi" not in plan.get("covariates", []) \
+    # (h) association: compare people at similar body weight?
+    if plan and plan.get("exposure") and not parsed.get("adjust_bmi") and "bmi" not in plan.get("covariates", []) \
             and "bmi" not in (plan["exposure"]["variable"], plan["outcome"]["variable"]):
         qs.append(_question("bmi", level, {
             "novice": "Should we compare people who weigh about the same?",
@@ -472,11 +502,13 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             [{"id": "yes", "label": "Yes", "hint": "Adjust for body mass index (BMI).", "append": " Compare people independent of BMI."},
              {"id": "no", "label": "No", "hint": "Do not take body weight into account."}]))
 
-    # (i) experts only: effect measure for a binary outcome
-    if level == "expert" and plan and plan.get("exposure") and plan["outcome"].get("type") == "binary" \
+    # (i) effect measure for a binary outcome (a method choice, not something a beginner's idea leaves unclear)
+    if level != "novice" and plan and plan.get("exposure") and plan["outcome"].get("type") == "binary" \
             and not re.search(r"\b(?:prevalence|odds|risk) ratios?\b", q):
-        qs.append(_question("estimand", level, {"expert": "Effect measure for the binary outcome?"},
-                            {"expert": "PRs are preferred for common outcomes in cross-sectional data."},
+        qs.append(_question("estimand", level, {"intermediate": "Report the result as a prevalence ratio or an odds ratio?",
+                                                "expert": "Effect measure for the binary outcome?"},
+                            {"intermediate": "Both compare groups; prevalence ratios are easier to read when the condition is common.",
+                             "expert": "PRs are preferred for common outcomes in cross-sectional data."},
                             [{"id": "pr", "label": "Prevalence ratio", "hint": "Quasi-Poisson, log link (default)."},
                              {"id": "or", "label": "Odds ratio", "hint": "Quasi-binomial, logit link.",
                               "fixes": [{"op": "set", "path": "model.family", "value": "quasibinomial"}]}]))
@@ -573,16 +605,21 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
             "expertise": info["expertise"], "level_used": info["level_used"], "understood": info["understood"]}
 
 
-def _set_outcome(plan: dict, cid: str | None, k: Knowledge) -> dict:
-    """Make another topic from the idea the outcome; the remaining one stays as the exposure."""
+def _set_role(plan: dict, role: str, cid: str | None, k: Knowledge) -> dict:
+    """Put another topic in the outcome or exposure role and rebuild the plan (like the planner's swap_roles)."""
     parsed = dict(plan.get("parsed") or {})
     if not cid or not (cid in k.concepts or cid.startswith("dict:")) or not parsed:
         return plan
     old_out, old_exp = parsed.get("outcome_concept"), parsed.get("exposure_concept")
-    if cid == old_out:
-        return plan
-    parsed["outcome_concept"] = cid
-    parsed["exposure_concept"] = old_exp if old_exp and old_exp != cid else old_out
+    if role == "outcome":
+        if cid == old_out:
+            return plan
+        parsed["outcome_concept"] = cid
+        parsed["exposure_concept"] = old_exp if old_exp and old_exp != cid else old_out   # the other topic stays in
+    else:
+        if cid == old_exp or cid == old_out:
+            return plan
+        parsed["exposure_concept"] = cid
     parsed["hints"] = parsed.get("hints") or {"prefer": [], "upgrade": {}}
     rebuilt = planner.build_plan(plan["question"], parsed, plan["dataset"].get("cycles"), plan["dataset"], k)
     rebuilt["plan_id"] = plan.get("plan_id", rebuilt.get("plan_id"))
@@ -595,10 +632,10 @@ def apply_fixes(plan: dict, fixes: list[dict]) -> dict:
     k = get_knowledge()
     # a role swap rebuilds the plan from scratch, so keep the agents' conversation and AI/privacy info
     keep = {key: plan[key] for key in ("agent_dialogue", "llm", "privacy") if key in plan}
-    order = {"set_outcome": 0, "swap_roles": 1}
+    order = {"set_outcome": 0, "set_exposure": 0, "swap_roles": 1}
     for f in sorted(fixes, key=lambda f: order.get(f.get("op"), 2)):
-        if f.get("op") == "set_outcome":
-            plan = _set_outcome(plan, f.get("concept"), k)
+        if f.get("op") in ("set_outcome", "set_exposure"):
+            plan = _set_role(plan, f["op"][4:], f.get("concept"), k)
             continue
         if f.get("op") == "set_definition" and plan.get("outcome", {}).get("concept") != f.get("concept"):
             continue   # the outcome changed (e.g. after a swap); this definition no longer applies
