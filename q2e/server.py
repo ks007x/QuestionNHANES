@@ -211,6 +211,24 @@ def _record_edit(proj: dict, actor: str, fix: dict, old_plan: dict, v_before: in
 class ChatMsg(BaseModel):
     message: str = Field(min_length=2, max_length=1000)
     actor: str = "analyst"
+    step: str | None = Field(default=None, max_length=60)          # which walkthrough step it was said on, e.g. "protocol:population"
+    step_title: str | None = Field(default=None, max_length=80)
+
+
+@app.post("/api/projects/{pid}/comments")
+def add_comment(pid: str, body: ChatMsg):
+    """A comment on one step (no change to the protocol); goes into the timestamped history for the lead investigator."""
+    proj = _project(pid)
+    text, _ = privacy.scrub(body.message.strip())
+    at = _now()
+    proj.setdefault("protocol_chat", []).append({"at": at, "who": body.actor, "text": text, "kind": "comment", "step": body.step})
+    v = proj["plan"].get("version")
+    am = protocol_chat.new_amendment(body.actor, text, [], v, v, [], None, at, source="comment", step=body.step, step_title=body.step_title)
+    am["summary"] = [text]
+    proj.setdefault("amendments", []).append(am)
+    store.event(proj, body.actor, "comment_added", {"amendment": am["id"], "step": body.step, "text": text})
+    store.save(proj)
+    return _public(proj)
 
 
 @app.post("/api/projects/{pid}/protocol-chat")
@@ -221,7 +239,7 @@ def protocol_chat_send(pid: str, body: ChatMsg):
         _bad("Project is signed off; create a new version to change the protocol")
     msg, _ = privacy.scrub(body.message)
     chat = proj.setdefault("protocol_chat", [])
-    chat.append({"at": _now(), "who": body.actor, "text": msg})
+    chat.append({"at": _now(), "who": body.actor, "text": msg, "step": body.step})
     pub = _public(proj)
     try:
         r = protocol_chat.respond(pub, msg)
@@ -232,17 +250,17 @@ def protocol_chat_send(pid: str, body: ChatMsg):
         proj["plan"] = r["new_plan"]
         store.snapshot(proj, body.actor, f"Protocol agent: {msg[:80]}")
         am = protocol_chat.new_amendment(body.actor, msg, r["changes"], v_before, proj["plan"].get("version"),
-                                         r["ops"], r["text_request"], _now())
+                                         r["ops"], r["text_request"], _now(), step=body.step, step_title=body.step_title)
         proj.setdefault("amendments", []).append(am)
         if r["text_request"]:
             proj.setdefault("protocol_requests", []).append(r["text_request"])
-        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"], "summary": am["summary"], "amendment": am["id"]})
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"], "summary": am["summary"], "amendment": am["id"], "step": body.step})
         store.event(proj, body.actor, "protocol_amended", {"amendment": am["id"], "request": msg, "summary": am["summary"],
                                                            "version": proj["plan"].get("version")})
     elif r.get("reply"):
-        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"]})
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"], "step": body.step})
     else:
-        chat.append({"at": _now(), "who": "Protocol agent", "text": r["ask"]["text"], "options": r["ask"]["options"]})
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["ask"]["text"], "options": r["ask"]["options"], "step": body.step})
         store.event(proj, body.actor, "protocol_request_not_applied", {"request": msg})
     store.save(proj)
     return _public(proj)
@@ -258,7 +276,7 @@ def amendment_undo(pid: str, aid: str, body: AmendAction):
     proj = _project(pid)
     if proj.get("signoff"):
         _bad("Project is signed off; create a new version to change the protocol")
-    active = [a for a in proj.get("amendments", []) if not a.get("undone") and a.get("source") != "undo"]
+    active = [a for a in proj.get("amendments", []) if not a.get("undone") and a.get("source") not in ("undo", "comment")]
     if not active or active[-1]["id"] != aid:
         _bad("Only the most recent change can be undone", 409)
     am = active[-1]

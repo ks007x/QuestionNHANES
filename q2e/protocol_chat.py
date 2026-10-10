@@ -268,8 +268,10 @@ def _ask(msg: str, k: Knowledge) -> dict:
 
 def new_amendment(by: str, request: str, changes: list[dict], v_before: int | None, v_after: int | None,
                   ops: list[dict], text_request: str | None, at: str, source: str = "chat",
-                  edit_ops: list[dict] | None = None) -> dict:
-    """One entry in the protocol's amendment history. source: 'chat' (asked the Protocol agent) or 'edit' (changed a field)."""
+                  edit_ops: list[dict] | None = None, step: str | None = None, step_title: str | None = None) -> dict:
+    """One entry in the protocol's amendment history.
+    source: 'chat' (asked the Protocol agent), 'edit' (changed a field), 'undo', or 'comment' (a note, no change)."""
     return {"id": "am_" + uuid.uuid4().hex[:8], "at": at, "by": by, "source": source, "request": request,
+            "step": step, "step_title": step_title,
             "changes": changes, "summary": summary_lines(changes), "reason": None, "version_before": v_before,
             "version_after": v_after, "ops": ops, "edit_ops": edit_ops or [], "text_request": text_request, "undone": False}

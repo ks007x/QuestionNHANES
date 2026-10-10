@@ -81,6 +81,20 @@ def test_manual_edits_also_appear_in_history():
     assert pj["amendments"][-1]["summary"]
 
 
+def test_comments_are_timestamped_per_step_and_cannot_be_undone():
+    pid = _project()["id"]
+    pj = _say(pid, "report odds ratios")
+    change = pj["amendments"][-1]
+    pj = client.post(f"/api/projects/{pid}/comments", json={"message": "Odds ratios match the paper we compare to.",
+                                                             "step": "plan:model", "step_title": "How the result is measured"}).json()
+    note = pj["amendments"][-1]
+    assert note["source"] == "comment" and note["at"] and note["step_title"] == "How the result is measured"
+    assert pj["plan"]["version"] == change["version_after"]          # a comment never changes the protocol
+    assert pj["protocol_chat"][-1]["kind"] == "comment" and pj["protocol_chat"][-1]["step"] == "plan:model"
+    assert client.post(f"/api/projects/{pid}/amendments/{note['id']}/undo", json={}).status_code == 409
+    assert client.post(f"/api/projects/{pid}/amendments/{change['id']}/undo", json={}).status_code == 200
+
+
 def test_diff_is_plain_language():
     old = {"model": {"family": "quasipoisson"}, "covariates": ["age"], "population": []}
     new = {"model": {"family": "quasibinomial"}, "covariates": ["age", "smoking"], "population": []}

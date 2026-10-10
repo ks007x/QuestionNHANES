@@ -50,20 +50,9 @@ function unlocked(stage) {
   if (stage === "signoff") return lr && lr.status === "completed";
   return false;
 }
-/* Back / Next arrows between whole sections. Next is locked until the section it leads to is unlocked. */
+/* Why the next section is still locked (shown under the last step's Next button). */
 const LOCK_REASON = { run: "Approve the analysis plan first (bottom of the Analysis plan page).",
                       results: "Run the analysis first and wait for it to finish.", signoff: "Run the analysis first and wait for it to finish." };
-function stageNav(stage) {
-  const i = STEPS.findIndex((s) => s.id === stage); const prev = STEPS[i - 1]; const next = STEPS[i + 1];
-  const nextOk = next && unlocked(next.id);
-  const back = prev ? `<button class="btn" data-act="go" data-stage="${prev.id}">← Back: ${esc(prev.label)}</button>`
-    : `<button class="btn" data-act="backToAsk" title="Return to your research idea and follow-up answers">← Back: Your idea & answers</button>`;
-  const fwd = next ? `<button class="btn primary" data-act="${nextOk ? "go" : ""}" data-stage="${next.id}" ${nextOk ? "" : "disabled"}>Next: ${esc(next.label)} →</button>` : "";
-  return `<div class="card" style="margin-top:18px">
-    <div class="row" style="justify-content:space-between">${back}${fwd}</div>
-    ${next && !nextOk ? `<p class="tiny muted" style="margin:8px 0 0;text-align:right">${esc(LOCK_REASON[next.id] || "Finish this section first.")}</p>` : ""}
-  </div>`;
-}
 function stageDone(stage) {
   const p = S.project; if (!p) return false; const lr = latestRun();
   const appr = p.approved_current || !!lr;
@@ -91,7 +80,10 @@ function renderRail(r) {
   rail.innerHTML = `<h4>Study</h4><p class="small" style="margin:0 0 14px"><b>${esc(p.plan.title)}</b><br><span class="muted">${esc(p.id)} · plan v${p.plan.version}</span></p>
     <ol class="steps"><li data-act="home"><span class="n">0</span>Ask</li>${STEPS.map((s, i) => {
       const cls = r.stage === s.id ? "active" : stageDone(s.id) ? "done" : unlocked(s.id) ? "" : "locked";
-      return `<li class="${cls}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}"><span class="n">${stageDone(s.id) && r.stage !== s.id ? "✓" : i + 1}</span>${s.label}</li>`;
+      const reach = S.reach[stepKey(s.id)] || 0;
+      const subs = r.stage === s.id && (S.parts || []).length > 1 ? `<ol class="substeps">${S.parts.map((x, j) =>
+        `<li class="${j === S.partIndex ? "on" : j <= reach ? "done" : "locked"}" data-act="${j <= reach ? "sub" : ""}" data-i="${j}">${j <= reach && j !== S.partIndex ? "✓ " : ""}${esc(x.title)}</li>`).join("")}</ol>` : "";
+      return `<li class="${cls}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}"><span class="n">${stageDone(s.id) && r.stage !== s.id ? "✓" : i + 1}</span>${s.label}${subs}</li>`;
     }).join("")}</ol>
     <h4>Provenance <span class="chip ${p.chain.valid ? "ok" : "bad"}" style="font-size:10px">${p.chain.valid ? "chain valid" : "chain broken"}</span></h4>
     <ul class="timeline">${p.events.slice(-9).reverse().map((e) => `<li><b>${esc(e.action.replace(/_/g, " "))}</b> · ${esc(e.actor)}<small>${esc(e.at.slice(5, 16).replace("T", " "))} · ${esc(e.hash.slice(0, 8))}</small></li>`).join("")}</ul>`;
@@ -113,13 +105,13 @@ async function render() {
       }
     }
   } catch (e) { main.innerHTML = `<div class="banner bad">${esc(e.message)}</div>`; return; }
-  renderRail(r);
   const views = { ask: viewAsk, projects: viewProjects, library: viewLibrary };
   if (r.view === "project") {
     const fn = { protocol: viewProtocol, map: viewMap, plan: viewPlan, run: viewRun, results: viewResults, signoff: viewSignoff }[r.stage] || viewProtocol;
-    main.innerHTML = fn() + stageNav(r.stage);
+    main.innerHTML = stepper(r.stage, fn());
+    renderRail(r);
     if (r.stage === "run" && S.run?.status === "running") startPolling();
-  } else main.innerHTML = await views[r.view]();
+  } else { renderRail(r); main.innerHTML = await views[r.view](); }
   window.scrollTo({ top: 0 });
 }
 function rerender() { const y = window.scrollY; return render().then(() => window.scrollTo({ top: y })); }
@@ -311,8 +303,7 @@ function editable(field, text, cls = "") {
   return `<span class="editable ${cls}" data-act="edittext" data-field="${field}" title="Click to edit">${nice(text)}</span>`;
 }
 /* Protocol agent chat + change history (so the lead investigator can follow every change) */
-const PC_EXAMPLES = ["only adults over 40", "report odds ratios", "adjust for alcohol", "use 2015-2018 data", "swap the exposure and outcome"];
-const SOURCE_NAME = { chat: "asked the AI", edit: "edited by hand", undo: "undo" };
+const SOURCE_NAME = { chat: "asked the AI", edit: "edited by hand", undo: "undo", comment: "comment" };
 function when(at) {
   const d = new Date(at); if (isNaN(d)) return esc(at || "");
   return d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -322,24 +313,72 @@ function ageGroup(at) {
   if (d.toDateString() === now.toDateString()) return "Today";
   return now - d < 7 * 864e5 ? "This week" : "Earlier";
 }
-function protocolChatCard() {
-  const msgs = S.project.protocol_chat || [];
-  const list = msgs.length ? msgs.slice(-12).map((m) => {
-    const me = m.who !== "Protocol agent";
-    return `<div class="pc-msg ${me ? "me" : ""}"><div class="who">${esc(me ? m.who || "analyst" : "Protocol agent")} <small>${when(m.at)}</small></div>
+/* ---- Step-by-step walkthrough: every section shows ONE step at a time, with room for the analyst's input ---- */
+S.sub = (() => { try { return JSON.parse(store.get("q2e.sub", "{}")) || {}; } catch { return {}; } })();
+S.reach = (() => { try { return JSON.parse(store.get("q2e.reach", "{}")) || {}; } catch { return {}; } })();
+const CAN_CHANGE = ["protocol", "map", "plan"];
+function stepKey(stage) { return `${S.project.id}:${stage}`; }
+function saveSteps() { store.set("q2e.sub", JSON.stringify(S.sub)); store.set("q2e.reach", JSON.stringify(S.reach)); }
+function talkBox(stage, part) {
+  const step = `${stage}:${part.id}`;
+  const canChange = CAN_CHANGE.includes(stage) && !S.project.signoff;
+  const msgs = (S.project.protocol_chat || []).filter((m) => m.step === step).slice(-8);
+  const list = msgs.map((m) => {
+    const ai = m.who === "Protocol agent";
+    return `<div class="pc-msg ${ai ? "" : "me"} ${m.kind === "comment" ? "note" : ""}"><div class="who">${esc(ai ? "AI" : m.who || "analyst")}${m.kind === "comment" ? " · comment" : ""} <small>${when(m.at)}</small></div>
       <div class="txt">${nice(m.text || "")}</div>
       ${(m.summary || []).length ? `<ul class="small">${m.summary.map((s) => `<li>${nice(s)}</li>`).join("")}</ul>` : ""}
       ${(m.options || []).length ? `<div class="examples">${m.options.map((o) => `<button data-act="pcSend" data-msg="${esc(o.send)}" title="${esc(o.hint || "")}">${esc(o.label)}</button>`).join("")}</div>` : ""}</div>`;
-  }).join("") : `<p class="small muted" style="margin:0">Tell the AI what you want to change in plain words. It changes the protocol right away, shows what changed, and you can undo it.</p>`;
-  return `<div class="card pc"><h3 class="sub" style="margin-top:0">Ask the AI to change the protocol</h3>
-    <div class="pc-list" id="pcList">${list}</div>
-    <div class="row" style="margin-top:10px"><input type="text" id="pcInput" placeholder="e.g. only adults over 40" style="flex:1" maxlength="1000">
-      <button class="btn primary sm" data-act="pcSend" id="pcBtn">Send</button></div>
-    <div class="examples" style="margin-top:6px">${PC_EXAMPLES.map((e) => `<button data-act="pcSend" data-msg="${esc(e)}">${esc(e)}</button>`).join("")}</div></div>`;
+  }).join("");
+  return `<div class="card sp-talk"><h3 class="sub" style="margin-top:0">Your input on this step <span class="tiny muted" style="font-weight:400">(optional)</span></h3>
+    <p class="small muted" style="margin:0 0 8px">${canChange
+      ? "Want something different? Write it in plain words and press <b>Ask the AI to change it</b>: the AI changes the protocol right away and you can undo it. Or press <b>Save as a comment</b> to leave a note for the lead investigator."
+      : "Write a note and press <b>Save as a comment</b>. It is saved with the date and time so the lead investigator can see it."}</p>
+    ${list ? `<div class="pc-list" id="pcList">${list}</div>` : ""}
+    <textarea id="pcInput" rows="2" maxlength="1000" placeholder="${canChange ? esc("e.g. " + ((part.examples || [])[0] || "only adults over 40")) : "e.g. I checked this and it looks right"}"></textarea>
+    <div class="row" style="margin-top:8px">${canChange ? `<button class="btn primary sm" data-act="pcSend" id="pcBtn">Ask the AI to change it</button>` : ""}
+      <button class="btn sm" data-act="comment">Save as a comment</button></div>
+    ${canChange && (part.examples || []).length ? `<div class="examples" style="margin-top:6px"><span class="tiny muted">Try:</span> ${part.examples.map((e) => `<button data-act="pcSend" data-msg="${esc(e)}">${esc(e)}</button>`).join("")}</div>` : ""}</div>`;
+}
+function historyBar() {
+  const ams = S.project.amendments || [];
+  const last = ams[ams.length - 1];
+  return `<div class="card hbar"><div class="row" style="justify-content:space-between;gap:8px">
+      <span class="small"><b>Change history</b> <span class="chip accent">${ams.length}</span> <span class="muted">${last ? `last: ${when(last.at)} by ${esc(last.by || "analyst")}` : "no changes yet - this is the AI's first draft"}</span></span>
+      <button class="btn sm ghost" data-act="histToggle">${S.histOpen ? "Hide ▴" : "Show ▾"}</button></div>
+    ${S.histOpen ? `<div style="margin-top:10px">${changeHistoryCard()}</div>` : ""}</div>`;
+}
+function stepper(stage, v) {
+  const parts = v.parts.filter(Boolean); const key = stepKey(stage);
+  const i = Math.max(0, Math.min(S.sub[key] || 0, parts.length - 1));
+  S.sub[key] = i; S.reach[key] = Math.max(S.reach[key] || 0, i); saveSteps();
+  S.parts = parts; S.partIndex = i;
+  const part = parts[i]; S.curStep = { stage, id: part.id, title: part.title };
+  const reach = S.reach[key];
+  const dots = parts.length > 1 ? `<div class="sp-dots">${parts.map((x, j) => {
+    const ok = j <= reach; const cls = j === i ? "on" : ok ? "done" : "";
+    return `<button class="sp-dot ${cls}" data-act="${ok ? "sub" : ""}" data-i="${j}" ${ok ? "" : "disabled"} title="${ok ? "" : "Finish the steps before this one first"}"><span class="n">${ok && j !== i ? "✓" : j + 1}</span>${esc(x.title)}</button>`;
+  }).join("")}</div>` : "";
+  const si = STEPS.findIndex((s) => s.id === stage); const prevS = STEPS[si - 1]; const nextS = STEPS[si + 1];
+  const nextOk = nextS && unlocked(nextS.id);
+  const back = i > 0 ? `<button class="btn" data-act="sub" data-i="${i - 1}">← Back</button>`
+    : prevS ? `<button class="btn" data-act="go" data-stage="${prevS.id}">← Back to ${esc(prevS.label)}</button>`
+    : `<button class="btn" data-act="backToAsk">← Back to your idea</button>`;
+  const fwd = i < parts.length - 1 ? `<button class="btn primary" data-act="sub" data-i="${i + 1}">Looks good - next: ${esc(parts[i + 1].title)} →</button>`
+    : nextS ? `<button class="btn primary" data-act="${nextOk ? "go" : ""}" data-stage="${nextS.id}" ${nextOk ? "" : "disabled"}>Done - go to ${esc(nextS.label)} →</button>` : "";
+  return `${historyBar()}
+  <div class="sp-head"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">Section ${si + 1} of ${STEPS.length} · ${esc(STEPS[si].label)}${v.tag ? " · " + v.tag : ""}</div>
+    <h1 class="page" style="margin-bottom:4px">${v.title}</h1>${v.lede ? `<p class="lede" style="margin-top:0">${v.lede}</p>` : ""}</div>
+  ${dots}
+  <div class="sp-step"><div class="sp-title"><span class="sp-n">Step ${i + 1} of ${parts.length}</span><h2>${esc(part.title)}</h2>${part.help ? `<p class="small muted" style="margin:2px 0 0">${part.help}</p>` : ""}</div>
+    ${part.html}</div>
+  ${part.noTalk ? "" : talkBox(stage, part)}
+  <div class="card sp-nav"><div class="row" style="justify-content:space-between">${back}${fwd}</div>
+    ${i === parts.length - 1 && nextS && !nextOk ? `<p class="tiny muted" style="margin:8px 0 0;text-align:right">${esc(LOCK_REASON[nextS.id] || "Finish this section first.")}</p>` : ""}</div>`;
 }
 function changeHistoryCard() {
   const ams = (S.project.amendments || []).slice().reverse();
-  const live = ams.filter((a) => !a.undone && a.source !== "undo");
+  const live = ams.filter((a) => !a.undone && a.source !== "undo" && a.source !== "comment");
   const latest = live.length ? live[0].id : null;
   const n = (g) => ams.filter((a) => ageGroup(a.at) === g).length;
   let lastGroup = "";
@@ -347,15 +386,16 @@ function changeHistoryCard() {
     const g = ageGroup(a.at); const head = g !== lastGroup ? `<div class="ch-group">${g}</div>` : ""; lastGroup = g;
     return `${head}<div class="ch-item ${a.undone ? "undone" : ""}">
       <div class="row" style="justify-content:space-between;gap:8px"><span><b>${when(a.at)}</b> · ${esc(a.by || "analyst")} <span class="chip">${SOURCE_NAME[a.source] || esc(a.source)}</span>${a.undone ? ` <span class="chip warn">undone</span>` : ""}</span>
-        <span class="tiny muted">v${a.version_before ?? "?"} → v${a.version_after ?? "?"}</span></div>
+        <span class="tiny muted">${a.source === "comment" ? `on v${a.version_after ?? "?"}` : `v${a.version_before ?? "?"} → v${a.version_after ?? "?"}`}</span></div>
+      ${a.step_title ? `<div class="tiny muted">Step: ${esc(a.step_title)}</div>` : ""}
       ${a.source === "chat" ? `<div class="small muted">Asked: “${esc(a.request)}”</div>` : ""}
-      <ul class="small">${(a.summary || []).map((s) => `<li>${nice(s)}</li>`).join("")}</ul>
-      <div class="row" style="gap:6px">${a.reason ? `<span class="small"><b>Why:</b> ${esc(a.reason)}</span>` : (a.source !== "undo" ? `<button class="btn sm ghost" data-act="amReason" data-id="${a.id}">+ Why? (optional)</button>` : "")}
+      ${a.source === "comment" ? `<p class="small" style="margin:4px 0">“${esc(a.request)}”</p>` : `<ul class="small">${(a.summary || []).map((s) => `<li>${nice(s)}</li>`).join("")}</ul>`}
+      <div class="row" style="gap:6px">${a.reason ? `<span class="small"><b>Why:</b> ${esc(a.reason)}</span>` : (!["undo", "comment"].includes(a.source) ? `<button class="btn sm ghost" data-act="amReason" data-id="${a.id}">+ Why? (optional)</button>` : "")}
         ${a.id === latest ? `<button class="btn sm" data-act="amUndo" data-id="${a.id}">↶ Undo this change</button>` : ""}</div></div>`;
   }).join("");
   return `<div class="card ch"><div class="row" style="justify-content:space-between"><h3 class="sub" style="margin:0">Change history <span class="chip accent">${ams.length}</span></h3>
       ${ams.length ? `<button class="btn sm ghost" data-act="amCopy" title="Copy a weekly summary to paste into an email or report">Copy weekly summary</button>` : ""}</div>
-    <p class="tiny muted" style="margin:4px 0 8px">Every change to this protocol, with date, time and who made it, so the lead investigator can follow along. Today: ${n("Today")} · This week: ${n("Today") + n("This week")} · Total: ${ams.length}</p>
+    <p class="tiny muted" style="margin:4px 0 8px">Every change and comment on this protocol, with date, time and who made it, so the lead investigator can follow along. Today: ${n("Today")} · This week: ${n("Today") + n("This week")} · Total: ${ams.length}</p>
     <div class="ch-list">${rows || `<p class="small muted" style="margin:0">No changes yet. This is the AI's first draft (v1).</p>`}</div></div>`;
 }
 function weeklySummary() {
@@ -363,8 +403,10 @@ function weeklySummary() {
   const lines = [`Protocol change summary (last 7 days): ${p.title}`, `Current version: v${p.version}. Changes: ${ams.length}.`, ""];
   for (const a of ams) {
     lines.push(`${new Date(a.at).toLocaleString()} - ${a.by || "analyst"} (${SOURCE_NAME[a.source] || a.source}${a.undone ? ", later undone" : ""})`);
+    if (a.step_title) lines.push(`  Step: ${a.step_title}`);
     if (a.source === "chat") lines.push(`  Asked: "${a.request}"`);
-    for (const s of a.summary || []) lines.push(`  - ${s}`);
+    if (a.source === "comment") lines.push(`  Comment: "${a.request}"`);
+    else for (const s of a.summary || []) lines.push(`  - ${s}`);
     if (a.reason) lines.push(`  Why: ${a.reason}`);
   }
   return lines.join("\n");
@@ -390,33 +432,43 @@ function viewProtocol() {
   };
   const pop = p.population.map((c) => `<div class="crit"><label class="toggle"><input type="checkbox" data-act="crit" data-id="${c.id}" ${c.enabled ? "checked" : ""}><span></span></label>
     <div class="lbl"><span class="chip ${c.kind === "exclusion" ? "warn" : "accent"}" style="font-size:11px">${c.kind}</span> ${nice(c.label)}<div class="tiny muted">${esc(c.source || "")} · <code>${esc(c.expr)}</code></div></div></div>`).join("");
-  return `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
-  <div class="row" style="justify-content:space-between;align-items:flex-start;gap:20px">
-    <div style="flex:1;min-width:280px"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional · plan v${p.version}</div>
-      <h1 class="page">${editable("title", p.title, "title-edit")}</h1>
-      <p class="muted small" style="margin:0">Original idea: “${esc(p.question)}”</p></div>
-    <div class="card gauge"><div class="ring" style="--p:${f.score}"><div>${f.score}</div></div><div><b>${esc(f.label)} feasibility</b><div class="tiny muted">in ${p.dataset.type === "nhanes" ? "NHANES" : "uploaded data"}</div>
-      <details><summary class="tiny">components</summary><ul class="tiny" style="padding-left:16px;margin:4px 0">${f.components.map((c) => `<li>${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}</li>`).join("")}</ul></details></div></div>
-    ${noveltyGauge()}
-  </div>
-  <div class="grid g2" style="margin-top:16px;align-items:start">${protocolChatCard()}${changeHistoryCard()}</div>
-  <div class="card" style="margin-top:16px"><h3 class="sub" style="margin-top:0">Refined research question</h3>
-    <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
-    ${p.refined_question_llm ? `<div class="row" style="margin-top:8px"><span class="chip accent">AI phrasing</span><span class="small" style="flex:1">${nice(p.refined_question_llm)}</span><button class="btn sm" data-act="usellm" data-field="refined_question">Use</button></div>` : ""}
-    <h3 class="sub">Hypothesis</h3><p style="margin:0">${editable("hypothesis", p.hypothesis)}</p>
-    <h3 class="sub">PICO</h3><dl class="kv">${Object.entries(p.pico).map(([k2, v]) => `<dt>${esc(k2[0].toUpperCase() + k2.slice(1))}</dt><dd>${nice(v)}</dd>`).join("")}</dl>
-  </div>
-  <div style="margin-top:14px">${answerCard(p.answerability, { probeButton: true, probe: p.probe })}</div>
-  <div class="grid ${p.exposure ? "g2" : ""}" style="margin-top:14px">${p.exposure ? varCard("exposure") : ""}${varCard("outcome")}</div>
-  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Study population</h3>${pop}
-    <details style="margin-top:10px"><summary>Add a criterion</summary><div class="grid g4" style="margin-top:8px;align-items:end">
-      <label class="field">Label<input type="text" id="critLabel" placeholder="e.g. Age 20-79 years"></label>
-      <label class="field" style="grid-column:span 2">Expression<input type="text" id="critExpr" placeholder="age >= 20 & age < 80"></label>
-      <label class="field">Type<select id="critKind"><option>inclusion</option><option>exclusion</option></select></label></div>
-      <button class="btn sm" style="margin-top:8px" data-act="addcrit">Validate & add</button></details></div>
-  <h2 class="sec">Agent roundtable</h2>
-  <div class="card dialog">${(p.agent_dialogue || []).map((d) => `<div class="msg">${avatar(d.agent)}<div><div class="who">${esc(d.agent)}<small>${d.source === "llm" ? "LLM" : "rules"}</small></div><div class="txt">${nice(d.message)}</div></div></div>`).join("")}</div>
-  <div class="row" style="margin-top:20px"><button class="btn primary" data-act="go" data-stage="map">Review data mapping →</button></div>`;
+  return { title: "Your research protocol", tag: `plan v${p.version}`,
+    lede: "The AI drafted your study. Check it one step at a time. If something is not what you want, tell the AI in the box under each step.",
+    parts: [
+      { id: "question", title: "Your study question", help: "Check that this says what you want to study. Click any underlined text to edit it yourself.",
+        examples: ["only adults over 40", "use 2015-2018 data"],
+        html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
+        <div class="card"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional</div>
+          <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
+          <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc(p.question)}”</p>
+          <h3 class="sub">Research question</h3>
+          <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
+          ${p.refined_question_llm ? `<div class="row" style="margin-top:8px"><span class="chip accent">AI phrasing</span><span class="small" style="flex:1">${nice(p.refined_question_llm)}</span><button class="btn sm" data-act="usellm" data-field="refined_question">Use</button></div>` : ""}
+          <h3 class="sub">What we expect to find (hypothesis)</h3><p style="margin:0">${editable("hypothesis", p.hypothesis)}</p>
+          <details style="margin-top:12px"><summary class="small">Study summary in research terms (PICO)</summary><dl class="kv" style="margin-top:8px">${Object.entries(p.pico).map(([k2, v]) => `<dt>${esc(k2[0].toUpperCase() + k2.slice(1))}</dt><dd>${nice(v)}</dd>`).join("")}</dl></details>
+        </div>` },
+      { id: "feasible", title: "Can NHANES answer it?", help: "How well the NHANES data fits your question, and how often it has been studied before.",
+        examples: ["use 2015-2018 data"],
+        html: `<div class="row" style="gap:14px;align-items:stretch;flex-wrap:wrap">
+          <div class="card gauge"><div class="ring" style="--p:${f.score}"><div>${f.score}</div></div><div><b>${esc(f.label)} feasibility</b><div class="tiny muted">in ${p.dataset.type === "nhanes" ? "NHANES" : "uploaded data"}</div>
+            <details><summary class="tiny">why this score</summary><ul class="tiny" style="padding-left:16px;margin:4px 0">${f.components.map((c) => `<li>${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}</li>`).join("")}</ul></details></div></div>
+          ${noveltyGauge()}</div>
+          <div style="margin-top:14px">${answerCard(p.answerability, { probeButton: true, probe: p.probe })}</div>` },
+      { id: "variables", title: p.exposure ? "What you are comparing" : "What you are measuring",
+        help: p.exposure ? "The <b>exposure</b> is the thing you think has an effect; the <b>outcome</b> is the health result you measure." : "The <b>outcome</b> is the health result you measure.",
+        examples: p.exposure ? ["swap the exposure and outcome"] : [],
+        html: `<div class="grid ${p.exposure ? "g2" : ""}">${p.exposure ? varCard("exposure") : ""}${varCard("outcome")}</div>` },
+      { id: "population", title: "Who is in the study", help: "These rules decide which people are counted. Switch a rule on or off, or add your own.",
+        examples: ["only adults over 40", "between 20 and 60"],
+        html: `<div class="card">${pop}
+          <details style="margin-top:10px"><summary>Add your own rule</summary><div class="grid g4" style="margin-top:8px;align-items:end">
+            <label class="field">Label<input type="text" id="critLabel" placeholder="e.g. Age 20-79 years"></label>
+            <label class="field" style="grid-column:span 2">Expression<input type="text" id="critExpr" placeholder="age >= 20 & age < 80"></label>
+            <label class="field">Type<select id="critKind"><option>inclusion</option><option>exclusion</option></select></label></div>
+            <button class="btn sm" style="margin-top:8px" data-act="addcrit">Validate & add</button></details></div>` },
+      { id: "agents", title: "What the AI team noticed", help: "Notes from the AI agents that designed the study. Read them, then leave a comment if you disagree.",
+        html: `<div class="card dialog">${(p.agent_dialogue || []).map((d) => `<div class="msg">${avatar(d.agent)}<div><div class="who">${esc(d.agent)}<small>${d.source === "llm" ? "LLM" : "rules"}</small></div><div class="txt">${nice(d.message)}</div></div></div>`).join("") || `<p class="small muted">No notes.</p>`}</div>` },
+    ] };
 }
 
 /* ------------------------------------------------------------------ MAP */
@@ -436,15 +488,20 @@ function viewMap() {
       <td><input type="text" id="gm_${b}" value="${esc((p.generic_mapping || {})[b] || "")}" style="width:100%"><div class="tiny muted">${esc(st.note || "")}</div></td>
       <td><button class="btn sm" data-act="gmap" data-block="${b}">Save</button></td></tr>`).join("")}</tbody></table></div>` : "";
   const custom = (p.custom_variables || []).filter((c) => c.source === "ai");
-  return `<h1 class="page">Concept → variable map</h1><p class="lede">Every analysis variable traced to the raw ${p.dataset.type === "nhanes" ? "NHANES files and variable names" : "dataset columns"} it needs, with availability per survey cycle. Guideline definitions and derived variables show the exact expression that will run.</p>
-  <div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Variable</th><th>Role</th><th>Source</th><th>Raw variables</th><th>Files</th><th>Availability</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
-  ${generic}
-  ${custom.length ? `<div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">AI-proposed variables awaiting approval</h3>${custom.map((c) => `<div class="crit"><div class="lbl"><b>${esc(c.label)}</b> <code>${esc(c.name)} = ${esc(c.expr)}</code></div><button class="btn sm" data-act="fix" data-id="custom_${c.name}">Approve</button></div>`).join("")}</div>` : ""}
-  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Data dictionary explorer</h3>
-    <div class="row"><input type="text" id="dictQ" placeholder="Search the ${p.dataset.type === "nhanes" ? "NHANES" : "dataset"} dictionary (e.g. transferrin, liver stiffness, insulin)" style="flex:1"><button class="btn" data-act="dict">Search</button></div>
-    ${S.dict ? `<table class="t" style="margin-top:10px"><thead><tr><th>Variable</th><th>Label</th><th>File</th><th>Cycles</th><th>Match</th><th></th></tr></thead><tbody>${S.dict.map((h) => `<tr><td><code>${esc(h.variable)}</code></td><td>${esc(h.label)}</td><td>${esc(h.table)}</td><td>${esc((h.cycles || []).join(", "))}</td><td><div style="width:80px;height:6px;background:var(--line-2);border-radius:3px"><div style="width:${h.confidence * 100}%;height:6px;background:var(--accent);border-radius:3px"></div></div><span class="tiny muted">${h.confidence}</span></td><td>${p.dataset.type === "nhanes" ? `<button class="btn sm" data-act="teach" data-var="${esc(h.variable)}" title="Remember a phrase for this variable in future questions">Teach</button>` : ""}</td></tr>`).join("")}</tbody></table>` : ""}
-  </div>
-  <div class="row" style="margin-top:20px"><button class="btn" data-act="go" data-stage="protocol">← Protocol</button><button class="btn primary" data-act="go" data-stage="plan">Analysis plan →</button></div>`;
+  return { title: "Where the data comes from",
+    lede: `Each part of your study is linked to the exact ${p.dataset.type === "nhanes" ? "NHANES files and survey questions" : "columns in your dataset"} it uses. Check it one step at a time.`,
+    parts: [
+      { id: "table", title: "Your variables and their sources",
+        help: "Each row is one thing your study uses. <b>Availability</b> shows which survey years have it (✓ yes, ✗ no). Click <b>expr</b> to see the exact formula.",
+        examples: ["use 2015-2018 data"],
+        html: `<div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Variable</th><th>Role</th><th>Source</th><th>Raw variables</th><th>Files</th><th>Availability</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>` },
+      generic && { id: "columns", title: "Match your columns", help: "Tell Q2E which column in your file holds each item.", html: generic },
+      custom.length && { id: "proposed", title: "Approve the AI's suggested variables", help: "The AI suggested these. They will not be used until you approve them.",
+        html: `<div class="card">${custom.map((c) => `<div class="crit"><div class="lbl"><b>${esc(c.label)}</b> <code>${esc(c.name)} = ${esc(c.expr)}</code></div><button class="btn sm" data-act="fix" data-id="custom_${c.name}">Approve</button></div>`).join("")}</div>` },
+      { id: "dictionary", title: "Search the data dictionary (optional)", help: "Look up any survey item, for example to check a variable exists. You can skip this step.",
+        html: `<div class="card"><div class="row"><input type="text" id="dictQ" placeholder="Search the ${p.dataset.type === "nhanes" ? "NHANES" : "dataset"} dictionary (e.g. transferrin, liver stiffness, insulin)" style="flex:1"><button class="btn" data-act="dict">Search</button></div>
+          ${S.dict ? `<table class="t" style="margin-top:10px"><thead><tr><th>Variable</th><th>Label</th><th>File</th><th>Cycles</th><th>Match</th><th></th></tr></thead><tbody>${S.dict.map((h) => `<tr><td><code>${esc(h.variable)}</code></td><td>${esc(h.label)}</td><td>${esc(h.table)}</td><td>${esc((h.cycles || []).join(", "))}</td><td><div style="width:80px;height:6px;background:var(--line-2);border-radius:3px"><div style="width:${h.confidence * 100}%;height:6px;background:var(--accent);border-radius:3px"></div></div><span class="tiny muted">${h.confidence}</span></td><td>${p.dataset.type === "nhanes" ? `<button class="btn sm" data-act="teach" data-var="${esc(h.variable)}" title="Remember a phrase for this variable in future questions">Teach</button>` : ""}</td></tr>`).join("")}</tbody></table>` : ""}</div>` },
+    ] };
 }
 
 /* ------------------------------------------------------------------ PLAN */
@@ -465,37 +522,44 @@ function viewPlan() {
   const cyc = Object.entries(k.cycles).map(([id, c]) => `<button class="${(p.dataset.cycles || []).includes(id) ? "on" : ""}" data-act="plancycle" data-id="${id}">${esc(id)}</button>`).join("");
   const src = [["auto", "CDC/local"], ["local", "Local"], ["synthetic", "Synthetic"]].map(([v, l]) => `<button class="${p.dataset.source === v ? "on" : ""}" data-act="plansource" data-v="${v}">${l}</button>`).join("");
   const approved = S.project.approved_current;
-  return `<h1 class="page">Statistical analysis plan</h1><p class="lede">Drafted by the Statistician and Epidemiologist agents and critiqued by the Reviewer. Edit anything; every change is versioned. Approval locks this exact plan (by hash) for execution.</p>
-  <div class="grid g2">
-    <div class="card"><h3 class="sub" style="margin-top:0">Estimand & model</h3>
+  return { title: "How the analysis will be done", tag: `plan v${p.version}`,
+    lede: "The AI statistician drafted this and an AI reviewer checked it. Go through it step by step; the last step is your approval.",
+    parts: [
+      { id: "model", title: "How the result is measured", help: "Which statistical model is used and what number it reports (for example an odds ratio).",
+        examples: ["report odds ratios", "report prevalence ratios"],
+        html: `<div class="card"><h3 class="sub" style="margin-top:0">Estimand & model</h3>
       <label class="field">Model family<select data-act="family">${[["quasipoisson", "Survey quasi-Poisson (prevalence ratio)"], ["quasibinomial", "Survey logistic (odds ratio)"], ["gaussian", "Survey linear (mean difference)"]].map(([v, l]) => `<option value="${v}" ${p.model.family === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
       <p class="small" style="margin:10px 0 0">${nice(p.rationale.statistician)}</p>
       ${p.rationale.statistician_llm ? `<p class="small" style="margin:8px 0 0"><span class="chip accent">LLM</span> ${nice(p.rationale.statistician_llm)}</p>` : ""}
       <h3 class="sub">Adjustment sets</h3><ol class="small" style="margin:0;padding-left:18px">${p.adjustment_sets.map((a) => `<li><b>${esc(a.label)}</b>: ${a.covariates.length ? esc(a.covariates.join(", ")) : "none"}</li>`).join("") || "<li>Descriptive only</li>"}</ol>
       <h3 class="sub">Missing data</h3><p class="small" style="margin:0">${esc(p.missing_data.rationale)}</p>
-    </div>
-    <div class="card"><h3 class="sub" style="margin-top:0">Variables</h3>
+    </div>` },
+      { id: "adjust", title: "What the analysis takes into account", help: "<b>Covariates</b> are other factors the analysis adjusts for so the comparison is fair. Use × to remove one or <b>+ add</b> to add one.",
+        examples: ["adjust for alcohol", "don't adjust for income", "use 2015-2018 data"],
+        html: `<div class="card"><h3 class="sub" style="margin-top:0">Variables</h3>
       <p class="small" style="margin:0 0 6px"><b>Covariates</b> <span class="muted">${esc(p.rationale.epidemiologist).slice(0, 220)}…</span></p>${pills("covariates", p.covariates, blockOpts)}
       ${Object.entries(p.covariate_notes || {}).map(([c, n]) => `<p class="tiny muted" style="margin:6px 0 0"><b>${esc(c)}</b>: ${nice(n)}</p>`).join("")}
       <p class="small" style="margin:14px 0 6px"><b>Subgroups</b></p>${pills("subgroups", p.subgroups, catOpts)}
       ${p.study_type === "association" ? `<p class="small" style="margin:14px 0 6px"><b>Effect modifiers (interaction tests)</b></p>${pills("interactions", p.interactions, catOpts)}` : ""}
       <h3 class="sub">Data</h3><div class="row"><span class="small muted">Cycles</span><div class="seg">${cyc}</div><span class="small muted">Source</span><div class="seg">${src}</div></div>
       ${p.benchmarks?.length ? `<h3 class="sub">Benchmark against published literature</h3>${p.benchmarks.map((b) => `<p class="small" style="margin:0 0 4px">${esc(b.label)}: <b>${pct(b.estimate, 0)}</b> (${pct(b.lcl, 0)}-${pct(b.ucl, 0)}), n=${(b.n || 0).toLocaleString()}</p>`).join("")}` : ""}
-    </div>
-  </div>
-  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Prespecified sensitivity analyses</h3>${sens}
-    <details style="margin-top:8px"><summary>Add an exclusion sensitivity analysis</summary><div class="grid g3" style="margin-top:8px;align-items:end"><label class="field">Label<input type="text" id="sLabel" placeholder="Exclude current smokers"></label><label class="field">Exclude if<input type="text" id="sExpr" placeholder='smoking == "Current"'></label><button class="btn sm" data-act="addsens">Validate & add</button></div></details></div>
-  <h2 class="sec">Design audit <span class="tiny muted" style="font-weight:400">common criticisms of EHR-network (TriNetX-style) studies</span></h2>${auditCard(p.design_audit)}
-  <h2 class="sec">Reviewer critique</h2>
-  <div class="card">${issues.length ? issues.map((i) => `<div class="issue"><span class="sev ${i.severity}">${i.severity}</span><div><b class="small">${nice(i.title)}</b> <span class="tiny muted">${esc(i.agent)}</span><div class="small muted">${nice(i.detail)}</div></div>
-    <div>${i.fix ? `<button class="btn sm" data-act="fix" data-id="${i.id}">${i.fix.op === "acknowledge" ? "Acknowledge" : "Apply fix"}</button>` : ""}</div></div>`).join("") : `<p class="muted small">No issues.</p>`}</div>
-  <h2 class="sec">Investigator approval</h2>
-  <div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
+    </div>` },
+      { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "Repeat the analysis in slightly different ways to see if the answer holds up. Switch checks on or off.",
+        html: `<div class="card">${sens || `<p class="small muted">None planned.</p>`}
+          <details style="margin-top:8px"><summary>Add your own check</summary><div class="grid g3" style="margin-top:8px;align-items:end"><label class="field">Label<input type="text" id="sLabel" placeholder="Exclude current smokers"></label><label class="field">Exclude if<input type="text" id="sExpr" placeholder='smoking == "Current"'></label><button class="btn sm" data-act="addsens">Validate & add</button></div></details></div>` },
+      { id: "audit", title: "Design audit", help: "Checks against common criticisms of this kind of study (e.g. TriNetX-style EHR studies).",
+        html: auditCard(p.design_audit) || `<p class="small muted">No audit available.</p>` },
+      { id: "review", title: "AI reviewer's concerns", help: `${blockers.length || pendingAck.length ? "<b>Action needed:</b> press the button next to each item marked blocker or major before you can approve." : "Read each point. Press <b>Apply fix</b> or <b>Acknowledge</b> where offered."}`,
+        html: `<div class="card">${issues.length ? issues.map((i) => `<div class="issue"><span class="sev ${i.severity}">${i.severity}</span><div><b class="small">${nice(i.title)}</b> <span class="tiny muted">${esc(i.agent)}</span><div class="small muted">${nice(i.detail)}</div></div>
+          <div>${i.fix ? `<button class="btn sm" data-act="fix" data-id="${i.id}">${i.fix.op === "acknowledge" ? "Acknowledge" : "Apply fix"}</button>` : ""}</div></div>`).join("") : `<p class="muted small">No issues.</p>`}</div>` },
+      { id: "approve", title: "Approve the plan", help: "Approving locks this exact version of the plan so it can be run. Any later change needs approval again.",
+        html: `<div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
       <button class="btn primary" data-act="run">Run analysis in R →</button>` :
     `${blockers.length ? `<div class="banner bad">Resolve ${blockers.length} blocker(s) before approval.</div>` : ""}${pendingAck.length ? `<div class="banner warn">Acknowledge ${pendingAck.length} operational assumption(s) (see critique).</div>` : ""}
     <div class="row"><input type="text" id="approver" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><label class="row small"><input type="checkbox" id="attest"> I reviewed the protocol, variable mappings, definitions and this analysis plan.</label>
-    <button class="btn primary" data-act="approve" ${canApprove ? "" : "disabled"}>Approve protocol</button></div>`}</div>`;
+    <button class="btn primary" data-act="approve" ${canApprove ? "" : "disabled"}>Approve protocol</button></div>`}</div>` },
+    ] };
 }
 
 /* ------------------------------------------------------------------ RUN */
@@ -510,25 +574,32 @@ function startPolling() {
 }
 function viewRun() {
   const lr = latestRun(); const r = S.run;
-  if (!lr) return `<h1 class="page">Run & validate</h1><div class="empty">Approve the plan, then run it.<br><br><button class="btn primary" data-act="run" ${S.project.approved_current ? "" : "disabled"}>Run analysis</button></div>`;
+  const head = { title: "Run & check the analysis", lede: "Your approved plan is run by the R engine, and every result is checked automatically before you see it." };
+  if (!lr) return { ...head, parts: [{ id: "start", title: "Start the analysis", help: "Approve the plan first (last step of the Analysis plan), then run it.",
+    html: `<div class="empty"><button class="btn primary" data-act="run" ${S.project.approved_current ? "" : "disabled"}>Run analysis</button></div>` }] };
   const stale = lr.plan_hash !== S.project.plan_hash;
-  let body = "";
-  if (r.status === "running") body = `<div class="card"><p><span class="spinner"></span> Executing approved plan in the R engine (survey package)…</p><div class="console" id="console">${esc(r.log.join("\n"))}</div></div>`;
-  else if (r.status === "failed") body = `<div class="banner bad"><b>Run failed:</b> ${esc(r.error)}</div>${/not found|download/i.test(r.error || "") ? `<div class="banner info">NHANES files were not available. Place the .xpt files in <code>${esc(S.meta.data.local_dir)}</code>, enable CDC downloads, or switch the data source to <b>Synthetic</b> in the analysis plan for an offline demo.</div>` : ""}<div class="console">${esc(r.log.join("\n"))}</div>`;
-  else if (S.results) {
+  const staleBanner = stale ? `<div class="banner warn">The plan has changed since this run (run plan ${esc(lr.plan_hash.slice(0, 10))}). Re-approve and re-run to update results. ${S.project.approved_current ? `<button class="btn sm" data-act="run">Re-run now</button>` : ""}</div>` : "";
+  if (r.status === "running") return { ...head, parts: [{ id: "running", title: "Running…", help: "This usually takes under a minute. The page updates by itself.", noTalk: true,
+    html: `${staleBanner}<div class="card"><p><span class="spinner"></span> Executing approved plan in the R engine (survey package)…</p><div class="console" id="console">${esc(r.log.join("\n"))}</div></div>` }] };
+  if (r.status === "failed") return { ...head, parts: [{ id: "failed", title: "The run failed", help: "Read the message below. You can leave a comment for the lead investigator.",
+    html: `${staleBanner}<div class="banner bad"><b>Run failed:</b> ${esc(r.error)}</div>${/not found|download/i.test(r.error || "") ? `<div class="banner info">NHANES files were not available. Place the .xpt files in <code>${esc(S.meta.data.local_dir)}</code>, enable CDC downloads, or switch the data source to <b>Synthetic</b> in the analysis plan for an offline demo.</div>` : ""}<div class="console">${esc(r.log.join("\n"))}</div>` }] };
+  if (!S.results) return { ...head, parts: [{ id: "wait", title: "Loading results…", html: `<p class="small muted">One moment.</p>`, noTalk: true }] };
+  {
     const R = S.results; const c = R.checks; const cnt = (s) => c.filter((x) => x.status === s).length;
-    body = `${R.meta.synthetic ? `<div class="banner warn">Synthetic NHANES-like data - pipeline demonstration only; estimates are not population estimates.</div>` : ""}
+    return { ...head, parts: [
+      { id: "checks", title: "Automatic quality checks", help: "Green passed. <b>Yellow</b> means look carefully. <b>Red</b> failed and needs a written reason at sign-off.",
+        html: `${staleBanner}${R.meta.synthetic ? `<div class="banner warn">Synthetic NHANES-like data - pipeline demonstration only; estimates are not population estimates.</div>` : ""}
     <div class="row" style="margin-bottom:12px"><span class="chip ok">${cnt("pass")} pass</span><span class="chip warn">${cnt("warn")} warn</span><span class="chip bad">${cnt("fail")} fail</span><span class="chip info">${cnt("info")} info</span><span class="small muted">${R.meta.seconds}s · ${esc(R.meta.r_version)}</span></div>
-    <div class="checks">${c.map((x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)} · ${x.status.toUpperCase()}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p></div>`).join("")}</div>
-    <div class="grid g2" style="margin-top:18px"><div class="card"><h3 class="sub" style="margin-top:0">Participant flow</h3><div class="flow">${R.flow.map((f, i) => `${i ? `<div class="arrow">${f.excluded ? `<span>− ${f.excluded.toLocaleString()} ${esc(f.kind === "exclusion" ? "excluded" : "not eligible")}</span>` : ""}</div>` : ""}<div class="box"><b>${f.n.toLocaleString()}</b> <span class="small">${nice(f.label)}</span></div>`).join("")}</div></div>
+    <div class="checks">${c.map((x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)} · ${x.status.toUpperCase()}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p></div>`).join("")}</div>` },
+      { id: "flow", title: "Who was included", help: "How many people were in the data, how many were left out and why, and how the survey design was handled.",
+        html: `<div class="grid g2"><div class="card"><h3 class="sub" style="margin-top:0">Participant flow</h3><div class="flow">${R.flow.map((f, i) => `${i ? `<div class="arrow">${f.excluded ? `<span>− ${f.excluded.toLocaleString()} ${esc(f.kind === "exclusion" ? "excluded" : "not eligible")}</span>` : ""}</div>` : ""}<div class="box"><b>${f.n.toLocaleString()}</b> <span class="small">${nice(f.label)}</span></div>`).join("")}</div></div>
       <div class="card"><h3 class="sub" style="margin-top:0">Survey design</h3><dl class="kv"><dt>Weight</dt><dd><code>${esc(R.design.weight_variable)}</code> (${esc(R.design.weight_level)})</dd><dt>Cycles</dt><dd>${esc(R.design.cycles.join(", "))}</dd><dt>Strata / PSUs</dt><dd>${R.design.n_strata} / ${R.design.n_psu} (design df ${R.design.design_df})</dd><dt>Analytic df</dt><dd>${R.design.analytic_df}</dd><dt>Represents</dt><dd>${fx(R.design.sum_weights_millions, 1)} million people</dd><dt>Variance</dt><dd>Taylor linearization; lonely PSU: ${esc(R.design.lonely_psu)}</dd></dl>
-      <h3 class="sub">Source files</h3><ul class="tiny" style="padding-left:16px;margin:0">${R.meta.files.map((f) => `<li>${esc(f.file)} · ${esc(f.origin)} · n=${f.nrow.toLocaleString()} · md5 <span class="hash">${esc(f.md5.slice(0, 12))}</span></li>`).join("")}</ul></div></div>
-    <details class="card" style="margin-top:14px"><summary>Derivation audit (${R.derivation_audit.length} variables)</summary><table class="t" style="margin-top:8px"><thead><tr><th>Variable</th><th>Expression</th><th>Non-missing</th><th>Positive / distribution</th></tr></thead><tbody>${R.derivation_audit.map((a) => `<tr><td><code>${esc(a.name)}</code></td><td><code class="tiny">${esc(a.expr)}</code></td><td class="num">${a.n_nonmissing.toLocaleString()}</td><td class="tiny">${a.n_positive != null ? a.n_positive.toLocaleString() + " positive" : a.quantiles ? "min/Q1/med/Q3/max: " + a.quantiles.join(" / ") : a.levels ? Object.entries(a.levels).map(([k2, v]) => `${esc(k2)}: ${v}`).join("; ") : ""}</td></tr>`).join("")}</tbody></table></details>
-    <details class="card" style="margin-top:10px"><summary>Engine log & executed calls</summary><div class="console" style="margin-top:8px">${esc(R.log.join("\n"))}\n\n${esc(R.trace.join("\n"))}</div></details>
-    <div class="row" style="margin-top:18px"><button class="btn primary" data-act="go" data-stage="results">View results →</button></div>`;
+      <h3 class="sub">Source files</h3><ul class="tiny" style="padding-left:16px;margin:0">${R.meta.files.map((f) => `<li>${esc(f.file)} · ${esc(f.origin)} · n=${f.nrow.toLocaleString()} · md5 <span class="hash">${esc(f.md5.slice(0, 12))}</span></li>`).join("")}</ul></div></div>` },
+      { id: "technical", title: "Technical details (optional)", help: "For checking the exact calculations. You can skip this step.",
+        html: `<details class="card"><summary>Derivation audit (${R.derivation_audit.length} variables)</summary><table class="t" style="margin-top:8px"><thead><tr><th>Variable</th><th>Expression</th><th>Non-missing</th><th>Positive / distribution</th></tr></thead><tbody>${R.derivation_audit.map((a) => `<tr><td><code>${esc(a.name)}</code></td><td><code class="tiny">${esc(a.expr)}</code></td><td class="num">${a.n_nonmissing.toLocaleString()}</td><td class="tiny">${a.n_positive != null ? a.n_positive.toLocaleString() + " positive" : a.quantiles ? "min/Q1/med/Q3/max: " + a.quantiles.join(" / ") : a.levels ? Object.entries(a.levels).map(([k2, v]) => `${esc(k2)}: ${v}`).join("; ") : ""}</td></tr>`).join("")}</tbody></table></details>
+    <details class="card" style="margin-top:10px"><summary>Engine log & executed calls</summary><div class="console" style="margin-top:8px">${esc(R.log.join("\n"))}\n\n${esc(R.trace.join("\n"))}</div></details>` },
+    ] };
   }
-  return `<h1 class="page">Run & validate</h1><p class="lede">The approved plan is compiled into an executable specification and run by the R engine. ${"Every"} result is checked by automated QC before you see it.</p>
-  ${stale ? `<div class="banner warn">The plan has changed since this run (run plan ${esc(lr.plan_hash.slice(0, 10))}). Re-approve and re-run to update results. ${S.project.approved_current ? `<button class="btn sm" data-act="run">Re-run now</button>` : ""}</div>` : ""}${body}`;
 }
 
 /* ------------------------------------------------------------------ RESULTS */
@@ -556,32 +627,41 @@ function table1() {
 }
 function viewResults() {
   const R = S.results; const p = S.project.plan; const lr = latestRun(); const sm = S.summary || {};
-  if (!R) return `<div class="empty">No results yet.</div>`;
+  if (!R) return { title: "Results", parts: [{ id: "none", title: "No results yet", html: `<div class="empty">Run the analysis first.</div>`, noTalk: true }] };
   const base = `/api/projects/${S.project.id}/runs/${lr.id}`;
   const prevRows = R.prevalence.map((x) => `<tr><td>${nice(x.outcome_label)}${x.outcome_level ? " - " + esc(x.outcome_level) : ""}</td><td>${esc(x.group_var === "Overall" ? "" : x.group_label)}</td><td>${esc(x.group)}</td><td class="num">${x.n.toLocaleString()}</td><td class="num">${pct(x.est)} (${pct(x.lcl)}-${pct(x.ucl)})</td><td class="num">${x.pop_millions ?? ""}</td><td>${x.nchs === "meets standard" ? `<span class="chip ok" style="font-size:10.5px">ok</span>` : `<span class="chip warn" style="font-size:10.5px" title="${esc(x.nchs)}">flag</span>`}</td></tr>`).join("");
   const mrows = R.models.flatMap((m) => m.terms.filter((t) => t.term !== "(Intercept)" && (p.study_type !== "association" || t.variable === R.primary_estimate?.term)).map((t) => `<tr><td>${esc(m.label)}</td><td>${nice(t.label)}</td><td class="num">${m.n.toLocaleString()}</td><td class="num">${fx(t.est)} (${fx(t.lcl)} to ${fx(t.ucl)})</td><td class="num">${pfmt(t.p)}</td></tr>`)).join("");
   const srows = R.sensitivity.map((s) => `<tr><td>${nice(s.label)}</td><td class="num">${s.n?.toLocaleString() ?? ""}</td><td class="num">${s.error ? `<span style="color:var(--bad)">${esc(s.error)}</span>` : s.effect === "prevalence" ? `${pct(s.est)} (${pct(s.lcl)}-${pct(s.ucl)})` : `${esc(s.effect)} ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`}</td><td class="tiny">${esc(s.note || "")}</td></tr>`).join("");
-  return `${R.meta.synthetic ? `<div class="banner warn">Synthetic demonstration data - illustrative estimates only.</div>` : ""}
-  <h1 class="page">Results</h1><p class="lede">${nice(p.refined_question)}</p>
-  <div class="card">${headline()}</div>
-  ${benchCards() ? `<h2 class="sec">Replication check against published literature</h2><div class="grid g2">${benchCards()}</div>` : ""}
+  const synth = R.meta.synthetic ? `<div class="banner warn">Synthetic demonstration data - illustrative estimates only.</div>` : "";
+  return { title: "Results", lede: nice(p.refined_question), parts: [
+    { id: "main", title: "The main finding", help: "The headline number, then the same result in plain words. Press Listen to hear it.",
+      html: `${synth}<div class="card">${headline()}</div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3><p style="margin:0 0 10px">${nice(sm.plain_language || "")}</p>
-    <div class="row"><button class="btn sm" data-act="listen">🔊 Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div><audio id="audio" controls style="display:none;margin-top:8px;width:100%"></audio></div>
-  <h2 class="sec">Figures</h2><div class="grid g2">${R.figures.map((f, i) => `<figure class="fig"><img src="${base}/files/${f.file}" alt="${esc(f.title)}" loading="lazy"><figcaption><b>Figure ${i + 1}.</b> ${nice(f.title)}</figcaption></figure>`).join("")}</div>
-  <h2 class="sec">Table 1. Characteristics${R.table1?.by_label ? " by " + nice(R.table1.by_label) : ""}</h2>${table1()}
-  ${prevRows ? `<h2 class="sec">Table 2. Weighted prevalence</h2><div class="tablewrap"><table class="t"><thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>n</th><th>Weighted % (95% CI)</th><th>Millions</th><th>NCHS</th></tr></thead><tbody>${prevRows}</tbody></table></div>` : ""}
-  ${mrows ? `<h2 class="sec">Table 3. Regression (${esc(R.models[0].effect_label)})</h2><div class="tablewrap"><table class="t"><thead><tr><th>Model</th><th>Term</th><th>n</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${mrows}</tbody></table></div>` : ""}
-  ${R.interactions.length ? `<h2 class="sec">Effect modification</h2><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}
-  <h2 class="sec">Sensitivity analyses</h2><div class="tablewrap"><table class="t"><thead><tr><th>Analysis</th><th>n</th><th>Estimate</th><th>Note</th></tr></thead><tbody>${srows}</tbody></table></div>
-  <h2 class="sec">Prior literature</h2><div class="card">${S.lit ? (S.lit.error ? `<p class="small" style="color:var(--bad)">${esc(S.lit.error)}</p>` : S.lit.results.map((r) => `<p class="small" style="margin:0 0 6px"><a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="muted">${esc(r.first_author)} · ${esc(r.journal)} · ${esc(r.pubdate)}</span></p>`).join("") || `<p class="muted small">No matches.</p>`) + `<p class="tiny muted">Query: <code>${esc(S.lit.query)}</code></p>` : `<button class="btn sm" data-act="lit">Search PubMed for related NHANES studies</button>`}</div>
-  <h2 class="sec">Where next? Journals, conferences and funding</h2>${whereNext()}
-  <h2 class="sec">Outputs</h2><div class="card row">
+    <div class="row"><button class="btn sm" data-act="listen">🔊 Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div><audio id="audio" controls style="display:none;margin-top:8px;width:100%"></audio></div>` },
+    benchCards() && { id: "bench", title: "Does it match published studies?", help: "Q2E's numbers next to numbers already published, as a sanity check.",
+      html: `<div class="grid g2">${benchCards()}</div>` },
+    R.figures.length && { id: "figures", title: "Figures", help: "Charts of the results.",
+      html: `<div class="grid g2">${R.figures.map((f, i) => `<figure class="fig"><img src="${base}/files/${f.file}" alt="${esc(f.title)}" loading="lazy"><figcaption><b>Figure ${i + 1}.</b> ${nice(f.title)}</figcaption></figure>`).join("")}</div>` },
+    { id: "tables", title: "Tables", help: "Table 1 describes the people in the study; the other tables give the detailed numbers.",
+      html: `<h3 class="sub" style="margin-top:0">Table 1. Characteristics${R.table1?.by_label ? " by " + nice(R.table1.by_label) : ""}</h3>${table1()}
+  ${prevRows ? `<h3 class="sub">Table 2. Weighted prevalence</h3><div class="tablewrap"><table class="t"><thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>n</th><th>Weighted % (95% CI)</th><th>Millions</th><th>NCHS</th></tr></thead><tbody>${prevRows}</tbody></table></div>` : ""}
+  ${mrows ? `<h3 class="sub">Table 3. Regression (${esc(R.models[0].effect_label)})</h3><div class="tablewrap"><table class="t"><thead><tr><th>Model</th><th>Term</th><th>n</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${mrows}</tbody></table></div>` : ""}
+  ${R.interactions.length ? `<h3 class="sub">Effect modification</h3><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}` },
+    { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "If these give similar answers to the main finding, the result is more trustworthy.",
+      html: `<div class="tablewrap"><table class="t"><thead><tr><th>Analysis</th><th>n</th><th>Estimate</th><th>Note</th></tr></thead><tbody>${srows}</tbody></table></div>` },
+    { id: "literature", title: "Related published studies", help: "Search PubMed for NHANES studies on the same topic.",
+      html: `<div class="card">${S.lit ? (S.lit.error ? `<p class="small" style="color:var(--bad)">${esc(S.lit.error)}</p>` : S.lit.results.map((r) => `<p class="small" style="margin:0 0 6px"><a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="muted">${esc(r.first_author)} · ${esc(r.journal)} · ${esc(r.pubdate)}</span></p>`).join("") || `<p class="muted small">No matches.</p>`) + `<p class="tiny muted">Query: <code>${esc(S.lit.query)}</code></p>` : `<button class="btn sm" data-act="lit">Search PubMed for related NHANES studies</button>`}</div>
+` },
+    { id: "where", title: "Where to publish and get funding", help: "Journals that publish studies like this, upcoming conference deadlines, and NIH funding leads.",
+      html: whereNext() },
+    { id: "outputs", title: "Download your outputs", help: "The manuscript draft, the data bundle so anyone can repeat the analysis, and the exact plan that was run.",
+      html: `<div class="card row">
     <a class="btn primary" href="${base}/report.html" target="_blank">Manuscript (JAMA Netw Open style)</a>
     ${S.meta.llm.enabled ? `<a class="btn" href="${base}/report.html?llm=true" target="_blank">Manuscript + AI narrative</a>` : ""}
     <a class="btn" href="${base}/report.md" target="_blank">Markdown</a>
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
-    <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>
-  <div class="row" style="margin-top:20px"><button class="btn primary" data-act="go" data-stage="signoff">Investigator sign-off →</button></div>`;
+    <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
+  ] };
 }
 
 function auditCard(a) {
@@ -630,29 +710,34 @@ function viewSignoff() {
   const pj = S.project; const R = S.results; const lr = latestRun();
   if (pj.signoff) {
     const so = pj.signoff;
-    return `<h1 class="page">Signed off</h1><div class="cert"><h3>${esc(pj.plan.title)}</h3><p class="small">Signed by <b>${esc(so.by)}</b> on ${esc(so.at.replace("T", " "))}${so.synthetic ? ` · <span class="chip warn">synthetic data</span>` : ""}</p>
+    return { title: "Signed off", parts: [{ id: "certificate", title: "Sign-off certificate", help: "This study is finished and locked. You can still leave comments for the record.",
+      html: `<div class="cert"><h3>${esc(pj.plan.title)}</h3><p class="small">Signed by <b>${esc(so.by)}</b> on ${esc(so.at.replace("T", " "))}${so.synthetic ? ` · <span class="chip warn">synthetic data</span>` : ""}</p>
       <dl class="kv"><dt>Plan hash</dt><dd class="hash">${esc(so.plan_hash)}</dd><dt>Results hash</dt><dd class="hash">${esc(so.results_sha256)}</dd><dt>Run</dt><dd>${esc(so.run_id)}</dd><dt>Provenance</dt><dd>${pj.chain.valid ? `✓ ${pj.chain.events} events, chain intact` : "✗ chain broken"} <span class="hash">${esc(pj.chain.head || "")}</span></dd>
-      ${Object.keys(so.overrides || {}).length ? `<dt>Overrides</dt><dd>${Object.entries(so.overrides).map(([k2, v]) => `<b>${esc(k2)}</b>: ${esc(v)}`).join("<br>")}</dd>` : ""}</dl></div>
-      ${provTable()}`;
+      ${Object.keys(so.overrides || {}).length ? `<dt>Overrides</dt><dd>${Object.entries(so.overrides).map(([k2, v]) => `<b>${esc(k2)}</b>: ${esc(v)}`).join("<br>")}</dd>` : ""}</dl></div>` },
+      { id: "ledger", title: "Full record of every action", help: "Every action ever taken on this study, in a tamper-evident chain.", html: provTable(true) }] };
   }
   const fails = (R?.checks || []).filter((c) => c.status === "fail");
-  return `<h1 class="page">Investigator sign-off</h1><p class="lede">AI drafted and executed; you decide. Sign-off binds your name to this exact plan hash and results hash in the provenance ledger.</p>
-  <div class="grid g2"><div class="card"><h3 class="sub" style="margin-top:0">Attestations</h3>${ATTEST.map((a, i) => `<label class="row small" style="align-items:flex-start;margin-bottom:8px"><input type="checkbox" class="att" data-i="${i}"> ${esc(a)}</label>`).join("")}
-    ${fails.map((c) => `<label class="field" style="margin-top:8px">Override reason for failed check: ${esc(c.title)}<textarea class="ovr" data-id="${esc(c.id)}" rows="2"></textarea></label>`).join("")}
-    <div class="row" style="margin-top:12px"><input type="text" id="signer" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><button class="btn primary" data-act="sign">Sign off results</button></div></div>
-  <div class="card"><h3 class="sub" style="margin-top:0">What stays under human supervision</h3><ul class="small" style="padding-left:18px;margin:0">
+  return { title: "Investigator sign-off", lede: "The AI drafted and ran the study; you make the final decision. Signing links your name to this exact plan and these exact results.",
+    parts: [
+      { id: "human", title: "What you are responsible for", help: "Read what stays under human control before you sign.",
+        html: `<div class="card"><h3 class="sub" style="margin-top:0">What stays under human supervision</h3><ul class="small" style="padding-left:18px;margin:0">
     <li><b>Question framing</b> - the AI proposes; the investigator decides what is clinically meaningful.</li>
     <li><b>Case definitions</b> - guideline thresholds and every operational assumption require explicit acknowledgement; AI-proposed definitions cannot run until approved.</li>
     <li><b>Confounder selection</b> - agents flag mediators and definitional overlap; causal structure is the investigator's call.</li>
     <li><b>Approval gate</b> - nothing executes without approval of the exact plan hash; any edit invalidates approval.</li>
     <li><b>QC failures</b> - cannot be silently ignored; each needs a documented override.</li>
     <li><b>Interpretation & publication</b> - narrative is drafted from aggregate results only, filtered for causal language, and signed by a human.</li>
-    <li><b>Data governance</b> - restricted data use only approved/local models; row-level data never reach an LLM.</li></ul></div></div>
-  ${provTable()}`;
+    <li><b>Data governance</b> - restricted data use only approved/local models; row-level data never reach an LLM.</li></ul></div>` },
+      { id: "ledger", title: "Full record of every action", help: "Every action taken on this study so far, in a tamper-evident chain. You can skim this.", html: provTable(true) },
+      { id: "sign", title: "Sign off", help: "Tick each box you agree with, explain any failed check, type your name and sign.",
+        html: `<div class="card">${ATTEST.map((a, i) => `<label class="row small" style="align-items:flex-start;margin-bottom:8px"><input type="checkbox" class="att" data-i="${i}"> ${esc(a)}</label>`).join("")}
+    ${fails.map((c) => `<label class="field" style="margin-top:8px">Override reason for failed check: ${esc(c.title)}<textarea class="ovr" data-id="${esc(c.id)}" rows="2"></textarea></label>`).join("")}
+    <div class="row" style="margin-top:12px"><input type="text" id="signer" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><button class="btn primary" data-act="sign">Sign off results</button></div></div>` },
+    ] };
 }
-function provTable() {
+function provTable(noTitle) {
   const ev = S.project.events;
-  return `<h2 class="sec">Provenance ledger</h2><div class="tablewrap"><table class="t"><thead><tr><th>#</th><th>Time (UTC)</th><th>Actor</th><th>Action</th><th>Plan</th><th>Hash</th></tr></thead><tbody>${ev.slice().reverse().map((e) => `<tr><td class="num">${e.seq}</td><td class="num">${esc(e.at.replace("T", " ").slice(0, 19))}</td><td>${esc(e.actor)}</td><td>${esc(e.action.replace(/_/g, " "))}<div class="tiny muted">${esc(JSON.stringify(e.detail).slice(0, 140))}</div></td><td class="hash">${esc(e.plan_hash.slice(0, 10))}</td><td class="hash">${esc(e.hash.slice(0, 10))}</td></tr>`).join("")}</tbody></table></div>`;
+  return `${noTitle ? "" : `<h2 class="sec">Provenance ledger</h2>`}<div class="tablewrap"><table class="t"><thead><tr><th>#</th><th>Time (UTC)</th><th>Actor</th><th>Action</th><th>Plan</th><th>Hash</th></tr></thead><tbody>${ev.slice().reverse().map((e) => `<tr><td class="num">${e.seq}</td><td class="num">${esc(e.at.replace("T", " ").slice(0, 19))}</td><td>${esc(e.actor)}</td><td>${esc(e.action.replace(/_/g, " "))}<div class="tiny muted">${esc(JSON.stringify(e.detail).slice(0, 140))}</div></td><td class="hash">${esc(e.plan_hash.slice(0, 10))}</td><td class="hash">${esc(e.hash.slice(0, 10))}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 /* ------------------------------------------------------------------ actions */
@@ -775,14 +860,29 @@ const A = {
   swap: () => edit({ op: "swap_roles" }, "swap exposure/outcome"),
   fix: (el) => { const i = (S.project.plan.review || []).find((x) => x.id === el.dataset.id); if (i?.fix) edit({ ...i.fix, by: store.get("q2e.name", "") || "investigator" }, `fix: ${i.title}`); },
   rmpill: (el) => { const f = el.dataset.field; edit({ op: `set_${f}`, value: S.project.plan[f].filter((x) => x !== el.dataset.v) }); },
+  sub: (el) => {
+    const key = stepKey(route().stage); const i = parseInt(el.dataset.i, 10) || 0;
+    S.sub[key] = i; S.reach[key] = Math.max(S.reach[key] || 0, i); saveSteps(); render();
+  },
+  histToggle: () => { S.histOpen = !S.histOpen; rerender(); },
   pcSend: async (el) => {
     const inp = $("#pcInput"); const msg = (el.dataset.msg || (inp && inp.value) || "").trim();
     if (msg.length < 2) return toast("Type what you want to change first", true);
-    const btn = $("#pcBtn"); if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>`; }
+    const btn = $("#pcBtn"); if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Working…`; }
+    const st = S.curStep || {};
     try {
-      S.project = await api(`/api/projects/${S.project.id}/protocol-chat`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst" } });
-      await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight; const i2 = $("#pcInput"); if (i2) i2.focus();
-    } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = "Send"; } }
+      S.project = await api(`/api/projects/${S.project.id}/protocol-chat`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: `${st.stage}:${st.id}`, step_title: st.title } });
+      await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight;
+    } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = "Ask the AI to change it"; } }
+  },
+  comment: async () => {
+    const inp = $("#pcInput"); const msg = ((inp && inp.value) || "").trim();
+    if (msg.length < 2) return toast("Type your comment first", true);
+    const st = S.curStep || {};
+    try {
+      S.project = await api(`/api/projects/${S.project.id}/comments`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst", step: `${st.stage}:${st.id}`, step_title: st.title } });
+      toast("Comment saved with today's date and time"); await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight;
+    } catch (e) { toast(e.message, true); }
   },
   amUndo: async (el) => {
     try { S.project = await api(`/api/projects/${S.project.id}/amendments/${el.dataset.id}/undo`, { method: "POST", body: { actor: store.get("q2e.name", "") || "analyst" } }); toast("Change undone"); rerender(); }
@@ -854,7 +954,10 @@ document.addEventListener("click", (e) => {
   const fn = A[el.dataset.act]; if (fn && !(el.tagName === "INPUT" || el.tagName === "SELECT")) { e.preventDefault(); fn(el, e); }
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && e.target.id === "pcInput") { e.preventDefault(); A.pcSend(e.target); }
+  if (e.key === "Enter" && !e.shiftKey && e.target.id === "pcInput") {
+    e.preventDefault();
+    if ($("#pcBtn")) A.pcSend(e.target); else A.comment();
+  }
 });
 document.addEventListener("change", (e) => {
   const el = e.target; const act = el.dataset?.act; if (!act) return;

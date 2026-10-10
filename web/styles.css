@@ -216,3 +216,29 @@ body:has(.cq-overlay) { overflow: hidden; }
 .ch-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 10px 0 4px; }
 .ch-item { border-top: 1px solid var(--line); padding: 8px 0; font-size: 13.5px; }
 .ch-item.undone ul { text-decoration: line-through; color: var(--ink-3); }
+.pc-msg.note { background: var(--panel); border: 1px dashed var(--line); }
+.hbar { padding: 10px 14px; margin-bottom: 14px; border-left: 4px solid var(--accent); }
+
+/* Step-by-step walkthrough */
+.sp-head { margin-bottom: 10px; }
+.sp-dots { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.sp-dot { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-3);
+  border-radius: 999px; padding: 4px 10px 4px 4px; font-size: 12.5px; cursor: pointer; }
+.sp-dot .n { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 600; border: 1.5px solid var(--line); }
+.sp-dot.done { color: var(--ink-2); } .sp-dot.done .n { background: var(--accent); border-color: var(--accent); color: #fff; }
+.sp-dot.on { background: var(--accent-2); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; } .sp-dot.on .n { border-color: var(--accent); color: var(--accent); }
+.sp-dot:disabled { opacity: .5; cursor: default; }
+.sp-step { animation: spIn .25s ease; }
+@keyframes spIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.sp-title { margin: 0 0 12px; }
+.sp-title h2 { margin: 2px 0 0; font: 600 22px var(--serif); }
+.sp-n { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
+.sp-talk { margin-top: 16px; border: 1px solid var(--accent); background: var(--accent-2); }
+.sp-talk textarea { width: 100%; box-sizing: border-box; }
+.sp-nav { margin-top: 16px; position: sticky; bottom: 0; z-index: 2; }
+.steps li.active { flex-wrap: wrap; }
+.steps .substeps { list-style: none; padding: 4px 0 0 30px; margin: 0; width: 100%; }
+.steps .substeps li { padding: 3px 6px; font-size: 12.5px; font-weight: 400; color: var(--ink-3); }
+.steps .substeps li.on { color: var(--accent-ink); font-weight: 600; background: var(--panel); }
+.steps .substeps li.done { color: var(--ink-2); }
+.steps .substeps li.locked { opacity: .5; cursor: default; }
