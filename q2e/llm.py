@@ -10,6 +10,7 @@ Providers
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -127,16 +128,25 @@ class BedrockProvider(BaseProvider):
         client = boto3.client("bedrock-runtime", region_name=self.region,
                               config=Config(read_timeout=120, retries={"max_attempts": 2}))
         cfg = {"maxTokens": max_tokens, "temperature": 0.1}
-        for _ in range(2):
+        # hidden "thinking" makes newer Claude models slow and uses up maxTokens before the JSON answer is written
+        extra = {"thinking": {"type": "disabled"}, "output_config": {"effort": "low"}} if "anthropic" in self.model else {}
+        for _ in range(4):
             try:
+                kw = {"additionalModelRequestFields": extra} if extra else {}
                 resp = client.converse(modelId=self.model, system=[{"text": system}],
-                                       messages=[{"role": "user", "content": [{"text": user}]}], inferenceConfig=cfg)
+                                       messages=[{"role": "user", "content": [{"text": user}]}], inferenceConfig=cfg, **kw)
                 break
             except Exception as e:  # noqa: BLE001 - botocore raises many types; show the AWS message
-                if "temperature" in str(e) and "temperature" in cfg:
+                err = str(e)
+                if "temperature" in err and "temperature" in cfg:
                     cfg = {"maxTokens": max_tokens}     # newer models reject a temperature setting
                     continue
+                if extra and "ValidationException" in err and any(f in err for f in ("thinking", "output_config", "effort", "Extra inputs")):
+                    extra = {k: v for k, v in extra.items() if k not in err} if any(k in err for k in extra) else {}
+                    continue
                 raise LLMError(f"Bedrock: {e}") from e
+        else:
+            raise LLMError("Bedrock: the model rejected every request setting")
         return "".join(c.get("text", "") for c in resp["output"]["message"]["content"])
 
 
@@ -265,16 +275,34 @@ class LLMClient:
         return {"provider": self.provider.name, "model": self.provider.model, "configured": ok, "why": "" if ok else why,
                 "policy_allowed": allowed, "policy_message": msg, "enabled": self.enabled}
 
+    def _cache_file(self, fp: str, max_tokens: int):
+        from .config import settings
+        key = hashlib.sha256(f"{self.provider.name}|{self.provider.model}|{max_tokens}|{fp}".encode()).hexdigest()[:32]
+        return settings.workspace / "llm_cache" / f"{key}.json"
+
     def complete_json(self, agent: str, system: str, user: str, max_tokens: int = 2000) -> dict:
         if not self.enabled:
             raise LLMError("LLM disabled")
         user_clean, _ = privacy.scrub(user)
         fp = privacy.payload_fingerprint({"system": system, "user": user_clean})
+        cache = self._cache_file(fp, max_tokens)
+        if cache.exists():          # the exact same request was answered before: reuse it instead of waiting again
+            try:
+                data = json.loads(cache.read_text(encoding="utf-8"))
+                self.calls.append(LLMCall(self.provider.name, self.provider.model, agent, fp, 0.0, True))
+                return data
+            except (OSError, ValueError):
+                pass
         t0 = time.time()
         try:
             out = self.provider.complete(system, user_clean, max_tokens=max_tokens)
             data = extract_json(out)
             self.calls.append(LLMCall(self.provider.name, self.provider.model, agent, fp, round(time.time() - t0, 2), True))
+            try:
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                cache.write_text(json.dumps(data), encoding="utf-8")
+            except OSError:
+                pass
             return data
         except Exception as e:  # noqa: BLE001
             self.calls.append(LLMCall(self.provider.name, self.provider.model, agent, fp, round(time.time() - t0, 2), False, str(e)[:300]))

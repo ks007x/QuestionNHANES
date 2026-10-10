@@ -125,16 +125,6 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
             plan["custom_variables"].append({"name": name, "expr": expr, "type": u.get("type", "binary") if u.get("type") in ("binary", "continuous") else "binary",
                                              "label": u.get("label") or u.get("phrase"), "source": "ai", "role_hint": u.get("role"), "confidence": 0.6})
             dialogue.append({"agent": "Data Steward", "source": "llm", "message": f"LLM proposed derived variable '{name}' = {expr} for '{u.get('phrase')}' - requires your approval before use."})
-    if client.enabled:
-        try:
-            st = _statistician_llm(client, plan)
-            if st.get("rationale"):
-                plan["rationale"]["statistician_llm"] = st["rationale"]
-            for s in (st.get("suggestions") or [])[:3]:
-                dialogue.append({"agent": "Statistician (LLM)", "source": "llm", "message": s})
-        except LLMError as e:
-            dialogue.append({"agent": "Statistician (LLM)", "source": "llm", "message": f"Unavailable: {e}"})
-
     # rule-agent dialogue (always)
     o, x = plan["outcome"], plan.get("exposure")
     dialogue.insert(0, {"agent": "Investigator", "source": "rules", "message":
@@ -153,8 +143,21 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     dialogue.append({"agent": "Statistician", "source": "rules", "message": plan["rationale"]["statistician"]})
     issues = planner.review_plan(plan, k)
     if client.enabled:
+        # the Statistician and Reviewer read the same draft, so both AI calls run at the same time
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            st_job = pool.submit(_statistician_llm, client, plan)
+            rv_job = pool.submit(_reviewer_llm, client, plan, list(issues))
         try:
-            rv = _reviewer_llm(client, plan, issues)
+            st = st_job.result()
+            if st.get("rationale"):
+                plan["rationale"]["statistician_llm"] = st["rationale"]
+            for s in (st.get("suggestions") or [])[:3]:
+                dialogue.append({"agent": "Statistician (LLM)", "source": "llm", "message": s})
+        except LLMError as e:
+            dialogue.append({"agent": "Statistician (LLM)", "source": "llm", "message": f"Unavailable: {e}"})
+        try:
+            rv = rv_job.result()
             for i, it in enumerate((rv.get("issues") or [])[:4]):
                 issues.append({"id": f"llm{i + 1}", "severity": it.get("severity", "minor") if it.get("severity") in ("major", "minor") else "minor",
                                "agent": "Reviewer (LLM)", "title": str(it.get("title", ""))[:140], "detail": str(it.get("detail", ""))[:600], "fix": None})

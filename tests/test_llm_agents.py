@@ -75,6 +75,20 @@ def test_ai_interviewer_only_offers_choices_nhanes_has(monkeypatch):
     assert InterviewerProvider.calls == 1
 
 
+def test_rule_questions_come_first_and_ai_questions_separately(monkeypatch):
+    from q2e import ai_interview, expertise
+    monkeypatch.setattr(llm, "get_provider", lambda name=None: InterviewerProvider())
+    monkeypatch.setattr(llm.privacy, "provider_allowed", lambda p: (True, "ok"))
+    ai_interview._CACHE.clear()
+    idea = "How common is hypertension among US adults?"
+    fast = expertise.clarify(idea, provider="fake", use_ai=False)
+    assert not any(q.get("source") == "ai" for q in fast["questions"]) and fast["ai"]["enabled"]
+    extra = expertise.ai_questions(idea, provider="fake")
+    assert [q["source"] for q in extra["questions"]] == ["ai"]
+    # the full list (used when answers are applied) is the rule questions followed by the same AI questions
+    assert expertise.clarify(idea, provider="fake")["questions"] == fast["questions"] + extra["questions"]
+
+
 def test_ai_interviewer_failure_falls_back_to_rules(monkeypatch):
     from q2e import ai_interview, expertise
 

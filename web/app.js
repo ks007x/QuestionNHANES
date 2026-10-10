@@ -276,11 +276,35 @@ function novChip(c, qid, oid) {
 async function loadOptionNovelty(qid) {
   const c = S.clarify; if (!c) return;
   c.nov = c.nov || {}; if (c.nov[qid]) return;
-  c.nov[qid] = { loading: true }; rerender();
+  c.nov[qid] = { loading: true }; redrawClarify();
   try {
     const r = await api("/api/clarify/novelty", { method: "POST", body: { question: c.question, cycles: S.ask.cycles, level: c.level_used, provider: S.ask.provider || null, qid, answers: c.answers } });
-    if (S.clarify === c) { c.nov[qid] = r; rerender(); }
-  } catch (e) { if (S.clarify === c) { c.nov[qid] = { options: {} }; rerender(); } }
+    if (S.clarify === c) { c.nov[qid] = r; redrawClarify(); }
+  } catch (e) { if (S.clarify === c) { c.nov[qid] = { options: {} }; redrawClarify(); } }
+}
+async function fetchAiQuestions(q) {
+  try { return await api("/api/clarify/ai", { method: "POST", body: { question: q, cycles: S.ask.cycles, provider: S.ask.provider || null } }); }
+  catch (e) { return { questions: [], note: `The AI interviewer is unavailable (${e.message}); the questions come from Q2E's rules.` }; }
+}
+async function loadAiQuestions(c) {
+  const extra = await fetchAiQuestions(c.question);
+  if (S.clarify !== c) return;
+  c.aiLoading = false; c.ai = { ...(c.ai || {}), note: extra.note };
+  const have = new Set(c.questions.map((x) => x.id));
+  const add = extra.questions.filter((x) => !have.has(x.id));
+  c.questions = [...c.questions, ...add];
+  redrawClarify();
+  if (add.length) toast(`The AI interviewer added ${add.length} question${add.length > 1 ? "s" : ""} at the end.`);
+}
+/* Redraw only the follow-up question box (not the whole page), keeping the cursor in a text box being typed in. */
+function redrawClarify() {
+  const box = document.querySelector(".cq-overlay");
+  if (!box || !S.clarify) return rerender();
+  const typing = document.activeElement && document.activeElement.id && document.activeElement.id.startsWith("cqt_") ? document.activeElement : null;
+  const id = typing && typing.id; const pos = typing && typing.selectionStart;
+  box.outerHTML = clarifyCard(S.clarify);
+  const again = id && document.getElementById(id);
+  if (again) { again.focus(); again.setSelectionRange(pos, pos); }
 }
 
 function clarifyCard(c) {
@@ -312,7 +336,8 @@ function clarifyCard(c) {
     ${step === 0 && (c.understood || []).length ? `<div class="tiny" style="margin-top:10px;padding:8px 10px;border:1px solid var(--line, #444);border-radius:8px">
       <b>What we understood from your idea</b> <span class="muted">(so we won't ask about these again; if something is wrong, use "Edit my idea")</span>
       <ul style="margin:4px 0 0 16px">${c.understood.map((u) => `<li><b>${esc(u.label)}:</b> ${esc(u.value)}${u.hint ? ` <span class="muted">- ${esc(u.hint)}</span>` : ""}</li>`).join("")}</ul></div>` : ""}
-    ${step === 0 && c.ai && c.ai.note ? `<div class="banner warn" style="margin:10px 0 0">${esc(c.ai.note)}</div>` : ""}
+    ${c.aiLoading ? `<div class="tiny muted" style="margin:8px 0 0"><span class="spinner"></span> 🤖 The AI interviewer is reading your idea and may add a question at the end. You can start answering.</div>` : ""}
+    ${c.ai && c.ai.note ? `<div class="banner warn" style="margin:10px 0 0">${esc(c.ai.note)}</div>` : ""}
     <div style="margin-top:14px">${q.source === "ai" ? `<span class="chip ai-chip" title="Written by the AI interviewer (${esc((c.ai && c.ai.model) || "")}). Every choice was checked against the NHANES catalog before it was shown.">🤖 Asked by AI · choices checked against NHANES</span><br>` : ""}<b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
     <div style="display:grid;gap:8px;margin-top:10px">${opts}</div>
     ${q.free_text ? `<input type="text" id="cqt_${q.id}" value="${esc(a.text || "")}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:10px;width:100%">` : ""}
@@ -1101,7 +1126,7 @@ const A = {
     const q = $("#q").value.trim(); if (q.length < 8) return toast("Describe your research idea first", true);
     store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
     let c = null;
-    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles, provider: S.ask.provider || null } }); } catch {}
+    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles, provider: S.ask.provider || null, ai: false } }); } catch {}
     S.rewrite = null;
     if (c && c.needs_rewrite) {
       S.rewrite = c.needs_rewrite; S.clarify = null;
@@ -1109,9 +1134,21 @@ const A = {
       $("#rewriteCard")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    const aiOn = !!(c && c.ai && c.ai.enabled);
     if (c && c.questions.length) {
-      S.clarify = { ...c, question: q, step: 0, answers: {} };
-      return rerender();
+      // rule-based questions show at once; the AI interviewer's are added when they arrive
+      S.clarify = { ...c, question: q, step: 0, answers: {}, aiLoading: aiOn };
+      await rerender();
+      if (aiOn) loadAiQuestions(S.clarify);
+      return;
+    }
+    if (aiOn) {
+      el.innerHTML = `<span class="spinner"></span> AI interviewer reading your idea…`;
+      const extra = await fetchAiQuestions(q);
+      if (extra.questions.length) {
+        S.clarify = { ...c, questions: extra.questions, ai: { ...c.ai, note: extra.note }, question: q, step: 0, answers: {} };
+        return rerender();
+      }
     }
     // nothing to ask: still send (empty) answers so the server applies spelling fixes and records what it understood
     await createProject(q, c ? { answers: {}, level: c.level_used } : null, el);
@@ -1152,8 +1189,8 @@ const A = {
     }
     location.hash = "#/";
   },
-  cqBack: () => { if (S.clarify.step > 0) { S.clarify.step--; rerender(); } },
-  cqNext: () => { const c = S.clarify; const q = c.questions[c.step]; if (answered(q, c.answers[q.id] || {})) { c.step++; rerender(); } },
+  cqBack: () => { if (S.clarify.step > 0) { S.clarify.step--; redrawClarify(); } },
+  cqNext: () => { const c = S.clarify; const q = c.questions[c.step]; if (answered(q, c.answers[q.id] || {})) { c.step++; redrawClarify(); } },
   clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: S.clarify.answers, level: S.clarify.level_used }, el),
   upload: async () => {
     const f = $("#dsData").files[0]; if (!f) return toast("Choose a CSV data file", true);

@@ -949,8 +949,19 @@ def personal_notice(question: str) -> str:
     return ""
 
 
+def ai_questions(question: str, cycles: list[str] | None = None, level: str | None = None,
+                 provider: str | None = None) -> dict[str, Any]:
+    """Only the AI interviewer's extra questions (the page shows the rule-based ones first, then adds these)."""
+    from . import ai_interview
+    info = clarify(question, cycles, level, provider, use_ai=False)
+    if info["needs_rewrite"]:
+        return {"questions": [], "note": None}
+    qs, note = ai_interview.suggest(info["question_used"], info["understood"], info["questions"], get_knowledge(), provider)
+    return {"questions": qs, "note": note}
+
+
 def clarify(question: str, cycles: list[str] | None = None, level: str | None = None,
-            provider: str | None = None) -> dict[str, Any]:
+            provider: str | None = None, use_ai: bool = True) -> dict[str, Any]:
     """Main entry point for the API: detect the level (unless overridden) and build questions.
     Rule-based questions come first; the AI interviewer (when an LLM is configured) may add checked ones after them."""
     from . import ai_interview
@@ -969,7 +980,7 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
         rewrite, qs = rewrite_help(clean, parsed, k), []
     read = understood(clean, parsed, spelling, qs, k)
     ai_note = None
-    if not rewrite and not parsed.get("hard_stop"):
+    if use_ai and not rewrite and not parsed.get("hard_stop"):
         extra, ai_note = ai_interview.suggest(clean, read, qs, k, provider)
         qs = qs + extra
     st = LLMClient(provider).status()
@@ -1108,11 +1119,11 @@ def _swap_word(text: str, old: str, new: str) -> str:
 
 
 def apply_answers(question: str, answers: dict[str, dict], level: str | None = None,
-                  cycles: list[str] | None = None, provider: str | None = None) -> dict[str, Any]:
+                  cycles: list[str] | None = None, provider: str | None = None, use_ai: bool = True) -> dict[str, Any]:
     """answers = {question_id: {"option": option_id, "text": free text}}.
 
     Returns {question: refined text, fixes: [planner.apply_fix ops], record: what was asked and answered}."""
-    info = clarify(question, cycles, level, provider)
+    info = clarify(question, cycles, level, provider, use_ai=use_ai)
     refined, fixes, record = info["question_used"].rstrip(), [], []
     if refined and refined[-1] not in ".?!":
         refined += "."      # so each answer is added as its own sentence

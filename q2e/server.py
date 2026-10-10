@@ -99,6 +99,7 @@ class ClarifyQ(BaseModel):
     cycles: list[str] | None = None
     level: str | None = None     # optional override of the detected expertise level
     provider: str | None = None  # AI used by the interviewer (None = server default)
+    ai: bool = True              # False = rule-based questions only (the page fetches the AI's from /api/clarify/ai)
 
 
 class OptionNovelty(BaseModel):
@@ -114,7 +115,8 @@ class OptionNovelty(BaseModel):
 def clarify_novelty(body: OptionNovelty):
     """Novelty score for the study each follow-up choice would produce (PubMed/MEDLINE, cached)."""
     from . import novelty as _nov
-    info = expertise.clarify(body.question, body.cycles, body.level, body.provider)
+    use_ai = body.qid.startswith("ai") or any(a.startswith("ai") for a in (body.answers or {}))
+    info = expertise.clarify(body.question, body.cycles, body.level, body.provider, use_ai=use_ai)
     q = next((x for x in info["questions"] if x["id"] == body.qid), None)
     if not q:
         _bad("Unknown follow-up question", 404)
@@ -124,7 +126,7 @@ def clarify_novelty(body: OptionNovelty):
             continue
         try:
             ans = {**(body.answers or {}), body.qid: {"option": o["id"]}}
-            r = expertise.apply_answers(body.question, ans, body.level, body.cycles, body.provider)
+            r = expertise.apply_answers(body.question, ans, body.level, body.cycles, body.provider, use_ai=use_ai)
             plan = planner.draft(r["question"], body.cycles or None)
             if r.get("fixes"):
                 plan = expertise.apply_fixes(plan, r["fixes"])
@@ -138,7 +140,13 @@ def clarify_novelty(body: OptionNovelty):
 @app.post("/api/clarify")
 def clarify(body: ClarifyQ):
     """Detect the user's expertise from their wording and return adaptive follow-up questions."""
-    return expertise.clarify(body.question, body.cycles, body.level, body.provider)
+    return expertise.clarify(body.question, body.cycles, body.level, body.provider, use_ai=body.ai)
+
+
+@app.post("/api/clarify/ai")
+def clarify_ai(body: ClarifyQ):
+    """The AI interviewer's extra follow-up questions, every choice checked against the NHANES catalog."""
+    return expertise.ai_questions(body.question, body.cycles, body.level, body.provider)
 
 
 @app.post("/api/projects")

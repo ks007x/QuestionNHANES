@@ -174,7 +174,8 @@ def _rebuild(proj: dict, extra_requests: list[str]) -> dict:
     if clar.get("answers"):
         try:
             fixes = expertise.apply_answers(clar.get("original_question") or proj["question"], clar["answers"],
-                                            clar.get("level_used"), ds.get("cycles"))["fixes"]
+                                            clar.get("level_used"), ds.get("cycles"),
+                                            use_ai=any(a.startswith("ai") for a in clar["answers"]))["fixes"]
             new = expertise.apply_fixes(new, fixes)
         except Exception:  # noqa: BLE001 - an old answer may no longer apply to the new design
             pass
