@@ -1,0 +1,129 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T16:38:35+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "Is physical activity associated with diabetes?"
+      },
+      "plan_hash": "bcd685db3d7a8e90efb62648fdf357fc5254bfc9826ddbdc514d07b94d5015ee",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "0d99edd4cceb57b80ea167a961a44144ea69754a617db5ea8c69ba40c462d5f3"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T16:38:35+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_6cd20882e5",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "bcd685db3d7a8e90efb62648fdf357fc5254bfc9826ddbdc514d07b94d5015ee",
+      "prev": "0d99edd4cceb57b80ea167a961a44144ea69754a617db5ea8c69ba40c462d5f3",
+      "hash": "968a382aec2e1b249ed3e8ec47b75f1a88aa542ba233aaa2a6fda9aec1546fc2"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T16:38:36+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+      "prev": "968a382aec2e1b249ed3e8ec47b75f1a88aa542ba233aaa2a6fda9aec1546fc2",
+      "hash": "ba23be3eccec0e94c70606d786c0abb168f2857d20a7dd998469ebf25966e22e"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T16:38:36+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_2f4913a1",
+        "plan_hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+        "data_source": "cdc"
+      },
+      "plan_hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+      "prev": "ba23be3eccec0e94c70606d786c0abb168f2857d20a7dd998469ebf25966e22e",
+      "hash": "2ea48279a2f56a97bbfcc7b73fb2e57d67cc65b44f6dd702e44ff0f4178d71c0"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T16:39:29+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_2f4913a1",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "cceab28b2936eab895e07948e505de60de2884d4d560f13240f3f83c902da577",
+        "qc": {
+          "pass": 16,
+          "warn": 2,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_DIQ",
+            "md5": "f9cb20f47d64483b8583f47075be21e8"
+          },
+          {
+            "file": "P_GHB",
+            "md5": "7bf5b54573fc5e2fe63b99486fb847ea"
+          },
+          {
+            "file": "P_CBC",
+            "md5": "498bb01dcc4f8ed6f66260aa85e97657"
+          },
+          {
+            "file": "P_PAQ",
+            "md5": "b1eb60134ffc6f208b2dec63560f74b5"
+          },
+          {
+            "file": "P_SMQ",
+            "md5": "04ff912a72ff16dca1520c16718dfa64"
+          }
+        ]
+      },
+      "plan_hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+      "prev": "2ea48279a2f56a97bbfcc7b73fb2e57d67cc65b44f6dd702e44ff0f4178d71c0",
+      "hash": "4bbc17abd6fb11be075da0a7c80efd5314288dfbcb54aaa922633fe25aefde52"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "bcd685db3d7a8e90efb62648fdf357fc5254bfc9826ddbdc514d07b94d5015ee",
+      "at": "2026-10-10T16:38:35+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    },
+    {
+      "version": 2,
+      "hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+      "at": "2026-10-10T16:38:36+00:00",
+      "by": "Karan (investigator)",
+      "note": "CLI approval"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "4bbc17abd6fb11be075da0a7c80efd5314288dfbcb54aaa922633fe25aefde52"
+  },
+  "signoff": null
+}
