@@ -744,7 +744,7 @@ function armsResults(a) {
   const rows = (lst) => lst.map((r) => `<tr><td>${esc(r.comparison)}</td><td>${esc(r.versus)}</td><td><b>${f(r.est)}</b> (${f(r.lcl)}-${f(r.ucl)})</td><td>${pfmt(r.p)}</td></tr>`).join("");
   const n = a.n_by_group ? Object.entries(a.n_by_group).map(([k2, v]) => `${esc(k2)}: ${v}`).join(" · ") : "";
   return `<div class="card"><p class="tiny muted" style="margin:0 0 6px">Effect measure: ${esc(a.effect)}</p><div class="tablewrap"><table class="t"><thead><tr><th>Group</th><th>Compared with</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${rows(a.vs_reference)}${a.pairwise.length ? `<tr><td colspan="4" class="tiny muted">Between groups</td></tr>${rows(a.pairwise)}` : ""}</tbody></table></div>
-    <p class="tiny muted" style="margin:6px 0 0">Overall test that the groups differ: P ${pfmt(a.p_overall)} (design-based Wald, ${a.df} df). Analytic n by group: ${n}.</p></div>`;
+    <p class="tiny muted" style="margin:6px 0 0">Overall test that the groups differ: ${pfmt(a.p_overall)} (design-based Wald, ${a.df} df). Analytic n by group: ${n}.</p></div>`;
 }
 
 function auditCard(a) {

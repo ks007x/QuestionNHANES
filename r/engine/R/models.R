@@ -181,7 +181,10 @@ arm_contrasts <- function(fit, design, x, fi) {
   one <- function(L, label, vs) {
     b <- sum(L * cf[names(L)]); se <- sqrt(as.numeric(t(L) %*% V[names(L), names(L), drop = FALSE] %*% L))
     p <- 2 * stats::pt(-abs(b / se), df)
-    list(comparison = label, versus = vs, est = tf(b), lcl = tf(b - tq * se), ucl = tf(b + tq * se), p = p)
+    est <- tf(b); lo <- tf(b - tq * se); hi <- tf(b + tq * se)
+    if (isTRUE(fi$exp) && (!is.finite(est) || est < 1e-4 || est > 1e4 || hi / max(lo, 1e-300) > 1e6))
+      return(list(comparison = label, versus = vs, est = NA, lcl = NA, ucl = NA, p = NA, note = "Not estimable: no outcome events in a group"))
+    list(comparison = label, versus = vs, est = est, lcl = lo, ucl = hi, p = p)
   }
   vs_ref <- lapply(nm, function(n) one(setNames(1, n), sub(paste0("^", x), "", n), ref))
   pairs <- list()
