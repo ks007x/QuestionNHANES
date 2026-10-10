@@ -1,0 +1,21 @@
+
+== Association of Toxocara Seropositivity With Eosinophilia Among US Adults: NHANES 2011-2012
+   Among noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years), is toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1) associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, body mass index, and born in the united states?
+   feasibility 100/100 (High)
+   novelty 95/100 (High) - 0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 119 on the topic in any data source.
+   [Investigator] I read this as an association question. Outcome: Eosinophilia - absolute eosinophil count >=0.5 x10^9/L. Exposure: Toxocara seropositivity - IgG antibody positi
+   [Data Steward] Mapped 10 analysis variables (2 direct NHANES measures, 8 derived/guideline definitions) onto 11 raw variables in 4 files: BMX_G, CBC_G, DEMO_G, SSTOCA_G.
+   [Data Steward] Eosinophilia, Toxocara seropositivity are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012.
+   [Investigator] First clinical concept treated as exposure, second as outcome (swap in the UI if needed).
+   [Investigator] No age group specified - defaulted to adults aged >=18 years.
+   [Statistician] Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional d
+   [Reviewer] Critique: 0 blocker, 1 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval.
+   [Design auditor] Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail).
+   [Epidemiologist] Can NHANES answer this? Answerable (0 blocking, 0 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving.
+   [ack by Karan (investigator)] Operational assumptions for Toxocara IgG+ need investigator approval
+
+   Primary: Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1): 2.1598 (1.3625-3.4238) [PR]
+   QC WARN  NCHS presentation standards for proportions: 21 of 26 estimates meet the standard; 1 should be suppressed, 4 flagged for review.
+   QC WARN  Sensitivity analyses agree with primary result: 3 of 4 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative outcome definition: AEC >=1.
+   QC INFO  Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+   Outputs: outputs/real/manuscript.html, manuscript.md, bundle.zip  (project prj_21b73a1456)

@@ -1,0 +1,110 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T17:57:05+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "Is Toxocara seropositivity associated with eosinophilia?"
+      },
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "86fad9dcf58159661d148497ca76be1090bdd2935e49e50cef57bbeeb751043a"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T17:57:05+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_6ff354c999",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "prev": "86fad9dcf58159661d148497ca76be1090bdd2935e49e50cef57bbeeb751043a",
+      "hash": "11d88e976fc676b245957200b94bd31fb0d0a6eac324b4cdff9f6a11a85e65e4"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T17:57:06+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "prev": "11d88e976fc676b245957200b94bd31fb0d0a6eac324b4cdff9f6a11a85e65e4",
+      "hash": "41eb2fb409816542521a6358d20a8505f445c4f92d263f4fa5da180d1b1976f0"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T17:57:06+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_8eabad91",
+        "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+        "data_source": "cdc"
+      },
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "prev": "41eb2fb409816542521a6358d20a8505f445c4f92d263f4fa5da180d1b1976f0",
+      "hash": "95444de976738491dc0dc7e7cb960558817d12c1940a02ad0156c57608ce7edf"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T17:57:26+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_8eabad91",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "c27e2c7377cb8fadb1347af084b946ed08e5782703992b897d7da89de3549786",
+        "qc": {
+          "pass": 16,
+          "warn": 2,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "DEMO_G",
+            "md5": "f4b048688d73dd5ef8d167526e888b56"
+          },
+          {
+            "file": "BMX_G",
+            "md5": "b00e503455cf22a080b1de168673c74e"
+          },
+          {
+            "file": "CBC_G",
+            "md5": "7048e5e63d747481ffeb1c6505323c15"
+          },
+          {
+            "file": "SSTOCA_G",
+            "md5": "a31583c82e422971a9e1496681074905"
+          }
+        ]
+      },
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "prev": "95444de976738491dc0dc7e7cb960558817d12c1940a02ad0156c57608ce7edf",
+      "hash": "f77f19c467ba0464e63cee496247d01788d5865879895c719710f2865c3830e2"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "at": "2026-10-10T17:57:05+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "f77f19c467ba0464e63cee496247d01788d5865879895c719710f2865c3830e2"
+  },
+  "signoff": null
+}

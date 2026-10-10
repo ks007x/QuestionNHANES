@@ -1,0 +1,44 @@
+17:57:08  Plan plan_6ff354c999 (hash 1649016233e1) loaded
+17:57:09  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BMX_G.xpt
+17:57:09  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/CBC_G.xpt
+17:57:09  Loaded 9,756 records from 4 file(s)
+17:57:10  Derived 15 analysis variables
+17:57:10  Analytic population: 4,579
+17:57:11  Computed 26 prevalence estimates
+17:57:11  Fitted 3 models (family quasipoisson)
+Multiple imputation results:
+      MIcombine.default(coefs, vcovs)
+                                  results          se       (lower      upper)
+(Intercept)                  -3.313574894 0.606481197 -4.502257429 -2.12489236
+toxocara_seropos              0.716835280 0.202397218  0.320143943  1.11352662
+age                           0.001607663 0.003825588 -0.005890354  0.00910568
+sexFemale                    -0.329163602 0.158175037 -0.639180977 -0.01914623
+race_ethNon-Hispanic Asian    0.602251206 0.237849506  0.136074639  1.06842777
+race_ethNon-Hispanic Black   -0.282040796 0.225312955 -0.723646081  0.15956449
+race_ethNon-Hispanic White    0.243050439 0.274855171 -0.295655870  0.78175675
+race_ethOther or multiracial  0.748065353 0.367453070  0.027870559  1.46826015
+pir_cat1.30-3.49              0.079898300 0.166937679 -0.247477504  0.40727410
+pir_cat3.50+                 -0.337889413 0.186699036 -0.703951571  0.02817274
+bmi                           0.009163916 0.013602634 -0.017496778  0.03582461
+us_born                      -0.083345565 0.291557535 -0.654787841  0.48809671
+                             missInfo
+(Intercept)                       0 %
+toxocara_seropos                  0 %
+age                               0 %
+sexFemale                         0 %
+race_ethNon-Hispanic Asian        0 %
+race_ethNon-Hispanic Black        0 %
+race_ethNon-Hispanic White        0 %
+race_ethOther or multiracial      0 %
+pir_cat1.30-3.49                  7 %
+pir_cat3.50+                      5 %
+bmi                               0 %
+us_born                           0 %
+17:57:23  Ran 4 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+17:57:26  QC: 19 checks, 0 fail, 2 warn
+17:57:26  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_21b73a1456/runs/run_8eabad91/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

@@ -1,0 +1,681 @@
+{
+  "plan_id": "plan_6ff354c999",
+  "plan_version": 1,
+  "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+  "title": "Association of Toxocara Seropositivity With Eosinophilia Among US Adults: NHANES 2011-2012",
+  "study_type": "association",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "G"
+    ],
+    "source": "cdc",
+    "local_dir": "data",
+    "synthetic_dir": null,
+    "cache_dir": "data/cache",
+    "allow_download": true
+  },
+  "cycles_meta": {
+    "G": {
+      "label": "NHANES 2011-2012",
+      "file_pattern": "{stem}_G",
+      "url_folder": "2011",
+      "years": 2.0,
+      "weights": {
+        "interview": "WTINT2YR",
+        "mec": "WTMEC2YR",
+        "diet": "WTDRD1",
+        "fasting": "WTSAF2YR",
+        "subsample": "WTSSTT2Y"
+      },
+      "weight_files": {
+        "diet": "DR1TOT",
+        "fasting": "GLU",
+        "subsample": "SSTOCA"
+      },
+      "psu": "SDMVPSU",
+      "strata": "SDMVSTRA",
+      "overlaps": []
+    }
+  },
+  "subsample_weights": {
+    "G": {
+      "weight": "WTSSTT2Y",
+      "file": "SSTOCA",
+      "because": "SSTCAR"
+    }
+  },
+  "weight_level": "subsample",
+  "raw_variables": [
+    {
+      "variable": "BMXBMI",
+      "file": "BMX",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 10.0,
+      "max": 90.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Body mass index",
+      "stems": {
+        "G": "BMX"
+      }
+    },
+    {
+      "variable": "DMDBORN",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "type": "categorical",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "In what country {were you/was SP} born?",
+      "stems": {}
+    },
+    {
+      "variable": "DMDBORN2",
+      "file": "DEMO",
+      "cycles": [
+        "E",
+        "F"
+      ],
+      "type": "categorical",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "In what country {were you/was SP} born?",
+      "stems": {}
+    },
+    {
+      "variable": "DMDBORN4",
+      "file": "DEMO",
+      "cycles": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        77.0,
+        99.0
+      ],
+      "weight_level": "interview",
+      "label": "Country of birth (1=born in US; 2=other)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "DMDEDUC2",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "INDFMPIR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Ratio of family income to poverty",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "LBDEONO",
+      "file": "CBC",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 20.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Eosinophils number",
+      "stems": {
+        "G": "CBC"
+      }
+    },
+    {
+      "variable": "RIAGENDR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Gender (1=Male; 2=Female)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "RIDAGEYR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 80.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Age in years at screening (top-coded at 80)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "RIDRETH1",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDRETH3",
+      "file": "DEMO",
+      "cycles": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 7.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "SSTCAR",
+      "file": "SSTOCA",
+      "cycles": [
+        "G",
+        "H"
+      ],
+      "type": "continuous",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "subsample",
+      "label": "Toxocara antibody result",
+      "stems": {}
+    }
+  ],
+  "derived": [
+    {
+      "name": "aec",
+      "expr": "LBDEONO",
+      "type": "continuous",
+      "label": "Absolute eosinophil count",
+      "levels": null
+    },
+    {
+      "name": "eosinophilia_05",
+      "expr": "aec >= 0.5",
+      "type": "binary",
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "levels": null
+    },
+    {
+      "name": "toxocara_ab",
+      "expr": "SSTCAR",
+      "type": "categorical",
+      "label": "Toxocara antibody result (1=positive, 2=negative)",
+      "levels": null
+    },
+    {
+      "name": "toxocara_seropos",
+      "expr": "toxocara_ab == 1",
+      "type": "binary",
+      "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+      "levels": null
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "label": "Age",
+      "levels": null
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "label": "Female sex",
+      "levels": null
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "label": "Sex",
+      "levels": null
+    },
+    {
+      "name": "race_eth",
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "type": "categorical",
+      "label": "Race and ethnicity",
+      "levels": null
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "label": "Family income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "label": "Income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "label": "Body mass index",
+      "levels": null
+    },
+    {
+      "name": "us_born",
+      "expr": "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+      "type": "binary",
+      "label": "Born in the United States",
+      "levels": null
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "label": "Age group",
+      "levels": null
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "label": "Educational attainment",
+      "levels": null
+    },
+    {
+      "name": "hypereosinophilia_15",
+      "expr": "aec >= 1.5",
+      "type": "binary",
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "levels": null
+    }
+  ],
+  "variables_meta": {
+    "aec": {
+      "label": "Absolute eosinophil count",
+      "units": "x10^9/L"
+    },
+    "eosinophilia_05": {
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "units": ""
+    },
+    "toxocara_ab": {
+      "label": "Toxocara antibody result (1=positive, 2=negative)",
+      "units": ""
+    },
+    "toxocara_seropos": {
+      "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+      "units": ""
+    },
+    "age": {
+      "label": "Age",
+      "units": "years"
+    },
+    "female": {
+      "label": "Female sex",
+      "units": ""
+    },
+    "sex": {
+      "label": "Sex",
+      "units": ""
+    },
+    "race_eth": {
+      "label": "Race and ethnicity",
+      "units": ""
+    },
+    "pir": {
+      "label": "Family income-to-poverty ratio",
+      "units": "ratio"
+    },
+    "pir_cat": {
+      "label": "Income-to-poverty ratio",
+      "units": ""
+    },
+    "bmi": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "us_born": {
+      "label": "Born in the United States",
+      "units": ""
+    },
+    "agecat": {
+      "label": "Age group",
+      "units": "y"
+    },
+    "educ": {
+      "label": "Educational attainment",
+      "units": ""
+    },
+    "hypereosinophilia_15": {
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "units": ""
+    },
+    "BMXBMI": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "DMDBORN": {
+      "label": "In what country {were you/was SP} born?",
+      "units": ""
+    },
+    "DMDBORN2": {
+      "label": "In what country {were you/was SP} born?",
+      "units": ""
+    },
+    "DMDBORN4": {
+      "label": "Country of birth (1=born in US; 2=other)",
+      "units": ""
+    },
+    "DMDEDUC2": {
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "units": ""
+    },
+    "INDFMPIR": {
+      "label": "Ratio of family income to poverty",
+      "units": "ratio"
+    },
+    "LBDEONO": {
+      "label": "Eosinophils number",
+      "units": "1000 cells/uL"
+    },
+    "RIAGENDR": {
+      "label": "Gender (1=Male; 2=Female)",
+      "units": ""
+    },
+    "RIDAGEYR": {
+      "label": "Age in years at screening (top-coded at 80)",
+      "units": "years"
+    },
+    "RIDRETH1": {
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "units": ""
+    },
+    "RIDRETH3": {
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "units": ""
+    },
+    "SSTCAR": {
+      "label": "Toxocara antibody result",
+      "units": ""
+    }
+  },
+  "population": [
+    {
+      "id": "c1",
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion"
+    }
+  ],
+  "outcome": {
+    "name": "eosinophilia_05",
+    "type": "binary",
+    "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L"
+  },
+  "exposure": {
+    "name": "toxocara_seropos",
+    "type": "binary",
+    "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)"
+  },
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "us_born"
+  ],
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "analysis": {
+    "estimand": "association",
+    "table1_vars": [
+      "agecat",
+      "sex",
+      "race_eth",
+      "pir_cat",
+      "educ",
+      "bmi",
+      "us_born",
+      "aec",
+      "toxocara_seropos"
+    ],
+    "table1_by": "eosinophilia_05",
+    "prevalence": {
+      "outcomes": [
+        "eosinophilia_05",
+        "hypereosinophilia_15"
+      ],
+      "by": [
+        "sex",
+        "agecat",
+        "race_eth",
+        "us_born"
+      ]
+    },
+    "model": {
+      "family": "quasipoisson",
+      "primary_set": "full"
+    },
+    "adjustment_sets": [
+      {
+        "id": "crude",
+        "label": "Unadjusted",
+        "covariates": []
+      },
+      {
+        "id": "demographic",
+        "label": "Adjusted for age, sex, and race and ethnicity",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth"
+        ]
+      },
+      {
+        "id": "full",
+        "label": "Fully adjusted (primary)",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth",
+          "pir_cat",
+          "bmi",
+          "us_born"
+        ]
+      }
+    ],
+    "interactions": [
+      "sex",
+      "agecat"
+    ],
+    "missing": {
+      "method": "complete_case",
+      "m": 10
+    },
+    "sensitivity": [
+      {
+        "type": "alt_outcome",
+        "label": "Alternative outcome definition: AEC >=1.5",
+        "outcome": "hypereosinophilia_15",
+        "id": "s1"
+      },
+      {
+        "type": "alt_family",
+        "label": "Logistic regression (odds ratio)",
+        "family": "quasibinomial",
+        "id": "s2"
+      },
+      {
+        "type": "mi",
+        "label": "Multiple imputation of missing covariates (m = 10)",
+        "m": 10,
+        "id": "s3"
+      },
+      {
+        "type": "unweighted",
+        "label": "Unweighted analysis (design ignored)",
+        "id": "s4"
+      }
+    ],
+    "benchmarks": [],
+    "distribution_var": null
+  },
+  "options": {
+    "seed": 2026,
+    "alpha": 0.05
+  },
+  "unavailable_measures": []
+}

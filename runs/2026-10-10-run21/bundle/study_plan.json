@@ -1,0 +1,726 @@
+{
+  "plan_id": "plan_6ff354c999",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T17:57:05+00:00",
+  "question": "Is Toxocara seropositivity associated with eosinophilia?",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years), is toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1) associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, body mass index, and born in the united states?",
+  "title": "Association of Toxocara Seropositivity With Eosinophilia Among US Adults: NHANES 2011-2012",
+  "hypothesis": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1) is associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L.",
+  "study_type": "association",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "G"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years)",
+    "exposure": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+    "comparator": "Participants without the exposure",
+    "outcome": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+    "covariates": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, and Born in the United States",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "eosinophilia",
+    "concept_label": "Eosinophilia",
+    "variable": "eosinophilia_05",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+    "definition_id": "eosinophilia_05",
+    "alternatives": [
+      "hypereosinophilia_15"
+    ],
+    "companions": [],
+    "domain": "hematology"
+  },
+  "exposure": {
+    "concept": "toxocara",
+    "concept_label": "Toxocara seropositivity",
+    "variable": "toxocara_seropos",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+    "definition_id": "toxocara_seropos",
+    "alternatives": [],
+    "companions": [],
+    "domain": "infection"
+  },
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "us_born"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "interactions": [
+    "sex",
+    "agecat"
+  ],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "covariates": []
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth"
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth",
+        "pir_cat",
+        "bmi",
+        "us_born"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "eosinophilia_05",
+    "hypereosinophilia_15"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "sensitivity": [
+    {
+      "type": "alt_outcome",
+      "label": "Alternative outcome definition: AEC >=1.5",
+      "outcome": "hypereosinophilia_15",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "alt_family",
+      "label": "Logistic regression (odds ratio)",
+      "family": "quasibinomial",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "mi",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "m": 10,
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s4",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "bmi",
+    "us_born",
+    "aec",
+    "toxocara_seropos"
+  ],
+  "table1_by": "eosinophilia_05",
+  "benchmarks": [],
+  "custom_variables": [],
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "epidemiologist": "Covariates were selected as plausible common causes of toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1) and eosinophilia - absolute eosinophil count >=0.5 x10^9/L (minimal confounder set from the domain library): Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, and Born in the United States. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations.",
+    "Operational definition (Toxocara IgG+): Surplus-specimen subsample (participants aged 6+ with stored sera): analysed with the surplus-specimen weights (WTSSTT2Y), not the full exam weights.",
+    "Operational definition (Toxocara IgG+): Seropositivity reflects past or current exposure, not active larval infection.",
+    "Operational definition (Toxocara IgG+): 2013-2014 results exist but the current CDC release does not include their subsample weights; 2011-2012 is used."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Data Steward",
+      "message": "Eosinophilia, Toxocara seropositivity are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012."
+    },
+    {
+      "agent": "Investigator",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Investigator",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    }
+  ],
+  "acknowledgements": {
+    "opnotes_toxocara_seropos": {
+      "at": "2026-10-10T17:57:06+00:00",
+      "by": "Karan (investigator)"
+    }
+  },
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Karan (investigator)",
+      "at": "2026-10-10T17:57:06.940584+00:00",
+      "plan_hash": "1649016233e18f465801c12407c258357948dec26760cc91375ade506dc0adb0",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "association",
+    "outcome_concept": "eosinophilia",
+    "exposure_concept": "toxocara",
+    "extra_concepts": [],
+    "populations": [],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": false,
+    "out_of_scope": [],
+    "notes": [
+      "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    ],
+    "matched_phrases": [
+      {
+        "concept": "toxocara",
+        "phrase": "toxocara"
+      },
+      {
+        "concept": "eosinophilia",
+        "phrase": "eosinophilia"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [],
+    "association_cue": true,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "eosinophilia_05",
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 0.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "G": [
+          "CBC_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Conventional laboratory definition.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "toxocara_seropos",
+      "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+      "role": "Exposure",
+      "kind": "definition",
+      "direct": false,
+      "expr": "toxocara_ab == 1",
+      "raw_variables": [
+        "SSTCAR"
+      ],
+      "files": {
+        "G": [
+          "SSTOCA_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "CDC NHANES 2011-2012 Surplus Specimen Toxocara (SSTOCA_G) documentation; Luminex rTc-CTL-1 assay.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "G": [
+          "BMX_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "us_born",
+      "label": "Born in the United States",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+      "raw_variables": [
+        "DMDBORN",
+        "DMDBORN2",
+        "DMDBORN4"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "hypereosinophilia_15",
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 1.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "G": [
+          "CBC_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Valent P, et al. Contemporary consensus proposal on criteria and classification of eosinophilic disorders and related syndromes (ICOG-EO). J Allergy Clin Immunol. 2012;130:607-612.",
+      "status": "verified",
+      "confidence": 1.0
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 5,
+      "caution": 3,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "temporality",
+        "area": "Temporality",
+        "status": "caution",
+        "title": "Cross-sectional: temporality cannot be established",
+        "detail": "Results are reported as associations; causal language is blocked in the manuscript.",
+        "critique": "Causal over-interpretation",
+        "fix": null
+      },
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 4 prespecified sensitivity analyses are reported regardless of result; 6 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "pass",
+        "title": "Explicit, same-population comparator",
+        "detail": "Contrast: participants in the same eligible population without toxocara seropositivity - igg antibody positive (luminex rtc-ctl-1, mfi >23.1). Both groups come from the same probability sample and eligibility criteria (no convenience controls).",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "confounding",
+        "area": "Confounding",
+        "status": "pass",
+        "title": "Prespecified adjustment set",
+        "detail": "Adjusted for 6 covariates. Mediators and definitional overlaps are removed automatically, and an E-value quantifies how strong unmeasured confounding would need to be.",
+        "critique": "Residual confounding (only platform-captured variables)",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 119 on the topic in any data source.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [
+    {
+      "id": "multiplicity",
+      "severity": "minor",
+      "agent": "Reviewer",
+      "title": "Multiplicity",
+      "detail": "Many subgroup/interaction tests - interpret as exploratory or adjust for multiple comparisons.",
+      "fix": null
+    }
+  ],
+  "feasibility": {
+    "score": 100,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable",
+    "status": "ok",
+    "n_fail": 0,
+    "n_caution": 0,
+    "suggestions": [],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in G, H; selected G.",
+        "suggestion": "Pooling H could increase precision."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as an association question. Outcome: Eosinophilia - absolute eosinophil count >=0.5 x10^9/L. Exposure: Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1). Population: Age >=18 years."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 10 analysis variables (2 direct NHANES measures, 8 derived/guideline definitions) onto 11 raw variables in 4 files: BMX_G, CBC_G, DEMO_G, SSTOCA_G."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Eosinophilia, Toxocara seropositivity are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis."
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 1 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable (0 blocking, 0 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "novelty": {
+    "score": 95,
+    "label": "High",
+    "summary": "0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 119 on the topic in any data source.",
+    "checked": "2026-10-10"
+  }
+}

@@ -7,6 +7,7 @@
 - [2026-10-10-run5](runs/2026-10-10-run5/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run4](runs/2026-10-10-run4/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run3](runs/2026-10-10-run3/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
+- [2026-10-10-run21](runs/2026-10-10-run21/README.md): Is Toxocara seropositivity associated with eosinophilia?
 - [2026-10-10-run20](runs/2026-10-10-run20/README.md): What is the prevalence of parasitic infections in US adults?
 - [2026-10-10-run18](runs/2026-10-10-run18/README.md): What is the prevalence of hypereosinophilia?
 - [2026-10-10-run15](runs/2026-10-10-run15/README.md): What is the prevalence of functional iron deficiency among US adults?
