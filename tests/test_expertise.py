@@ -107,12 +107,30 @@ def test_extra_topic_the_parser_dropped_is_asked_about():
 def test_topic_nhanes_does_not_measure_sends_user_back_to_rewrite():
     c = expertise.clarify("I have high cortisol, how does it relate to the amount of work and stress I have everyday")
     r = c["needs_rewrite"]
-    assert c["questions"] == [] and r["missing"] == ["cortisol"] and "did not measure" in r["what_happened"]
+    assert c["questions"] == [] and r["missing"] == ["cortisol"] and "official variables" in r["what_happened"]
     from q2e import planner
     assert r["examples"] and all(planner.parse_question(e)["outcome_concept"] for e in r["examples"])   # every example works
     assert r["related"][0]["label"] and r["all_topics"]
     # a word with close matches still gets the normal follow-up question instead
     assert expertise.clarify("is being fat bad for you")["needs_rewrite"] is None
+
+
+def test_hand_written_explanations_match_the_knowledge_base():
+    """Guards against made-up explanations: every hint and age range must agree with the curated knowledge base."""
+    from q2e.knowledge import get_knowledge
+    k = get_knowledge()
+    assert set(expertise.PLAIN) <= set(k.concepts)
+    for word, cids in expertise.LAY_TERMS.items():
+        assert all(c in k.concepts for c in cids), word
+    crit = {p["id"]: [c["expr"] for c in p["criteria"]] for p in k.populations}
+    assert crit["adults"] == ["age >= 18"] and crit["older_adults"] == ["age >= 65"]
+    assert crit["children"] == ["age >= 1 & age < 18"] and "age >= 18 & age <= 49" in crit["women_repro"]
+    for cid, must in {"hypertension": "antihypertensive", "diabetes": "insulin or oral agent"}.items():
+        d = k.concepts[cid]["definitions"][0]
+        assert must in k.definitions[d]["criteria_text"]          # hint mentions medicine use, so the definition must too
+    assert "vigorous" in k.blocks[k.concepts["physical_activity"]["block"]]["label"].lower()
+    from q2e import planner
+    assert planner.draft("Is short sleep associated with hypertension in US adults?")["model"]["family"] == "quasipoisson"
 
 
 def test_uncertain_text_search_match_is_confirmed():

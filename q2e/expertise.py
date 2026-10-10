@@ -95,18 +95,18 @@ PLAIN = {
     "abdominal_obesity": "Waist size, measured with a tape (belly fat).",
     "food_insecurity": "Not always having enough money for food.",
     "inflammation": "Signs of inflammation in the blood (high CRP).",
-    "physical_activity": "How active people say they are each week.",
+    "physical_activity": "Whether the person does any vigorous recreational activity (self-reported, yes/no).",
     "sugar_intake": "How much sugar people eat, from a diet interview.",
-    "short_sleep": "Sleeping less than 7 hours a night.",
-    "smoking": "Whether the person smokes.",
+    "short_sleep": "Usually sleeping less than 7 hours on weekdays or workdays (self-reported).",
+    "smoking": "Smoking status, from the interview.",
     "sodium_intake": "How much salt (sodium) people eat.",
-    "alcohol": "How much alcohol people drink.",
-    "diabetes": "Diabetes, from blood sugar tests or a doctor's diagnosis.",
-    "hypertension": "High blood pressure, measured at the exam.",
+    "alcohol": "Number of alcoholic drinks on days the person drinks.",
+    "diabetes": "Diabetes: a doctor's diagnosis, taking diabetes medicine, or a high HbA1c blood test.",
+    "hypertension": "High blood pressure at the exam, or taking blood pressure medicine.",
     "protein_intake": "How much protein people eat.",
     "hepatitis_c": "Hepatitis C infection, as reported by the person.",
     "energy_intake": "Total calories eaten in a day.",
-    "sedentary": "Hours spent sitting each day.",
+    "sedentary": "Time spent sitting on a typical day (self-reported).",
     "depression": "Depression symptoms from a 9-question survey (PHQ-9).",
     "cotinine": "Exposure to tobacco smoke, from a blood test.",
     "anemia": "Low hemoglobin (the oxygen-carrying part of blood), from a blood test.",
@@ -118,7 +118,7 @@ PLAIN = {
     "total_cholesterol": "Total cholesterol in the blood.",
     "ldl": "LDL, the 'bad' cholesterol.",
     "systolic_bp": "The top number of a blood pressure reading.",
-    "cvd": "Heart disease or stroke, as reported by the person.",
+    "cvd": "Coronary heart disease, heart attack, stroke or heart failure, as reported by the person.",
     "coronary_disease": "Narrowed heart arteries, as reported by the person.",
     "daytime_sleepiness": "Feeling very sleepy during the day.",
     "income": "Household income compared with the poverty line.",
@@ -438,9 +438,9 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             continue
         missing = f"\"{ph}\"" if all(not_measured(w, k) for w in ph.split()) else None
         if missing:
-            text = {"novice": f"The survey did not measure {missing}. Which of these, which it did measure, is closest to what you mean by \"{ph}\"?",
-                    "intermediate": f"NHANES has no {missing} measure. Closest measured proxy for \"{ph}\"?",
-                    "expert": f"No {missing} variable in NHANES. Proxy for \"{ph}\"?"}
+            text = {"novice": f"No NHANES question mentions {missing}. Which of these, which NHANES did measure, is closest to what you mean?",
+                    "intermediate": f"No NHANES variable mentions {missing}. Closest measured proxy?",
+                    "expert": f"No NHANES variable mentions {missing}. Proxy?"}
             why = {"novice": "Q2E only uses things NHANES actually measured, so it will not pretend these are the same as "
                              f"{missing}. Pick the closest one, or leave it out.",
                    "intermediate": f"These are proxies, not measures of {missing}; results must be read that way.",
@@ -587,7 +587,7 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
 
 
 DOMAIN_NAMES = {
-    "anthropometry": "Body size", "behaviour": "Habits (smoking, sleep, activity)", "cardio": "Heart, blood pressure & cholesterol",
+    "anthropometry": "Body size", "behaviour": "Habits (smoking, alcohol, sleep, activity)", "cardio": "Heart, blood pressure & cholesterol",
     "demographic": "Age, income & background", "environment": "Environment", "function": "Daily functioning",
     "glycemia": "Blood sugar & diabetes", "hematology": "Blood counts", "inflammation": "Inflammation", "iron": "Iron",
     "kidney": "Kidneys", "liver": "Liver", "mental_health": "Mood & mental health", "nutrition": "Diet & nutrition",
@@ -637,9 +637,9 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
     shown = ", ".join(f"\"{t}\"" for t in missing[:3])
     return {
         "missing": missing[:3],
-        "what_happened": (f"You asked about {shown}, but the national survey Q2E uses (NHANES) did not measure "
-                          f"{'it' if len(missing) == 1 else 'these'}: none of its {len(k.dictionary):,} official variables "
-                          f"mention {'it' if len(missing) == 1 else 'them'}. So there is nothing to study yet.") if missing else
+        "what_happened": (f"You asked about {shown}, but none of the {len(k.dictionary):,} official variables in the national "
+                          f"survey Q2E uses (NHANES) mention {'it' if len(missing) == 1 else 'them'}, so there is nothing to "
+                          f"study yet. (If NHANES uses a different name for it, try that name.)") if missing else
                          "We could not find a health condition or measurement in your idea, so there is nothing to study yet.",
         "what_to_do": "Rewrite your idea around something NHANES did measure. Click an example below to use it, "
                       "or swap in one of the closest topics.",
