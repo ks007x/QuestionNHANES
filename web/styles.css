@@ -26,6 +26,8 @@
 :root[data-theme="dark"] { color-scheme: dark; }
 /* Dropdown lists are drawn by the browser; without this they get light text on a white list in dark mode. */
 option, optgroup { background: var(--panel); color: var(--ink); }
+/* Inter and JetBrains Mono draw "=>" and "->" as arrows; show exactly what was typed in rules and code. */
+input, textarea, select, code, pre, .console { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 option:disabled { color: var(--ink-3); }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.5 var(--sans); }
@@ -238,6 +240,13 @@ body:has(.cq-overlay) { overflow: hidden; }
 @keyframes spIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .sp-title { margin: 0 0 12px; }
 .sp-title h2 { margin: 2px 0 0; font: 600 22px var(--serif); }
+.sp-title .say { float: right; }
+abbr[title] { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.gloss { margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 10px 14px; }
+.gloss summary { cursor: pointer; font-weight: 600; font-size: 13.5px; }
+.g-list { display: grid; gap: 4px; margin-top: 8px; }
+.g-row { display: grid; grid-template-columns: minmax(90px, max-content) 1fr; gap: 12px; font-size: 13px; padding: 3px 0; border-top: 1px solid var(--line-2); }
+.g-row b:first-child { font-family: var(--mono); font-size: 12.5px; }
 .sp-n { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
 .attn { border: 1px solid var(--accent); background: var(--accent-2); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; }
 .attn h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent-ink); }

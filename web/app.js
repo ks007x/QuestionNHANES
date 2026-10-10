@@ -20,6 +20,94 @@ async function api(path, opts = {}) {
   if (!r.ok) throw new Error((data && data.error) || (data && data.detail && JSON.stringify(data.detail)) || r.statusText);
   return data;
 }
+/* ------------------------------------------------------------------ voice (one player for the whole app) */
+const VOICE = { audio: null, key: null };
+function stopVoice() {
+  if (VOICE.audio) { VOICE.audio.pause(); VOICE.audio.src = ""; VOICE.audio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  VOICE.key = null; markVoiceButtons();
+}
+function markVoiceButtons() {
+  document.querySelectorAll("[data-act=say]").forEach((b) => { b.textContent = VOICE.key === b.dataset.key ? "■ Stop reading" : "🔊 Read aloud"; });
+}
+async function speak(text, key) {
+  stopVoice();
+  text = text.replace(/\s+/g, " ").trim().slice(0, 2400);
+  if (!text) return;
+  VOICE.key = key; markVoiceButtons();
+  const done = () => { if (VOICE.key === key) { VOICE.key = null; VOICE.audio = null; markVoiceButtons(); } };
+  if (S.meta.voice) {
+    try {
+      const r = await fetch("/api/voice/tts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const blob = await r.blob();
+      if (VOICE.key !== key) return;
+      VOICE.audio = new Audio(URL.createObjectURL(blob)); VOICE.audio.onended = done; VOICE.audio.play();
+    } catch (e) { done(); toast(e.message, true); }
+  } else if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(text); u.onend = done; u.onerror = done; speechSynthesis.speak(u);
+  } else { done(); toast("No speech output available in this browser", true); }
+}
+function stepText() {
+  const el = document.querySelector(".sp-step"); if (!el) return "";
+  const c = el.cloneNode(true);
+  c.querySelectorAll("button, input, select, textarea, audio, .gloss, .console, .pt-talk").forEach((x) => x.remove());
+  return c.textContent;
+}
+const voiceHere = () => S.curStep ? `${S.curStep.stage}:${S.curStep.id}` : "";
+
+/* ------------------------------------------------------------------ glossary of abbreviations on the current step */
+const GLOSS = {};
+let glossSeq = 0;
+function abbrevsIn(text) {
+  const out = new Set();
+  for (const t of text.match(/\b[A-Za-z][A-Za-z0-9_]*\b/g) || []) {
+    const up = (t.match(/[A-Z]/g) || []).length;
+    if (up >= 2 || (up >= 1 && /\d/.test(t))) out.add(t);
+  }
+  return out;
+}
+function cycleLettersIn(text) {
+  const cyc = (S.meta && S.meta.knowledge && S.meta.knowledge.cycles) || {}; const out = new Set();
+  for (const m of text.matchAll(/\b[A-Z](?:\s*[,;]\s*[A-Z]\b)+/g)) m[0].split(/[,;]/).forEach((x) => out.add(x.trim()));
+  for (const m of text.matchAll(/\b(?:cycles?|selected|pooling)\s+([A-Z])\b/gi)) out.add(m[1]);
+  return [...out].filter((l) => cyc[l]).sort().map((l) => [l, cyc[l].label.replace(/^NHANES /, "")]);
+}
+function wrapAbbr(box, terms) {
+  if (!terms.length) return;
+  const re = new RegExp(`\\b(${[...terms].sort((a, b) => b.length - a.length).join("|")})\\b`, "g");
+  const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT); const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes) {
+    if (!n.parentElement || n.parentElement.closest("abbr, textarea, option, select, script, style, .gloss")) continue;
+    if (!n.nodeValue.match(re)) continue;
+    const tmp = document.createElement("span");
+    tmp.innerHTML = esc(n.nodeValue).replace(re, (m) => `<abbr title="${esc(GLOSS[m].meaning)}">${m}</abbr>`);
+    n.replaceWith(...tmp.childNodes);
+  }
+}
+async function addGlossary(main) {
+  const box = main.querySelector(".sp-step") || main; const seq = ++glossSeq;
+  const text = box.textContent || ""; const words = abbrevsIn(text);
+  const need = [...words].filter((t) => !(t in GLOSS)).slice(0, 300);
+  if (need.length) {
+    try { const r = await api("/api/glossary", { method: "POST", body: { terms: need } }); need.forEach((t) => { GLOSS[t] = r[t] || null; }); }
+    catch (_e) { return; }
+  }
+  if (seq !== glossSeq || !box.isConnected) return;
+  const found = [...words].filter((t) => GLOSS[t]).sort((a, b) => a.localeCompare(b));
+  const cycles = cycleLettersIn(text);
+  if (!found.length && !cycles.length) return;
+  wrapAbbr(box, found);
+  const rows = found.map((t) => `<div class="g-row"><b>${esc(t)}</b><span>${esc(GLOSS[t].meaning)}</span></div>`).join("")
+    + (cycles.length ? `<div class="g-row"><b>Cycle letters</b><span>${cycles.map(([l, y]) => `<b>${l}</b> = ${esc(y)}`).join(" · ")}</span></div>` : "");
+  const d = document.createElement("details"); d.className = "gloss"; d.open = S.glossOpen !== false;
+  d.innerHTML = `<summary>📖 What the abbreviations on this step mean (${found.length + (cycles.length ? 1 : 0)})</summary>
+    <div class="g-list">${rows}</div><p class="tiny muted" style="margin:6px 0 0">NHANES codes and cycle letters are explained from the CDC NHANES codebook, file list and cycle list. Hover over an underlined abbreviation to see its meaning in place.</p>`;
+  d.addEventListener("toggle", () => { S.glossOpen = d.open; });
+  box.appendChild(d);
+}
+
 const rReady = () => !S.meta || !S.meta.r || S.meta.r.ready;
 function rMissing(what) {
   if (rReady()) return "";
@@ -120,7 +208,10 @@ async function render() {
     main.innerHTML = stepper(r.stage, fn());
     renderRail(r);
     if (r.stage === "run" && S.run?.status === "running") startPolling();
-  } else { renderRail(r); main.innerHTML = await views[r.view](); }
+  } else { S.curStep = null; renderRail(r); main.innerHTML = await views[r.view](); }
+  const here = voiceHere();
+  if (VOICE.key && !(here && (VOICE.key === here || VOICE.key.startsWith(here + ":")))) stopVoice(); else markVoiceButtons();
+  addGlossary(main);
   window.scrollTo({ top: 0 });
 }
 function rerender() { const y = window.scrollY; return render().then(() => window.scrollTo({ top: y })); }
@@ -458,7 +549,7 @@ function stepper(stage, v) {
   <div class="sp-head"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">Section ${si + 1} of ${STEPS.length} · ${esc(STEPS[si].label)}${v.tag ? " · " + v.tag : ""}</div>
     <h1 class="page" style="margin-bottom:4px">${v.title}</h1>${v.lede ? `<p class="lede" style="margin-top:0">${v.lede}</p>` : ""}</div>
   ${dots}
-  <div class="sp-step"><div class="sp-title"><span class="sp-n">Step ${i + 1} of ${parts.length}</span><h2>${esc(part.title)}</h2>${part.help ? `<p class="small muted" style="margin:2px 0 0">${part.help}</p>` : ""}</div>
+  <div class="sp-step"><div class="sp-title"><span class="sp-n">Step ${i + 1} of ${parts.length}</span><button class="btn sm say" data-act="say" data-key="${esc(stage + ":" + part.id)}">🔊 Read aloud</button><h2>${esc(part.title)}</h2>${part.help ? `<p class="small muted" style="margin:2px 0 0">${part.help}</p>` : ""}</div>
     ${part.noTalk || part.noAttn ? "" : attention(stage, part.id, part.attn || "")}
     ${part.html}</div>
   ${part.noTalk ? "" : otherTalk(stage, part)}
@@ -733,7 +824,7 @@ function viewResults() {
     { id: "main", title: "The main finding", help: "The headline number, then the same result in plain words. Press Listen to hear it.",
       html: `${synth}<div class="card">${headline()}</div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3><p style="margin:0 0 10px">${nice(sm.plain_language || "")}</p>
-    <div class="row"><button class="btn sm" data-act="listen">🔊 Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div><audio id="audio" controls style="display:none;margin-top:8px;width:100%"></audio></div>` },
+    <div class="row"><button class="btn sm" data-act="listen">🔊 Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
     benchCards() && { id: "bench", title: "Does it match published studies?", help: "Q2E's numbers next to numbers already published, as a sanity check.",
       html: `<div class="grid g2">${benchCards()}</div>` },
     R.figures.length && { id: "figures", title: "Figures", help: "Charts of the results.",
@@ -1029,8 +1120,11 @@ const A = {
     catch (e) { prompt("Copy this summary:", weeklySummary()); }
   },
   addcrit: async () => {
-    const expr = $("#critExpr").value.trim(); const v = await api("/api/expressions/validate", { method: "POST", body: { expr } });
-    if (!v.ok) return toast(v.error, true); edit({ op: "add_criterion", label: $("#critLabel").value || expr, expr, kind: $("#critKind").value });
+    const typed = $("#critExpr").value.trim(); if (!typed) return toast("Type a rule first, e.g. age >= 60", true);
+    const v = await api("/api/expressions/validate", { method: "POST", body: { expr: typed } });
+    if (!v.ok) return toast(`${v.error}. Rules look like: age >= 60, or age >= 20 & age < 80 (use >= for "at least", <= for "at most", == for "equals").`, true);
+    if (v.rewritten) toast(`Understood "${typed}" as "${v.expr}"`);
+    edit({ op: "add_criterion", label: $("#critLabel").value || v.expr, expr: v.expr, kind: $("#critKind").value });
   },
   addsens: async () => {
     const expr = $("#sExpr").value.trim(); const v = await api("/api/expressions/validate", { method: "POST", body: { expr } });
@@ -1062,11 +1156,13 @@ const A = {
     catch (e) { toast(e.message, true); }
   },
   listen: async () => {
-    const txt = (S.summary?.plain_language || "") + " " + (S.summary?.key_points?.meaning || "");
-    if (S.meta.voice) {
-      try { const r = await fetch("/api/voice/tts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: txt }) }); if (!r.ok) throw new Error((await r.json()).error);
-        const a = $("#audio"); a.src = URL.createObjectURL(await r.blob()); a.style.display = "block"; a.play(); } catch (e) { toast(e.message, true); }
-    } else if (window.speechSynthesis) { speechSynthesis.speak(new SpeechSynthesisUtterance(txt)); } else toast("No speech output available", true);
+    const key = voiceHere() + ":summary";
+    if (VOICE.key === key) return stopVoice();
+    speak((S.summary?.plain_language || "") + " " + (S.summary?.key_points?.meaning || ""), key);
+  },
+  say: (el) => {
+    if (VOICE.key === el.dataset.key) return stopVoice();
+    speak(stepText(), el.dataset.key);
   },
   lit: async () => { S.lit = await api(`/api/projects/${S.project.id}/literature`); rerender(); },
   novelty: async () => { toast("Searching PubMed/MEDLINE for prior NHANES work..."); S.project.novelty = await api(`/api/projects/${S.project.id}/novelty`, { method: "POST" }); rerender(); },

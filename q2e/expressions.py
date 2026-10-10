@@ -43,6 +43,35 @@ def tokenize(expr: str) -> list[tuple[str, str]]:
     return out
 
 
+_SPELLINGS = [("≥", ">="), ("≤", "<="), ("≠", "!="), ("=>", ">="), ("=<", "<="), ("<>", "!="), ("&&", "&"), ("||", "|")]
+
+
+def normalize(expr: str) -> str:
+    """Accept the ways people naturally type comparisons: 'age => 60', 'age ≥ 60', 'sex = 2' (top level)."""
+    if not isinstance(expr, str):
+        return expr
+    out = expr.strip()
+    for a, b in _SPELLINGS:
+        out = out.replace(a, b)
+    res, depth, i = [], 0, 0
+    while i < len(out):
+        ch = out[i]
+        if ch in "\"'":
+            j = out.find(ch, i + 1)
+            j = len(out) - 1 if j < 0 else j
+            res.append(out[i:j + 1])
+            i = j + 1
+            continue
+        depth += ch == "("
+        depth -= ch == ")"
+        if ch == "=" and depth == 0 and (i == 0 or out[i - 1] not in "<>!=") and out[i + 1:i + 2] != "=":
+            res.append("==")
+        else:
+            res.append(ch)
+        i += 1
+    return "".join(res)
+
+
 def identifiers(expr: str) -> list[str]:
     """Variable names referenced by an expression (function names and named-argument keys excluded)."""
     toks = tokenize(expr)

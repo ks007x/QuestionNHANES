@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expertise, expressions, generic, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
+from . import __version__, agents, answerability, expertise, expressions, generic, glossary, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -682,12 +682,22 @@ class Expr(BaseModel):
     expr: str
 
 
+class GlossaryReq(BaseModel):
+    terms: list[str] = Field(default_factory=list, max_length=300)
+
+
+@app.post("/api/glossary")
+def glossary_lookup(body: GlossaryReq):
+    return glossary.lookup(body.terms)
+
+
 @app.post("/api/expressions/validate")
 def validate_expr(body: Expr):
     k = get_knowledge()
+    expr = expressions.normalize(body.expr)
     try:
-        ids = expressions.validate(body.expr, set(k.blocks) | set(k.definitions) | set(k.dictionary))
-        return {"ok": True, "identifiers": ids}
+        ids = expressions.validate(expr, set(k.blocks) | set(k.definitions) | set(k.dictionary))
+        return {"ok": True, "identifiers": ids, "expr": expr, "rewritten": expr != body.expr.strip()}
     except expressions.ExpressionError as e:
         return {"ok": False, "error": str(e)}
 

@@ -1491,6 +1491,7 @@ def apply_fix(plan: dict, fix: dict, k: Knowledge | None = None) -> dict:
                 if p.get("table1_by") == old:
                     p["table1_by"] = d
     elif op == "add_criterion":
+        fix = {**fix, "expr": expressions.normalize(fix["expr"])}
         expressions.validate(fix["expr"])
         p["population"].append({"id": f"c{len(p['population']) + 1}", "label": fix.get("label") or fix["expr"], "expr": fix["expr"],
                                 "kind": fix.get("kind", "inclusion"), "source": "investigator", "enabled": True})

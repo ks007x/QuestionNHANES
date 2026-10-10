@@ -106,6 +106,29 @@ def test_blinded_probe_and_precision():
     assert any(e["action"] == "feasibility_probe" for e in proj["events"])
 
 
+def test_rules_accept_natural_comparisons():
+    from q2e.expressions import normalize, validate
+    assert normalize("age => 60") == "age >= 60"
+    assert normalize("age ≤ 80 & sex = 2") == "age <= 80 & sex == 2"
+    assert normalize("age =< 18 || age >= 65") == "age <= 18 | age >= 65"
+    assert normalize("ifelse(x == 1, 1, 0)") == "ifelse(x == 1, 1, 0)"
+    assert normalize("cases(a, .default = 0)") == "cases(a, .default = 0)"
+    validate(normalize("age => 60"))
+
+
+def test_glossary_explains_codes_from_cdc_files():
+    from fastapi.testclient import TestClient
+    from q2e.server import app
+    c = TestClient(app)
+    v = c.post("/api/expressions/validate", json={"expr": "age => 60"}).json()
+    assert v["ok"] and v["expr"] == "age >= 60" and v["rewritten"]
+    g = c.post("/api/glossary", json={"terms": ["BMXWT", "BMX", "P_BMX", "DMDEDUC2", "MEC", "CIs", "Hello", "XYZZY9"]}).json()
+    assert "Weight" in g["BMXWT"]["meaning"] and "Body Measures" in g["BMXWT"]["meaning"]
+    assert g["BMX"]["meaning"].endswith("Body Measures") and g["P_BMX"]["kind"] == "file"
+    assert "Education" in g["DMDEDUC2"]["meaning"] and "Mobile Examination Center" in g["MEC"]["meaning"]
+    assert "CIs" in g and "Hello" not in g and "XYZZY9" not in g
+
+
 def test_missing_r_gives_a_clear_message(monkeypatch):
     from fastapi.testclient import TestClient
     from q2e import runner
