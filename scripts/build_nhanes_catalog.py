@@ -5,7 +5,7 @@ dictionary fallback and answerability engine.
 Two sources (use either or both):
 
   1. CDC variable lists (needs internet access to wwwn.cdc.gov):
-       python scripts/build_nhanes_catalog.py --cdc --cycles 2015-2016 2017-2018 2017-2020 2021-2023
+       python scripts/build_nhanes_catalog.py --cdc            # all cycles 1999-2000 ... 2021-2023
 
   2. Labels exported from local .xpt files (works offline with the hackathon files):
        Rscript scripts/verify_nhanes_dictionary.R data/nhanes labels.csv
@@ -28,7 +28,10 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "knowledge" / "nhanes" / "catalog.csv"
 COMPONENTS = ["Demographics", "Dietary", "Examination", "Laboratory", "Questionnaire"]
 FASTING_FILES = {"GLU", "INS", "TRIGLY", "OGTT", "FASTQX"}
-SUFFIX = {"_I": "I", "_J": "J", "_L": "L", "_H": "H", "_G": "G"}
+SUFFIX = {"_B": "B", "_C": "C", "_D": "D", "_E": "E", "_F": "F", "_G": "G", "_H": "H", "_I": "I", "_J": "J", "_L": "L"}
+CYCLE_CODE = {"1999-2000": "A", "2001-2002": "B", "2003-2004": "C", "2005-2006": "D", "2007-2008": "E", "2009-2010": "F",
+              "2011-2012": "G", "2013-2014": "H", "2015-2016": "I", "2017-2018": "J", "2017-2020": "P", "2021-2023": "L"}
+ALL_CYCLES = list(CYCLE_CODE)
 
 
 def split_file(fname: str) -> tuple[str, str | None]:
@@ -116,6 +119,8 @@ def fetch_cdc(cycles: list[str]) -> list[dict]:
                 r = httpx.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0 (Q2E catalog builder)"}, follow_redirects=True)
                 r.raise_for_status()
                 got = parse_variable_list(r.text)
+                for g in got:
+                    g["cycle"] = CYCLE_CODE.get(cyc)
                 print(f"  {cyc} {comp}: {len(got)} variables")
                 rows += got
             except Exception as e:  # noqa: BLE001
@@ -132,20 +137,29 @@ def from_labels(path: Path) -> list[dict]:
 
 
 def build(rows: list[dict]) -> list[dict]:
-    merged: dict[tuple[str, str], dict] = {}
+    """One row per variable: the most recent file stem, every cycle it appears in, and the exact file per cycle."""
+    order = list(CYCLE_CODE.values())
+    merged: dict[str, dict] = {}
     for r in rows:
         if r["variable"] in ("SEQN",):
             continue
         stem, cy = split_file(r["file"])
-        key = (r["variable"], stem)
-        m = merged.setdefault(key, {"variable": r["variable"], "file": stem, "label": r["label"], "component": r["component"], "cycles": set()})
+        cy = r.get("cycle") or cy
+        m = merged.setdefault(r["variable"], {"variable": r["variable"], "label": r["label"], "component": r["component"],
+                                              "files": {}, "stems": {}})
         if cy:
-            m["cycles"].add(cy)
-        if not m["label"] and r["label"]:
+            m["files"][cy] = r["file"].upper()
+            m["stems"][cy] = stem
+        if r["label"] and (not m["label"] or (cy and order.index(cy) >= max([order.index(c) for c in m["files"]] or [0]))):
             m["label"] = r["label"]
     out = []
     for m in merged.values():
-        out.append({**m, "cycles": ";".join(sorted(m["cycles"])), "weight_level": weight_level(m["file"], m["component"], m["variable"]),
+        cys = sorted(m["files"], key=order.index)
+        latest = cys[-1] if cys else None
+        stem = m["stems"].get(latest, "")
+        out.append({"variable": m["variable"], "file": stem, "label": m["label"], "component": m["component"],
+                    "cycles": ";".join(cys), "files": ";".join(f"{c}:{m['files'][c]}" for c in cys),
+                    "weight_level": weight_level(stem, m["component"], m["variable"]),
                     "type_guess": type_guess(m["label"], m["variable"])})
     return sorted(out, key=lambda x: (x["file"], x["variable"]))
 
@@ -153,7 +167,7 @@ def build(rows: list[dict]) -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cdc", action="store_true", help="fetch variable lists from wwwn.cdc.gov")
-    ap.add_argument("--cycles", nargs="*", default=["2015-2016", "2017-2018", "2017-2020", "2021-2023"])
+    ap.add_argument("--cycles", nargs="*", default=ALL_CYCLES)
     ap.add_argument("--from-labels", type=Path, help="CSV exported by scripts/verify_nhanes_dictionary.R")
     ap.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args()
@@ -167,7 +181,7 @@ def main() -> int:
     cat = build(rows)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     with open(a.out, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["variable", "file", "label", "component", "cycles", "weight_level", "type_guess"])
+        w = csv.DictWriter(fh, fieldnames=["variable", "file", "label", "component", "cycles", "files", "weight_level", "type_guess"])
         w.writeheader()
         w.writerows(cat)
     print(f"Wrote {len(cat)} variables to {a.out}")

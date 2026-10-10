@@ -1,0 +1,32 @@
+name: Build NHANES variable catalog
+
+# Downloads the CDC variable lists for every NHANES cycle (1999-2023) and saves
+# knowledge/nhanes/catalog.csv to the 'catalog-build' branch for review before merging.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx
+      - name: Fetch CDC variable lists
+        run: python scripts/build_nhanes_catalog.py --cdc 2>&1 | tee catalog_log.txt
+      - name: Save to catalog-build branch
+        run: |
+          cp knowledge/nhanes/catalog.csv /tmp/catalog.csv; cp catalog_log.txt /tmp/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q --orphan catalog-build && git rm -rqf .
+          mkdir -p knowledge/nhanes && cp /tmp/catalog.csv knowledge/nhanes/catalog.csv && cp /tmp/catalog_log.txt .
+          git add -f knowledge/nhanes/catalog.csv catalog_log.txt
+          git commit -qm "NHANES catalog build ${{ github.run_number }}"
+          git push -qf origin catalog-build
