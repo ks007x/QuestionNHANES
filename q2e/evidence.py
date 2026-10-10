@@ -77,7 +77,8 @@ def queries(plan: dict) -> dict:
     comps = e["components"]
     if comps:
         exp = "(" + " OR ".join(c["tiab"] for c in comps) + ")"
-        topic = f"{o['tiab']} AND {exp}"
+        focus = "(" + " OR ".join([o["ti"]] + [c["ti"] for c in comps]) + ")"      # the topic is named in the title
+        topic = f"{o['tiab']} AND {exp} AND {focus}"
     else:
         topic = f"{o['tiab']} AND (prevalence[tiab] OR prevalent[tiab] OR burden[tiab])"
     return {"high_impact": f"{topic} AND {NHANES} AND {journal_filter()}", "any_journal": f"{topic} AND {NHANES}",
