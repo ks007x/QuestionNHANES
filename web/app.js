@@ -135,7 +135,11 @@ function route() {
   if (h[0] === "library") return { view: "library" };
   return { view: "ask" };
 }
-function go(stage) { location.hash = `#/p/${S.project.id}/${stage}`; }
+function go(stage) {
+  const target = `#/p/${S.project.id}/${stage}`;
+  if (location.hash === target) render();    // already on this section: the hash does not change, so redraw by hand
+  else location.hash = target;
+}
 window.addEventListener("hashchange", render);
 
 function latestRun() { const r = S.project?.runs || []; return r.length ? r[r.length - 1] : null; }
@@ -154,7 +158,9 @@ const LOCK_REASON = { run: "Approve the analysis plan first (bottom of the Analy
 function stageDone(stage) {
   const p = S.project; if (!p) return false; const lr = latestRun();
   const appr = p.approved_current || !!lr;
-  return { protocol: appr, map: appr, plan: appr, run: lr && lr.status === "completed", results: !!p.signoff, signoff: !!p.signoff }[stage];
+  const ran = !!(lr && lr.status === "completed");
+  const seen = ran && store.get(`q2e.seen.${p.id}.${lr.id}`, false);   // results count as done once opened after a finished run
+  return { protocol: appr, map: appr, plan: appr, run: ran, results: !!p.signoff || seen, signoff: !!p.signoff }[stage];
 }
 
 /* ------------------------------------------------------------------ chrome */
@@ -177,11 +183,11 @@ function renderRail(r) {
   const p = S.project;
   rail.innerHTML = `<h4>Study</h4><p class="small" style="margin:0 0 14px"><b>${esc(p.plan.title)}</b><br><span class="muted">${esc(p.id)} · plan v${p.plan.version}</span></p>
     <ol class="steps"><li data-act="home"><span class="n">0</span>Ask</li>${STEPS.map((s, i) => {
-      const cls = r.stage === s.id ? "active" : stageDone(s.id) ? "done" : unlocked(s.id) ? "" : "locked";
+      const cls = [r.stage === s.id ? "active" : "", stageDone(s.id) ? "done" : "", !unlocked(s.id) && !stageDone(s.id) ? "locked" : ""].filter(Boolean).join(" ");
       const subs = r.stage === s.id && (S.parts || []).length > 1 ? `<ol class="substeps">${S.parts.map((x) => {
         const st = (S.partState || {})[x.id] || {};
         return `<li class="${st.attn ? "need" : ""}" data-act="jump" data-id="${esc(x.id)}">${esc(x.title)}</li>`; }).join("")}</ol>` : "";
-      return `<li class="${cls}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}"><span class="n">${stageDone(s.id) && r.stage !== s.id ? "✓" : i + 1}</span>${s.label}${subs}</li>`;
+      return `<li class="${cls}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}"><span class="n">${stageDone(s.id) ? "✓" : i + 1}</span>${s.label}${subs}</li>`;
     }).join("")}</ol>
     <details class="prov"${S.provOpen ? " open" : ""}><summary>Audit trail <span class="chip ${p.chain.valid ? "ok" : "bad"}" style="font-size:11px">${p.chain.valid ? "intact" : "broken"}</span></summary>
     <ul class="timeline" style="margin-top:8px">${p.events.slice(-9).reverse().map((e) => `<li><b>${esc(e.action.replace(/_/g, " "))}</b> · ${esc(e.actor)}<small>${esc(e.at.slice(5, 16).replace("T", " "))} · ${esc(e.hash.slice(0, 8))}</small></li>`).join("")}</ul></details>`;
@@ -205,6 +211,8 @@ async function render() {
   } catch (e) { main.innerHTML = `<div class="banner bad">${esc(e.message)}</div>`; return; }
   const views = { ask: viewAsk, projects: viewProjects, library: viewLibrary };
   if (r.view === "project") {
+    const lrSeen = latestRun();
+    if (r.stage === "results" && lrSeen && lrSeen.status === "completed") store.set(`q2e.seen.${S.project.id}.${lrSeen.id}`, "1");
     const fn = { protocol: viewProtocol, map: viewMap, plan: viewPlan, run: viewRun, results: viewResults, signoff: viewSignoff }[r.stage] || viewProtocol;
     main.innerHTML = stepper(r.stage, fn());
     renderRail(r);
