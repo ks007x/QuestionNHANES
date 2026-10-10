@@ -34,8 +34,16 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-      - name: R packages
-        run: Rscript r/install_packages.R
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::survey
+            any::jsonlite
+            any::haven
+            any::ggplot2
+            any::mice
+            any::mitools
+            any::yaml
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -61,7 +69,7 @@ jobs:
           QUESTION: ${{ inputs.question }}
         run: |
           { echo "## Question"; echo; echo "> $QUESTION"; echo;
-            echo '```'; tail -n 40 outputs_log.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            echo '```'; tail -n 40 outputs_log.txt 2>/dev/null || echo "(analysis step did not run)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           [ -f outputs/real/manuscript.md ] && cat outputs/real/manuscript.md >> "$GITHUB_STEP_SUMMARY" || true
       - uses: actions/upload-artifact@v4
         if: always()

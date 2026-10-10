@@ -10,7 +10,10 @@ if (nzchar(lib)) {
 missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing)) {
   cat("Installing:", paste(missing, collapse = ", "), "\n")
-  install.packages(missing, lib = .libPaths()[1], repos = Sys.getenv("CRAN_REPO", "https://cloud.r-project.org"))
+  install.packages(missing, lib = .libPaths()[1], repos = {
+    r <- getOption("repos"); cran <- Sys.getenv("CRAN_REPO")
+    if (nzchar(cran)) cran else if (length(r) && !identical(unname(r[1]), "@CRAN@")) r else "https://cloud.r-project.org"
+  })
 }
 still <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
 if (length(still)) stop("These R packages could not be installed: ", paste(still, collapse = ", "))
