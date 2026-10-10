@@ -53,6 +53,8 @@ class Settings:
     elevenlabs_stt_model: str = field(default_factory=lambda: _env("ELEVENLABS_STT_MODEL", "scribe_v1"))
     ncbi_email: str = field(default_factory=lambda: _env("NCBI_EMAIL"))
     ncbi_api_key: str = field(default_factory=lambda: _env("NCBI_API_KEY"))
+    public_url: str = field(default_factory=lambda: _env("Q2E_PUBLIC_URL", "http://127.0.0.1:8000"))
+    tool_key: str = field(default_factory=lambda: _env("Q2E_TOOL_KEY"))
 
     def ensure_dirs(self) -> None:
         for p in (self.workspace, self.workspace / "projects", self.workspace / "datasets", self.cache_dir):

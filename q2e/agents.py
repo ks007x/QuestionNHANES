@@ -162,8 +162,16 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     sev = {s: sum(1 for i in issues if i["severity"] == s) for s in ("blocker", "major", "minor", "info")}
     dialogue.append({"agent": "Reviewer", "source": "rules", "message":
                      f"Critique: {sev['blocker']} blocker, {sev['major']} major, {sev['minor']} minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."})
+    from . import design_audit
     plan["variable_map"] = vm
-    plan["review"] = issues
+    plan["design_audit"] = design_audit.audit(plan, None, k, plan.get("novelty"))
+    audit_items = design_audit.review_items(plan["design_audit"])
+    plan["review"] = issues + audit_items
+    a = plan["design_audit"]
+    dialogue.append({"agent": "Design auditor", "source": "rules", "message":
+                     f"Design audit vs common EHR-network study criticisms: {a['grade']} ({a['counts']['pass']} pass, "
+                     f"{a['counts']['caution']} caution, {a['counts']['fail']} fail)."
+                     + (" " + "; ".join(i["title"] for i in audit_items) if audit_items else "")})
     plan["feasibility"] = planner.feasibility(plan, k)
     plan["answerability"] = answerability.assess(plan, plan["parsed"])
     _answer_issue(plan)
@@ -194,6 +202,9 @@ def refresh_plan(plan: dict, provider: str | None = None) -> dict:
     plan["variable_map"] = planner.variable_map(plan, k)
     llm_issues = [i for i in plan.get("review", []) if i.get("agent") == "Reviewer (LLM)"]
     plan["review"] = planner.review_plan(plan, k) + llm_issues
+    from . import design_audit
+    plan["design_audit"] = design_audit.audit(plan, None, k, plan.get("novelty"))
+    plan["review"] += design_audit.review_items(plan["design_audit"])
     plan["feasibility"] = planner.feasibility(plan, k)
     probe = plan.get("probe")
     if probe:

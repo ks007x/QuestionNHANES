@@ -80,6 +80,19 @@ python -m q2e examples            # all five demo questions → manuscripts + bu
 The AI provider is forced to `offline` in this workflow, so no study content is sent to any external model. Downloaded
 files are cached between runs; they are never committed to the repository.
 
+## Novelty, design audit and AI-tool integration
+
+- **Novelty score** (next to feasibility on the protocol page): PubMed/MEDLINE count of NHANES papers already answering
+  the same question (10 y, and last 3 y), the closest prior work, differentiation levers (newest cycle, 2025+ guideline
+  definition, effect modification) and suggestions when the topic is crowded.
+- **Design audit**: checks each plan against the criticisms made of EHR-network (TriNetX-style) studies - inappropriate
+  comparator (users vs non-users / confounding by indication), code- or self-report-only and treatment-defined outcomes,
+  circular outcomes, reverse causation (with an automatic "exclude diagnosed participants" sensitivity analysis),
+  adjustment set, a priori rationale, hash-locked prespecification, executable methods, clinically trivial effects, and
+  documented statistician sign-off. Shown on the Plan page and in the manuscript supplement.
+- **Sponsor AI tools**: one governed tool set over REST (`/api/tools`) and MCP (`python -m q2e mcp`), with manifests for
+  Azure OpenAI / AI Foundry, AWS Bedrock, ElevenLabs and MCP clients. AI cannot approve - see `docs/INTEGRATIONS.md`.
+
 ## Where next? Journals, conferences and funding
 
 After a run, **Find journals, deadlines & funding** (Results page; also `where_next.md` in every CLI/GitHub run):

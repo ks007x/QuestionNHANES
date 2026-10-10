@@ -1,0 +1,246 @@
+{
+  "tools": [
+    {
+      "toolSpec": {
+        "name": "assess_question",
+        "description": "Check whether NHANES can answer a research question (design fit, coverage, eligibility) without creating a project.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "description": "Research question in plain English"
+              },
+              "cycles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+              }
+            },
+            "required": [
+              "question"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "design_study",
+        "description": "Turn a research idea into a draft NHANES protocol (PICO, variables, analysis plan, feasibility, design audit). Returns project_id. Hard-stops questions NHANES cannot answer.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "description": "Clinical observation or research question"
+              },
+              "cycles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+              },
+              "data_source": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "cdc",
+                  "synthetic"
+                ],
+                "description": "auto/cdc = real NHANES (local files or CDC download); synthetic = offline demo data"
+              }
+            },
+            "required": [
+              "question"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "get_plan",
+        "description": "Read the current protocol, reviewer critique and design-audit flags for a project.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "apply_review_fix",
+        "description": "Apply the Reviewer's or Design auditor's suggested fix to the draft plan (cannot acknowledge assumptions or approve).",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              },
+              "issue_id": {
+                "type": "string",
+                "description": "id of a review item that has a suggested fix"
+              }
+            },
+            "required": [
+              "project_id",
+              "issue_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "check_novelty",
+        "description": "Score novelty from PubMed/MEDLINE: how many NHANES papers already answer this question, the closest prior work, and how to differentiate.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "feasibility_probe",
+        "description": "Blinded feasibility probe: sample counts and outcome-rate band only (no effect estimates), allowed before approval.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "request_approval",
+        "description": "Ask the human investigator to approve the protocol. Returns the approval link. AI cannot approve.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "run_analysis",
+        "description": "Run the human-approved plan in the R engine (survey-weighted models and QC). Fails if the plan is not approved.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "get_results",
+        "description": "Headline estimate, analytic n, QC warnings and links to the manuscript and reproducibility bundle.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              },
+              "run_id": {
+                "type": "string",
+                "description": "Optional run id; latest completed run by default"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "toolSpec": {
+        "name": "where_next",
+        "description": "Journal match scores, upcoming conference abstract windows and NIH funding leads for the study.",
+        "inputSchema": {
+          "json": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "Project id returned by design_study"
+              }
+            },
+            "required": [
+              "project_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

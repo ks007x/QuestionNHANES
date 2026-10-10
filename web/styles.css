@@ -111,6 +111,7 @@ label.field { display: grid; gap: 4px; font-size: 12px; color: var(--ink-3); fon
 .msg .txt { font-size: 13.5px; }
 .gauge { display: flex; align-items: center; gap: 14px; }
 .gauge .ring { --p: 0; width: 72px; height: 72px; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--line-2) 0); display: grid; place-items: center; }
+.gauge .ring.nov { background: conic-gradient(var(--info) calc(var(--p) * 1%), var(--line-2) 0); }
 .gauge .ring div { width: 56px; height: 56px; border-radius: 50%; background: var(--panel); display: grid; place-items: center; font: 700 18px var(--sans); }
 table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.t th { text-align: left; font-weight: 600; color: var(--ink-2); background: var(--line-2); padding: 7px 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; }

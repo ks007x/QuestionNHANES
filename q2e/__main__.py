@@ -4,6 +4,8 @@
   python -m q2e synth                      # generate synthetic NHANES-like demo data
   python -m q2e study "question" [--source synthetic|auto|local|cdc] [--cycles P] [--out dir] [--approver NAME]
   python -m q2e examples                   # run every example question end to end (synthetic)
+  python -m q2e mcp                        # MCP server (stdio) for AI assistants
+  python -m q2e integrations --base-url URL  # tool manifests for Azure OpenAI, AWS Bedrock, ElevenLabs, MCP
 """
 from __future__ import annotations
 
@@ -25,10 +27,19 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     plan = agents.design_study(question, cycles, {"type": "nhanes", "cycles": cycles or ["P"], "source": source}, provider)
     proj = store.create(question, plan, approver)
     print(f"\n== {plan['title']}\n   {plan['refined_question']}\n   feasibility {plan['feasibility']['score']}/100 ({plan['feasibility']['label']})")
+    if settings.allow_download and source != "synthetic":
+        from . import novelty as _nov
+        nv = _nov.novelty(plan)
+        print(f"   novelty {nv['score']}/100 ({nv['label']}) - {nv.get('summary') or nv.get('error')}" if nv.get("score") is not None
+              else f"   novelty not checked ({nv.get('error')})")
     for d in plan["agent_dialogue"]:
         print(f"   [{d['agent']}] {d['message'][:160]}")
     # CLI mode: acknowledge operational assumptions explicitly on behalf of the named approver
     for issue in list(plan["review"]):
+        if issue.get("agent") == "Design auditor" and (issue.get("fix") or {}).get("op") == "add_sensitivity":
+            proj["plan"] = planner.apply_fix(proj["plan"], issue["fix"])
+            print(f"   [design auditor fix applied] {issue['title']}")
+    for issue in list(proj["plan"]["review"]):
         if issue.get("fix", {}) and issue["fix"].get("op") == "acknowledge":
             proj["plan"] = planner.apply_fix(proj["plan"], {**issue["fix"], "by": approver})
             print(f"   [ack by {approver}] {issue['title']}")
@@ -74,6 +85,9 @@ def main(argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8000)
     sub.add_parser("synth")
+    sub.add_parser("mcp", help="run the MCP (Model Context Protocol) server on stdio")
+    ig = sub.add_parser("integrations", help="write tool manifests for Azure/AWS/ElevenLabs/MCP")
+    ig.add_argument("--base-url", default=settings.public_url); ig.add_argument("--out", default="integrations/generated")
     st = sub.add_parser("study"); st.add_argument("question"); st.add_argument("--source", default="synthetic")
     st.add_argument("--cycles", nargs="*"); st.add_argument("--out", default="outputs"); st.add_argument("--approver", default="CLI investigator")
     st.add_argument("--provider")
@@ -82,6 +96,15 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "serve":
         import uvicorn
         uvicorn.run("q2e.server:app", host=a.host, port=a.port)
+        return 0
+    if a.cmd == "mcp":
+        from .mcp_server import serve_stdio
+        serve_stdio()
+        return 0
+    if a.cmd == "integrations":
+        from .integrations import write_all
+        for p in write_all(a.base_url, Path(a.out)):
+            print("wrote", p)
         return 0
     if a.cmd == "synth":
         from .runner import ensure_synthetic

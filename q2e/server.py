@@ -10,12 +10,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expertise, expressions, generic, literature, planner, privacy, report, venues, voice
+from . import __version__, agents, answerability, expressions, generic, literature, planner, novelty, privacy, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -49,7 +49,10 @@ def _project(pid: str) -> dict:
 def _public(proj: dict) -> dict:
     proj = dict(proj)
     proj["plan_hash"] = plan_hash(proj["plan"])
-    proj["approved_current"] = any(a.get("plan_hash") == proj["plan_hash"] for a in proj["plan"].get("approvals", []))
+    proj["approved_current"] = any(a.get("plan_hash") == proj["plan_hash"] and a.get("stage", "protocol") == "protocol"
+                                   for a in proj["plan"].get("approvals", []))
+    proj["stats_signed_current"] = any(a.get("plan_hash") == proj["plan_hash"] and a.get("stage") == "statistics"
+                                       for a in proj["plan"].get("approvals", []))
     proj["chain"] = store.verify_chain(proj)
     return proj
 
@@ -81,21 +84,6 @@ class NewProject(BaseModel):
     provider: str | None = None
     dataset_id: str | None = None
     actor: str = "investigator"
-    # answers to the Interviewer's follow-up questions: {question_id: {"option": id, "text": str}}
-    answers: dict[str, dict[str, str]] | None = None
-    level: str | None = None
-
-
-class ClarifyQ(BaseModel):
-    question: str = Field(min_length=4, max_length=2000)
-    cycles: list[str] | None = None
-    level: str | None = None     # optional override of the detected expertise level
-
-
-@app.post("/api/clarify")
-def clarify(body: ClarifyQ):
-    """Detect the user's expertise from their wording and return adaptive follow-up questions."""
-    return expertise.clarify(body.question, body.cycles, body.level)
 
 
 @app.post("/api/projects")
@@ -105,10 +93,6 @@ def create_project(body: NewProject):
     for c in cycles:
         if c not in k.cycles:
             _bad(f"Unknown cycle {c}")
-    clar = None
-    if body.answers is not None:
-        clar = expertise.apply_answers(body.question, body.answers, body.level, cycles)
-        body.question = clar["question"]
     dataset = None
     if body.dataset_id:
         rec = generic.get_dataset(body.dataset_id)
@@ -129,20 +113,7 @@ def create_project(body: NewProject):
         plan["generic_status"] = sug["status"]
         plan = generic.prune_unavailable(plan, k)
         plan = agents.refresh_plan(plan)
-    if clar:
-        try:
-            plan = agents.refresh_plan(expertise.apply_fixes(plan, clar["fixes"]))
-        except (ValueError, KeyError, expressions.ExpressionError) as e:
-            _bad(f"Could not apply your answers: {e}", 422)
-        ex = clar["expertise"]
-        plan["clarification"] = {k2: clar[k2] for k2 in ("record", "expertise", "level_used")}
-        plan["agent_dialogue"].insert(0, {"agent": "Interviewer", "source": "rules", "message":
-                                          f"From the wording I estimated your experience as {clar['level_used']} (score {ex['score']}/100) and asked "
-                                          f"{len(clar['record'])} follow-up question(s): " + ("; ".join(f"{r['question']} → {r['answer']}" for r in clar["record"]) or "none answered") + "."})
     proj = store.create(body.question, plan, body.actor)
-    if clar:
-        store.event(proj, body.actor, "clarification_answered", plan["clarification"])
-        store.save(proj)
     return _public(proj)
 
 
@@ -186,6 +157,7 @@ def edit_project(pid: str, body: Edit):
 class Approve(BaseModel):
     by: str = Field(min_length=2, max_length=120)
     statement: str = "I have reviewed the protocol, variable mappings, operational assumptions and analysis plan."
+    role: str = Field(default="investigator", pattern="^(investigator|statistician)$")
 
 
 @app.post("/api/projects/{pid}/approve")
@@ -203,10 +175,13 @@ def approve(pid: str, body: Approve):
     except CompileError as e:
         _bad(f"Plan does not compile: {e}", 422)
     h = plan_hash(plan)
-    plan.setdefault("approvals", []).append({"stage": "protocol", "by": body.by, "at": _now(), "plan_hash": h,
+    stage = "statistics" if body.role == "statistician" else "protocol"
+    plan.setdefault("approvals", []).append({"stage": stage, "by": body.by, "at": _now(), "plan_hash": h,
                                               "plan_version": plan.get("version"), "statement": body.statement})
-    plan["status"] = "approved"
-    store.event(proj, body.by, "protocol_approved", {"plan_hash": h, "statement": body.statement})
+    if stage == "protocol":
+        plan["status"] = "approved"
+    proj["plan"] = plan = agents.refresh_plan(plan)
+    store.event(proj, body.by, "protocol_approved" if stage == "protocol" else "statistical_review_signed", {"plan_hash": h, "statement": body.statement})
     store.save(proj)
     return _public(proj)
 
@@ -375,6 +350,38 @@ def project_literature(pid: str):
 
 
 # ------------------------------------------------------------------ knowledge / guidelines
+@app.get("/api/tools")
+def list_tools():
+    """Tool registry for AI platforms (OpenAI-style function specs). Approval is deliberately not a tool."""
+    from .integrations import openai_tools
+    return {"tools": openai_tools(), "governance": "AI may draft, assess, probe, fix, run approved plans and read results; "
+                                                  "only a human can approve or sign off."}
+
+
+@app.post("/api/tools/{name}")
+def call_tool(name: str, body: dict, request: Request):
+    if settings.tool_key and request.headers.get("x-q2e-key") != settings.tool_key:
+        _bad("Missing or invalid X-Q2E-Key header", 401)
+    client = (request.headers.get("x-q2e-client") or request.headers.get("user-agent") or "rest")[:60]
+    try:
+        return qtools.call(name, body, client=client)
+    except qtools.ToolError as e:
+        _bad(str(e), 400)
+
+
+@app.post("/api/projects/{pid}/novelty")
+def project_novelty(pid: str):
+    proj = _project(pid)
+    nv = novelty.novelty(proj["plan"])
+    proj["novelty"] = {**nv, "plan_version": proj["plan"].get("version")}
+    if nv.get("score") is not None:
+        proj["plan"]["novelty"] = {"score": nv["score"], "label": nv["label"], "summary": nv["summary"], "checked": nv["checked"]}
+        proj["plan"] = agents.refresh_plan(proj["plan"])
+    store.event(proj, "agent:Librarian", "novelty_checked", {"score": nv.get("score"), "exact": nv.get("exact"), "error": nv.get("error")})
+    store.save(proj)
+    return proj["novelty"]
+
+
 @app.get("/api/projects/{pid}/where-next")
 def project_where_next(pid: str, live: bool = True):
     proj = _project(pid)

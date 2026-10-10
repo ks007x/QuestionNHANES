@@ -1,0 +1,186 @@
+[
+  {
+    "type": "webhook",
+    "name": "assess_question",
+    "description": "Check whether NHANES can answer a research question (design fit, coverage, eligibility) without creating a project.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/assess_question",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Research question in plain English"
+          },
+          "cycles": {
+            "type": "array",
+            "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "design_study",
+    "description": "Turn a research idea into a draft NHANES protocol (PICO, variables, analysis plan, feasibility, design audit). Returns project_id. Hard-stops questions NHANES cannot answer.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/design_study",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Clinical observation or research question"
+          },
+          "cycles": {
+            "type": "array",
+            "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+          },
+          "data_source": {
+            "type": "string",
+            "description": "auto/cdc = real NHANES (local files or CDC download); synthetic = offline demo data"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "get_plan",
+    "description": "Read the current protocol, reviewer critique and design-audit flags for a project.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/get_plan",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project id returned by design_study"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "check_novelty",
+    "description": "Score novelty from PubMed/MEDLINE: how many NHANES papers already answer this question, the closest prior work, and how to differentiate.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/check_novelty",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project id returned by design_study"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "request_approval",
+    "description": "Ask the human investigator to approve the protocol. Returns the approval link. AI cannot approve.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/request_approval",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project id returned by design_study"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "get_results",
+    "description": "Headline estimate, analytic n, QC warnings and links to the manuscript and reproducibility bundle.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/get_results",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project id returned by design_study"
+          },
+          "run_id": {
+            "type": "string",
+            "description": "Optional run id; latest completed run by default"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "webhook",
+    "name": "where_next",
+    "description": "Journal match scores, upcoming conference abstract windows and NIH funding leads for the study.",
+    "api_schema": {
+      "url": "https://YOUR-Q2E-HOST/api/tools/where_next",
+      "method": "POST",
+      "request_headers": {
+        "X-Q2E-Key": "REPLACE_WITH_Q2E_TOOL_KEY (store as a secret in ElevenLabs)"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project id returned by design_study"
+          }
+        }
+      }
+    }
+  }
+]

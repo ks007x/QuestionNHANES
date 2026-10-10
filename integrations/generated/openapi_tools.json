@@ -1,0 +1,526 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Q2E AI Research Copilot tools",
+    "version": "1.0.0",
+    "description": "Clinical question -> reproducible NHANES study. Humans approve; AI drafts, checks and runs approved plans."
+  },
+  "servers": [
+    {
+      "url": "https://YOUR-Q2E-HOST"
+    }
+  ],
+  "paths": {
+    "/api/tools/assess_question": {
+      "post": {
+        "operationId": "assess_question",
+        "summary": "Check whether NHANES can answer a research question (design fit, coverage, eligibility) without creating a project.",
+        "description": "Check whether NHANES can answer a research question (design fit, coverage, eligibility) without creating a project.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "Research question in plain English"
+                  },
+                  "cycles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+                  }
+                },
+                "required": [
+                  "question"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/design_study": {
+      "post": {
+        "operationId": "design_study",
+        "summary": "Turn a research idea into a draft NHANES protocol (PICO, variables, analysis plan, feasibility, design audit). Returns p",
+        "description": "Turn a research idea into a draft NHANES protocol (PICO, variables, analysis plan, feasibility, design audit). Returns project_id. Hard-stops questions NHANES cannot answer.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "Clinical observation or research question"
+                  },
+                  "cycles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "NHANES cycles, e.g. ['P'] (2017-Mar 2020) or ['L'] (2021-2023)"
+                  },
+                  "data_source": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "cdc",
+                      "synthetic"
+                    ],
+                    "description": "auto/cdc = real NHANES (local files or CDC download); synthetic = offline demo data"
+                  }
+                },
+                "required": [
+                  "question"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/get_plan": {
+      "post": {
+        "operationId": "get_plan",
+        "summary": "Read the current protocol, reviewer critique and design-audit flags for a project.",
+        "description": "Read the current protocol, reviewer critique and design-audit flags for a project.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/apply_review_fix": {
+      "post": {
+        "operationId": "apply_review_fix",
+        "summary": "Apply the Reviewer's or Design auditor's suggested fix to the draft plan (cannot acknowledge assumptions or approve).",
+        "description": "Apply the Reviewer's or Design auditor's suggested fix to the draft plan (cannot acknowledge assumptions or approve).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "description": "id of a review item that has a suggested fix"
+                  }
+                },
+                "required": [
+                  "project_id",
+                  "issue_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/check_novelty": {
+      "post": {
+        "operationId": "check_novelty",
+        "summary": "Score novelty from PubMed/MEDLINE: how many NHANES papers already answer this question, the closest prior work, and how ",
+        "description": "Score novelty from PubMed/MEDLINE: how many NHANES papers already answer this question, the closest prior work, and how to differentiate.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/feasibility_probe": {
+      "post": {
+        "operationId": "feasibility_probe",
+        "summary": "Blinded feasibility probe: sample counts and outcome-rate band only (no effect estimates), allowed before approval.",
+        "description": "Blinded feasibility probe: sample counts and outcome-rate band only (no effect estimates), allowed before approval.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/request_approval": {
+      "post": {
+        "operationId": "request_approval",
+        "summary": "Ask the human investigator to approve the protocol. Returns the approval link. AI cannot approve.",
+        "description": "Ask the human investigator to approve the protocol. Returns the approval link. AI cannot approve.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/run_analysis": {
+      "post": {
+        "operationId": "run_analysis",
+        "summary": "Run the human-approved plan in the R engine (survey-weighted models and QC). Fails if the plan is not approved.",
+        "description": "Run the human-approved plan in the R engine (survey-weighted models and QC). Fails if the plan is not approved.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/get_results": {
+      "post": {
+        "operationId": "get_results",
+        "summary": "Headline estimate, analytic n, QC warnings and links to the manuscript and reproducibility bundle.",
+        "description": "Headline estimate, analytic n, QC warnings and links to the manuscript and reproducibility bundle.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  },
+                  "run_id": {
+                    "type": "string",
+                    "description": "Optional run id; latest completed run by default"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    },
+    "/api/tools/where_next": {
+      "post": {
+        "operationId": "where_next",
+        "summary": "Journal match scores, upcoming conference abstract windows and NIH funding leads for the study.",
+        "description": "Journal match scores, upcoming conference abstract windows and NIH funding leads for the study.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "description": "Project id returned by design_study"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tool error (e.g., plan not approved by a human)"
+          }
+        },
+        "security": [
+          {
+            "q2eKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "q2eKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Q2E-Key"
+      }
+    }
+  }
+}

@@ -311,7 +311,9 @@ def where_next(plan: dict, results: dict | None = None, live: bool = True, today
             errors.append(f"PubMed unavailable: {e}")
     funding = funding_leads(plan, live=live)
     errors += funding.pop("errors")
-    return {"profile": plan_profile(plan), "journals": journal_matches(plan, prec),
+    from . import novelty as _nov
+    nv = _nov.novelty(plan, live=live)
+    return {"profile": plan_profile(plan), "novelty": nv, "journals": journal_matches(plan, prec),
             "precedent": {k: prec[k] for k in ("query", "n_papers", "examples")} if prec else None,
             "conferences": conference_windows(plan, today), "funding": funding,
             "aims_seed": aims_seed(plan, results), "live": live and not errors, "errors": errors,
@@ -325,6 +327,16 @@ def to_markdown(w: dict) -> str:
          f"Study domains: {', '.join(w['profile']['domains'])}. Topic terms: {', '.join(w['profile']['terms'])}.", ""]
     if w.get("errors"):
         L += ["> Live sources unavailable: " + "; ".join(w["errors"]), ""]
+    nv = w.get("novelty") or {}
+    if nv.get("score") is not None:
+        L += ["## Novelty (PubMed/MEDLINE)", "", f"**{nv['score']}/100 - {nv['label']}.** {nv['summary']}", ""]
+        for lv in nv.get("levers", []):
+            L.append(f"- +{lv['points']} {lv['lever']}: {lv['why']}")
+        if nv.get("closest"):
+            L += ["", "Closest prior NHANES work:"] + [f"- [{c['title']}]({c['url']}) - {c['journal']}, {c['pubdate']}" for c in nv["closest"]]
+        if nv.get("suggestions"):
+            L += ["", "How to differentiate:"] + [f"- {x}" for x in nv["suggestions"]]
+        L += ["", f"Query: `{nv['queries']['exact']}`", ""]
     L += ["## Journal match", "", "| Score | Journal | Evidence | Open access |", "|---:|---|---|---|"]
     for j in w["journals"]:
         name = f"[{j['journal']}]({j['url']})" if j.get("url") else j["journal"]

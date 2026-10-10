@@ -36,7 +36,7 @@ def ensure_synthetic() -> Path:
 
 def approved_for_current_plan(proj: dict) -> bool:
     h = plan_hash(proj["plan"])
-    return any(a.get("plan_hash") == h for a in proj["plan"].get("approvals", []))
+    return any(a.get("plan_hash") == h and a.get("stage", "protocol") == "protocol" for a in proj["plan"].get("approvals", []))
 
 
 def start_run(pid: str, actor: str = "investigator", wait: bool = False) -> dict:

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "q2e": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "q2e",
+        "mcp"
+      ],
+      "cwd": "<absolute path to your clone of this repo>",
+      "env": {
+        "Q2E_PUBLIC_URL": "http://127.0.0.1:8000"
+      }
+    }
+  }
+}

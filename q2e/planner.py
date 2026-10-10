@@ -1343,5 +1343,8 @@ def draft(question: str, cycles: list[str] | None = None, dataset: dict | None =
     plan = build_plan(question, parsed, cycles, dataset, k)
     plan["variable_map"] = variable_map(plan, k)
     plan["review"] = review_plan(plan, k)
+    from . import design_audit
+    plan["design_audit"] = design_audit.audit(plan, None, k, plan.get("novelty"))
+    plan["review"] += design_audit.review_items(plan["design_audit"])
     plan["feasibility"] = feasibility(plan, k)
     return plan

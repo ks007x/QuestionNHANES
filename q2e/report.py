@@ -410,6 +410,14 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
     parts.append("<h2>Supplement</h2>")
     parts.append(_sens_html(results))
     parts.append(_checks_html(results))
+    try:
+        from .design_audit import audit as _audit
+        da = _audit(plan, results, novelty=plan.get("novelty"))
+        parts.append("<h3>eTable. Design audit (common criticisms of EHR-network observational studies)</h3><table><thead><tr><th>Area</th><th>Status</th><th>Check</th><th>Criticism addressed</th></tr></thead><tbody>"
+                     + "".join(f"<tr><td>{esc(c['area'])}</td><td>{esc(c['status'])}</td><td>{esc(c['title'])}: {esc(c['detail'])}</td><td>{esc(c['critique'])}</td></tr>" for c in da["checks"])
+                     + f"</tbody></table><p class='meta'>Overall: {esc(da['grade'])}.</p>")
+    except Exception:  # noqa: BLE001
+        pass
     parts.append("<h3>eMethods. Derivation trace and provenance</h3><pre style='white-space:pre-wrap;font-size:11.5px;background:#f7f7f7;padding:10px'>"
                  + esc_code("\n".join(results.get("trace", []))) + "</pre>")
     files = "".join(f"<li>{esc(f['file'])} ({esc(f['origin'])}) md5 <code>{esc(f['md5'])}</code> n={f['nrow']:,}</li>" for f in meta.get("files", []))
@@ -459,6 +467,13 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
     lines += [f"- {l}" for l in plan.get("limitations", [])]
     lines.append("\n## Validation checks\n")
     lines += [f"- **{c['status'].upper()}** {c['title']}: {c['message']}" for c in results.get("checks", [])]
+    try:
+        from .design_audit import audit as _audit
+        da = _audit(plan, results, novelty=plan.get("novelty"))
+        lines.append(f"\n## Design audit ({da['grade']})\n")
+        lines += [f"- **{c['status'].upper()}** {c['area']}: {c['title']}. {c['detail']} _(addresses: {c['critique']})_" for c in da["checks"]]
+    except Exception:  # noqa: BLE001
+        pass
     lines.append(f"\n---\nPlan hash `{run['plan_hash']}` · run `{run['id']}` · {results.get('meta', {}).get('r_version', '')}")
     md = "\n".join(lines)
     return md

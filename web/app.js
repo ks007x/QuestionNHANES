@@ -138,7 +138,6 @@ async function viewAsk() {
     <div class="row" style="margin-top:16px"><button class="btn" data-act="assess" id="assessBtn">Can NHANES answer this?</button><button class="btn primary" data-act="design" id="designBtn">Design my study →</button>
       <span class="small muted">Agents: Investigator · Data Steward · Epidemiologist · Statistician · Reviewer</span></div>
   </div>
-  ${S.clarify ? clarifyCard(S.clarify) : ""}
   ${S.assess ? `<div style="margin-top:14px">${answerCard(S.assess)}</div>` : ""}
   <div class="grid g2" style="margin-top:18px">
     <div class="card"><h3 class="sub" style="margin-top:0">Recent projects</h3>${recent.length ? recent.map((p) => `<div class="crit"><div class="lbl"><a href="#/p/${p.id}/protocol">${esc(p.title)}</a><div class="tiny muted">${esc(p.created.slice(0, 16).replace("T", " "))} · ${p.runs} run(s)</div></div><span class="chip ${p.signed ? "ok" : "info"}">${p.signed ? "signed" : esc(p.status)}</span></div>`).join("") : `<p class="muted small">No projects yet.</p>`}</div>
@@ -149,39 +148,6 @@ async function viewAsk() {
       <label class="field">Data dictionary (.csv, optional)<input type="file" id="dsDict" accept=".csv"></label>
       <button class="btn" data-act="upload">Upload dataset</button></div></div>
   </div>`;
-}
-
-/* Interviewer: follow-up questions adapted to the expertise detected from the user's wording */
-const LEVEL_NAMES = { novice: "Beginner", intermediate: "Intermediate", expert: "Expert" };
-function clarifyCard(c) {
-  const ex = c.expertise;
-  const qs = c.questions.map((q) => `<div class="crit" style="display:block;padding:10px 0">
-      <div><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted">Why we ask: ${esc(q.why)}</div>` : ""}</div>
-      <div class="row" style="margin-top:6px;flex-wrap:wrap;gap:6px">${q.options.map((o) =>
-        `<label class="small"><input type="radio" name="cq_${q.id}" value="${esc(o.id)}"> ${esc(o.label)}</label>`).join("")}</div>
-      ${q.free_text ? `<input type="text" id="cqt_${q.id}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:6px;width:100%">` : ""}
-    </div>`).join("");
-  return `<div class="card" style="margin-top:14px">
-    <div class="row" style="justify-content:space-between">
-      <h3 class="sub" style="margin:0">A few quick questions before we design your study</h3>
-      <label class="small muted">Detected level
-        <select id="levelSel" data-act="level">${["novice", "intermediate", "expert"].map((l) =>
-          `<option value="${l}" ${c.level_used === l ? "selected" : ""}>${LEVEL_NAMES[l]}${l === ex.level ? " (detected)" : ""}</option>`).join("")}</select></label>
-    </div>
-    <p class="tiny muted" title="${esc(ex.signals.map((s) => `${s.effect} ${s.text}`).join("\n"))}">Based on how your idea is worded (score ${ex.score}/100${ex.signals.length ? ": " + esc(ex.signals.map((s) => s.text).slice(0, 3).join("; ")) : ""}).</p>
-    ${qs}
-    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="clarifyGo">Design my study with these answers →</button>
-      <button class="btn" data-act="clarifySkip">Skip questions</button></div>
-  </div>`;
-}
-function collectAnswers() {
-  const ans = {};
-  for (const q of S.clarify.questions) {
-    const opt = document.querySelector(`input[name="cq_${q.id}"]:checked`);
-    const txt = $(`#cqt_${q.id}`);
-    if (opt || (txt && txt.value.trim())) ans[q.id] = { option: opt ? opt.value : "", text: txt ? txt.value.trim() : "" };
-  }
-  return ans;
 }
 
 /* ------------------------------------------------------------------ PROJECTS / LIBRARY */
@@ -236,7 +202,7 @@ function answerCard(av, opts = {}) {
 }
 
 /* ------------------------------------------------------------------ PROTOCOL */
-const AGENT_COLOR = { Investigator: "#1F5A85", "Data Steward": "#2E7D4F", Epidemiologist: "#7A4FB0", Statistician: "#B5651D", Reviewer: "#B3261E", "Privacy Guard": "#5C6B7A", Interviewer: "#0E7C86" };
+const AGENT_COLOR = { Investigator: "#1F5A85", "Data Steward": "#2E7D4F", Epidemiologist: "#7A4FB0", Statistician: "#B5651D", Reviewer: "#B3261E", "Privacy Guard": "#5C6B7A" };
 function avatar(name) {
   const base = name.replace(/ \(LLM\)/, ""); const c = AGENT_COLOR[base] || "#5C6B7A";
   const ini = base.split(" ").map((w) => w[0]).join("").slice(0, 2);
@@ -272,6 +238,7 @@ function viewProtocol() {
       <p class="muted small" style="margin:0">Original idea: “${esc(p.question)}”</p></div>
     <div class="card gauge"><div class="ring" style="--p:${f.score}"><div>${f.score}</div></div><div><b>${esc(f.label)} feasibility</b><div class="tiny muted">in ${p.dataset.type === "nhanes" ? "NHANES" : "uploaded data"}</div>
       <details><summary class="tiny">components</summary><ul class="tiny" style="padding-left:16px;margin:4px 0">${f.components.map((c) => `<li>${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}</li>`).join("")}</ul></details></div></div>
+    ${noveltyGauge()}
   </div>
   <div class="card" style="margin-top:16px"><h3 class="sub" style="margin-top:0">Refined research question</h3>
     <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
@@ -358,11 +325,13 @@ function viewPlan() {
   </div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Prespecified sensitivity analyses</h3>${sens}
     <details style="margin-top:8px"><summary>Add an exclusion sensitivity analysis</summary><div class="grid g3" style="margin-top:8px;align-items:end"><label class="field">Label<input type="text" id="sLabel" placeholder="Exclude current smokers"></label><label class="field">Exclude if<input type="text" id="sExpr" placeholder='smoking == "Current"'></label><button class="btn sm" data-act="addsens">Validate & add</button></div></details></div>
+  <h2 class="sec">Design audit <span class="tiny muted" style="font-weight:400">common criticisms of EHR-network (TriNetX-style) studies</span></h2>${auditCard(p.design_audit)}
   <h2 class="sec">Reviewer critique</h2>
   <div class="card">${issues.length ? issues.map((i) => `<div class="issue"><span class="sev ${i.severity}">${i.severity}</span><div><b class="small">${nice(i.title)}</b> <span class="tiny muted">${esc(i.agent)}</span><div class="small muted">${nice(i.detail)}</div></div>
     <div>${i.fix ? `<button class="btn sm" data-act="fix" data-id="${i.id}">${i.fix.op === "acknowledge" ? "Acknowledge" : "Apply fix"}</button>` : ""}</div></div>`).join("") : `<p class="muted small">No issues.</p>`}</div>
   <h2 class="sec">Investigator approval</h2>
-  <div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc(p.approvals[p.approvals.length - 1].by)}.</div>
+  <div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
+      ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
       <button class="btn primary" data-act="run">Run analysis in R →</button>` :
     `${blockers.length ? `<div class="banner bad">Resolve ${blockers.length} blocker(s) before approval.</div>` : ""}${pendingAck.length ? `<div class="banner warn">Acknowledge ${pendingAck.length} operational assumption(s) (see critique).</div>` : ""}
     <div class="row"><input type="text" id="approver" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><label class="row small"><input type="checkbox" id="attest"> I reviewed the protocol, variable mappings, definitions and this analysis plan.</label>
@@ -455,6 +424,21 @@ function viewResults() {
   <div class="row" style="margin-top:20px"><button class="btn primary" data-act="go" data-stage="signoff">Investigator sign-off →</button></div>`;
 }
 
+function auditCard(a) {
+  if (!a) return "";
+  const cls = { pass: "ok", caution: "warn", fail: "bad" };
+  return `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>${esc(a.grade)}</b><span class="tiny muted">${a.counts.pass} pass · ${a.counts.caution} caution · ${a.counts.fail} fail</span></div>
+  ${a.checks.map((c) => `<div class="issue"><span class="chip ${cls[c.status]}">${esc(c.area)}</span><div><b class="small">${esc(c.title)}</b> <span class="tiny muted">answers: ${esc(c.critique)}</span><div class="small muted">${esc(c.detail)}${c.fix && c.fix.op === "note" ? " " + esc(c.fix.text) : ""}</div></div><div></div></div>`).join("")}</div>`;
+}
+
+function noveltyGauge() {
+  const n = S.project.novelty;
+  if (!n || n.score == null) return `<div class="card gauge"><div class="ring" style="--p:0"><div>?</div></div><div><b>Novelty</b><div class="tiny muted">${n?.error ? esc(n.error) : "PubMed/MEDLINE precedent"}</div><button class="btn sm" data-act="novelty" style="margin-top:6px">Check novelty</button></div></div>`;
+  const stale = n.plan_version !== S.project.plan.version;
+  return `<div class="card gauge"><div class="ring nov" style="--p:${n.score}"><div>${n.score}</div></div><div><b>${esc(n.label)} novelty</b><div class="tiny muted">${n.exact} NHANES paper(s) in PubMed, 10 y${stale ? " · plan changed - recheck" : ""}</div>
+    <details><summary class="tiny">evidence</summary><div class="tiny" style="max-width:340px">${esc(n.summary)}${n.levers.length ? `<ul style="padding-left:16px;margin:4px 0">${n.levers.map((l) => `<li>+${l.points} ${esc(l.lever)}</li>`).join("")}</ul>` : ""}${(n.closest || []).slice(0, 3).map((c) => `<div style="margin-top:3px"><a href="${c.url}" target="_blank" rel="noopener">${esc(c.title)}</a> <span class="muted">${esc(c.journal)}</span></div>`).join("")}${(n.suggestions || []).length ? `<div style="margin-top:6px"><b>Differentiate:</b><ul style="padding-left:16px;margin:2px 0">${n.suggestions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}<button class="btn sm" data-act="novelty" style="margin-top:6px">Recheck</button></div></details></div></div>`;
+}
+
 function whereNext() {
   const W = S.where;
   if (!W) return `<div class="card"><p class="small muted" style="margin:0 0 10px">Score journals by how often they publish NHANES studies like this one, list the next conference abstract windows, and find NIH funding that pays for this topic.</p><button class="btn sm" data-act="where">Find journals, deadlines &amp; funding</button></div>`;
@@ -512,17 +496,6 @@ function provTable() {
 }
 
 /* ------------------------------------------------------------------ actions */
-async function createProject(q, extra, el) {
-  el.disabled = true; el.innerHTML = `<span class="spinner"></span> Agents designing your study…`;
-  try {
-    const pj = await api("/api/projects", { method: "POST", body: { question: q, cycles: S.ask.cycles, source: S.ask.source, provider: $("#provSel").value || null, dataset_id: $("#dsSel").value || null, actor: store.get("q2e.name", "") || "investigator", ...(extra || {}) } });
-    S.project = pj; S.clarify = null; location.hash = `#/p/${pj.id}/protocol`;
-  } catch (e) {
-    toast(e.message, true); S.clarify = null;
-    try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
-    rerender();
-  }
-}
 async function edit(fix, note) {
   try { S.project = await api(`/api/projects/${S.project.id}/edit`, { method: "POST", body: { fix, actor: store.get("q2e.name", "") || "investigator", note } }); rerender(); }
   catch (e) { toast(e.message, true); }
@@ -547,18 +520,15 @@ const A = {
   },
   design: async (el) => {
     const q = $("#q").value.trim(); if (q.length < 8) return toast("Describe your research idea first", true);
-    store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
-    let c = null;
-    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
-    if (c && c.questions.length) { S.clarify = { ...c, question: q }; return rerender(); }
-    await createProject(q, null, el);
+    store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Agents designing your study…`;
+    try {
+      const pj = await api("/api/projects", { method: "POST", body: { question: q, cycles: S.ask.cycles, source: S.ask.source, provider: $("#provSel").value || null, dataset_id: $("#dsSel").value || null, actor: store.get("q2e.name", "") || "investigator" } });
+      S.project = pj; location.hash = `#/p/${pj.id}/protocol`;
+    } catch (e) {
+      toast(e.message, true); el.disabled = false; el.textContent = "Design my study →";
+      try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); rerender(); } catch {}
+    }
   },
-  level: async (el) => {
-    try { S.clarify = { ...(await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value } })), question: S.clarify.question }; rerender(); }
-    catch (e) { toast(e.message, true); }
-  },
-  clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: collectAnswers(), level: S.clarify.level_used }, el),
-  clarifySkip: (el) => createProject(S.clarify.question, null, el),
   upload: async () => {
     const f = $("#dsData").files[0]; if (!f) return toast("Choose a CSV data file", true);
     const fd = new FormData(); fd.append("name", $("#dsName").value || f.name); fd.append("data", f); if ($("#dsDict").files[0]) fd.append("dictionary", $("#dsDict").files[0]);
@@ -603,6 +573,10 @@ const A = {
     store.set("q2e.name", by);
     try { S.project = await api(`/api/projects/${S.project.id}/approve`, { method: "POST", body: { by } }); toast("Protocol approved and locked by hash"); rerender(); } catch (e) { toast(e.message, true); }
   },
+  statsign: async () => {
+    const by = $("#statname").value.trim(); if (!by) return toast("Enter the statistician's name", true);
+    try { S.project = await api(`/api/projects/${S.project.id}/approve`, { method: "POST", body: { by, role: "statistician", statement: "I reviewed the design, comparator, outcome definitions and statistical analysis plan." } }); toast("Statistical sign-off recorded"); rerender(); } catch (e) { toast(e.message, true); }
+  },
   run: async () => {
     try { await api(`/api/projects/${S.project.id}/run?actor=${encodeURIComponent(store.get("q2e.name", "investigator"))}`, { method: "POST" }); S.project = await api(`/api/projects/${S.project.id}`); S.run = null; S.results = null; go("run"); }
     catch (e) { toast(e.message, true); }
@@ -615,6 +589,7 @@ const A = {
     } else if (window.speechSynthesis) { speechSynthesis.speak(new SpeechSynthesisUtterance(txt)); } else toast("No speech output available", true);
   },
   lit: async () => { S.lit = await api(`/api/projects/${S.project.id}/literature`); rerender(); },
+  novelty: async () => { toast("Searching PubMed/MEDLINE for prior NHANES work..."); S.project.novelty = await api(`/api/projects/${S.project.id}/novelty`, { method: "POST" }); rerender(); },
   where: async () => { toast("Searching PubMed, NIH RePORTER and Grants.gov..."); S.where = await api(`/api/projects/${S.project.id}/where-next`); rerender(); },
   sign: async () => {
     const by = $("#signer").value.trim(); if (!by) return toast("Enter your name", true);
@@ -632,8 +607,7 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("change", (e) => {
   const el = e.target; const act = el.dataset?.act; if (!act) return;
-  if (act === "level") A.level(el);
-  else if (act === "setdef") edit({ op: "set_definition", role: el.dataset.role, value: el.value });
+  if (act === "setdef") edit({ op: "set_definition", role: el.dataset.role, value: el.value });
   else if (act === "scale") edit({ op: "set", path: "exposure.scale", value: parseFloat(el.value) || 1 });
   else if (act === "crit") edit({ op: "enable_criterion", id: el.dataset.id, value: el.checked });
   else if (act === "sens") edit({ op: "enable_sensitivity", id: el.dataset.id, value: el.checked });
