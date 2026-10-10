@@ -1,0 +1,729 @@
+{
+  "plan_id": "plan_eabce47c25",
+  "plan_version": 2,
+  "plan_hash": "dd9bd7c84f9d9ed52917edd783c81b5261ba1942e0a7125647945306cff25d84",
+  "title": "Association of Physical Activity With Diabetes Among US Adults: NHANES 2017-March 2020 pre-pandemic",
+  "study_type": "association",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc",
+    "local_dir": "data",
+    "synthetic_dir": null,
+    "cache_dir": "data/cache",
+    "allow_download": true
+  },
+  "cycles_meta": {
+    "P": {
+      "label": "NHANES 2017-March 2020 pre-pandemic",
+      "file_pattern": "P_{stem}",
+      "url_folder": "2017",
+      "years": 3.2,
+      "weights": {
+        "interview": "WTINTPRP",
+        "mec": "WTMECPRP",
+        "diet": "WTDRD1PP",
+        "fasting": "WTSAFPRP"
+      },
+      "weight_files": {
+        "diet": "DR1TOT",
+        "fasting": "GLU"
+      },
+      "psu": "SDMVPSU",
+      "strata": "SDMVSTRA",
+      "overlaps": [
+        "J"
+      ],
+      "note": "Pre-pandemic file combines 2017-2018 with partial 2019-2020 data. Do not combine with J."
+    }
+  },
+  "weight_level": "mec",
+  "raw_variables": [
+    {
+      "variable": "BMXBMI",
+      "file": "BMX",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 10.0,
+      "max": 90.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Body mass index"
+    },
+    {
+      "variable": "DIQ010",
+      "file": "DIQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Doctor told you have diabetes (1=yes; 2=no; 3=borderline)"
+    },
+    {
+      "variable": "DIQ050",
+      "file": "DIQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking insulin now (1=yes; 2=no)"
+    },
+    {
+      "variable": "DIQ070",
+      "file": "DIQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking diabetic pills (1=yes; 2=no)"
+    },
+    {
+      "variable": "DMDEDUC2",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)"
+    },
+    {
+      "variable": "INDFMPIR",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Ratio of family income to poverty"
+    },
+    {
+      "variable": "LBXGH",
+      "file": "GHB",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 3.0,
+      "max": 18.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Glycohemoglobin (HbA1c)"
+    },
+    {
+      "variable": "LBXHGB",
+      "file": "CBC",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 3.0,
+      "max": 22.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Hemoglobin"
+    },
+    {
+      "variable": "PAQ650",
+      "file": "PAQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Vigorous recreational activities (1=yes; 2=no)"
+    },
+    {
+      "variable": "RIAGENDR",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Gender (1=Male; 2=Female)"
+    },
+    {
+      "variable": "RIDAGEYR",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 80.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Age in years at screening (top-coded at 80)"
+    },
+    {
+      "variable": "RIDEXPRG",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        3.0
+      ],
+      "weight_level": "interview",
+      "label": "Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain)"
+    },
+    {
+      "variable": "RIDRETH3",
+      "file": "DEMO",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 7.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)"
+    },
+    {
+      "variable": "SMQ020",
+      "file": "SMQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Smoked at least 100 cigarettes in life (1=yes; 2=no)"
+    },
+    {
+      "variable": "SMQ040",
+      "file": "SMQ",
+      "cycles": [
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Do you now smoke cigarettes (1=every day; 2=some days; 3=not at all)"
+    }
+  ],
+  "derived": [
+    {
+      "name": "dm_selfreport",
+      "expr": "DIQ010 == 1",
+      "type": "binary",
+      "label": "Self-reported diabetes diagnosis",
+      "levels": null
+    },
+    {
+      "name": "insulin_use",
+      "expr": "DIQ050 == 1",
+      "type": "binary",
+      "label": "Current insulin use",
+      "levels": null
+    },
+    {
+      "name": "dm_pills",
+      "expr": "DIQ070 == 1",
+      "type": "binary",
+      "label": "Current oral diabetes medication",
+      "levels": null
+    },
+    {
+      "name": "hba1c",
+      "expr": "LBXGH",
+      "type": "continuous",
+      "label": "HbA1c",
+      "levels": null
+    },
+    {
+      "name": "diabetes_ada",
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "type": "binary",
+      "label": "Diabetes - self-report, medication, or HbA1c >=6.5%",
+      "levels": null
+    },
+    {
+      "name": "vigorous_pa",
+      "expr": "PAQ650 == 1",
+      "type": "binary",
+      "label": "Any vigorous recreational activity",
+      "levels": null
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "label": "Age",
+      "levels": null
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "label": "Female sex",
+      "levels": null
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "label": "Sex",
+      "levels": null
+    },
+    {
+      "name": "race_eth",
+      "expr": "cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\")",
+      "type": "categorical",
+      "label": "Race and ethnicity",
+      "levels": null
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "label": "Family income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "label": "Income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "label": "Educational attainment",
+      "levels": null
+    },
+    {
+      "name": "smoking",
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "type": "categorical",
+      "label": "Smoking status",
+      "levels": null
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "label": "Body mass index",
+      "levels": null
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "label": "Age group",
+      "levels": null
+    },
+    {
+      "name": "pregnant",
+      "expr": "coalesce(RIDEXPRG, 2) == 1",
+      "type": "binary",
+      "label": "Pregnant at examination",
+      "levels": null
+    },
+    {
+      "name": "hgb",
+      "expr": "LBXHGB",
+      "type": "continuous",
+      "label": "Hemoglobin",
+      "levels": null
+    },
+    {
+      "name": "anemia",
+      "expr": "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))",
+      "type": "binary",
+      "label": "Anemia (WHO hemoglobin thresholds)",
+      "levels": null
+    }
+  ],
+  "variables_meta": {
+    "dm_selfreport": {
+      "label": "Self-reported diabetes diagnosis",
+      "units": ""
+    },
+    "insulin_use": {
+      "label": "Current insulin use",
+      "units": ""
+    },
+    "dm_pills": {
+      "label": "Current oral diabetes medication",
+      "units": ""
+    },
+    "hba1c": {
+      "label": "HbA1c",
+      "units": "%"
+    },
+    "diabetes_ada": {
+      "label": "Diabetes - self-report, medication, or HbA1c >=6.5%",
+      "units": ""
+    },
+    "vigorous_pa": {
+      "label": "Any vigorous recreational activity",
+      "units": ""
+    },
+    "age": {
+      "label": "Age",
+      "units": "years"
+    },
+    "female": {
+      "label": "Female sex",
+      "units": ""
+    },
+    "sex": {
+      "label": "Sex",
+      "units": ""
+    },
+    "race_eth": {
+      "label": "Race and ethnicity",
+      "units": ""
+    },
+    "pir": {
+      "label": "Family income-to-poverty ratio",
+      "units": "ratio"
+    },
+    "pir_cat": {
+      "label": "Income-to-poverty ratio",
+      "units": ""
+    },
+    "educ": {
+      "label": "Educational attainment",
+      "units": ""
+    },
+    "smoking": {
+      "label": "Smoking status",
+      "units": ""
+    },
+    "bmi": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "agecat": {
+      "label": "Age group",
+      "units": "y"
+    },
+    "pregnant": {
+      "label": "Pregnant at examination",
+      "units": ""
+    },
+    "hgb": {
+      "label": "Hemoglobin",
+      "units": "g/dL"
+    },
+    "anemia": {
+      "label": "Anemia (WHO hemoglobin thresholds)",
+      "units": ""
+    },
+    "BMXBMI": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "DIQ010": {
+      "label": "Doctor told you have diabetes (1=yes; 2=no; 3=borderline)",
+      "units": ""
+    },
+    "DIQ050": {
+      "label": "Taking insulin now (1=yes; 2=no)",
+      "units": ""
+    },
+    "DIQ070": {
+      "label": "Taking diabetic pills (1=yes; 2=no)",
+      "units": ""
+    },
+    "DMDEDUC2": {
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "units": ""
+    },
+    "INDFMPIR": {
+      "label": "Ratio of family income to poverty",
+      "units": "ratio"
+    },
+    "LBXGH": {
+      "label": "Glycohemoglobin (HbA1c)",
+      "units": "%"
+    },
+    "LBXHGB": {
+      "label": "Hemoglobin",
+      "units": "g/dL"
+    },
+    "PAQ650": {
+      "label": "Vigorous recreational activities (1=yes; 2=no)",
+      "units": ""
+    },
+    "RIAGENDR": {
+      "label": "Gender (1=Male; 2=Female)",
+      "units": ""
+    },
+    "RIDAGEYR": {
+      "label": "Age in years at screening (top-coded at 80)",
+      "units": "years"
+    },
+    "RIDEXPRG": {
+      "label": "Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain)",
+      "units": ""
+    },
+    "RIDRETH3": {
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "units": ""
+    },
+    "SMQ020": {
+      "label": "Smoked at least 100 cigarettes in life (1=yes; 2=no)",
+      "units": ""
+    },
+    "SMQ040": {
+      "label": "Do you now smoke cigarettes (1=every day; 2=some days; 3=not at all)",
+      "units": ""
+    }
+  },
+  "population": [
+    {
+      "id": "c1",
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion"
+    },
+    {
+      "id": "c2",
+      "label": "Pregnant at examination",
+      "expr": "pregnant == 1",
+      "kind": "exclusion"
+    }
+  ],
+  "outcome": {
+    "name": "diabetes_ada",
+    "type": "binary",
+    "label": "Diabetes - self-report, medication, or HbA1c >=6.5%"
+  },
+  "exposure": {
+    "name": "vigorous_pa",
+    "type": "binary",
+    "label": "Any vigorous recreational activity"
+  },
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "smoking",
+    "bmi"
+  ],
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "analysis": {
+    "estimand": "association",
+    "table1_vars": [
+      "agecat",
+      "sex",
+      "race_eth",
+      "pir_cat",
+      "educ",
+      "smoking",
+      "bmi",
+      "hba1c",
+      "vigorous_pa"
+    ],
+    "table1_by": "diabetes_ada",
+    "prevalence": {
+      "outcomes": [
+        "diabetes_ada"
+      ],
+      "by": [
+        "sex",
+        "agecat",
+        "race_eth"
+      ]
+    },
+    "model": {
+      "family": "quasipoisson",
+      "primary_set": "full"
+    },
+    "adjustment_sets": [
+      {
+        "id": "crude",
+        "label": "Unadjusted",
+        "covariates": []
+      },
+      {
+        "id": "demographic",
+        "label": "Adjusted for age, sex, and race and ethnicity",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth"
+        ]
+      },
+      {
+        "id": "full",
+        "label": "Fully adjusted (primary)",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth",
+          "pir_cat",
+          "educ",
+          "smoking",
+          "bmi"
+        ]
+      }
+    ],
+    "interactions": [
+      "sex",
+      "agecat"
+    ],
+    "missing": {
+      "method": "complete_case",
+      "m": 10
+    },
+    "sensitivity": [
+      {
+        "type": "exclude",
+        "label": "Exclude participants on glucose-lowering therapy",
+        "expr": "coalesce(insulin_use, 0) == 1 | coalesce(dm_pills, 0) == 1",
+        "id": "s1"
+      },
+      {
+        "type": "exclude",
+        "label": "Exclude anemia (HbA1c unreliable)",
+        "expr": "coalesce(anemia, 0) == 1",
+        "id": "s2"
+      },
+      {
+        "type": "alt_family",
+        "label": "Logistic regression (odds ratio)",
+        "family": "quasibinomial",
+        "id": "s3"
+      },
+      {
+        "type": "mi",
+        "label": "Multiple imputation of missing covariates (m = 10)",
+        "m": 10,
+        "id": "s4"
+      },
+      {
+        "type": "unweighted",
+        "label": "Unweighted analysis (design ignored)",
+        "id": "s5"
+      },
+      {
+        "type": "exclude",
+        "label": "Exclude participants aware of the diagnosis (reverse causation)",
+        "expr": "any_of(coalesce(dm_pills, 0) == 1, coalesce(dm_selfreport, 0) == 1, coalesce(insulin_use, 0) == 1)",
+        "id": "s6"
+      }
+    ],
+    "benchmarks": [],
+    "distribution_var": null
+  },
+  "options": {
+    "seed": 2026,
+    "alpha": 0.05
+  },
+  "unavailable_measures": []
+}
