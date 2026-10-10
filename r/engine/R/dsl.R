@@ -8,12 +8,16 @@
 # library(), ...) can be reached - even if an LLM proposed the expression.
 # -----------------------------------------------------------------------------
 
-q2e_coalesce <- function(x, y) {
+q2e_coalesce <- function(x, ...) {
   if (is.factor(x)) x <- as.character(x)
-  if (length(y) == 1L) y <- rep(y, length(x))
   out <- x
-  miss <- is.na(out)
-  out[miss] <- y[miss]
+  for (y in list(...)) {                       # first non-missing value across any number of alternatives
+    if (is.factor(y)) y <- as.character(y)
+    if (length(y) == 1L) y <- rep(y, length(out))
+    miss <- is.na(out)
+    if (!any(miss)) break
+    out[miss] <- y[miss]
+  }
   out
 }
 
