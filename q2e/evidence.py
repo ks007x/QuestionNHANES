@@ -394,11 +394,14 @@ def check(plan: dict, results: dict | None = None, live: bool = True, retmax: in
         try:
             ids = [p["pmid"] for p in literature.pubmed_search(q["high_impact"], retmax=retmax)]
             scope = "high-impact journals"
-            if len(ids) < 3:
-                more = [p["pmid"] for p in literature.pubmed_search(q["any_journal"], retmax=retmax)]
-                ids = list(dict.fromkeys(ids + more))[:retmax]
-                scope = "high-impact journals, topped up from any journal" if more else scope
             papers = fetch_abstracts(ids)
+            ts = term_sets(plan)
+            need = 5 if ts["exposure"] else 4
+            if sum(1 for p in papers if relevance(p, ts) >= need) < 4:
+                more = [i for i in (p["pmid"] for p in literature.pubmed_search(q["any_journal"], retmax=retmax)) if i not in ids]
+                if more:
+                    papers += fetch_abstracts(more)
+                    scope = "high-impact journals, topped up with NHANES papers from other journals"
         except Exception as e:  # noqa: BLE001
             return {**base, "papers": [], "summary": _summary([]), "landscape": landscape([]), "error": f"PubMed unavailable: {e}"}
         _CACHE[key] = (time.time(), (papers, scope))

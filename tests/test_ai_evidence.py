@@ -106,3 +106,17 @@ def test_learned_evidence_is_remembered(mocked):
     evidence.check(plan, None, use_llm=False)
     mem = evidence.recall(plan)
     assert mem and mem["landscape"]["papers"] == 3
+
+
+def test_tops_up_from_other_journals_when_few_high_impact(monkeypatch):
+    evidence._CACHE.clear()
+    calls = []
+
+    def search(term, retmax=8, **k):
+        calls.append(term)
+        return [{"pmid": "1"}] if '[jour]' in term else [{"pmid": "2"}, {"pmid": "3"}]
+    monkeypatch.setattr(evidence.literature, "pubmed_search", search)
+    monkeypatch.setattr(evidence, "fetch_abstracts", lambda ids: [a for a in ABSTRACTS if a["pmid"] in ids])
+    ev = evidence.check(planner.draft(Q), None, use_llm=False)
+    assert len(calls) == 2 and "topped up" in ev["scope"] and len(ev["papers"]) >= 2
+    evidence._CACHE.clear()
