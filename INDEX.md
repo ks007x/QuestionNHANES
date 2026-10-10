@@ -6,6 +6,7 @@
 - [2026-10-10-run6](runs/2026-10-10-run6/README.md): What is the prevalence of functional iron deficiency among US adults?
 - [2026-10-10-run5](runs/2026-10-10-run5/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run4](runs/2026-10-10-run4/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
+- [2026-10-10-run32](runs/2026-10-10-run32/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run31](runs/2026-10-10-run31/README.md): Is higher liver stiffness associated with thrombocytopenia in US adults?
 - [2026-10-10-run30](runs/2026-10-10-run30/README.md): Is hypertension associated with chronic kidney disease in US adults?
 - [2026-10-10-run3](runs/2026-10-10-run3/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
