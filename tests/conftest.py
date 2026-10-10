@@ -26,3 +26,11 @@ from q2e.config import find_rscript  # noqa: E402
 
 HAS_R = find_rscript(os.environ.get("Q2E_RSCRIPT", "")) is not None
 requires_r = pytest.mark.skipif(not HAS_R, reason="Rscript not available")
+
+
+@pytest.fixture(autouse=True)
+def _fresh_novelty_cache():
+    from q2e import novelty
+    novelty._CACHE.clear()
+    yield
+    novelty._CACHE.clear()

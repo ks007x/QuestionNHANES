@@ -235,7 +235,7 @@ concepts:
   - {id: neutrophils, label: "Neutrophil count", synonyms: ["neutrophil count", "neutrophils", "anc"], block: anc, domain: hematology, default_scale: 1}
   - {id: lymphopenia, label: "Lymphopenia", synonyms: ["lymphopenia", "low lymphocyte count"], definitions: [lymphopenia_10], domain: hematology}
   - {id: lymphocytes, label: "Lymphocyte count", synonyms: ["lymphocyte count", "lymphocytes"], block: alc, domain: hematology}
-  - {id: eosinophilia, label: "Eosinophilia", synonyms: ["eosinophilia", "eosinophilic", "high eosinophils", "elevated eosinophils", "raised eosinophil count"], definitions: [eosinophilia_05], alt_definitions: [hypereosinophilia_15], domain: hematology}
+  - {id: eosinophilia, label: "Eosinophilia", synonyms: ["eosinophilia", "eosinophil count", "eosinophils", "eosinophilic", "high eosinophils", "elevated eosinophils", "raised eosinophil count"], definitions: [eosinophilia_05], alt_definitions: [hypereosinophilia_15], domain: hematology}
   - {id: hypereosinophilia, label: "Hypereosinophilia", synonyms: ["hypereosinophilia", "hypereosinophilic", "hypereosinophilic syndrome", "hes", "marked eosinophilia", "severe eosinophilia"], definitions: [hypereosinophilia_15], alt_definitions: [eosinophilia_05], domain: hematology}
   - {id: toxoplasma, label: "Toxoplasma gondii seropositivity", synonyms: ["toxoplasma", "toxoplasmosis", "toxoplasma gondii", "t. gondii", "t gondii", "toxoplasma infection"], definitions: [toxoplasma_seropos], domain: infection}
   - {id: toxocara, label: "Toxocara seropositivity", synonyms: ["toxocara", "toxocariasis", "toxocara canis", "toxocara cati", "visceral larva migrans", "ocular larva migrans", "roundworm"], definitions: [toxocara_seropos], domain: infection}

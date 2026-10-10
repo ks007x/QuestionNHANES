@@ -171,6 +171,25 @@ async function viewAsk() {
 /* Interviewer: follow-up questions adapted to the expertise detected from the user's wording */
 const LEVEL_NAMES = { novice: "Beginner", intermediate: "Intermediate", expert: "Expert" };
 /* One question per screen: Back / Next arrows; Next stays locked until the current question is answered. */
+function novChip(c, qid, oid) {
+  const n = ((c.nov || {})[qid] || {});
+  if (n.loading) return ` <span class="chip" style="font-size:10.5px" title="Checking PubMed/MEDLINE">novelty …</span>`;
+  const r = (n.options || {})[oid];
+  if (!r || r.score == null) return "";
+  const cls = r.score >= 70 ? "ok" : r.score >= 40 ? "warn" : "bad";
+  return ` <span class="chip ${cls}" style="font-size:10.5px" title="${esc(r.summary || "")}">novelty ${r.score}</span>`;
+}
+
+async function loadOptionNovelty(qid) {
+  const c = S.clarify; if (!c) return;
+  c.nov = c.nov || {}; if (c.nov[qid]) return;
+  c.nov[qid] = { loading: true }; rerender();
+  try {
+    const r = await api("/api/clarify/novelty", { method: "POST", body: { question: c.question, cycles: S.ask.cycles, level: c.level_used, qid, answers: c.answers } });
+    if (S.clarify === c) { c.nov[qid] = r; rerender(); }
+  } catch (e) { if (S.clarify === c) { c.nov[qid] = { options: {} }; rerender(); } }
+}
+
 function clarifyCard(c) {
   const ex = c.expertise; const n = c.questions.length; const step = c.step || 0;
   const q = c.questions[step]; const a = c.answers[q.id] || {};
@@ -178,7 +197,8 @@ function clarifyCard(c) {
   const opts = q.options.map((o) =>
     `<label class="small" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
        <input type="radio" name="cq_${q.id}" value="${esc(o.id)}" data-act="cqopt" ${a.option === o.id ? "checked" : ""} style="margin-top:3px">
-       <span><b>${esc(o.label)}</b>${o.hint ? `<br><span class="tiny muted">${esc(o.hint)}</span>` : ""}</span></label>`).join("");
+       <span><b>${esc(o.label)}</b>${novChip(c, q.id, o.id)}${o.hint ? `<br><span class="tiny muted">${esc(o.hint)}</span>` : ""}</span></label>`).join("");
+  if (!(c.nov || {})[q.id]) setTimeout(() => loadOptionNovelty(q.id), 0);
   const last = step === n - 1;
   return `<div class="cq-overlay"><div class="card" id="clarifyCard">
     <div class="row" style="justify-content:space-between">
@@ -632,6 +652,10 @@ function viewPlan() {
       <h3 class="sub">Data</h3><div class="row"><span class="small muted">Cycles</span><div class="seg">${cyc}</div><span class="small muted">Source</span><div class="seg">${src}</div></div>
       ${p.benchmarks?.length ? `<h3 class="sub">Benchmark against published literature</h3>${p.benchmarks.map((b) => `<p class="small" style="margin:0 0 4px">${esc(b.label)}: <b>${pct(b.estimate, 0)}</b> (${pct(b.lcl, 0)}-${pct(b.ucl, 0)}), n=${(b.n || 0).toLocaleString()}</p>`).join("")}` : ""}
     </div>` },
+      p.study_type !== "prevalence" && { id: "covsuggest", title: "Suggested covariates", help: "Factors the agent thinks you should also consider. <b>Confounders</b> go in the model; possible <b>mediators</b> are offered only as an extra check, because adjusting for them removes part of the effect.",
+        html: covSuggestCard() },
+      { id: "power", title: "Sample size and power", help: "Is the study big enough? Set alpha, power and the smallest effect worth detecting; the agent works out the detectable effect from the groups' sizes (after the blinded probe or a run).",
+        html: powerCard() },
       { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "Repeat the analysis in slightly different ways to see if the answer holds up. Switch checks on or off.",
         html: `<div class="card">${sens || `<p class="small muted">None planned.</p>`}
           <details style="margin-top:8px"><summary>Add your own check</summary><div class="grid g3" style="margin-top:8px;align-items:end"><label class="field">Label<input type="text" id="sLabel" placeholder="Exclude current smokers"></label><label class="field">Exclude if<input type="text" id="sExpr" placeholder='smoking == "Current"'></label><button class="btn sm" data-act="addsens">Validate & add</button></div></details></div>` },
@@ -747,6 +771,8 @@ function viewResults() {
       html: armsResults(R.arms) },
     { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "If these give similar answers to the main finding, the result is more trustworthy.",
       html: `<div class="tablewrap"><table class="t"><thead><tr><th>Analysis</th><th>n</th><th>Estimate</th><th>Note</th></tr></thead><tbody>${srows}</tbody></table></div>` },
+    { id: "appraisal", title: "Methods, limitations and certainty of evidence", help: "A one-paragraph methods summary, the limitations the agents detected, and a GRADE-informed certainty rating for this single cross-sectional study.",
+      html: appraisalCard() },
     { id: "literature", title: "Related published studies", help: "Search PubMed for NHANES studies on the same topic.",
       html: `<div class="card">${S.lit ? (S.lit.error ? `<p class="small" style="color:var(--bad)">${esc(S.lit.error)}</p>` : S.lit.results.map((r) => `<p class="small" style="margin:0 0 6px"><a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="muted">${esc(r.first_author)} · ${esc(r.journal)} · ${esc(r.pubdate)}</span></p>`).join("") || `<p class="muted small">No matches.</p>`) + `<p class="tiny muted">Query: <code>${esc(S.lit.query)}</code></p>` : `<button class="btn sm" data-act="lit">Search PubMed for related NHANES studies</button>`}</div>
 ` },
@@ -760,6 +786,63 @@ function viewResults() {
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
   ] };
+}
+
+/* lazily fetched per plan version: power, covariate suggestions, appraisal */
+function lazy(key, url) {
+  const v = `${S.project.id}:${S.project.plan.version}:${(latestRun() || {}).id || ""}`;
+  S.lazy = S.lazy || {};
+  const c = S.lazy[key];
+  if (c && c.v === v) return c.data || null;
+  S.lazy[key] = { v, data: null };
+  api(url).then((d) => { if (S.lazy[key]?.v === v) { S.lazy[key].data = d; rerender(); } })
+    .catch((e) => { if (S.lazy[key]?.v === v) { S.lazy[key].data = { error: e.message }; rerender(); } });
+  return null;
+}
+const loading = `<div class="card"><p class="small muted" style="margin:0"><span class="spinner"></span> Working it out…</p></div>`;
+
+function powerCard() {
+  const P = lazy("power", `/api/projects/${S.project.id}/power`);
+  if (!P) return loading;
+  if (P.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(P.error)}</p></div>`;
+  const st = P.settings; const cls = /^Adequately/.test(P.verdict) ? "ok" : /^Under/.test(P.verdict) ? "bad" : "warn";
+  const rows = (P.comparisons || []).map((c) => `<tr><td>${esc(c.label)}</td><td class="num">${c.n1 != null ? `${(c.n1 || 0).toLocaleString()} vs ${(c.n0 || 0).toLocaleString()}` : c.n ? c.n.toLocaleString() : c.required_n_total ? `need ${c.required_n_total.toLocaleString()}` : ""}</td>
+    <td class="num">${c.mde ? `PR ${c.mde.toFixed(2)}` : c.halfwidth_pts != null ? `±${c.halfwidth_pts.toFixed(1)} pts` : c.mde_sd ? `${c.mde_sd.toFixed(2)} SD` : "-"}</td>
+    <td class="num">${c.power_at_target != null ? Math.round(100 * c.power_at_target) + "%" : "-"}</td><td><span class="chip ${c.status === "ok" ? "ok" : c.status === "underpowered" ? "bad" : "warn"}" style="font-size:10.5px">${esc(c.status || "")}</span></td></tr>`).join("");
+  const post = (P.post_run || []).map((r) => `<tr><td>${esc(r.label)}</td><td class="num">${r.mde != null ? r.mde : "-"}</td><td class="num">${r.power_at_target != null ? Math.round(100 * r.power_at_target) + "%" : "-"}</td></tr>`).join("");
+  const inp = (k2, lab, step, val) => `<label class="field">${lab}<input type="number" step="${step}" id="pw_${k2}" value="${val}"></label>`;
+  return `<div class="card"><p style="margin:0 0 8px"><span class="chip ${cls}">${esc(P.verdict)}</span></p>
+    ${rows ? `<div class="tablewrap"><table class="t"><thead><tr><th>Comparison</th><th>n</th><th>Detectable effect</th><th>Power at target</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : ""}
+    ${post ? `<h3 class="sub">After the run (design-based SE)</h3><div class="tablewrap"><table class="t"><thead><tr><th>Comparison</th><th>Minimum detectable PR</th><th>Power at target</th></tr></thead><tbody>${post}</tbody></table></div>` : ""}
+    ${(P.assumptions || []).map((n) => `<p class="tiny muted" style="margin:4px 0 0">${esc(n)}</p>`).join("")}
+    <details style="margin-top:10px"><summary class="small">Change alpha, power or target effect</summary><div class="grid g3" style="margin-top:8px;align-items:end">
+      ${inp("alpha", "Alpha (two-sided)", "0.005", st.alpha)}${inp("power", "Power", "0.05", st.power)}${inp("target_ratio", "Target prevalence ratio", "0.1", st.target_ratio)}
+      ${inp("deff", "Design effect", "0.1", st.deff)}<label class="field">Multiple comparisons<select id="pw_multiplicity">${["bonferroni", "none"].map((m) => `<option ${st.multiplicity === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
+      <button class="btn sm" data-act="powerset">Recalculate</button></div></details></div>`;
+}
+
+function covSuggestCard() {
+  const C = lazy("covs", `/api/projects/${S.project.id}/covariates`);
+  if (!C) return loading;
+  if (C.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(C.error)}</p></div>`;
+  const role = { confounder: ["ok", "Confounder"], mediator: ["warn", "Possible mediator"], both: ["warn", "Confounder or mediator"] };
+  const items = C.suggestions.map((x, i) => `<div class="issue"><span class="chip ${role[x.role][0]}">${role[x.role][1]}</span><div><b class="small">${esc(x.label)}</b><div class="small muted">${esc(x.why)}</div></div>
+    <div>${x.fix ? `<button class="btn sm" data-act="covadd" data-i="${i}">${esc(x.action)}</button>` : `<span class="tiny muted">${esc(x.already_in_sensitivity ? "Already a sensitivity analysis" : x.action)}</span>`}</div></div>`).join("");
+  return `<div class="card">${items || `<p class="small muted" style="margin:0">No further covariates to suggest - the model already covers the usual confounders.</p>`}<p class="tiny muted" style="margin:8px 0 0">${esc(C.note)}</p></div>`;
+}
+
+function appraisalCard() {
+  const A = lazy("appr", `/api/projects/${S.project.id}/appraisal`);
+  if (!A) return loading;
+  if (A.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(A.error)}</p></div>`;
+  const c = A.certainty; const lvl = { High: "ok", Moderate: "ok", Low: "warn", "Very low": "bad" }[c.level];
+  const imp = { major: "bad", moderate: "warn", minor: "info" };
+  return `<div class="card"><h3 class="sub" style="margin-top:0">Methods summary</h3><p class="small" style="margin:0">${esc(A.methods)}</p><p class="tiny muted" style="margin:6px 0 0">${esc(A.power_summary)}</p></div>
+  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Detected limitations</h3>${A.limitations.map((l) => `<div class="issue"><span class="chip ${imp[l.impact]}">${esc(l.area)}</span><div class="small">${esc(l.text)} <span class="tiny muted">(${esc(l.source)})</span></div><div></div></div>`).join("")}</div>
+  <div class="card" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h3 class="sub" style="margin:0">Certainty of evidence</h3><span class="chip ${lvl}" style="font-size:13px">${esc(c.level)} ${c.symbol}</span></div>
+    <p class="tiny muted" style="margin:4px 0 8px">${esc(c.framework)} · start ${esc(c.start)}</p>
+    <div class="tablewrap"><table class="t"><thead><tr><th>Domain</th><th>Judgement</th><th></th><th>Reason</th></tr></thead><tbody>${[...c.domains, ...c.rating_up].map((d) => `<tr><td>${esc(d.domain)}</td><td>${esc(d.rating || "")}</td><td class="num">${d.change > 0 ? "+" + d.change : d.change < 0 ? d.change : "0"}</td><td class="small">${esc(d.reason)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="small" style="margin:8px 0 0">${esc(c.meaning)}</p><p class="tiny muted" style="margin:4px 0 0">${esc(c.caveat)}</p></div>`;
 }
 
 function armsCard(p) {
@@ -1070,6 +1153,17 @@ const A = {
   },
   lit: async () => { S.lit = await api(`/api/projects/${S.project.id}/literature`); rerender(); },
   novelty: async () => { toast("Searching PubMed/MEDLINE for prior NHANES work..."); S.project.novelty = await api(`/api/projects/${S.project.id}/novelty`, { method: "POST" }); rerender(); },
+  powerset: () => {
+    const v = (k2) => $(`#pw_${k2}`)?.value;
+    const settings = { alpha: +v("alpha"), power: +v("power"), target_ratio: +v("target_ratio"), deff: +v("deff"), multiplicity: v("multiplicity") };
+    S.lazy && delete S.lazy.power;
+    edit({ op: "set_power", value: settings }, "sample size settings", "power", "Sample size and power");
+  },
+  covadd: (el) => {
+    const x = S.lazy?.covs?.data?.suggestions?.[+el.dataset.i]; if (!x?.fix) return;
+    S.lazy && delete S.lazy.covs;
+    edit(x.fix, `covariate suggestion: ${x.label}`, "covsuggest", "Suggested covariates");
+  },
   where: async () => { toast("Searching PubMed, NIH RePORTER and Grants.gov..."); S.where = await api(`/api/projects/${S.project.id}/where-next`); rerender(); },
   sign: async () => {
     const by = $("#signer").value.trim(); if (!by) return toast("Enter your name", true);

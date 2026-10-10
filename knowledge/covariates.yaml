@@ -1,0 +1,23 @@
+# Covariate library used by the covariate-suggestion agent.
+# confounder_for: outcome or exposure domains where the variable is a common cause (adjust in the primary model)
+# mediator_after: exposure domains for which the variable may lie on the causal path (do not adjust in the primary model;
+#                 offer as a sensitivity analysis)
+# why: one-line rationale shown to the investigator
+covariates:
+  - {name: age, confounder_for: [all], why: "Age drives almost every NHANES exposure and outcome."}
+  - {name: sex, confounder_for: [all], why: "Sex differs in exposure prevalence and outcome thresholds."}
+  - {name: race_eth, confounder_for: [all], why: "Race and ethnicity mark structural and social differences in exposure and outcome."}
+  - {name: pir_cat, confounder_for: [all], why: "Income relates to living conditions, access to care and most outcomes."}
+  - {name: educ, confounder_for: [all], adults_only: true, why: "Education captures socioeconomic position beyond income (adults 20+)."}
+  - {name: us_born, confounder_for: [infection, nutrition, environment, social, iron], why: "Birthplace reflects early-life exposures (e.g., zoonotic parasites, diet) and access to care."}
+  - {name: household_size, confounder_for: [infection], why: "Crowding increases exposure to infectious agents."}
+  - {name: smoking, confounder_for: [cardio, glycemia, kidney, liver, hematology, respiratory, mental_health, inflammation, environment, behaviour], why: "Smoking raises leukocyte counts, inflammation and cardiometabolic risk."}
+  - {name: bmi, confounder_for: [cardio, glycemia, kidney, liver, iron, inflammation, function], mediator_after: [behaviour, nutrition], why: "Adiposity confounds metabolic outcomes; it may mediate diet and activity effects."}
+  - {name: alcohol_dpd, confounder_for: [liver, cardio, mental_health], why: "Alcohol affects liver, blood pressure and mood."}
+  - {name: vigorous_pa, confounder_for: [cardio, glycemia, mental_health, function], why: "Physical activity relates to cardiometabolic risk and mood."}
+  - {name: insured, confounder_for: [mental_health, cardio, glycemia], why: "Insurance determines diagnosis and treatment of self-reported or treated conditions."}
+  - {name: asthma, confounder_for: [hematology, respiratory], mediator_after: [infection], why: "Atopy and asthma raise eosinophil counts; parasites (e.g., Toxocara) may also cause wheeze, so asthma can be a mediator."}
+  - {name: hay_fever, confounder_for: [hematology], mediator_after: [infection], why: "Allergic rhinitis raises eosinophil counts."}
+  - {name: inflammation, confounder_for: [iron, hematology], mediator_after: [infection, anthropometry], why: "Inflammation alters ferritin, hepcidin and leukocyte counts."}
+  - {name: ckd, confounder_for: [iron, hematology, cardio], mediator_after: [glycemia, cardio], why: "Kidney disease affects anemia, iron handling and cardiovascular risk."}
+  - {name: diabetes, confounder_for: [kidney, cardio], mediator_after: [anthropometry, nutrition, behaviour], why: "Diabetes is a common cause of kidney and cardiovascular disease."}

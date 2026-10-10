@@ -208,6 +208,15 @@ run_pipeline <- function(plan_path, outdir) {
           rr <- fit_svyglm(subset(des, cc2), yo, base_terms, s$family %||% fam, spec, s$id, s$label, des$variables); ht <- headline_term(rr$summary)
           list(est = ht$est, lcl = ht$lcl, ucl = ht$ucl, n = rr$summary$n, effect = rr$summary$effect)
         }
+      } else if (type == "add_covariates") {
+        if (is.null(x)) stop("Additional adjustment applies to association analyses")
+        extra <- setdiff(unlist(s$covariates), base_terms)
+        terms2 <- unique(c(base_terms, extra))
+        cc2 <- des$variables$.in_cc
+        for (cv in extra) cc2 <- cc2 & !is.na(des$variables[[cv]])
+        rr <- fit_svyglm(subset(des, cc2), y, terms2, fam, spec, s$id, s$label, des$variables); ht <- headline_term(rr$summary)
+        list(est = ht$est, lcl = ht$lcl, ucl = ht$ucl, n = rr$summary$n, effect = rr$summary$effect,
+             note = paste("Additionally adjusted for", paste(extra, collapse = ", ")))
       } else if (type == "alt_exposure") {
         xe <- s$exposure
         terms2 <- unique(c(xe, setdiff(base_terms, x)))

@@ -175,3 +175,5 @@ blocks:
   - {name: toxo_igg_2011, tier: measure, type: continuous, units: IU/mL, label: "Toxoplasma IgG, 2011-2012 surplus sera (IU/mL)", nhanes: "SSTOXG", match_terms: [toxoplasma igg]}
   - {name: toxo_igg_9904, tier: measure, type: continuous, units: IU/mL, label: "Toxoplasma IgG, 1999-2004 (IU/mL)", nhanes: "coalesce(LBXTO1, LBDTO1)", match_terms: [toxoplasma igg]}
   - {name: trich_urine, tier: measure, type: categorical, label: "Trichomonas vaginalis urine test (1=positive)", nhanes: "URXUTRI", match_terms: [trichomonas]}
+  - {name: hay_fever, tier: measure, type: binary, label: "Hay fever in the past 12 months", nhanes: "coalesce(AGQ030 == 1, MCQ120A == 1)", match_terms: [hay fever, allergic rhinitis]}
+  - {name: household_size, tier: measure, type: continuous, units: people, label: "Household size", nhanes: "DMDHHSIZ", match_terms: [household size, crowding]}
