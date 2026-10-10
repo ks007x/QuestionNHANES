@@ -73,6 +73,11 @@ load_nhanes <- function(spec, log = message) {
       path <- .find_local_file(fname, dirs)
       origin <- "local"
       url <- NA_character_
+      if (!is.null(path) && !is.null(ds$cache_dir) && nzchar(ds$cache_dir) &&
+          identical(normalizePath(dirname(path), mustWork = FALSE), normalizePath(ds$cache_dir, mustWork = FALSE))) {
+        origin <- "cdc (cached download)"
+        url <- sprintf("https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/%s/DataFiles/%s.xpt", cm$url_folder, fname)
+      }
       if (is.null(path) && allow_download) {
         dl <- .download_nhanes(fname, cm, ds$cache_dir, log)
         if (!is.null(dl)) { path <- dl$path; origin <- "cdc"; url <- dl$url }
