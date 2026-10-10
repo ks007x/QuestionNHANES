@@ -57,7 +57,17 @@ def audit(plan: dict, results: dict | None = None, k: Knowledge | None = None, n
         out.append(_chk("Comparator", "pass", "Descriptive estimand - no comparison group",
                         "Survey-weighted prevalence in a defined target population; subgroup contrasts are descriptive.",
                         "Inappropriate comparator", cid="comparator"))
-    elif xr & MED_VARS or any(r.startswith("RXD") for r in xr):
+    elif plan.get("arms"):
+        a = plan["arms"]
+        healthy = a.get("control_mode") == "healthy"
+        out.append(_chk("Comparator", "caution" if healthy else "pass",
+                        f"Multi-arm comparison against '{a['reference']}'",
+                        f"Mutually exclusive groups: {', '.join(a['levels'])}. "
+                        + ("Healthy controls are screened for other diseases while the arms are not, which inflates contrasts "
+                           "(healthy-control bias); the all-seronegative control group runs as a sensitivity analysis."
+                           if healthy else "Controls come from the same sample and are negative for every arm."),
+                        "Inappropriate comparator", cid="comparator"))
+    elif (xr - MED_VARS - {"RIAGENDR", "RIDAGEYR", "RIDEXPRG"}) == set() and (xr & MED_VARS) or any(r.startswith("RXD") for r in xr):
         out.append(_chk("Comparator", "fail", "Treatment users vs non-users (confounding by indication)",
                         "The exposure is a treatment. Non-users include people without the indication, so differences reflect "
                         "why people are treated, not what the treatment does. NHANES has no time zero or new-user design.",

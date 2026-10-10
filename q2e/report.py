@@ -403,6 +403,15 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
         if src:
             parts.append(f"<figure><img src='{src}' alt='{esc(f['title'])}'><figcaption><b>Figure {i}.</b> {esc(f['title'])}. "
                          f"Survey-weighted estimates with 95% CIs.</figcaption></figure>")
+    if (results.get("arms") or {}).get("vs_reference"):
+        a = results["arms"]
+        rows = "".join(f"<tr><td>{esc(r['comparison'])}</td><td>{esc(r['versus'])}</td><td>{num(r.get('est'))} ({num(r.get('lcl'))}-{num(r.get('ucl'))})</td><td>{pfmt(r.get('p'))}</td></tr>"
+                       for r in a["vs_reference"] + a.get("pairwise", []))
+        from .arms import describe as _arm_desc
+        notes = " ".join(_arm_desc(plan.get("arms") or {"reference": a["reference"], "control_mode": "seronegative", "both": "separate", "control_criteria": []}))
+        parts.append(f"<h3>Table. Comparison groups ({esc(a.get('effect'))})</h3><table><thead><tr><th>Group</th><th>Compared with</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>{rows}</tbody></table>"
+                     f"<p class='meta'>{esc(notes)} Overall test that the groups differ: P {pfmt(a.get('p_overall'))}. Analytic n by group: "
+                     + esc(", ".join(f"{k2} {v}" for k2, v in (a.get("n_by_group") or {}).items())) + ".</p>")
     parts.append(f"<h2>Discussion</h2><p>{esc(sec['discussion'])}</p>")
     parts.append("<h3>Limitations</h3><ul>" + "".join(f"<li>{esc(l)}</li>" for l in plan.get("limitations", [])) + "</ul>")
     parts.append(f"<h2>Conclusions</h2><p>{esc(sec['abstract']['Conclusions and Relevance'])}</p>")
@@ -459,6 +468,16 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
                 if plan["study_type"] == "association" and t["term"] != pe.get("term") and not t["term"].startswith(str(pe.get("term"))):
                     continue
                 lines.append(f"| {m['label']} | {t['label']} | {m['n']:,} | {eff(t['est'], t['lcl'], t['ucl'])} | {pfmt(t['p'])} |")
+    if (results.get("arms") or {}).get("vs_reference"):
+        a = results["arms"]
+        from .arms import describe as _arm_desc
+        lines.append(f"\n## Comparison groups ({a.get('effect')})\n")
+        lines += [f"- {t}" for t in _arm_desc(plan.get("arms") or {"reference": a["reference"], "control_mode": "seronegative", "both": "separate", "control_criteria": []})]
+        lines.append("\n| Group | Compared with | Estimate (95% CI) | P |\n|---|---|---|---|")
+        for r in a["vs_reference"] + a.get("pairwise", []):
+            lines.append(f"| {r['comparison']} | {r['versus']} | {num(r.get('est'))} ({num(r.get('lcl'))}-{num(r.get('ucl'))}) | {pfmt(r.get('p'))} |")
+        lines.append(f"\nOverall test that the groups differ: P {pfmt(a.get('p_overall'))}. Analytic n by group: "
+                     + ", ".join(f"{k2} {v}" for k2, v in (a.get("n_by_group") or {}).items()) + ".")
     lines.append("\n## Sensitivity analyses\n")
     for s in results.get("sensitivity", []):
         lines.append(f"- {s['label']}: " + (s.get("error") or (f"{s.get('est'):.3f} ({s.get('lcl'):.3f}-{s.get('ucl'):.3f})" if s.get("est") is not None else "NA")))

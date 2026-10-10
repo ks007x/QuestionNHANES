@@ -80,6 +80,16 @@ python -m q2e examples            # all five demo questions → manuscripts + bu
 The AI provider is forced to `offline` in this workflow, so no study content is sent to any external model. Downloaded
 files are cached between runs; they are never committed to the repository.
 
+## Multi-arm comparisons with defined controls
+
+Ask "Toxoplasma vs Toxocara vs healthy controls for eosinophilia" (or "compare anemia in diabetes versus CKD versus
+controls"). Q2E builds one exposure with mutually exclusive groups - *Healthy controls (reference) | Toxoplasma only |
+Toxocara only | Both positive* - and reports each group vs control, every pair of groups, and a design-based overall
+test. Controls are defined, not assumed: **negative for every group** or **healthy controls** (also free of conditions
+that change the outcome and of major chronic disease, using only conditions measured in that cycle and never the
+outcome itself). Because healthy controls inflate contrasts, the no-screening control group always runs as a
+sensitivity analysis and the design audit flags it. Both choices are one click on the Plan page.
+
 ## Understanding broad questions (full CDC catalog)
 
 - **13,152 NHANES variables, 1999-2023**, from the CDC variable lists (`knowledge/nhanes/catalog.csv`, rebuilt by the

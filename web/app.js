@@ -602,6 +602,8 @@ function viewPlan() {
       { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "Repeat the analysis in slightly different ways to see if the answer holds up. Switch checks on or off.",
         html: `<div class="card">${sens || `<p class="small muted">None planned.</p>`}
           <details style="margin-top:8px"><summary>Add your own check</summary><div class="grid g3" style="margin-top:8px;align-items:end"><label class="field">Label<input type="text" id="sLabel" placeholder="Exclude current smokers"></label><label class="field">Exclude if<input type="text" id="sExpr" placeholder='smoking == "Current"'></label><button class="btn sm" data-act="addsens">Validate & add</button></div></details></div>` },
+      p.arms && { id: "arms", title: "Comparison groups", help: "Who is compared with whom. Choose how the control group is defined and what happens to people positive for more than one group.",
+        html: armsCard(p) },
       { id: "audit", title: "Design audit", help: "Checks against common criticisms of this kind of study (e.g. TriNetX-style EHR studies).",
         html: auditCard(p.design_audit) || `<p class="small muted">No audit available.</p>` },
       { id: "review", title: "AI reviewer's concerns", help: `${blockers.length || pendingAck.length ? "<b>Action needed:</b> press the button next to each item marked blocker or major before you can approve." : "Read each point. Press <b>Apply fix</b> or <b>Acknowledge</b> where offered."}`,
@@ -704,6 +706,8 @@ function viewResults() {
   ${prevRows ? `<h3 class="sub">Table 2. Weighted prevalence</h3><div class="tablewrap"><table class="t"><thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>n</th><th>Weighted % (95% CI)</th><th>Millions</th><th>NCHS</th></tr></thead><tbody>${prevRows}</tbody></table></div>` : ""}
   ${mrows ? `<h3 class="sub">Table 3. Regression (${esc(R.models[0].effect_label)})</h3><div class="tablewrap"><table class="t"><thead><tr><th>Model</th><th>Term</th><th>n</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${mrows}</tbody></table></div>` : ""}
   ${R.interactions.length ? `<h3 class="sub">Effect modification</h3><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}` },
+    R.arms && R.arms.vs_reference && { id: "arms", title: "Comparison groups", help: "Each group against the control group, every pair of groups, and an overall test of whether the groups differ.",
+      html: armsResults(R.arms) },
     { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "If these give similar answers to the main finding, the result is more trustworthy.",
       html: `<div class="tablewrap"><table class="t"><thead><tr><th>Analysis</th><th>n</th><th>Estimate</th><th>Note</th></tr></thead><tbody>${srows}</tbody></table></div>` },
     { id: "literature", title: "Related published studies", help: "Search PubMed for NHANES studies on the same topic.",
@@ -719,6 +723,26 @@ function viewResults() {
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
   ] };
+}
+
+function armsCard(p) {
+  const a = p.arms; const on = (c) => c ? "on" : "";
+  return `<div class="card"><p class="small" style="margin:0 0 8px">${a.levels.map((l, i) => `<span class="chip ${i === 0 ? "accent" : ""}">${esc(l)}${i === 0 ? " (reference)" : ""}</span>`).join(" ")}</p>
+    <div class="row" style="gap:16px;flex-wrap:wrap;margin-bottom:8px">
+      <div><div class="tiny muted">Control group</div><div class="seg"><button class="${on(a.control_mode === "seronegative")}" data-act="armset" data-k="control_mode" data-v="seronegative">Negative for all groups</button><button class="${on(a.control_mode === "healthy")}" data-act="armset" data-k="control_mode" data-v="healthy">Healthy controls</button></div></div>
+      ${a.arms.length > 1 ? `<div><div class="tiny muted">Positive for more than one</div><div class="seg"><button class="${on(a.both === "separate")}" data-act="armset" data-k="both" data-v="separate">Own group</button><button class="${on(a.both === "exclude")}" data-act="armset" data-k="both" data-v="exclude">Exclude</button></div></div>` : ""}
+    </div>
+    ${a.control_mode === "healthy" ? `<p class="small" style="margin:0 0 4px"><b>Healthy controls</b> are negative for every group and free of: ${a.control_criteria.map((c) => esc(c.label.toLowerCase())).join(", ") || "-"}.</p>` : `<p class="small" style="margin:0 0 4px">Controls are negative for every group, with no health restriction.</p>`}
+    ${(a.control_criteria_unavailable || []).length ? `<p class="tiny muted" style="margin:0">Not used: ${a.control_criteria_unavailable.map(esc).join(", ")} (not measured in this cycle or part of the outcome).</p>` : ""}
+    ${a.control_mode === "healthy" ? `<p class="tiny muted" style="margin:4px 0 0">Healthy controls inflate group differences (healthy-control bias); the all-negative control group is run as a sensitivity analysis.</p>` : ""}</div>`;
+}
+
+function armsResults(a) {
+  const f = (x) => x == null ? "NA" : (a.effect === "Beta" ? x.toFixed(2) : x.toFixed(2));
+  const rows = (lst) => lst.map((r) => `<tr><td>${esc(r.comparison)}</td><td>${esc(r.versus)}</td><td><b>${f(r.est)}</b> (${f(r.lcl)}-${f(r.ucl)})</td><td>${pfmt(r.p)}</td></tr>`).join("");
+  const n = a.n_by_group ? Object.entries(a.n_by_group).map(([k2, v]) => `${esc(k2)}: ${v}`).join(" · ") : "";
+  return `<div class="card"><p class="tiny muted" style="margin:0 0 6px">Effect measure: ${esc(a.effect)}</p><div class="tablewrap"><table class="t"><thead><tr><th>Group</th><th>Compared with</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${rows(a.vs_reference)}${a.pairwise.length ? `<tr><td colspan="4" class="tiny muted">Between groups</td></tr>${rows(a.pairwise)}` : ""}</tbody></table></div>
+    <p class="tiny muted" style="margin:6px 0 0">Overall test that the groups differ: P ${pfmt(a.p_overall)} (design-based Wald, ${a.df} df). Analytic n by group: ${n}.</p></div>`;
 }
 
 function auditCard(a) {
@@ -985,6 +1009,7 @@ const A = {
     store.set("q2e.name", by);
     try { S.project = await api(`/api/projects/${S.project.id}/approve`, { method: "POST", body: { by } }); toast("Protocol approved and locked by hash"); rerender(); } catch (e) { toast(e.message, true); }
   },
+  armset: (el) => edit({ op: "set_arms", [el.dataset.k]: el.dataset.v }, "Comparison groups changed"),
   statsign: async () => {
     const by = $("#statname").value.trim(); if (!by) return toast("Enter the statistician's name", true);
     try { S.project = await api(`/api/projects/${S.project.id}/approve`, { method: "POST", body: { by, role: "statistician", statement: "I reviewed the design, comparator, outcome definitions and statistical analysis plan." } }); toast("Statistical sign-off recorded"); rerender(); } catch (e) { toast(e.message, true); }
