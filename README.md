@@ -80,6 +80,18 @@ python -m q2e examples            # all five demo questions → manuscripts + bu
 The AI provider is forced to `offline` in this workflow, so no study content is sent to any external model. Downloaded
 files are cached between runs; they are never committed to the repository.
 
+## Where next? Journals, conferences and funding
+
+After a run, **Find journals, deadlines & funding** (Results page; also `where_next.md` in every CLI/GitHub run):
+- **Journal match score** = 45% topical precedent (PubMed: share of NHANES papers on the same outcome/exposure in the
+  last 5 years) + 35% scope fit + 20% design fit for cross-sectional survey analyses. Journals outside the curated list
+  appear when PubMed shows they publish this topic.
+- **Next abstract windows** for the society meetings that fit the study's domains, sorted by days remaining
+  (typical months - each links to the official page to confirm).
+- **Funding leads**: matching NIH institutes and mechanisms (R03/R21/K/F32), foundations, recently funded NIH projects
+  on the topic (NIH RePORTER, re-checked for relevance), and open/forecasted NIH opportunities (Grants.gov).
+- **Specific Aims seed** that turns the study result into preliminary data.
+
 ## The workflow (maps to the challenge stages)
 
 | Stage | Q2E | Who decides |
