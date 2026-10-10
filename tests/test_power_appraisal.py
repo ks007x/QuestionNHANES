@@ -152,3 +152,9 @@ def test_large_but_imprecise_effect_not_rated_up(arms_plan):
     c = appraisal.certainty(arms_plan, _res(2.0, 1.16, 3.47), {"checks": []},
                             {"verdict": "Underpowered for the target effect", "settings": {"target_ratio": 1.5}})
     assert c["net_up"] == 0 and c["level"] == "Very low"
+
+
+def test_no_estimable_effect_is_not_rated(arms_plan):
+    r = _res(1, 1, 1); r["primary_estimate"] = None
+    c = appraisal.certainty(arms_plan, r, {"checks": []}, None)
+    assert c["level"] == "Not rated" and c["assessed"] is False

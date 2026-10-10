@@ -928,7 +928,7 @@ function appraisalCard() {
   const A = lazy("appr", `/api/projects/${S.project.id}/appraisal`);
   if (!A) return loading;
   if (A.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(A.error)}</p></div>`;
-  const c = A.certainty; const lvl = { High: "ok", Moderate: "ok", Low: "warn", "Very low": "bad" }[c.level];
+  const c = A.certainty; const lvl = { High: "ok", Moderate: "ok", Low: "warn", "Very low": "bad" }[c.level] || "";
   const imp = { major: "bad", moderate: "warn", minor: "info" };
   return `<div class="card"><h3 class="sub" style="margin-top:0">Methods summary</h3><p class="small" style="margin:0">${esc(A.methods)}</p><p class="tiny muted" style="margin:6px 0 0">${esc(A.power_summary)}</p></div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Detected limitations</h3>${A.limitations.map((l) => `<div class="issue"><span class="chip ${imp[l.impact]}">${esc(l.area)}</span><div class="small">${esc(l.text)} <span class="tiny muted">(${esc(l.source)})</span></div><div></div></div>`).join("")}</div>
