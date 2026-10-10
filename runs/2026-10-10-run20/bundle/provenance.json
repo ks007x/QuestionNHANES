@@ -1,0 +1,106 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T17:56:05+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "What is the prevalence of parasitic infections in US adults?"
+      },
+      "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "4e5805b3757a63b38796eea51aca709fdfcac59708cbb4f392d5818afeb3bc39"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T17:56:05+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_db5cedd59a",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "prev": "4e5805b3757a63b38796eea51aca709fdfcac59708cbb4f392d5818afeb3bc39",
+      "hash": "dc77290e36ab94a184a0395d66c79f9a82bb77de115deefc9a6e06a3277d47bd"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T17:56:07+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "prev": "dc77290e36ab94a184a0395d66c79f9a82bb77de115deefc9a6e06a3277d47bd",
+      "hash": "0a001f2e3bfb50663fe615ab53fb91074ef7963e7d5edec12df7f6b9d7a15010"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T17:56:07+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_2b670125",
+        "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+        "data_source": "cdc"
+      },
+      "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "prev": "0a001f2e3bfb50663fe615ab53fb91074ef7963e7d5edec12df7f6b9d7a15010",
+      "hash": "05aacd268bc9bcbd03fca0ed555d0bc8192ce5ada89eb03dcf28c52dbbc3808f"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T17:56:15+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_2b670125",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "2c76aba84b560108f98e9ca2c99c9896b1ccd455bf01e33144b312a02cb61fff",
+        "qc": {
+          "pass": 16,
+          "warn": 1,
+          "fail": 1,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "DEMO_G",
+            "md5": "f4b048688d73dd5ef8d167526e888b56"
+          },
+          {
+            "file": "SSTOCA_G",
+            "md5": "a31583c82e422971a9e1496681074905"
+          },
+          {
+            "file": "SSTOXO_G",
+            "md5": "ba2612a962eabfd15df26aa7a65a6b1c"
+          }
+        ]
+      },
+      "plan_hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "prev": "05aacd268bc9bcbd03fca0ed555d0bc8192ce5ada89eb03dcf28c52dbbc3808f",
+      "hash": "bbbf980629d939a9f26d506dddce60c4a20a76a0083b5178c9867b7bcf6b18c9"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "a3ebe8cafd14dc4da9a6a6167e2d85cb002e88dfec60f89708179b6e8ea3b3fb",
+      "at": "2026-10-10T17:56:05+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "bbbf980629d939a9f26d506dddce60c4a20a76a0083b5178c9867b7bcf6b18c9"
+  },
+  "signoff": null
+}
