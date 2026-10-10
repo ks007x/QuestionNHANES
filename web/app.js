@@ -138,6 +138,7 @@ async function viewAsk() {
     <div class="row" style="margin-top:16px"><button class="btn" data-act="assess" id="assessBtn">Can NHANES answer this?</button><button class="btn primary" data-act="design" id="designBtn">Design my study →</button>
       <span class="small muted">Agents: Investigator · Data Steward · Epidemiologist · Statistician · Reviewer</span></div>
   </div>
+  ${S.clarify ? clarifyCard(S.clarify) : ""}
   ${S.assess ? `<div style="margin-top:14px">${answerCard(S.assess)}</div>` : ""}
   <div class="grid g2" style="margin-top:18px">
     <div class="card"><h3 class="sub" style="margin-top:0">Recent projects</h3>${recent.length ? recent.map((p) => `<div class="crit"><div class="lbl"><a href="#/p/${p.id}/protocol">${esc(p.title)}</a><div class="tiny muted">${esc(p.created.slice(0, 16).replace("T", " "))} · ${p.runs} run(s)</div></div><span class="chip ${p.signed ? "ok" : "info"}">${p.signed ? "signed" : esc(p.status)}</span></div>`).join("") : `<p class="muted small">No projects yet.</p>`}</div>
@@ -148,6 +149,39 @@ async function viewAsk() {
       <label class="field">Data dictionary (.csv, optional)<input type="file" id="dsDict" accept=".csv"></label>
       <button class="btn" data-act="upload">Upload dataset</button></div></div>
   </div>`;
+}
+
+/* Interviewer: follow-up questions adapted to the expertise detected from the user's wording */
+const LEVEL_NAMES = { novice: "Beginner", intermediate: "Intermediate", expert: "Expert" };
+function clarifyCard(c) {
+  const ex = c.expertise;
+  const qs = c.questions.map((q) => `<div class="crit" style="display:block;padding:10px 0">
+      <div><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted">Why we ask: ${esc(q.why)}</div>` : ""}</div>
+      <div class="row" style="margin-top:6px;flex-wrap:wrap;gap:6px">${q.options.map((o) =>
+        `<label class="small"><input type="radio" name="cq_${q.id}" value="${esc(o.id)}"> ${esc(o.label)}</label>`).join("")}</div>
+      ${q.free_text ? `<input type="text" id="cqt_${q.id}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:6px;width:100%">` : ""}
+    </div>`).join("");
+  return `<div class="card" style="margin-top:14px">
+    <div class="row" style="justify-content:space-between">
+      <h3 class="sub" style="margin:0">A few quick questions before we design your study</h3>
+      <label class="small muted">Detected level
+        <select id="levelSel" data-act="level">${["novice", "intermediate", "expert"].map((l) =>
+          `<option value="${l}" ${c.level_used === l ? "selected" : ""}>${LEVEL_NAMES[l]}${l === ex.level ? " (detected)" : ""}</option>`).join("")}</select></label>
+    </div>
+    <p class="tiny muted" title="${esc(ex.signals.map((s) => `${s.effect} ${s.text}`).join("\n"))}">Based on how your idea is worded (score ${ex.score}/100${ex.signals.length ? ": " + esc(ex.signals.map((s) => s.text).slice(0, 3).join("; ")) : ""}).</p>
+    ${qs}
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="clarifyGo">Design my study with these answers →</button>
+      <button class="btn" data-act="clarifySkip">Skip questions</button></div>
+  </div>`;
+}
+function collectAnswers() {
+  const ans = {};
+  for (const q of S.clarify.questions) {
+    const opt = document.querySelector(`input[name="cq_${q.id}"]:checked`);
+    const txt = $(`#cqt_${q.id}`);
+    if (opt || (txt && txt.value.trim())) ans[q.id] = { option: opt ? opt.value : "", text: txt ? txt.value.trim() : "" };
+  }
+  return ans;
 }
 
 /* ------------------------------------------------------------------ PROJECTS / LIBRARY */
@@ -202,7 +236,7 @@ function answerCard(av, opts = {}) {
 }
 
 /* ------------------------------------------------------------------ PROTOCOL */
-const AGENT_COLOR = { Investigator: "#1F5A85", "Data Steward": "#2E7D4F", Epidemiologist: "#7A4FB0", Statistician: "#B5651D", Reviewer: "#B3261E", "Privacy Guard": "#5C6B7A" };
+const AGENT_COLOR = { Investigator: "#1F5A85", "Data Steward": "#2E7D4F", Epidemiologist: "#7A4FB0", Statistician: "#B5651D", Reviewer: "#B3261E", "Privacy Guard": "#5C6B7A", Interviewer: "#0E7C86" };
 function avatar(name) {
   const base = name.replace(/ \(LLM\)/, ""); const c = AGENT_COLOR[base] || "#5C6B7A";
   const ini = base.split(" ").map((w) => w[0]).join("").slice(0, 2);
@@ -478,6 +512,17 @@ function provTable() {
 }
 
 /* ------------------------------------------------------------------ actions */
+async function createProject(q, extra, el) {
+  el.disabled = true; el.innerHTML = `<span class="spinner"></span> Agents designing your study…`;
+  try {
+    const pj = await api("/api/projects", { method: "POST", body: { question: q, cycles: S.ask.cycles, source: S.ask.source, provider: $("#provSel").value || null, dataset_id: $("#dsSel").value || null, actor: store.get("q2e.name", "") || "investigator", ...(extra || {}) } });
+    S.project = pj; S.clarify = null; location.hash = `#/p/${pj.id}/protocol`;
+  } catch (e) {
+    toast(e.message, true); S.clarify = null;
+    try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
+    rerender();
+  }
+}
 async function edit(fix, note) {
   try { S.project = await api(`/api/projects/${S.project.id}/edit`, { method: "POST", body: { fix, actor: store.get("q2e.name", "") || "investigator", note } }); rerender(); }
   catch (e) { toast(e.message, true); }
@@ -502,15 +547,18 @@ const A = {
   },
   design: async (el) => {
     const q = $("#q").value.trim(); if (q.length < 8) return toast("Describe your research idea first", true);
-    store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Agents designing your study…`;
-    try {
-      const pj = await api("/api/projects", { method: "POST", body: { question: q, cycles: S.ask.cycles, source: S.ask.source, provider: $("#provSel").value || null, dataset_id: $("#dsSel").value || null, actor: store.get("q2e.name", "") || "investigator" } });
-      S.project = pj; location.hash = `#/p/${pj.id}/protocol`;
-    } catch (e) {
-      toast(e.message, true); el.disabled = false; el.textContent = "Design my study →";
-      try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); rerender(); } catch {}
-    }
+    store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
+    let c = null;
+    try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
+    if (c && c.questions.length) { S.clarify = { ...c, question: q }; return rerender(); }
+    await createProject(q, null, el);
   },
+  level: async (el) => {
+    try { S.clarify = { ...(await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value } })), question: S.clarify.question }; rerender(); }
+    catch (e) { toast(e.message, true); }
+  },
+  clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: collectAnswers(), level: S.clarify.level_used }, el),
+  clarifySkip: (el) => createProject(S.clarify.question, null, el),
   upload: async () => {
     const f = $("#dsData").files[0]; if (!f) return toast("Choose a CSV data file", true);
     const fd = new FormData(); fd.append("name", $("#dsName").value || f.name); fd.append("data", f); if ($("#dsDict").files[0]) fd.append("dictionary", $("#dsDict").files[0]);
@@ -584,7 +632,8 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("change", (e) => {
   const el = e.target; const act = el.dataset?.act; if (!act) return;
-  if (act === "setdef") edit({ op: "set_definition", role: el.dataset.role, value: el.value });
+  if (act === "level") A.level(el);
+  else if (act === "setdef") edit({ op: "set_definition", role: el.dataset.role, value: el.value });
   else if (act === "scale") edit({ op: "set", path: "exposure.scale", value: parseFloat(el.value) || 1 });
   else if (act === "crit") edit({ op: "enable_criterion", id: el.dataset.id, value: el.checked });
   else if (act === "sens") edit({ op: "enable_sensitivity", id: el.dataset.id, value: el.checked });

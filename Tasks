@@ -3,3 +3,6 @@ Tasks that are to be completed and by who:
 
 
 Aly  - follow up with questions based on the level of precision and technicality in the user's prompts; AI must detect this without prior notification of the user's skill level.
+       Status: first version done. "Interviewer" agent in q2e/expertise.py scores the wording (0-100 -> beginner /
+       intermediate / expert), asks follow-ups only about gaps in the question, worded for that level.
+       API: POST /api/clarify; answers sent with POST /api/projects. UI: card after "Design my study". Tests: tests/test_expertise.py
