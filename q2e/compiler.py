@@ -21,6 +21,16 @@ class CompileError(ValueError):
     pass
 
 
+def _not_in_cycles(name: str, cycles: list[str], k: Knowledge, plan: dict) -> bool:
+    """Building blocks that cannot exist in the selected cycles (e.g. the 1999-2004 arm of a coalesce()) - expected to be empty."""
+    from .planner import available_cycles
+    try:
+        custom = {c["name"]: c for c in plan.get("custom_variables", [])}
+        return not (available_cycles(name, k, custom) & set(cycles))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _with_subsample(cm: dict, sub: dict | None) -> dict:
     if not sub:
         return cm
@@ -214,7 +224,7 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
             "distribution_var": None,
         },
         "options": {"seed": 2026, "alpha": 0.05},
-        "unavailable_measures": unavailable,
+        "unavailable_measures": unavailable + ([d["name"] for d in derived if _not_in_cycles(d["name"], cycles, k, plan)] if is_nhanes else []),
     }
     if plan["study_type"] == "prevalence":
         # distribution figure for the key continuous component of the outcome definition (e.g. ferritin)
