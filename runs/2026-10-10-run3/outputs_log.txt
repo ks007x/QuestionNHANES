@@ -1,0 +1,20 @@
+
+== Association of Abdominal Obesity (Waist Circumference) With Glycemic Control (HbA1c) Among US Adults: NHANES 2017-March 2020 pre-pandemic
+   Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is greater waist circumference (per 10 cm) associated with higher HbA1c, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, and body mass index?
+   feasibility 100/100 (High)
+   [Investigator] I read this as an association question. Outcome: HbA1c. Exposure: Waist circumference (per 10 cm). Population: Age >=18 years.
+   [Data Steward] Mapped 13 analysis variables (4 direct NHANES measures, 9 derived/guideline definitions) onto 11 raw variables in 4 files: P_BMX, P_DEMO, P_GHB, P_SMQ.
+   [Investigator] First clinical concept treated as exposure, second as outcome (swap in the UI if needed).
+   [Epidemiologist] Diabetes (self-report, medication, or HbA1c >=6.5%): Diabetes status is defined partly by HbA1c and lies on the causal path; adjusting for it is over-adjustment
+   [Epidemiologist] Body mass index: BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF 
+   [Statistician] Continuous outcome: survey-weighted linear regression (design-based Taylor-series SEs) estimates adjusted mean differences. A binary clinical threshold of the o
+   [Reviewer] Critique: 0 blocker, 0 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval.
+   [Epidemiologist] Can NHANES answer this? Answerable with caveats (0 blocking, 2 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving.
+
+   Primary: Waist circumference (per 10 cm): 0.1506 (0.0956-0.2056) [Beta]
+   QC WARN  Complete-case loss: 17.3% of the analytic sample (1378) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.
+   QC WARN  Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high)
+   QC WARN  Collinearity (generalized VIF): Maximum VIF 8.46 (waist_per10). Consider removing/combining collinear covariates or interpreting with care.
+   QC WARN  Sensitivity analyses agree with primary result: 7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity 
+   QC INFO  Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+   Outputs: outputs/real/manuscript.html, manuscript.md, bundle.zip  (project prj_84ff22aba9)
