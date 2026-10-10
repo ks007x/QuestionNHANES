@@ -1,0 +1,743 @@
+{
+  "plan_id": "plan_a9a4ad4fa6",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T22:54:02+00:00",
+  "question": "Is higher liver stiffness associated with thrombocytopenia in US adults?",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; Reliable liver elastography (complete exam, IQR/median <30%)), is greater liver stiffness (VCTE median) (per 5 kPa) associated with a higher prevalence of thrombocytopenia - platelets <150 x10^9/L, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, body mass index, diabetes (self-report, medication, or HbA1c >=6.5%), and smoking status?",
+  "title": "Association of Liver Stiffness With Thrombocytopenia Among US Adults: NHANES 2017-March 2020 pre-pandemic",
+  "hypothesis": "Greater liver stiffness (VCTE median) is associated with a higher prevalence of thrombocytopenia - platelets <150 x10^9/L.",
+  "study_type": "association",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; Reliable liver elastography (complete exam, IQR/median <30%))",
+    "exposure": "Liver stiffness (VCTE median) (per 5 kPa)",
+    "comparator": "Lower levels of the exposure (per-unit contrast; quartile 1 in sensitivity analysis)",
+    "outcome": "Thrombocytopenia - platelets <150 x10^9/L",
+    "covariates": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Diabetes (self-report, medication, or HbA1c >=6.5%), and Smoking status",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "thrombocytopenia",
+    "concept_label": "Thrombocytopenia",
+    "variable": "thrombocytopenia_150",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Thrombocytopenia - platelets <150 x10^9/L",
+    "definition_id": "thrombocytopenia_150",
+    "alternatives": [],
+    "companions": [],
+    "domain": "hematology"
+  },
+  "exposure": {
+    "concept": "liver_stiffness",
+    "concept_label": "Liver stiffness",
+    "variable": "lsm",
+    "kind": "block",
+    "type": "continuous",
+    "label": "Liver stiffness (VCTE median)",
+    "definition_id": null,
+    "alternatives": [],
+    "companions": [],
+    "domain": "liver",
+    "scale": 5,
+    "units": "kPa"
+  },
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    },
+    {
+      "label": "Reliable liver elastography (complete exam, IQR/median <30%)",
+      "expr": "lsm_valid == 1",
+      "kind": "inclusion",
+      "source": "liver domain requirement",
+      "enabled": true,
+      "id": "c2"
+    },
+    {
+      "label": "Self-reported hepatitis B or C",
+      "expr": "coalesce(hep_b, 0) == 1 | coalesce(hep_c, 0) == 1",
+      "kind": "exclusion",
+      "source": "domain default",
+      "optional": true,
+      "enabled": false,
+      "id": "c3"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "diabetes",
+    "smoking"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat"
+  ],
+  "interactions": [
+    "sex",
+    "agecat"
+  ],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "covariates": []
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth"
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth",
+        "pir_cat",
+        "bmi",
+        "diabetes",
+        "smoking"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "thrombocytopenia_150"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat"
+  ],
+  "sensitivity": [
+    {
+      "type": "exclude",
+      "label": "Exclude heavy alcohol (>2 drinks/day men, >1 women)",
+      "expr": "coalesce(alcohol_dpd, 0) > ifelse(female == 1, 1, 2)",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude self-reported hepatitis B or C",
+      "expr": "coalesce(hep_b, 0) == 1 | coalesce(hep_c, 0) == 1",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "alt_family",
+      "label": "Logistic regression (odds ratio)",
+      "family": "quasibinomial",
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "mi",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "m": 10,
+      "id": "s4",
+      "enabled": true
+    },
+    {
+      "type": "exposure_quartiles",
+      "label": "Exposure in weighted quartiles (Q4 vs Q1, P for trend)",
+      "id": "s5",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s6",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "bmi",
+    "diabetes",
+    "smoking",
+    "plt",
+    "lsm"
+  ],
+  "table1_by": "thrombocytopenia_150",
+  "benchmarks": [],
+  "custom_variables": [],
+  "arms": null,
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "epidemiologist": "Covariates were selected as plausible common causes of liver stiffness (VCTE median) and thrombocytopenia - platelets <150 x10^9/L (minimal confounder set from the domain library): Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Diabetes (self-report, medication, or HbA1c >=6.5%), and Smoking status. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Investigator",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "message": "FIB-4 index: FIB-4 contains platelet count - definitional overlap with the outcome."
+    }
+  ],
+  "acknowledgements": {},
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Investigator",
+      "at": "2026-10-10T22:54:05.349953+00:00",
+      "plan_hash": "921ce15ac3be0a3c9448064ad3f1f5bdc83167fb17ce6d66328ab7f8787f703a",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "association",
+    "arms": null,
+    "outcome_concept": "thrombocytopenia",
+    "exposure_concept": "liver_stiffness",
+    "extra_concepts": [],
+    "populations": [
+      "adults"
+    ],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": true,
+    "out_of_scope": [],
+    "notes": [
+      "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    ],
+    "matched_phrases": [
+      {
+        "concept": "liver_stiffness",
+        "phrase": "liver stiffness"
+      },
+      {
+        "concept": "thrombocytopenia",
+        "phrase": "thrombocytopenia"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [],
+    "association_cue": true,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "thrombocytopenia_150",
+      "label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "plt < 150",
+      "raw_variables": [
+        "LBXPLTSI"
+      ],
+      "files": {
+        "P": [
+          "P_CBC"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Conventional laboratory definition.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "lsm",
+      "label": "Liver stiffness (VCTE median)",
+      "role": "Exposure",
+      "kind": "measure",
+      "direct": true,
+      "expr": "LUXSMED",
+      "raw_variables": [
+        "LUXSMED"
+      ],
+      "files": {
+        "P": [
+          "P_LUX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "diabetes",
+      "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "raw_variables": [
+        "DIQ010",
+        "DIQ050",
+        "DIQ070",
+        "LBXGH"
+      ],
+      "files": {
+        "P": [
+          "P_DIQ",
+          "P_GHB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "ADA Standards of Care (HbA1c criterion); fasting glucose excluded so MEC weights apply",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "smoking",
+      "label": "Smoking status",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "raw_variables": [
+        "SMQ020",
+        "SMQ040"
+      ],
+      "files": {
+        "P": [
+          "P_SMQ"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 5,
+      "caution": 3,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "temporality",
+        "area": "Temporality",
+        "status": "caution",
+        "title": "Cross-sectional: temporality cannot be established",
+        "detail": "Results are reported as associations; causal language is blocked in the manuscript.",
+        "critique": "Causal over-interpretation",
+        "fix": null
+      },
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 6 prespecified sensitivity analyses are reported regardless of result; 4 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "pass",
+        "title": "Explicit, same-population comparator",
+        "detail": "Contrast: per 5 kPa higher liver stiffness (vcte median); weighted quartiles (Q1 reference) as sensitivity. Both groups come from the same probability sample and eligibility criteria (no convenience controls).",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "confounding",
+        "area": "Confounding",
+        "status": "pass",
+        "title": "Prespecified adjustment set",
+        "detail": "Adjusted for 7 covariates. Mediators and definitional overlaps are removed automatically, and an E-value quantifies how strong unmeasured confounding would need to be.",
+        "critique": "Residual confounding (only platform-captured variables)",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 0 PubMed NHANES paper(s) on the full question in 10 years (0 in the last 3). By element - Liver stiffness x Thrombocytopenia: 0 NHANES / 29 any data.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [],
+  "feasibility": {
+    "score": 98,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 8,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable with caveats",
+    "status": "caution",
+    "n_fail": 0,
+    "n_caution": 1,
+    "suggestions": [],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in J, L, P; selected P.",
+        "suggestion": "Pooling L could increase precision."
+      },
+      {
+        "dimension": "Subsample",
+        "status": "caution",
+        "title": "Liver elastography",
+        "message": "VCTE was performed in 2017-2020 only, ages >=12, and invalid exams are excluded.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as an association question. Outcome: Thrombocytopenia - platelets <150 x10^9/L. Exposure: Liver stiffness (VCTE median) (per 5 kPa). Population: Age >=18 years, Reliable liver elastography (complete exam, IQR/median <30%)."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 10 analysis variables (3 direct NHANES measures, 7 derived/guideline definitions) onto 14 raw variables in 7 files: P_BMX, P_CBC, P_DEMO, P_DIQ, P_GHB, P_LUX, P_SMQ."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "FIB-4 index: FIB-4 contains platelet count - definitional overlap with the outcome."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis."
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 0 major, 0 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable with caveats (0 blocking, 1 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "idea_gaps": [],
+  "novelty": {
+    "score": 90,
+    "label": "High",
+    "summary": "0 PubMed NHANES paper(s) on the full question in 10 years (0 in the last 3). By element - Liver stiffness x Thrombocytopenia: 0 NHANES / 29 any data.",
+    "checked": "2026-10-10"
+  }
+}

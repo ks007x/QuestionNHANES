@@ -1,0 +1,49 @@
+22:54:07  Plan plan_a9a4ad4fa6 (hash 921ce15ac3be) loaded
+22:54:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALQ.xpt
+22:54:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HEQ.xpt
+22:54:08  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_LUX.xpt
+22:54:08  Loaded 15,560 records from 9 file(s)
+22:54:08  Derived 25 analysis variables
+22:54:08  Analytic population: 7,463
+22:54:10  Computed 6 prevalence estimates
+22:54:10  Fitted 3 models (family quasipoisson)
+Multiple imputation results:
+      MIcombine.default(coefs, vcovs)
+                                 results          se      (lower      upper)
+(Intercept)                  -3.82698512 0.546377508 -4.89792006 -2.75605018
+lsm_per5                      0.18385316 0.021503462  0.14170634  0.22599999
+age                           0.03180697 0.004766356  0.02246509  0.04114886
+sexFemale                    -0.80933182 0.142704573 -1.08902770 -0.52963594
+race_ethNon-Hispanic Asian   -0.03093117 0.216337576 -0.45495106  0.39308872
+race_ethNon-Hispanic Black    0.26365302 0.222355454 -0.17215569  0.69946173
+race_ethNon-Hispanic White   -0.19088739 0.269862872 -0.71981243  0.33803765
+race_ethOther or multiracial -0.32690013 0.269667425 -0.85543951  0.20163925
+pir_cat1.30-3.49              0.32822867 0.217555743 -0.09878991  0.75524725
+pir_cat3.50+                  0.32367062 0.219941711 -0.10950730  0.75684855
+bmi                          -0.05060602 0.014264599 -0.07856514 -0.02264690
+diabetes                      0.35250061 0.151301069  0.05595554  0.64904568
+smokingFormer                 0.30247015 0.231875163 -0.15199684  0.75693713
+smokingCurrent                0.23805462 0.327771886 -0.40436801  0.88047726
+                             missInfo
+(Intercept)                       2 %
+lsm_per5                          1 %
+age                               0 %
+sexFemale                         0 %
+race_ethNon-Hispanic Asian        1 %
+race_ethNon-Hispanic Black        0 %
+race_ethNon-Hispanic White        1 %
+race_ethOther or multiracial      0 %
+pir_cat1.30-3.49                 11 %
+pir_cat3.50+                     20 %
+bmi                               2 %
+diabetes                          0 %
+smokingFormer                     0 %
+smokingCurrent                    0 %
+22:54:36  Ran 6 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+22:54:38  QC: 19 checks, 0 fail, 2 warn
+22:54:38  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_c9aa5276db/runs/run_266dbf48/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

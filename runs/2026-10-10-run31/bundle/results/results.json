@@ -1,0 +1,2499 @@
+{
+  "design": {
+    "weight_variable": "WTMECPRP",
+    "weight_level": "mec",
+    "cycles": [
+      "P"
+    ],
+    "n_strata": 24,
+    "n_psu": 49,
+    "design_df": 25,
+    "analytic_strata": 24,
+    "analytic_psu": 49,
+    "analytic_df": 25,
+    "sum_weights_millions": 211.11,
+    "lonely_psu": "adjust"
+  },
+  "flow": [
+    {
+      "step": "source",
+      "label": "Participants in source files (P)",
+      "n": 15560,
+      "excluded": 0
+    },
+    {
+      "step": "weight",
+      "label": "Examined in the MEC (positive MEC weight)",
+      "n": 14300,
+      "excluded": 1260
+    },
+    {
+      "step": "c1",
+      "label": "Age >=18 years",
+      "kind": "inclusion",
+      "n": 8965,
+      "excluded": 5335
+    },
+    {
+      "step": "c2",
+      "label": "Reliable liver elastography (complete exam, IQR/median <30%)",
+      "kind": "inclusion",
+      "n": 7768,
+      "excluded": 1197
+    },
+    {
+      "step": "outcome",
+      "label": "Non-missing outcome (Thrombocytopenia - platelets <150 x10^9/L)",
+      "n": 7463,
+      "excluded": 305
+    },
+    {
+      "step": "exposure",
+      "label": "Non-missing exposure (Liver stiffness (VCTE median))",
+      "n": 7463,
+      "excluded": 0
+    },
+    {
+      "step": "complete_case",
+      "label": "Complete covariate data (complete-case model sample)",
+      "n": 6425,
+      "excluded": 1038
+    }
+  ],
+  "table1": {
+    "by": "thrombocytopenia_150",
+    "by_label": "Thrombocytopenia - platelets <150 x10^9/L",
+    "columns": [
+      {
+        "key": "g1",
+        "label": "No",
+        "n": 7160,
+        "weighted_pct": 96.4
+      },
+      {
+        "key": "g2",
+        "label": "Yes",
+        "n": 303,
+        "weighted_pct": 3.6
+      },
+      {
+        "key": "overall",
+        "label": "Overall",
+        "n": 7463,
+        "weighted_pct": 100
+      }
+    ],
+    "rows": [
+      {
+        "variable": "agecat",
+        "label": "Age group, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 1.0910116997e-07,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "agecat",
+        "label": "18-39",
+        "level": "18-39",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,461 (38.7)",
+            "n": 2461,
+            "pct": 38.6738665346,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "47 (16.3)",
+            "n": 47,
+            "pct": 16.3069214413,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "2,508 (37.9)",
+            "n": 2508,
+            "pct": 37.876332495,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "40-64",
+        "level": "40-64",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "3,116 (42.6)",
+            "n": 3116,
+            "pct": 42.5522263138,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "125 (47.9)",
+            "n": 125,
+            "pct": 47.9393145779,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "3,241 (42.7)",
+            "n": 3241,
+            "pct": 42.7443127274,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "65+",
+        "level": "65+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,583 (18.8)",
+            "n": 1583,
+            "pct": 18.7739071515,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "131 (35.8)",
+            "n": 131,
+            "pct": 35.7537639808,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,714 (19.4)",
+            "n": 1714,
+            "pct": 19.3793547776,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Sex, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 1.3115745754e-06,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "sex",
+        "label": "Male",
+        "level": "Male",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "3,486 (48.5)",
+            "n": 3486,
+            "pct": 48.4869181598,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "208 (69.9)",
+            "n": 208,
+            "pct": 69.9347713107,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "3,694 (49.3)",
+            "n": 3694,
+            "pct": 49.2516803074,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Female",
+        "level": "Female",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "3,674 (51.5)",
+            "n": 3674,
+            "pct": 51.5130818402,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "95 (30.1)",
+            "n": 95,
+            "pct": 30.0652286893,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "3,769 (50.7)",
+            "n": 3769,
+            "pct": 50.7483196926,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Race and ethnicity, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.49334108886,
+        "p_text": ".49",
+        "header": true
+      },
+      {
+        "variable": "race_eth",
+        "label": "Hispanic",
+        "level": "Hispanic",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,669 (16.7)",
+            "n": 1669,
+            "pct": 16.7091320977,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "49 (13.8)",
+            "n": 49,
+            "pct": 13.845318283,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,718 (16.6)",
+            "n": 1718,
+            "pct": 16.6070176162,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Asian",
+        "level": "Non-Hispanic Asian",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "864 (5.8)",
+            "n": 864,
+            "pct": 5.7868211256,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "38 (6.3)",
+            "n": 38,
+            "pct": 6.2781064644,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "902 (5.8)",
+            "n": 902,
+            "pct": 5.8043387964,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Black",
+        "level": "Non-Hispanic Black",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,812 (10.7)",
+            "n": 1812,
+            "pct": 10.6935994474,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "89 (13.3)",
+            "n": 89,
+            "pct": 13.2587731962,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,901 (10.8)",
+            "n": 1901,
+            "pct": 10.7850653751,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic White",
+        "level": "Non-Hispanic White",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,454 (62.7)",
+            "n": 2454,
+            "pct": 62.6503409882,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "111 (63.3)",
+            "n": 111,
+            "pct": 63.3406777247,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "2,565 (62.7)",
+            "n": 2565,
+            "pct": 62.674956198,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Other or multiracial",
+        "level": "Other or multiracial",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "361 (4.2)",
+            "n": 361,
+            "pct": 4.1601063412,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "16 (3.3)",
+            "n": 16,
+            "pct": 3.2771243317,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "377 (4.1)",
+            "n": 377,
+            "pct": 4.1286220144,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "Income-to-poverty ratio, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.19322826288,
+        "p_text": ".19",
+        "header": true
+      },
+      {
+        "variable": "pir_cat",
+        "label": "<1.30",
+        "level": "<1.30",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,769 (18.9)",
+            "n": 1769,
+            "pct": 18.8537741969,
+            "n_missing": 953
+          },
+          "g2": {
+            "text": "69 (13.9)",
+            "n": 69,
+            "pct": 13.9204582998,
+            "n_missing": 37
+          },
+          "overall": {
+            "text": "1,838 (18.7)",
+            "n": 1838,
+            "pct": 18.6796903578,
+            "n_missing": 990
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "1.30-3.49",
+        "level": "1.30-3.49",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,374 (33.9)",
+            "n": 2374,
+            "pct": 33.8884584032,
+            "n_missing": 953
+          },
+          "g2": {
+            "text": "117 (38.4)",
+            "n": 117,
+            "pct": 38.4489435479,
+            "n_missing": 37
+          },
+          "overall": {
+            "text": "2,491 (34.0)",
+            "n": 2491,
+            "pct": 34.0493860183,
+            "n_missing": 990
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "3.50+",
+        "level": "3.50+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,064 (47.3)",
+            "n": 2064,
+            "pct": 47.2577673999,
+            "n_missing": 953
+          },
+          "g2": {
+            "text": "80 (47.6)",
+            "n": 80,
+            "pct": 47.6305981523,
+            "n_missing": 37
+          },
+          "overall": {
+            "text": "2,144 (47.3)",
+            "n": 2144,
+            "pct": 47.2709236239,
+            "n_missing": 990
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Educational attainment, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.13644729477,
+        "p_text": ".14",
+        "header": true
+      },
+      {
+        "variable": "educ",
+        "label": "Less than high school",
+        "level": "Less than high school",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,250 (10.7)",
+            "n": 1250,
+            "pct": 10.7069348369,
+            "n_missing": 345
+          },
+          "g2": {
+            "text": "52 (10.3)",
+            "n": 52,
+            "pct": 10.34610518,
+            "n_missing": 7
+          },
+          "overall": {
+            "text": "1,302 (10.7)",
+            "n": 1302,
+            "pct": 10.694098911,
+            "n_missing": 352
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "High school or GED",
+        "level": "High school or GED",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,618 (26.5)",
+            "n": 1618,
+            "pct": 26.4902006112,
+            "n_missing": 345
+          },
+          "g2": {
+            "text": "89 (34.3)",
+            "n": 89,
+            "pct": 34.303363242,
+            "n_missing": 7
+          },
+          "overall": {
+            "text": "1,707 (26.8)",
+            "n": 1707,
+            "pct": 26.7681411148,
+            "n_missing": 352
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Some college",
+        "level": "Some college",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,234 (30.5)",
+            "n": 2234,
+            "pct": 30.5180258155,
+            "n_missing": 345
+          },
+          "g2": {
+            "text": "87 (26.2)",
+            "n": 87,
+            "pct": 26.2499120371,
+            "n_missing": 7
+          },
+          "overall": {
+            "text": "2,321 (30.4)",
+            "n": 2321,
+            "pct": 30.3661946366,
+            "n_missing": 352
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "College graduate or above",
+        "level": "College graduate or above",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,713 (32.3)",
+            "n": 1713,
+            "pct": 32.2848387364,
+            "n_missing": 345
+          },
+          "g2": {
+            "text": "68 (29.1)",
+            "n": 68,
+            "pct": 29.1006195409,
+            "n_missing": 7
+          },
+          "overall": {
+            "text": "1,781 (32.2)",
+            "n": 1781,
+            "pct": 32.1715653376,
+            "n_missing": 352
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "bmi",
+        "label": "Body mass index, kg/m2, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "29.5 (0.17)",
+            "median_iqr": "28.4 (24.6-33.1)",
+            "n_missing": 53
+          },
+          "g2": {
+            "text": "28.1 (0.48)",
+            "median_iqr": "27.4 (23.9-31.3)",
+            "n_missing": 6
+          },
+          "overall": {
+            "text": "29.4 (0.17)",
+            "median_iqr": "28.3 (24.6-33.1)",
+            "n_missing": 59
+          }
+        },
+        "p": 0.0079419738772,
+        "p_text": ".008",
+        "header": true
+      },
+      {
+        "variable": "diabetes",
+        "label": "Diabetes (self-report, medication, or HbA1c >=6.5%), No. (weighted %)",
+        "level": null,
+        "type": "binary",
+        "values": {
+          "g1": {
+            "text": "1,259 (13.0)",
+            "n": 1259,
+            "pct": 13.0446540396,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "83 (24.8)",
+            "n": 83,
+            "pct": 24.7703806297,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,342 (13.5)",
+            "n": 1342,
+            "pct": 13.4627561119,
+            "n_missing": 0
+          }
+        },
+        "p": 9.912805702e-06,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "smoking",
+        "label": "Smoking status, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.027010049398,
+        "p_text": ".03",
+        "header": true
+      },
+      {
+        "variable": "smoking",
+        "label": "Never",
+        "level": "Never",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "4,337 (59.1)",
+            "n": 4337,
+            "pct": 59.1388268738,
+            "n_missing": 3
+          },
+          "g2": {
+            "text": "140 (45.5)",
+            "n": 140,
+            "pct": 45.4848420061,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "4,477 (58.7)",
+            "n": 4477,
+            "pct": 58.6518467914,
+            "n_missing": 3
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "smoking",
+        "label": "Former",
+        "level": "Former",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,579 (24.7)",
+            "n": 1579,
+            "pct": 24.6715165114,
+            "n_missing": 3
+          },
+          "g2": {
+            "text": "102 (38.1)",
+            "n": 102,
+            "pct": 38.126260725,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,681 (25.2)",
+            "n": 1681,
+            "pct": 25.1513905195,
+            "n_missing": 3
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "smoking",
+        "label": "Current",
+        "level": "Current",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,241 (16.2)",
+            "n": 1241,
+            "pct": 16.1896566148,
+            "n_missing": 3
+          },
+          "g2": {
+            "text": "61 (16.4)",
+            "n": 61,
+            "pct": 16.388897269,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,302 (16.2)",
+            "n": 1302,
+            "pct": 16.1967626891,
+            "n_missing": 3
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "plt",
+        "label": "Platelet count, x10^9/L, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "251.2 (1.62)",
+            "median_iqr": "243.0 (210.0-283.0)",
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "130.8 (1.39)",
+            "median_iqr": "136.0 (123.0-143.0)",
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "246.9 (1.76)",
+            "median_iqr": "240.0 (205.0-281.0)",
+            "n_missing": 0
+          }
+        },
+        "p": 4.3307117831e-25,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "lsm",
+        "label": "Liver stiffness (VCTE median), kPa, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "5.6 (0.09)",
+            "median_iqr": "4.9 (4.1-6.0)",
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "7.6 (0.48)",
+            "median_iqr": "5.5 (4.2-7.8)",
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "5.7 (0.10)",
+            "median_iqr": "4.9 (4.1-6.1)",
+            "n_missing": 0
+          }
+        },
+        "p": 0.00012692698012,
+        "p_text": "<.001",
+        "header": true
+      }
+    ],
+    "note": "Counts are unweighted; percentages, means and SEs are survey weighted. P values: design-based Wald F test (continuous) or Rao-Scott F test (categorical)."
+  },
+  "prevalence": [
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.03565681573,
+      "lcl": 0.029692610745,
+      "ucl": 0.04243170366,
+      "se": 0.0030196705537,
+      "n": 7463,
+      "events": 303,
+      "n_eff": 3770.9870765863,
+      "df": 25,
+      "pop_millions": 7.53,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.05063078535,
+      "lcl": 0.042315265465,
+      "ucl": 0.060032231435,
+      "se": 0.0042017241459,
+      "n": 3694,
+      "events": 208,
+      "n_eff": 2722.6683050876,
+      "df": 25,
+      "pop_millions": 5.26,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0.021124449553,
+      "lcl": 0.015172252795,
+      "ucl": 0.028594355811,
+      "se": 0.0031236213761,
+      "n": 3769,
+      "events": 95,
+      "n_eff": 2119.3179183695,
+      "df": 25,
+      "pop_millions": 2.26,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0.015351351481,
+      "lcl": 0.010022023085,
+      "ucl": 0.022465717369,
+      "se": 0.0028623790348,
+      "n": 2508,
+      "events": 47,
+      "n_eff": 1844.9033518234,
+      "df": 25,
+      "pop_millions": 1.23,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.039990426727,
+      "lcl": 0.029874968238,
+      "ucl": 0.052310559747,
+      "se": 0.0052472717759,
+      "n": 3241,
+      "events": 125,
+      "n_eff": 1394.3265120673,
+      "df": 25,
+      "pop_millions": 3.61,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "thrombocytopenia_150",
+      "outcome_label": "Thrombocytopenia - platelets <150 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0.065784717219,
+      "lcl": 0.051834986972,
+      "ucl": 0.082117115166,
+      "se": 0.0071307866526,
+      "n": 1714,
+      "events": 131,
+      "n_eff": 1208.6403641124,
+      "df": 25,
+      "pop_millions": 2.69,
+      "nchs": "meets standard"
+    }
+  ],
+  "primary_model": {
+    "id": "full",
+    "label": "Fully adjusted (primary)",
+    "family": "quasipoisson",
+    "effect": "PR",
+    "effect_label": "Prevalence ratio",
+    "formula": "thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking",
+    "call": "svyglm(thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking, design = <full>, family = quasipoisson)",
+    "n": 6425,
+    "events": 261,
+    "df_residual": 12,
+    "df_design": 25,
+    "n_params": 14,
+    "converged": true,
+    "warnings": [],
+    "dispersion": 0.98239857394,
+    "terms": [
+      {
+        "term": "(Intercept)",
+        "variable": "(Intercept)",
+        "level": "",
+        "label": "Intercept",
+        "beta": -3.8519296368,
+        "se": 0.60852244424,
+        "est": 0.021238713868,
+        "lcl": 0.0060650950128,
+        "ucl": 0.074373602687,
+        "p": 1.2632054273e-06
+      },
+      {
+        "term": "lsm_per5",
+        "variable": "lsm_per5",
+        "level": "",
+        "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+        "beta": 0.16958580818,
+        "se": 0.021311078838,
+        "est": 1.1848140094,
+        "lcl": 1.1339360605,
+        "ucl": 1.2379747728,
+        "p": 2.5882234786e-08
+      },
+      {
+        "term": "age",
+        "variable": "age",
+        "level": "",
+        "label": "Age",
+        "beta": 0.031276437814,
+        "se": 0.0051425426446,
+        "est": 1.0317706849,
+        "lcl": 1.0209005939,
+        "ucl": 1.0427565157,
+        "p": 2.3480860003e-06
+      },
+      {
+        "term": "sexFemale",
+        "variable": "sex",
+        "level": "Female",
+        "label": "Sex: Female (vs Male)",
+        "beta": -0.86698421712,
+        "se": 0.157950968,
+        "est": 0.42021692325,
+        "lcl": 0.30352529575,
+        "ucl": 0.58177115731,
+        "p": 1.0577005337e-05
+      },
+      {
+        "term": "race_ethNon-Hispanic Asian",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Asian",
+        "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+        "beta": -0.064830291418,
+        "se": 0.23550967692,
+        "est": 0.93722650526,
+        "lcl": 0.577023924,
+        "ucl": 1.5222826743,
+        "p": 0.78536618047
+      },
+      {
+        "term": "race_ethNon-Hispanic Black",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Black",
+        "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+        "beta": 0.07781513266,
+        "se": 0.2522931792,
+        "est": 1.0809228129,
+        "lcl": 0.64288308638,
+        "ucl": 1.8174286307,
+        "p": 0.76030953698
+      },
+      {
+        "term": "race_ethNon-Hispanic White",
+        "variable": "race_eth",
+        "level": "Non-Hispanic White",
+        "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+        "beta": -0.34105395947,
+        "se": 0.30251993332,
+        "est": 0.71102054088,
+        "lcl": 0.38132417023,
+        "ucl": 1.3257754137,
+        "p": 0.2702877119
+      },
+      {
+        "term": "race_ethOther or multiracial",
+        "variable": "race_eth",
+        "level": "Other or multiracial",
+        "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+        "beta": -0.49188214916,
+        "se": 0.37998720528,
+        "est": 0.61147442436,
+        "lcl": 0.27957618487,
+        "ucl": 1.3373849129,
+        "p": 0.2073325947
+      },
+      {
+        "term": "pir_cat1.30-3.49",
+        "variable": "pir_cat",
+        "level": "1.30-3.49",
+        "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+        "beta": 0.32410291075,
+        "se": 0.23501799095,
+        "est": 1.3827896037,
+        "lcl": 0.85220710372,
+        "ucl": 2.2437117454,
+        "p": 0.18009155606
+      },
+      {
+        "term": "pir_cat3.50+",
+        "variable": "pir_cat",
+        "level": "3.50+",
+        "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+        "beta": 0.37399453928,
+        "se": 0.20226266333,
+        "est": 1.4535292131,
+        "lcl": 0.95832030084,
+        "ucl": 2.2046357273,
+        "p": 0.076309606725
+      },
+      {
+        "term": "bmi",
+        "variable": "bmi",
+        "level": "",
+        "label": "Body mass index",
+        "beta": -0.044793570998,
+        "se": 0.015382636538,
+        "est": 0.95619484781,
+        "lcl": 0.92637634762,
+        "ucl": 0.98697315549,
+        "p": 0.0074529016689
+      },
+      {
+        "term": "diabetes",
+        "variable": "diabetes",
+        "level": "",
+        "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+        "beta": 0.40014320077,
+        "se": 0.16182993775,
+        "est": 1.4920383434,
+        "lcl": 1.0691331768,
+        "ucl": 2.0822274217,
+        "p": 0.020566824483
+      },
+      {
+        "term": "smokingFormer",
+        "variable": "smoking",
+        "level": "Former",
+        "label": "Smoking status: Former (vs Never)",
+        "beta": 0.26406984433,
+        "se": 0.26469555141,
+        "est": 1.3022191457,
+        "lcl": 0.75496729501,
+        "ucl": 2.2461565087,
+        "p": 0.32801471249
+      },
+      {
+        "term": "smokingCurrent",
+        "variable": "smoking",
+        "level": "Current",
+        "label": "Smoking status: Current (vs Never)",
+        "beta": 0.37171135524,
+        "se": 0.351037557,
+        "est": 1.4502143241,
+        "lcl": 0.70379790777,
+        "ucl": 2.9882464307,
+        "p": 0.29977262451
+      }
+    ]
+  },
+  "models": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "thrombocytopenia_150 ~ lsm_per5",
+      "call": "svyglm(thrombocytopenia_150 ~ lsm_per5, design = <crude>, family = quasipoisson)",
+      "n": 6425,
+      "events": 261,
+      "df_residual": 24,
+      "df_design": 25,
+      "n_params": 2,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.94535332704,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -3.5671191334,
+          "se": 0.079852392866,
+          "est": 0.028237083889,
+          "lcl": 0.023954999846,
+          "ucl": 0.033284613302,
+          "p": 2.2753633506e-25
+        },
+        {
+          "term": "lsm_per5",
+          "variable": "lsm_per5",
+          "level": "",
+          "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+          "beta": 0.16757086385,
+          "se": 0.016605588803,
+          "est": 1.1824290787,
+          "lcl": 1.1426738671,
+          "ucl": 1.2235674293,
+          "p": 2.6685675495e-10
+        }
+      ]
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth",
+      "call": "svyglm(thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth, design = <demographic>, family = quasipoisson)",
+      "n": 6425,
+      "events": 261,
+      "df_residual": 18,
+      "df_design": 25,
+      "n_params": 8,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 1.0052382993,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -4.8752685339,
+          "se": 0.38682602491,
+          "est": 0.0076330442125,
+          "lcl": 0.0034411428277,
+          "ucl": 0.016931399499,
+          "p": 2.4920474666e-12
+        },
+        {
+          "term": "lsm_per5",
+          "variable": "lsm_per5",
+          "level": "",
+          "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+          "beta": 0.147011395,
+          "se": 0.022788498372,
+          "est": 1.1583671625,
+          "lcl": 1.1052566871,
+          "ucl": 1.2140297353,
+          "p": 9.35433426e-07
+        },
+        {
+          "term": "age",
+          "variable": "age",
+          "level": "",
+          "label": "Age",
+          "beta": 0.03587757163,
+          "se": 0.0052757288831,
+          "est": 1.0365289382,
+          "lcl": 1.0253274291,
+          "ucl": 1.0478528216,
+          "p": 3.9703731646e-07
+        },
+        {
+          "term": "sexFemale",
+          "variable": "sex",
+          "level": "Female",
+          "label": "Sex: Female (vs Male)",
+          "beta": -0.9766153926,
+          "se": 0.16773576055,
+          "est": 0.3765835317,
+          "lcl": 0.26658192863,
+          "ucl": 0.53197588103,
+          "p": 4.5209545799e-06
+        },
+        {
+          "term": "race_ethNon-Hispanic Asian",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Asian",
+          "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+          "beta": 0.12468843983,
+          "se": 0.2322280534,
+          "est": 1.1327954641,
+          "lcl": 0.70215985362,
+          "ucl": 1.8275404909,
+          "p": 0.59606789124
+        },
+        {
+          "term": "race_ethNon-Hispanic Black",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Black",
+          "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+          "beta": 0.11488835176,
+          "se": 0.2336554025,
+          "est": 1.1217481894,
+          "lcl": 0.69327123923,
+          "ucl": 1.8150457269,
+          "p": 0.62722108209
+        },
+        {
+          "term": "race_ethNon-Hispanic White",
+          "variable": "race_eth",
+          "level": "Non-Hispanic White",
+          "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+          "beta": -0.25477960348,
+          "se": 0.26446769355,
+          "est": 0.77508730569,
+          "lcl": 0.44957121128,
+          "ucl": 1.3362962671,
+          "p": 0.34458968654
+        },
+        {
+          "term": "race_ethOther or multiracial",
+          "variable": "race_eth",
+          "level": "Other or multiracial",
+          "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+          "beta": -0.38863504372,
+          "se": 0.33532641123,
+          "est": 0.67798165853,
+          "lcl": 0.33984939499,
+          "ucl": 1.3525377302,
+          "p": 0.25741716863
+        }
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking",
+      "call": "svyglm(thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking, design = <full>, family = quasipoisson)",
+      "n": 6425,
+      "events": 261,
+      "df_residual": 12,
+      "df_design": 25,
+      "n_params": 14,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.98239857394,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -3.8519296368,
+          "se": 0.60852244424,
+          "est": 0.021238713868,
+          "lcl": 0.0060650950128,
+          "ucl": 0.074373602687,
+          "p": 1.2632054273e-06
+        },
+        {
+          "term": "lsm_per5",
+          "variable": "lsm_per5",
+          "level": "",
+          "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+          "beta": 0.16958580818,
+          "se": 0.021311078838,
+          "est": 1.1848140094,
+          "lcl": 1.1339360605,
+          "ucl": 1.2379747728,
+          "p": 2.5882234786e-08
+        },
+        {
+          "term": "age",
+          "variable": "age",
+          "level": "",
+          "label": "Age",
+          "beta": 0.031276437814,
+          "se": 0.0051425426446,
+          "est": 1.0317706849,
+          "lcl": 1.0209005939,
+          "ucl": 1.0427565157,
+          "p": 2.3480860003e-06
+        },
+        {
+          "term": "sexFemale",
+          "variable": "sex",
+          "level": "Female",
+          "label": "Sex: Female (vs Male)",
+          "beta": -0.86698421712,
+          "se": 0.157950968,
+          "est": 0.42021692325,
+          "lcl": 0.30352529575,
+          "ucl": 0.58177115731,
+          "p": 1.0577005337e-05
+        },
+        {
+          "term": "race_ethNon-Hispanic Asian",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Asian",
+          "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+          "beta": -0.064830291418,
+          "se": 0.23550967692,
+          "est": 0.93722650526,
+          "lcl": 0.577023924,
+          "ucl": 1.5222826743,
+          "p": 0.78536618047
+        },
+        {
+          "term": "race_ethNon-Hispanic Black",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Black",
+          "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+          "beta": 0.07781513266,
+          "se": 0.2522931792,
+          "est": 1.0809228129,
+          "lcl": 0.64288308638,
+          "ucl": 1.8174286307,
+          "p": 0.76030953698
+        },
+        {
+          "term": "race_ethNon-Hispanic White",
+          "variable": "race_eth",
+          "level": "Non-Hispanic White",
+          "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+          "beta": -0.34105395947,
+          "se": 0.30251993332,
+          "est": 0.71102054088,
+          "lcl": 0.38132417023,
+          "ucl": 1.3257754137,
+          "p": 0.2702877119
+        },
+        {
+          "term": "race_ethOther or multiracial",
+          "variable": "race_eth",
+          "level": "Other or multiracial",
+          "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+          "beta": -0.49188214916,
+          "se": 0.37998720528,
+          "est": 0.61147442436,
+          "lcl": 0.27957618487,
+          "ucl": 1.3373849129,
+          "p": 0.2073325947
+        },
+        {
+          "term": "pir_cat1.30-3.49",
+          "variable": "pir_cat",
+          "level": "1.30-3.49",
+          "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+          "beta": 0.32410291075,
+          "se": 0.23501799095,
+          "est": 1.3827896037,
+          "lcl": 0.85220710372,
+          "ucl": 2.2437117454,
+          "p": 0.18009155606
+        },
+        {
+          "term": "pir_cat3.50+",
+          "variable": "pir_cat",
+          "level": "3.50+",
+          "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+          "beta": 0.37399453928,
+          "se": 0.20226266333,
+          "est": 1.4535292131,
+          "lcl": 0.95832030084,
+          "ucl": 2.2046357273,
+          "p": 0.076309606725
+        },
+        {
+          "term": "bmi",
+          "variable": "bmi",
+          "level": "",
+          "label": "Body mass index",
+          "beta": -0.044793570998,
+          "se": 0.015382636538,
+          "est": 0.95619484781,
+          "lcl": 0.92637634762,
+          "ucl": 0.98697315549,
+          "p": 0.0074529016689
+        },
+        {
+          "term": "diabetes",
+          "variable": "diabetes",
+          "level": "",
+          "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+          "beta": 0.40014320077,
+          "se": 0.16182993775,
+          "est": 1.4920383434,
+          "lcl": 1.0691331768,
+          "ucl": 2.0822274217,
+          "p": 0.020566824483
+        },
+        {
+          "term": "smokingFormer",
+          "variable": "smoking",
+          "level": "Former",
+          "label": "Smoking status: Former (vs Never)",
+          "beta": 0.26406984433,
+          "se": 0.26469555141,
+          "est": 1.3022191457,
+          "lcl": 0.75496729501,
+          "ucl": 2.2461565087,
+          "p": 0.32801471249
+        },
+        {
+          "term": "smokingCurrent",
+          "variable": "smoking",
+          "level": "Current",
+          "label": "Smoking status: Current (vs Never)",
+          "beta": 0.37171135524,
+          "se": 0.351037557,
+          "est": 1.4502143241,
+          "lcl": 0.70379790777,
+          "ucl": 2.9882464307,
+          "p": 0.29977262451
+        }
+      ]
+    }
+  ],
+  "primary_estimate": {
+    "effect": "PR",
+    "effect_label": "Prevalence ratio",
+    "term": "lsm_per5",
+    "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+    "est": 1.1848140094,
+    "lcl": 1.1339360605,
+    "ucl": 1.2379747728,
+    "p": 2.5882234786e-08,
+    "n": 6425
+  },
+  "interactions": [
+    {
+      "modifier": "sex",
+      "label": "Sex",
+      "p_interaction": null,
+      "strata": [
+        {
+          "level": "Male",
+          "n": 3152,
+          "est": 1.1564416398,
+          "lcl": 1.0935789776,
+          "ucl": 1.2229178631,
+          "p": 1.4883124683e-05
+        },
+        {
+          "level": "Female",
+          "n": 3273,
+          "est": 1.297278608,
+          "lcl": 1.1854667999,
+          "ucl": 1.4196363718,
+          "p": 3.2963222179e-06
+        }
+      ]
+    },
+    {
+      "modifier": "agecat",
+      "label": "Age group",
+      "p_interaction": null,
+      "strata": [
+        {
+          "level": "18-39",
+          "n": 2172,
+          "est": 0.26349462125,
+          "lcl": 0.055882599815,
+          "ucl": 1.2424156295,
+          "p": 0.088707630669
+        },
+        {
+          "level": "40-64",
+          "n": 2804,
+          "est": 1.2492544618,
+          "lcl": 1.1382535891,
+          "ucl": 1.3710799819,
+          "p": 4.5176110744e-05
+        },
+        {
+          "level": "65+",
+          "n": 1449,
+          "est": 1.164582754,
+          "lcl": 1.098860626,
+          "ucl": 1.234235679,
+          "p": 1.3219160751e-05
+        }
+      ]
+    }
+  ],
+  "sensitivity": [
+    {
+      "id": "s1",
+      "label": "Exclude heavy alcohol (>2 drinks/day men, >1 women)",
+      "type": "exclude",
+      "est": 1.1465491559,
+      "lcl": 1.0728637959,
+      "ucl": 1.2252953004,
+      "n": 4246,
+      "effect": "PR"
+    },
+    {
+      "id": "s2",
+      "label": "Exclude self-reported hepatitis B or C",
+      "type": "exclude",
+      "est": 1.1510217639,
+      "lcl": 1.0919608048,
+      "ucl": 1.2132771571,
+      "n": 6244,
+      "effect": "PR"
+    },
+    {
+      "id": "s3",
+      "label": "Logistic regression (odds ratio)",
+      "type": "alt_family",
+      "est": 1.2450537884,
+      "lcl": 1.1547745757,
+      "ucl": 1.3423909467,
+      "n": 6425,
+      "effect": "OR"
+    },
+    {
+      "id": "s4",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "type": "mi",
+      "est": 1.2018393342,
+      "lcl": 1.1522382269,
+      "ucl": 1.2535756508,
+      "n": 7463,
+      "effect": "PR",
+      "note": "Multiple imputation by chained equations (m = 10; 1038 rows imputed), Rubin's rules"
+    },
+    {
+      "id": "s5",
+      "label": "Exposure in weighted quartiles (Q4 vs Q1, P for trend)",
+      "type": "exposure_quartiles",
+      "est": 1.7763801862,
+      "lcl": 0.95184989165,
+      "ucl": 3.3151514685,
+      "n": 6425,
+      "effect": "PR",
+      "note": "Highest vs lowest weighted quartile; P for trend .010",
+      "quartile_terms": [
+        {
+          "label": "lsm_per5_q: Q2 (0.82-0.98) (vs Q1 (<0.82))",
+          "est": 0.89447990787,
+          "lcl": 0.4222020345,
+          "ucl": 1.8950508056
+        },
+        {
+          "label": "lsm_per5_q: Q3 (0.98-1.22) (vs Q1 (<0.82))",
+          "est": 1.1113348265,
+          "lcl": 0.60176974459,
+          "ucl": 2.0523881561
+        },
+        {
+          "label": "lsm_per5_q: Q4 (>=1.22) (vs Q1 (<0.82))",
+          "est": 1.7763801862,
+          "lcl": 0.95184989165,
+          "ucl": 3.3151514685
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "label": "Unweighted analysis (design ignored)",
+      "type": "unweighted",
+      "est": 1.187784649,
+      "lcl": 1.1279008412,
+      "ucl": 1.2508478768,
+      "n": 6425,
+      "effect": "PR",
+      "note": "Unweighted GLM (ignores design)"
+    }
+  ],
+  "evalue": {
+    "point": 1.6527565566,
+    "ci": 1.523647401,
+    "rr_scale": 1.1848140094,
+    "note": "Prevalence ratio used directly"
+  },
+  "vif": [
+    {
+      "term": "lsm_per5",
+      "vif": 1.1
+    },
+    {
+      "term": "age",
+      "vif": 1.22
+    },
+    {
+      "term": "sexFemale",
+      "vif": 1.05
+    },
+    {
+      "term": "race_ethNon-Hispanic Asian",
+      "vif": 1.46
+    },
+    {
+      "term": "race_ethNon-Hispanic Black",
+      "vif": 1.64
+    },
+    {
+      "term": "race_ethNon-Hispanic White",
+      "vif": 1.81
+    },
+    {
+      "term": "race_ethOther or multiracial",
+      "vif": 1.19
+    },
+    {
+      "term": "pir_cat1.30-3.49",
+      "vif": 1.5
+    },
+    {
+      "term": "pir_cat3.50+",
+      "vif": 1.62
+    },
+    {
+      "term": "bmi",
+      "vif": 1.18
+    },
+    {
+      "term": "diabetes",
+      "vif": 1.18
+    },
+    {
+      "term": "smokingFormer",
+      "vif": 1.2
+    },
+    {
+      "term": "smokingCurrent",
+      "vif": 1.16
+    }
+  ],
+  "benchmarks": [],
+  "figures": [
+    {
+      "id": "prevalence",
+      "title": "Weighted prevalence of thrombocytopenia - platelets <150 x10^9/L",
+      "file": "fig_prevalence.png"
+    },
+    {
+      "id": "forest",
+      "title": "Liver stiffness (VCTE median) (per 5 kPa) and thrombocytopenia - platelets <150 x10^9/L",
+      "file": "fig_forest.png"
+    },
+    {
+      "id": "distribution",
+      "title": "Distribution of liver stiffness (VCTE median)",
+      "file": "fig_distribution.png"
+    }
+  ],
+  "derivation_audit": [
+    {
+      "name": "plt",
+      "expr": "LBXPLTSI",
+      "type": "continuous",
+      "n_nonmissing": 12156,
+      "quantiles": [8, 213, 254, 304, 1021]
+    },
+    {
+      "name": "thrombocytopenia_150",
+      "expr": "plt < 150",
+      "type": "binary",
+      "n_nonmissing": 12156,
+      "n_positive": 381
+    },
+    {
+      "name": "lsm",
+      "expr": "LUXSMED",
+      "type": "continuous",
+      "n_nonmissing": 9700,
+      "quantiles": [1.6, 4.1, 5, 6.1, 75]
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "n_nonmissing": 15560,
+      "quantiles": [0, 10, 30, 56, 80]
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "n_nonmissing": 15560,
+      "n_positive": 7839
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "Male": 7721,
+        "Female": 7839
+      }
+    },
+    {
+      "name": "race_eth",
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "Hispanic": 3534,
+        "Non-Hispanic Asian": 1638,
+        "Non-Hispanic Black": 4098,
+        "Non-Hispanic White": 5271,
+        "Other or multiracial": 1019
+      }
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "n_nonmissing": 13359,
+      "quantiles": [0, 1.02, 1.96, 3.88, 5]
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "n_nonmissing": 13359,
+      "levels": {
+        "<1.30": 4483,
+        "1.30-3.49": 5035,
+        "3.50+": 3841
+      }
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "n_nonmissing": 13137,
+      "quantiles": [11.9, 20.4, 25.8, 31.4, 92.3]
+    },
+    {
+      "name": "dm_selfreport",
+      "expr": "DIQ010 == 1",
+      "type": "binary",
+      "n_nonmissing": 14978,
+      "n_positive": 1445
+    },
+    {
+      "name": "insulin_use",
+      "expr": "DIQ050 == 1",
+      "type": "binary",
+      "n_nonmissing": 1444,
+      "n_positive": 427
+    },
+    {
+      "name": "dm_pills",
+      "expr": "DIQ070 == 1",
+      "type": "binary",
+      "n_nonmissing": 2674,
+      "n_positive": 1128
+    },
+    {
+      "name": "hba1c",
+      "expr": "LBXGH",
+      "type": "continuous",
+      "n_nonmissing": 9737,
+      "quantiles": [2.8, 5.2, 5.5, 5.9, 16.2]
+    },
+    {
+      "name": "diabetes",
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "type": "binary",
+      "n_nonmissing": 14984,
+      "n_positive": 1794
+    },
+    {
+      "name": "smoking",
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "type": "categorical",
+      "n_nonmissing": 9688,
+      "levels": {
+        "Never": 5799,
+        "Former": 2205,
+        "Current": 1684
+      }
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "<18": 5867,
+        "18-39": 3260,
+        "40-64": 4022,
+        "65+": 2411
+      }
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "n_nonmissing": 9217,
+      "levels": {
+        "Less than high school": 1760,
+        "High school or GED": 2225,
+        "Some college": 2975,
+        "College graduate or above": 2257
+      }
+    },
+    {
+      "name": "elasto_complete",
+      "expr": "LUAXSTAT == 1",
+      "type": "binary",
+      "n_nonmissing": 10409,
+      "n_positive": 9023
+    },
+    {
+      "name": "lsm_iqr",
+      "expr": "LUXSIQR",
+      "type": "continuous",
+      "n_nonmissing": 9706,
+      "quantiles": [0, 0.4, 0.7, 1, 67.3]
+    },
+    {
+      "name": "lsm_valid",
+      "expr": "elasto_complete == 1 & lsm_iqr / lsm < 0.30",
+      "type": "binary",
+      "n_nonmissing": 10409,
+      "n_positive": 9023
+    },
+    {
+      "name": "alcohol_dpd",
+      "expr": "ALQ130",
+      "type": "continuous",
+      "n_nonmissing": 5853,
+      "quantiles": [1, 1, 2, 3, 15]
+    },
+    {
+      "name": "hep_b",
+      "expr": "HEQ010 == 1",
+      "type": "binary",
+      "n_nonmissing": 13174,
+      "n_positive": 101
+    },
+    {
+      "name": "hep_c",
+      "expr": "HEQ030 == 1",
+      "type": "binary",
+      "n_nonmissing": 13170,
+      "n_positive": 163
+    },
+    {
+      "name": "lsm_per5",
+      "expr": "lsm / 5",
+      "type": "continuous",
+      "n_nonmissing": 9700,
+      "quantiles": [0.32, 0.82, 1, 1.22, 15]
+    }
+  ],
+  "ranges": [
+    {
+      "variable": "ALQ130",
+      "n_nonmissing": 5853,
+      "n_nonresponse_codes": 10,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 30,
+      "observed_min": 1,
+      "observed_max": 15
+    },
+    {
+      "variable": "BMXBMI",
+      "n_nonmissing": 13137,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 1,
+      "min_allowed": 10,
+      "max_allowed": 90,
+      "observed_min": 11.9,
+      "observed_max": 92.3
+    },
+    {
+      "variable": "DIQ010",
+      "n_nonmissing": 14978,
+      "n_nonresponse_codes": 8,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 3,
+      "observed_min": 1,
+      "observed_max": 3
+    },
+    {
+      "variable": "DIQ050",
+      "n_nonmissing": 1444,
+      "n_nonresponse_codes": 1,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "DIQ070",
+      "n_nonmissing": 2674,
+      "n_nonresponse_codes": 5,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "DMDEDUC2",
+      "n_nonmissing": 9217,
+      "n_nonresponse_codes": 15,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 5,
+      "observed_min": 1,
+      "observed_max": 5
+    },
+    {
+      "variable": "HEQ010",
+      "n_nonmissing": 13174,
+      "n_nonresponse_codes": 43,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "HEQ030",
+      "n_nonmissing": 13170,
+      "n_nonresponse_codes": 47,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "INDFMPIR",
+      "n_nonmissing": 13359,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 5,
+      "observed_min": 0,
+      "observed_max": 5
+    },
+    {
+      "variable": "LBXGH",
+      "n_nonmissing": 9737,
+      "n_nonresponse_codes": 0,
+      "n_below": 1,
+      "n_above": 0,
+      "min_allowed": 3,
+      "max_allowed": 18,
+      "observed_min": 2.8,
+      "observed_max": 16.2
+    },
+    {
+      "variable": "LBXPLTSI",
+      "n_nonmissing": 12156,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 1,
+      "min_allowed": 5,
+      "max_allowed": 1000,
+      "observed_min": 8,
+      "observed_max": 1021
+    },
+    {
+      "variable": "LUAXSTAT",
+      "n_nonmissing": 10409,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 252,
+      "min_allowed": 1,
+      "max_allowed": 3,
+      "observed_min": 1,
+      "observed_max": 4
+    },
+    {
+      "variable": "LUXSIQR",
+      "n_nonmissing": 9706,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 75,
+      "observed_min": 0,
+      "observed_max": 67.3
+    },
+    {
+      "variable": "LUXSMED",
+      "n_nonmissing": 9700,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 75,
+      "observed_min": 1.6,
+      "observed_max": 75
+    },
+    {
+      "variable": "RIAGENDR",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIDAGEYR",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 80,
+      "observed_min": 0,
+      "observed_max": 80
+    },
+    {
+      "variable": "RIDRETH1",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 5,
+      "observed_min": 1,
+      "observed_max": 5
+    },
+    {
+      "variable": "RIDRETH3",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 7,
+      "observed_min": 1,
+      "observed_max": 7
+    },
+    {
+      "variable": "SMQ020",
+      "n_nonmissing": 9688,
+      "n_nonresponse_codes": 5,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "SMQ040",
+      "n_nonmissing": 3889,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 3,
+      "observed_min": 1,
+      "observed_max": 3
+    }
+  ],
+  "checks": [
+    {
+      "id": "variable_availability",
+      "category": "Data",
+      "title": "Requested variables present in source files",
+      "status": "pass",
+      "message": "All 20 raw variables found in 9 file(s).",
+      "detail": null
+    },
+    {
+      "id": "synthetic_data",
+      "category": "Data",
+      "title": "Real vs synthetic data",
+      "status": "pass",
+      "message": "Official source files were used (MD5 recorded in provenance).",
+      "detail": null
+    },
+    {
+      "id": "cycle_overlap",
+      "category": "Design",
+      "title": "Survey cycles do not overlap",
+      "status": "pass",
+      "message": "Cycles: P",
+      "detail": null
+    },
+    {
+      "id": "weight_choice",
+      "category": "Design",
+      "title": "Appropriate sample weight",
+      "status": "pass",
+      "message": "mec weight (WTMECPRP) matches the most restrictive component used; weights rescaled by cycle length when combining cycles.",
+      "detail": null
+    },
+    {
+      "id": "weight_values",
+      "category": "Design",
+      "title": "Analytic weights positive and non-missing",
+      "status": "pass",
+      "message": "0 analytic records with missing/zero weight. Weighted population represented: 211.1 million.",
+      "detail": null
+    },
+    {
+      "id": "design_df",
+      "category": "Design",
+      "title": "Design degrees of freedom",
+      "status": "pass",
+      "message": "Analytic population spans 49 PSUs in 24 strata (df = 25). NCHS flags estimates with df < 8.",
+      "detail": null
+    },
+    {
+      "id": "sample_size",
+      "category": "Sample",
+      "title": "Analytic sample size",
+      "status": "pass",
+      "message": "Analytic n = 7,463.",
+      "detail": null
+    },
+    {
+      "id": "events_per_parameter",
+      "category": "Model",
+      "title": "Events per model parameter",
+      "status": "pass",
+      "message": "261 events, 6164 non-events, 13 parameters -> 20.1 per parameter (rule of thumb >= 10).",
+      "detail": null
+    },
+    {
+      "id": "missing_outcome",
+      "category": "Missing data",
+      "title": "Outcome missingness",
+      "status": "pass",
+      "message": "3.9% of the eligible population lacks the outcome (305 of 7768). Missing outcome is assumed missing at random within the design.",
+      "detail": null
+    },
+    {
+      "id": "missing_covariates",
+      "category": "Missing data",
+      "title": "Complete-case loss",
+      "status": "warn",
+      "message": "13.9% of the analytic sample (1038) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.",
+      "detail": null
+    },
+    {
+      "id": "value_ranges",
+      "category": "Data",
+      "title": "Raw values within plausible ranges",
+      "status": "warn",
+      "message": "Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high); LBXPLTSI (0 low, 1 high); LUAXSTAT (0 low, 252 high)",
+      "detail": [
+        {
+          "variable": "BMXBMI",
+          "n_nonmissing": 13137,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 1,
+          "min_allowed": 10,
+          "max_allowed": 90,
+          "observed_min": 11.9,
+          "observed_max": 92.3
+        },
+        {
+          "variable": "LBXGH",
+          "n_nonmissing": 9737,
+          "n_nonresponse_codes": 0,
+          "n_below": 1,
+          "n_above": 0,
+          "min_allowed": 3,
+          "max_allowed": 18,
+          "observed_min": 2.8,
+          "observed_max": 16.2
+        },
+        {
+          "variable": "LBXPLTSI",
+          "n_nonmissing": 12156,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 1,
+          "min_allowed": 5,
+          "max_allowed": 1000,
+          "observed_min": 8,
+          "observed_max": 1021
+        },
+        {
+          "variable": "LUAXSTAT",
+          "n_nonmissing": 10409,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 252,
+          "min_allowed": 1,
+          "max_allowed": 3,
+          "observed_min": 1,
+          "observed_max": 4
+        }
+      ]
+    },
+    {
+      "id": "nchs_standards",
+      "category": "Reporting",
+      "title": "NCHS presentation standards for proportions",
+      "status": "pass",
+      "message": "6 of 6 estimates meet the standard; 0 should be suppressed, 0 flagged for review.",
+      "detail": null
+    },
+    {
+      "id": "model_convergence",
+      "category": "Model",
+      "title": "Models converged without warnings",
+      "status": "pass",
+      "message": "3 models converged cleanly.",
+      "detail": null
+    },
+    {
+      "id": "implausible_estimates",
+      "category": "Model",
+      "title": "No implausible effect sizes",
+      "status": "pass",
+      "message": "All ratio estimates within 0.1-10 with SE(log) < 2.5.",
+      "detail": null
+    },
+    {
+      "id": "design_df_params",
+      "category": "Model",
+      "title": "Model size vs design degrees of freedom",
+      "status": "pass",
+      "message": "Primary model has 14 parameters; design df = 25. Wald tests and CIs use the design df (t distribution).",
+      "detail": null
+    },
+    {
+      "id": "collinearity",
+      "category": "Model",
+      "title": "Collinearity (generalized VIF)",
+      "status": "pass",
+      "message": "Maximum VIF 1.81 (race_ethNon-Hispanic White).",
+      "detail": null
+    },
+    {
+      "id": "robustness",
+      "category": "Robustness",
+      "title": "Sensitivity analyses agree with primary result",
+      "status": "pass",
+      "message": "6 of 6 sensitivity analyses agree in direction (associations) or magnitude (prevalence).",
+      "detail": null
+    },
+    {
+      "id": "age_topcode",
+      "category": "Data",
+      "title": "Age top-coding",
+      "status": "info",
+      "message": "NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.",
+      "detail": null
+    },
+    {
+      "id": "derivations",
+      "category": "Data",
+      "title": "Derived variables computable",
+      "status": "pass",
+      "message": "25 derived variables computed; see derivation audit.",
+      "detail": null
+    }
+  ],
+  "meta": {
+    "engine_version": "1.0.0",
+    "plan_id": "plan_a9a4ad4fa6",
+    "plan_hash": "921ce15ac3be0a3c9448064ad3f1f5bdc83167fb17ce6d66328ab7f8787f703a",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "packages": {
+      "survey": "4.5",
+      "jsonlite": "2.0.0",
+      "ggplot2": "4.0.3",
+      "haven": "2.5.5",
+      "mice": "3.19.0",
+      "mitools": "2.7"
+    },
+    "started": "2026-10-10T22:54:07+0000",
+    "finished": "2026-10-10T22:54:38+0000",
+    "seconds": 31.7,
+    "synthetic": false,
+    "files": [
+      {
+        "cycle": "P",
+        "file": "P_DEMO",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_DEMO.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_DEMO.xpt",
+        "md5": "850382076eca1bef83b681d721c8362d",
+        "nrow": 15560,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_ALQ",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALQ.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_ALQ.xpt",
+        "md5": "099deef39a0d722f0ef3f52fc9aa43ed",
+        "nrow": 8965,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_BMX",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BMX.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_BMX.xpt",
+        "md5": "62ff0ed76b35124059ddf97af4510310",
+        "nrow": 14300,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_DIQ",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_DIQ.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_DIQ.xpt",
+        "md5": "f9cb20f47d64483b8583f47075be21e8",
+        "nrow": 14986,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_HEQ",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HEQ.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_HEQ.xpt",
+        "md5": "bf014e7509c6cc97b8ed535537666482",
+        "nrow": 13218,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_GHB",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_GHB.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_GHB.xpt",
+        "md5": "7bf5b54573fc5e2fe63b99486fb847ea",
+        "nrow": 10409,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_CBC",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_CBC.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_CBC.xpt",
+        "md5": "498bb01dcc4f8ed6f66260aa85e97657",
+        "nrow": 13772,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_LUX",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_LUX.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_LUX.xpt",
+        "md5": "f13a60ec6b7dfb74ac70437f567ab9a0",
+        "nrow": 10409,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_SMQ",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_SMQ.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_SMQ.xpt",
+        "md5": "04ff912a72ff16dca1520c16718dfa64",
+        "nrow": 11137,
+        "synthetic": false
+      }
+    ],
+    "seed": 2026
+  },
+  "trace": [
+    "# data: P_DEMO, P_ALQ, P_BMX, P_DIQ, P_HEQ, P_GHB, P_CBC, P_LUX, P_SMQ",
+    "plt <- LBXPLTSI",
+    "thrombocytopenia_150 <- plt < 150",
+    "lsm <- LUXSMED",
+    "age <- RIDAGEYR",
+    "female <- RIAGENDR == 2",
+    "sex <- cases(female == 0, \"Male\", female == 1, \"Female\")",
+    "race_eth <- coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+    "pir <- INDFMPIR",
+    "pir_cat <- cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+    "bmi <- BMXBMI",
+    "dm_selfreport <- DIQ010 == 1",
+    "insulin_use <- DIQ050 == 1",
+    "dm_pills <- DIQ070 == 1",
+    "hba1c <- LBXGH",
+    "diabetes <- any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+    "smoking <- cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+    "agecat <- cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+    "educ <- cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+    "elasto_complete <- LUAXSTAT == 1",
+    "lsm_iqr <- LUXSIQR",
+    "lsm_valid <- elasto_complete == 1 & lsm_iqr / lsm < 0.30",
+    "alcohol_dpd <- ALQ130",
+    "hep_b <- HEQ010 == 1",
+    "hep_c <- HEQ030 == 1",
+    "lsm_per5 <- lsm / 5",
+    "# inclusion: age >= 18",
+    "# inclusion: lsm_valid == 1",
+    "des <- svydesign(ids = ~SDMVPSU, strata = ~SDMVSTRA, weights = ~WT, nest = TRUE, data = <positive-weight records>)",
+    "options(survey.lonely.psu = 'adjust'); subpopulations via subset(des, ...)",
+    "svyciprop(~I(thrombocytopenia_150 == 1), subset(des, analytic), method = 'beta')  # by sex, agecat",
+    "svyglm(thrombocytopenia_150 ~ lsm_per5, design = <crude>, family = quasipoisson)",
+    "svyglm(thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth, design = <demographic>, family = quasipoisson)",
+    "svyglm(thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking, design = <full>, family = quasipoisson)",
+    "regTermTest(svyglm(thrombocytopenia_150 ~ ... + lsm_per5:sex), ~lsm_per5:sex)",
+    "regTermTest(svyglm(thrombocytopenia_150 ~ ... + lsm_per5:agecat), ~lsm_per5:agecat)"
+  ],
+  "log": [
+    "22:54:07  Plan plan_a9a4ad4fa6 (hash 921ce15ac3be) loaded",
+    "22:54:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALQ.xpt",
+    "22:54:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HEQ.xpt",
+    "22:54:08  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_LUX.xpt",
+    "22:54:08  Loaded 15,560 records from 9 file(s)",
+    "22:54:08  Derived 25 analysis variables",
+    "22:54:08  Analytic population: 7,463",
+    "22:54:10  Computed 6 prevalence estimates",
+    "22:54:10  Fitted 3 models (family quasipoisson)",
+    "22:54:36  Ran 6 sensitivity analyses",
+    "22:54:38  QC: 19 checks, 0 fail, 2 warn"
+  ]
+}
