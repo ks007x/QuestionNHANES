@@ -148,9 +148,11 @@ def build(rows: list[dict]) -> list[dict]:
         m = merged.setdefault(r["variable"], {"variable": r["variable"], "label": r["label"], "component": r["component"],
                                               "files": {}, "stems": {}})
         if cy:
-            m["files"][cy] = r["file"].upper()
-            m["stems"][cy] = stem
-        if r["label"] and (not m["label"] or (cy and order.index(cy) >= max([order.index(c) for c in m["files"]] or [0]))):
+            fs = m["files"].setdefault(cy, [])
+            if r["file"].upper() not in fs:
+                fs.append(r["file"].upper())
+            m["stems"].setdefault(cy, stem)
+        if r["label"] and (not m["label"] or (cy and order.index(cy) >= max([order.index(c) for c in m["files"] if c != cy] or [0]))):
             m["label"] = r["label"]
     out = []
     for m in merged.values():
@@ -158,7 +160,7 @@ def build(rows: list[dict]) -> list[dict]:
         latest = cys[-1] if cys else None
         stem = m["stems"].get(latest, "")
         out.append({"variable": m["variable"], "file": stem, "label": m["label"], "component": m["component"],
-                    "cycles": ";".join(cys), "files": ";".join(f"{c}:{m['files'][c]}" for c in cys),
+                    "cycles": ";".join(cys), "files": ";".join(f"{c}:{'|'.join(m['files'][c])}" for c in cys),
                     "weight_level": weight_level(stem, m["component"], m["variable"]),
                     "type_guess": type_guess(m["label"], m["variable"])})
     return sorted(out, key=lambda x: (x["file"], x["variable"]))
