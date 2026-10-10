@@ -3,7 +3,7 @@
 Transparent and conservative. It answers "has this NHANES question already been published?", not "is it important".
 
   exact precedent   NHANES/"National Health and Nutrition Examination Survey" + outcome synonyms (+ exposure synonyms)
-                    in title/abstract, PubMed records (MEDLINE plus in-process and publisher-supplied citations, so the newest papers count), last 10 years
+                    in title/abstract with at least one in the title, PubMed records (MEDLINE plus in-process and publisher-supplied citations, so the newest papers count), last 10 years
   broader topic     the same concepts in any data source (topic saturation)
   recent            exact precedent in the last 3 years (how actively it is being mined)
   levers            what this plan adds that prior NHANES papers probably did not: the newest survey cycle,
@@ -25,13 +25,18 @@ from .venues import _synonyms
 NHANES = '(NHANES[tiab] OR "National Health and Nutrition Examination Survey"[tiab])'
 
 
-def _block(v: dict) -> str:
-    return "(" + " OR ".join(f'"{t}"[tiab]' for t in _synonyms(v, 5)) + ")"
+def _block(v: dict, field: str = "tiab") -> str:
+    return "(" + " OR ".join(f'"{t}"[{field}]' for t in _synonyms(v, 5)) + ")"
 
 
 def queries(plan: dict) -> dict:
+    """exact: both concepts in title/abstract AND at least one in the TITLE (the paper is about this question,
+    not merely adjusting for it) AND NHANES. broader: the same focus in any data source."""
     y, x = plan["outcome"], plan.get("exposure")
-    topic = [_block(y)] + ([_block(x)] if x else ['(prevalence[tiab] OR prevalent[tiab] OR burden[tiab])'])
+    if x:
+        topic = [_block(y), _block(x), f"({_block(y, 'ti')} OR {_block(x, 'ti')})"]
+    else:
+        topic = [_block(y, "ti"), "(prevalence[tiab] OR prevalent[tiab] OR burden[tiab])"]
     return {"exact": " AND ".join(topic + [NHANES]), "broader": " AND ".join(topic)}
 
 
