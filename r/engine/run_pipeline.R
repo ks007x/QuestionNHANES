@@ -154,7 +154,8 @@ run_pipeline <- function(plan_path, outdir) {
 
   # ---- 8. sensitivity analyses ------------------------------------------------
   sens <- list()
-  base_terms <- if (!is.null(primary_id)) unique(c(x, unlist(Filter(function(a) identical(a$id, primary_id), spec$analysis$adjustment_sets)[[1]]$covariates))) else character(0)
+  prim_set <- Filter(function(a) identical(a$id, primary_id), spec$analysis$adjustment_sets)
+  base_terms <- if (!is.null(primary_id) && length(prim_set)) unique(c(x, unlist(prim_set[[1]]$covariates))) else if (!is.null(x)) x else character(0)
   overall_prev <- function(design, outcome, flag) {
     design$variables$.sflag <- flag
     design$variables$.ind <- as.integer(design$variables[[outcome]] == 1)
@@ -341,11 +342,19 @@ if (sys.nframe() == 0L) {
   if (is.null(plan) || is.null(out)) { cat("Usage: Rscript run_pipeline.R --plan plan.json --out outdir\n"); quit(status = 2) }
   q2e_source_engine()
   probe_mode <- "--probe" %in% args
-  status <- tryCatch({ if (probe_mode) run_probe(plan, out) else run_pipeline(plan, out); 0L }, error = function(e) {
+  where <- character(0)
+  status <- tryCatch(withCallingHandlers({ if (probe_mode) run_probe(plan, out) else run_pipeline(plan, out); 0L },
+    error = function(e) {
+      calls <- vapply(sys.calls(), function(cl) paste(deparse(cl, nlines = 1L), collapse = ""), "")
+      calls <- calls[!grepl("^(tryCatch|withCallingHandlers|doTryCatch|tryCatchList|tryCatchOne|h\\(|\\.handleSimpleError)", calls)]
+      where <<- utils::tail(substr(calls, 1, 120), 4)
+    }), error = function(e) {
     dir.create(out, recursive = TRUE, showWarnings = FALSE)
     msg <- conditionMessage(e)
-    writeLines(jsonlite::toJSON(list(error = msg), auto_unbox = TRUE), file.path(out, "error.json"))
-    message("ERROR: ", msg); 1L
+    writeLines(jsonlite::toJSON(list(error = msg, where = where), auto_unbox = TRUE), file.path(out, "error.json"))
+    message("ERROR: ", msg)
+    if (length(where)) message("  in: ", paste(where, collapse = "\n  in: "))
+    1L
   })
   quit(status = status)
 }

@@ -186,7 +186,7 @@ concepts:
   - {id: ldl, label: "LDL cholesterol", synonyms: ["ldl cholesterol", "ldl", "bad cholesterol"], block: ldl, alt_definitions: [high_ldl], domain: cardio, default_scale: 10}
   - {id: dyslipidemia, label: "Dyslipidemia", synonyms: ["dyslipidemia", "high cholesterol", "hyperlipidemia", "hypercholesterolemia"], definitions: [high_ldl], domain: cardio}
   - {id: hdl, label: "HDL cholesterol", synonyms: ["hdl cholesterol", "hdl", "good cholesterol"], block: hdl, domain: cardio, default_scale: 10}
-  - {id: triglycerides, label: "Triglycerides", synonyms: ["triglycerides", "triglyceride", "hypertriglyceridemia"], block: tg, domain: cardio, default_scale: 50}
+  - {id: triglycerides, label: "Triglycerides", synonyms: ["triglycerides", "triglyceride", "hypertriglyceridemia"], block: tg, alt_definitions: [hypertriglyceridemia_150], domain: cardio, default_scale: 50}
   - {id: total_cholesterol, label: "Total cholesterol", synonyms: ["total cholesterol", "cholesterol"], block: tc, domain: cardio, default_scale: 10}
   - {id: insulin_resistance, label: "Insulin resistance (HOMA-IR)", synonyms: ["insulin resistance", "homa-ir", "homa ir", "hyperinsulinemia"], block: homa_ir, alt_definitions: [insulin_resistance_homa], domain: glycemia}
   - {id: fasting_glucose, label: "Fasting glucose", synonyms: ["fasting glucose", "fasting plasma glucose", "fpg"], block: fpg, domain: glycemia, default_scale: 10}
@@ -241,7 +241,7 @@ concepts:
   - {id: mcv, label: "Mean corpuscular volume", synonyms: ["mcv", "mean corpuscular volume", "microcytosis", "macrocytosis"], block: mcv, domain: hematology}
   - {id: rdw, label: "Red cell distribution width", synonyms: ["rdw", "red cell distribution width"], block: rdw, domain: hematology}
   - {id: mpv, label: "Mean platelet volume", synonyms: ["mean platelet volume", "mpv"], block: mpv, domain: hematology}
-  - {id: albumin, label: "Serum albumin", synonyms: ["albumin", "hypoalbuminemia"], block: albumin, domain: default}
+  - {id: albumin, label: "Serum albumin", synonyms: ["albumin", "hypoalbuminemia"], block: albumin, alt_definitions: [hypoalbuminemia_35], domain: default}
   - {id: smoking_status, label: "Smoking status", synonyms: ["current smokers", "former smokers", "smoking status"], block: smoking, domain: behaviour}
   - {id: pregnancy, label: "Pregnancy", synonyms: ["pregnancy status"], block: pregnant, domain: demographic}
 

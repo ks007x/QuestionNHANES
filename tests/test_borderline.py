@@ -60,3 +60,18 @@ def test_measured_but_uncurated_points_to_component(q, component):
     assert component in [c["phrase"] for c in a["parsed"]["component_matches"]]
     p = planner.parse_question(q)
     assert "BMXARMC" not in [m["variable"] for m in p["dictionary_matches"]]
+
+
+@pytest.mark.parametrize("q,var", [
+    ("What is the prevalence of vitamin D deficiency in US adults?", "vitd_deficiency"),
+    ("Is hypertriglyceridemia associated with liver stiffness?", "hypertriglyceridemia_150"),
+    ("What is the prevalence of hypoalbuminemia in adults with CKD?", "hypoalbuminemia_35"),
+])
+def test_condition_wording_uses_binary_definition(q, var):
+    p = planner.draft(q)
+    assert var in (p["outcome"]["variable"], (p.get("exposure") or {}).get("variable"))
+
+
+def test_level_wording_keeps_continuous():
+    p = planner.draft("Are triglycerides associated with HbA1c?")
+    assert p["exposure"]["variable"] == "tg"

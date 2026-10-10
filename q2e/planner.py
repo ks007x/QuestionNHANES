@@ -39,6 +39,8 @@ OUT_OF_SCOPE_CUES = {"mortality": "mortality requires the NCHS linked mortality 
                      "over time": "temporal change requires multiple cycles and trend methods",
                      "trend": "trend analyses require multiple cycles",
                      "develop": "developing a condition implies incidence, which a cross-sectional survey cannot measure"}
+CONDITION_WORDS = r"deficien|insufficien|\bhyper|\bhypo|\blow\b|\belevated\b|\bhigh\b|\bexcess"
+
 GUIDELINE_HINTS: list[tuple[str, dict]] = [
     (r"kdigo\s*2012", {"prefer": ["ckd_iron_kdigo2012"], "upgrade": {"iron_deficiency": "ckd_iron_deficiency"}}),
     (r"kdigo", {"prefer": ["ckd_id_kdigo2026", "ckd_ire_kdigo2026"],
@@ -253,6 +255,23 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         if cid not in seen:
             seen.add(cid)
             ordered.append({"concept": cid, "phrase": phrase, "pos": pos})
+    cond_notes: list[str] = []
+    # condition wording ("vitamin D deficiency", "hypertriglyceridemia", "low albumin") asks for a yes/no
+    # definition, not the continuous level - promote the concept's binary definition when one exists
+    for c in ordered:
+        if c["concept"].startswith("dict:"):
+            continue
+        cc = _concept(c["concept"], k)
+        ph = re.escape(c["phrase"])
+        if not cc.get("block") or not (re.search(CONDITION_WORDS, c["phrase"]) or
+                                       re.search(rf"\b(low|high|elevated|deficient|abnormal)\s+(serum\s+|blood\s+|plasma\s+)?{ph}", q) or
+                                       re.search(rf"{ph}\s+(deficiency|insufficiency|deficient)", q)):
+            continue
+        binary = [d for d in list(cc.get("definitions", [])) + list(cc.get("alt_definitions", []))
+                  if d in k.definitions and k.definitions[d].get("type") == "binary"]
+        if binary and not any(p in binary for p in hints["prefer"]):
+            hints["prefer"].append(binary[0])
+            cond_notes.append(f"'{c['phrase']}' describes a condition, so the binary definition {k.definitions[binary[0]].get('short', binary[0])} is used instead of the continuous level.")
     pop_ids = []
     for _, pid in pops:
         if pid not in pop_ids:
@@ -268,7 +287,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     else:
         study_type = "prevalence"
     outcome = exposure = None
-    notes: list[str] = []
+    notes: list[str] = list(cond_notes)
     if study_type == "association":
         if len(clinical) >= 2:
             first, second = clinical[0], clinical[1]
