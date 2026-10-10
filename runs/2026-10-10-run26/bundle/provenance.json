@@ -1,0 +1,118 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T21:57:19+00:00",
+      "actor": "Investigator",
+      "action": "question_submitted",
+      "detail": {
+        "question": "I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight."
+      },
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "d31c7d3659e09432bfb06f9f0ed7dd4d7c10c3eac13eae9e974c65799cac57fd"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T21:57:19+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_4f29e65b21",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "prev": "d31c7d3659e09432bfb06f9f0ed7dd4d7c10c3eac13eae9e974c65799cac57fd",
+      "hash": "0568c8dae1a58ac55efb1e697eed9e465efa0881e41792e1114fca0ce33b39ec"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T21:57:22+00:00",
+      "actor": "Investigator",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "prev": "0568c8dae1a58ac55efb1e697eed9e465efa0881e41792e1114fca0ce33b39ec",
+      "hash": "1c2341a4bfb1afbbee35334bb830384dbc2609fba089e4dc2fc89b11fa868512"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T21:57:22+00:00",
+      "actor": "Investigator",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_8b13aad7",
+        "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+        "data_source": "cdc"
+      },
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "prev": "1c2341a4bfb1afbbee35334bb830384dbc2609fba089e4dc2fc89b11fa868512",
+      "hash": "4d75a3882e447ad6728eec18dca2bacec7f07ee2531b539615de0553e2c4c610"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T21:58:16+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_8b13aad7",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "704576adf018d48c43c4e96b1c700fca7eb4b9a78c8e8c2bab2837a4b4f26c99",
+        "qc": {
+          "pass": 13,
+          "warn": 4,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_DIQ",
+            "md5": "f9cb20f47d64483b8583f47075be21e8"
+          },
+          {
+            "file": "P_GHB",
+            "md5": "7bf5b54573fc5e2fe63b99486fb847ea"
+          },
+          {
+            "file": "P_CBC",
+            "md5": "498bb01dcc4f8ed6f66260aa85e97657"
+          },
+          {
+            "file": "P_SMQ",
+            "md5": "04ff912a72ff16dca1520c16718dfa64"
+          }
+        ]
+      },
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "prev": "4d75a3882e447ad6728eec18dca2bacec7f07ee2531b539615de0553e2c4c610",
+      "hash": "fac64e593ed39af8e87c29fe679b764b2bee42cb9b43dc01f74f2ef02b398983"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "at": "2026-10-10T21:57:19+00:00",
+      "by": "Investigator",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "fac64e593ed39af8e87c29fe679b764b2bee42cb9b43dc01f74f2ef02b398983"
+  },
+  "signoff": null
+}
