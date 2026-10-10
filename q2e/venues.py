@@ -195,18 +195,27 @@ def conference_windows(plan: dict, today: dt.date | None = None, top: int = 6) -
 
 
 # ---------------------------------------------------------------- funding
-def reporter_projects(terms: list[str], years: int = 3, limit: int = 25) -> dict:
+def reporter_projects(terms: list[str], synonyms: list[str], require_nhanes: bool, years: int = 3, limit: int = 100) -> dict:
+    """Recent NIH-funded projects on the topic. RePORTER text search is loose, so results are re-checked locally:
+    a project counts only if its title/abstract mentions one of the topic synonyms (and NHANES, when required)."""
     fy = dt.date.today().year + (1 if dt.date.today().month >= 10 else 0)
+    words = terms + (["NHANES"] if require_nhanes else [])
     body = {"criteria": {"advanced_text_search": {"operator": "and", "search_field": "projecttitle,terms,abstracttext",
-                                                  "search_text": " ".join(f'"{t}"' for t in terms)},
+                                                  "search_text": " ".join(words)},
                          "fiscal_years": list(range(fy - years + 1, fy + 1))},
-            "include_fields": ["ProjectTitle", "ProjectNum", "AgencyIcAdmin", "ActivityCode", "Organization",
-                               "PrincipalInvestigators", "FiscalYear", "AwardAmount", "ProjectDetailUrl"],
+            "include_fields": ["ApplId", "ProjectTitle", "ProjectNum", "AgencyIcAdmin", "ActivityCode", "Organization",
+                               "PrincipalInvestigators", "FiscalYear", "AwardAmount", "ProjectDetailUrl", "AbstractText"],
             "offset": 0, "limit": limit, "sort_field": "fiscal_year", "sort_order": "desc"}
-    r = httpx.post(REPORTER, json=body, timeout=25)
+    r = httpx.post(REPORTER, json=body, timeout=30)
     r.raise_for_status()
     data = r.json()
-    res = data.get("results", []) or []
+    syn = [x.lower() for x in synonyms if len(x) > 3]
+
+    def relevant(p):
+        txt = f"{p.get('project_title') or ''} {p.get('abstract_text') or ''}".lower()
+        return any(x in txt for x in syn) and (not require_nhanes or "nhanes" in txt or "national health and nutrition" in txt)
+
+    res = [p for p in (data.get("results") or []) if relevant(p)]
     ics = collections.Counter(((p.get("agency_ic_admin") or {}).get("abbreviation") or "?") for p in res)
     acts = collections.Counter((p.get("activity_code") or "?") for p in res)
     projects = [{"title": p.get("project_title"), "number": p.get("project_num"), "ic": (p.get("agency_ic_admin") or {}).get("abbreviation"),
@@ -216,9 +225,8 @@ def reporter_projects(terms: list[str], years: int = 3, limit: int = 25) -> dict
                  "award": p.get("award_amount"),
                  "url": p.get("project_detail_url") or (f"https://reporter.nih.gov/project-details/{p.get('appl_id')}" if p.get("appl_id") else None)}
                 for p in res[:6]]
-    return {"total": (data.get("meta") or {}).get("total", len(res)), "by_institute": dict(ics.most_common(5)),
-            "by_mechanism": dict(acts.most_common(6)), "examples": projects,
-            "search": "https://reporter.nih.gov/"}
+    return {"total": len(res), "screened": len(data.get("results") or []), "by_institute": dict(ics.most_common(5)),
+            "by_mechanism": dict(acts.most_common(6)), "examples": projects, "search": "https://reporter.nih.gov/"}
 
 
 def open_opportunities(keywords: list[str], rows: int = 25, keep: int = 8) -> dict:
@@ -249,11 +257,12 @@ def funding_leads(plan: dict, live: bool = True) -> dict:
                            "reporter": None, "opportunities": None, "errors": []}
     if live and prof["terms"]:
         try:
-            rep = reporter_projects(prof["terms"] + ["NHANES"])
-            rep["scope"] = "funded projects mentioning NHANES and this topic"
+            syn = [t for role in ("outcome", "exposure") if plan.get(role) for t in _synonyms(plan[role], 6)]
+            rep = reporter_projects(prof["terms"], syn, require_nhanes=True)
+            rep["scope"] = f"of the {rep['screened']} most recent search hits use NHANES and match this topic"
             if rep["total"] < 3:
-                rep = reporter_projects(prof["terms"])
-                rep["scope"] = "funded projects on this topic (most recent 25 summarised)"
+                rep = reporter_projects(prof["terms"], syn, require_nhanes=False)
+                rep["scope"] = f"of the {rep['screened']} most recent search hits match this topic (any data source)"
             out["reporter"] = rep
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"NIH RePORTER unavailable: {e}")
@@ -338,7 +347,7 @@ def to_markdown(w: dict) -> str:
         L.append(f"- [{fo['name']}]({fo['url']})")
     if f.get("reporter"):
         r = f["reporter"]
-        L += ["", f"NIH RePORTER: {r['total']} {r.get('scope', 'recently funded projects on this topic')}. By institute: "
+        L += ["", f"NIH RePORTER: {r['total']} funded projects {r.get('scope', 'match this topic')}. By institute: "
               + ", ".join(f"{k} {v}" for k, v in r["by_institute"].items()) + ". By mechanism: "
               + ", ".join(f"{k} {v}" for k, v in r["by_mechanism"].items()) + "."]
         for p in r["examples"]:

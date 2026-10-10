@@ -90,9 +90,13 @@ jobs:
             "$QUESTION" "${{ github.run_number }}" "${{ inputs.cycles }}" "${{ inputs.approver }}" > /tmp/pub/README.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git fetch --depth 1 origin results 2>/dev/null; then git checkout -q -B results FETCH_HEAD; else git checkout -q --orphan results && git rm -rqf . ; fi
-          mkdir -p "$dest" && cp -r /tmp/pub/. "$dest/"
-          echo "- [$dest]($dest/README.md): $QUESTION" >> INDEX.md
-          git add -f INDEX.md "$dest"
-          git commit -qm "Results: run ${{ github.run_number }}"
-          git push -q origin results
+          for attempt in 1 2 3 4; do
+            if git fetch -q --depth 1 origin results 2>/dev/null; then git checkout -q -f -B results FETCH_HEAD; else git checkout -q -f --orphan results && git rm -rqf . ; fi
+            mkdir -p "$dest" && cp -r /tmp/pub/. "$dest/"
+            { echo "# Q2E study runs"; echo; for d in $(ls -1r runs); do echo "- [$d](runs/$d/README.md): $(head -1 runs/$d/README.md | sed 's/^# //')"; done; } > INDEX.md
+            git add -f INDEX.md "$dest"
+            git commit -qm "Results: run ${{ github.run_number }}"
+            if git push -q origin results; then echo "Saved to results/$dest"; exit 0; fi
+            echo "Push raced with another run - retrying ($attempt)"; sleep $((attempt * 5))
+          done
+          exit 1
