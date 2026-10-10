@@ -256,8 +256,13 @@ def certainty(plan: dict, results: dict | None = None, audit: dict | None = None
                "Moderate": "The true association is probably close to the estimate, but may be substantially different.",
                "Low": "The true association may be substantially different from the estimate.",
                "Very low": "The true association is likely to be substantially different from the estimate."}[level]
+    symbol = SYMBOLS[level]
+    if not pe:
+        level, symbol = "Not rated", "-"
+        meaning = ("No estimable primary effect (see the quality-control failures), so certainty cannot be rated."
+                   if results else "Rated after the analysis has run.")
     return {"framework": "GRADE-informed, single cross-sectional study", "start": "Low (observational)",
-            "level": level, "symbol": SYMBOLS[level], "meaning": meaning,
+            "level": level, "symbol": symbol, "meaning": meaning,
             "domains": domains, "rating_up": ups, "net_down": down, "net_up": min(up, 2),
             "caveat": "GRADE rates bodies of evidence; this single-study rating summarises how much this analysis can contribute "
                       "and should be re-rated in any systematic review.",

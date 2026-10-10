@@ -40,17 +40,70 @@ family_info <- function(fam) {
 }
 
 # Fit one survey GLM, capturing warnings; returns a serialisable summary + the fit.
+# Rows that actually enter a model: positive weight and complete on every model variable.
+.model_rows <- function(design, vars) {
+  pos <- stats::weights(design) > 0
+  ok <- pos
+  for (v in vars) ok <- ok & !is.na(design$variables[[v]])
+  ok
+}
+
+# Terms that cannot be estimated in the rows the model uses: a covariate with a single value (e.g. every participant
+# in a stratum is a never-smoker) is dropped with a warning; empty factor levels are removed. If the EXPOSURE has a
+# single value there is nothing to compare, and the model is reported as not estimable instead of crashing the run.
+.prepare_terms <- function(design, outcome, terms, exposure) {
+  notes <- character(0); keep <- character(0)
+  rows <- .model_rows(design, c(outcome, terms))
+  for (t in terms) {
+    v <- design$variables[[t]]
+    if (is.null(v)) { notes <- c(notes, sprintf("Dropped '%s': not in the analysis data", t)); next }
+    vals <- v[rows]
+    nd <- length(unique(vals[!is.na(vals)]))
+    if (nd < 2) {
+      shown <- if (nd == 1) sprintf(" (all '%s')", as.character(unique(vals[!is.na(vals)]))[1]) else ""
+      if (!is.null(exposure) && identical(t, exposure)) {
+        return(list(terms = NULL, design = design, notes = c(notes, sprintf(
+          "NOT ESTIMABLE: the exposure '%s' has a single value in the %s participants analysed%s, so there is no comparison group.",
+          t, format(sum(rows), big.mark = ","), shown))))
+      }
+      notes <- c(notes, sprintf("Dropped covariate '%s': constant in the %s participants analysed%s", t, format(sum(rows), big.mark = ","), shown))
+      next
+    }
+    if (is.factor(v)) {
+      used <- levels(droplevels(vals))
+      empty <- setdiff(levels(v), used)
+      if (length(empty)) {
+        notes <- c(notes, sprintf("'%s': level(s) with no participants removed from the model: %s", t, paste(empty, collapse = ", ")))
+        design$variables[[t]] <- factor(as.character(v), levels = used)
+      }
+    }
+    keep <- c(keep, t)
+  }
+  list(terms = keep, design = design, notes = notes)
+}
+
 fit_svyglm <- function(design, outcome, terms, fam, spec, id, label, data_for_labels) {
   fi <- family_info(fam)
+  exposure <- spec$exposure$name %||% NULL
+  prep <- .prepare_terms(design, outcome, terms, exposure)
+  warn <- prep$notes
+  if (is.null(prep$terms)) {
+    f0 <- stats::as.formula(paste(outcome, "~", if (length(terms)) paste(terms, collapse = " + ") else "1"))
+    return(list(summary = list(id = id, label = label, family = fam, effect = fi$effect, effect_label = fi$label, formula = deparse1(f0),
+                               call = sprintf("svyglm(%s, design = <%s>, family = %s)", deparse1(f0), id, fam), converged = FALSE,
+                               not_estimable = TRUE, warnings = as.list(warn), terms = list(), n = sum(.model_rows(design, c(outcome, terms)))),
+                fit = NULL))
+  }
+  design <- prep$design
+  terms <- prep$terms
   rhs <- if (length(terms)) paste(terms, collapse = " + ") else "1"
   f <- stats::as.formula(paste(outcome, "~", rhs))
-  warn <- character(0)
   y <- design$variables[[outcome]]
   start <- NULL
   if (fam == "quasipoisson") {
-    mm <- stats::model.matrix(f, stats::model.frame(f, design$variables))
-    pos <- stats::weights(design) > 0
-    start <- c(log(max(mean(y[pos], na.rm = TRUE), 1e-4)), rep(0, ncol(mm) - 1))
+    rows <- .model_rows(design, c(outcome, terms))
+    mm <- tryCatch(stats::model.matrix(f, stats::model.frame(f, design$variables[rows, , drop = FALSE])), error = function(e) NULL)
+    if (!is.null(mm)) start <- c(log(max(mean(y[rows], na.rm = TRUE), 1e-4)), rep(0, ncol(mm) - 1))
   }
   fit <- withCallingHandlers(
     tryCatch(survey::svyglm(f, design = design, family = fi$family, start = start),
