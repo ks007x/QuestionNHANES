@@ -1,0 +1,14 @@
+16:55:23  Plan plan_0c372636b9 (hash 5a458b4208e1) loaded
+16:55:24  Loaded 15,560 records from 8 file(s)
+16:55:25  Derived 25 analysis variables
+16:55:25  Analytic population: 8,212
+16:55:27  Computed 33 prevalence estimates
+16:55:27  Fitted 1 models (family quasipoisson)
+16:55:27  Ran 5 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+16:55:29  QC: 21 checks, 0 fail, 2 warn
+16:55:29  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_aa27b96eb6/runs/run_7e7e9b2f/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.
