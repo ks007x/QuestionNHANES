@@ -1,0 +1,126 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T17:00:02+00:00",
+      "actor": "Karan (investigator)",
+      "action": "question_submitted",
+      "detail": {
+        "question": "What is the prevalence of functional iron deficiency among US adults?"
+      },
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "5bfe560de8a91fd4d5cdfb5f59f0cb2b93001ece2380fd64c99a0f43f459eb2b"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T17:00:02+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_da643bb579",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "prev": "5bfe560de8a91fd4d5cdfb5f59f0cb2b93001ece2380fd64c99a0f43f459eb2b",
+      "hash": "aa5b879dee14fe95dda43e948745134ca45428be1114aad1bcc876a941bc3eb6"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T17:00:04+00:00",
+      "actor": "Karan (investigator)",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "prev": "aa5b879dee14fe95dda43e948745134ca45428be1114aad1bcc876a941bc3eb6",
+      "hash": "78bb834c74c55da4269bbd3383d4dcb5225669e8ec7e81f6b63d89bad2c9b539"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T17:00:04+00:00",
+      "actor": "Karan (investigator)",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_7262c344",
+        "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+        "data_source": "cdc"
+      },
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "prev": "78bb834c74c55da4269bbd3383d4dcb5225669e8ec7e81f6b63d89bad2c9b539",
+      "hash": "6acacf27bc20f32de93739e9585a27543a1752aa200bf93e99459c6e648bfa47"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T17:00:12+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_7262c344",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "8c0147959eaf10cd674d67cdfb189d154626328496552e8d41c5767b29dd24ab",
+        "qc": {
+          "pass": 18,
+          "warn": 2,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_FETIB",
+            "md5": "ab6b5287e0a2423ab3d3a5b2b9f6f133"
+          },
+          {
+            "file": "P_FERTIN",
+            "md5": "8a0ac6f7e25de3e91a5d9198f9645c58"
+          },
+          {
+            "file": "P_HSCRP",
+            "md5": "9a111c710dee4d4efa64c14ccec14651"
+          },
+          {
+            "file": "P_BIOPRO",
+            "md5": "c8751a52982cafc58235438866d3dff6"
+          },
+          {
+            "file": "P_MCQ",
+            "md5": "7e80e861d82b2c363bd16da08a6a4248"
+          },
+          {
+            "file": "P_ALB_CR",
+            "md5": "ca66fa7762e0d682e1e58d39e8c5222e"
+          }
+        ]
+      },
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "prev": "6acacf27bc20f32de93739e9585a27543a1752aa200bf93e99459c6e648bfa47",
+      "hash": "a95737d3c195ea64d6ca3876305f494b7a4bcd335bd1b978d3c388b04df217b7"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "at": "2026-10-10T17:00:02+00:00",
+      "by": "Karan (investigator)",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "a95737d3c195ea64d6ca3876305f494b7a4bcd335bd1b978d3c388b04df217b7"
+  },
+  "signoff": null
+}
