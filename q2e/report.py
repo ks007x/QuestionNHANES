@@ -410,7 +410,7 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
         from .arms import describe as _arm_desc
         notes = " ".join(_arm_desc(plan.get("arms") or {"reference": a["reference"], "control_mode": "seronegative", "both": "separate", "control_criteria": []}))
         parts.append(f"<h3>Table. Comparison groups ({esc(a.get('effect'))})</h3><table><thead><tr><th>Group</th><th>Compared with</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>{rows}</tbody></table>"
-                     f"<p class='meta'>{esc(notes)} Overall test that the groups differ: P {pfmt(a.get('p_overall'))}. Analytic n by group: "
+                     f"<p class='meta'>{esc(notes)} Overall test that the groups differ: {pfmt(a.get('p_overall'))}. Analytic n by group: "
                      + esc(", ".join(f"{k2} {v}" for k2, v in (a.get("n_by_group") or {}).items())) + ".</p>")
     parts.append(f"<h2>Discussion</h2><p>{esc(sec['discussion'])}</p>")
     parts.append("<h3>Limitations</h3><ul>" + "".join(f"<li>{esc(l)}</li>" for l in plan.get("limitations", [])) + "</ul>")
@@ -476,7 +476,7 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
         lines.append("\n| Group | Compared with | Estimate (95% CI) | P |\n|---|---|---|---|")
         for r in a["vs_reference"] + a.get("pairwise", []):
             lines.append(f"| {r['comparison']} | {r['versus']} | {num(r.get('est'))} ({num(r.get('lcl'))}-{num(r.get('ucl'))}) | {pfmt(r.get('p'))} |")
-        lines.append(f"\nOverall test that the groups differ: P {pfmt(a.get('p_overall'))}. Analytic n by group: "
+        lines.append(f"\nOverall test that the groups differ: {pfmt(a.get('p_overall'))}. Analytic n by group: "
                      + ", ".join(f"{k2} {v}" for k2, v in (a.get("n_by_group") or {}).items()) + ".")
     lines.append("\n## Sensitivity analyses\n")
     for s in results.get("sensitivity", []):

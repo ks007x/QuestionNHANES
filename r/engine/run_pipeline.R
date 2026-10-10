@@ -171,6 +171,17 @@ run_pipeline <- function(plan_path, outdir) {
     r <- .prev_one(subset(design, ok), ".ind", design$variables[ok, , drop = FALSE])
     r
   }
+  # ratio estimates driven by zero events in a group are not estimable - report them as such, never as 1e-10
+  .estimable <- function(r) {
+    if (is.null(r) || is.null(r$est) || !is.numeric(r$est) || !length(r$est)) return(r)
+    if (identical(r$effect, "PR") || identical(r$effect, "OR")) {
+      if (!is.finite(r$est) || r$est < 1e-4 || r$est > 1e4 || (!is.null(r$ucl) && is.finite(r$ucl) && !is.null(r$lcl) && r$ucl / max(r$lcl, 1e-300) > 1e6)) {
+        r$note <- paste(c(r$note, "Not estimable: no (or almost no) outcome events in a comparison group."), collapse = " ")
+        r$est <- NA_real_; r$lcl <- NA_real_; r$ucl <- NA_real_
+      }
+    }
+    r
+  }
   for (s in spec$analysis$sensitivity) {
     res_s <- tryCatch({
       type <- s$type
@@ -250,7 +261,7 @@ run_pipeline <- function(plan_path, outdir) {
              quartile_terms = lapply(q4, function(t) list(label = t$label, est = t$est, lcl = t$lcl, ucl = t$ucl)))
       } else stop("Unknown sensitivity type: ", type)
     }, error = function(e) list(error = conditionMessage(e)))
-    sens[[length(sens) + 1]] <- c(list(id = s$id, label = s$label, type = s$type), res_s)
+    sens[[length(sens) + 1]] <- c(list(id = s$id, label = s$label, type = s$type), .estimable(res_s))
   }
   results$sensitivity <- sens
   log(sprintf("Ran %d sensitivity analyses", length(sens)))
