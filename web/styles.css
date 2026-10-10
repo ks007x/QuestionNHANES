@@ -12,7 +12,7 @@
   --sans: "Public Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius: 6px; --shadow: none;
-  --measure: 900px;
+  --measure: 1060px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -333,3 +333,4 @@ details.calm { margin-top: 12px; }
 details.calm > summary { font-size: 14px; color: var(--ink-2); padding: 6px 0; }
 table.t a { text-decoration: none; } table.t a:hover { text-decoration: underline; }
 h2.sec::first-letter { text-transform: uppercase; }
+table.t td details > summary { white-space: nowrap; }
