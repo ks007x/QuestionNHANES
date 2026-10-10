@@ -1,0 +1,986 @@
+{
+  "plan_id": "plan_401eb4f9b9",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T19:16:15+00:00",
+  "question": "Toxoplasma vs Toxocara vs healthy control for eosinophilia",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years), is toxoplasma gondii vs toxocara vs healthy controls associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, body mass index, and born in the united states?",
+  "title": "Association of Toxoplasma Gondii vs Toxocara vs Healthy Controls With Eosinophilia Among US Adults: NHANES 2011-2012",
+  "hypothesis": "Toxoplasma gondii vs Toxocara vs healthy controls is associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L.",
+  "study_type": "association",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "G"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years)",
+    "exposure": "Toxoplasma gondii vs Toxocara vs healthy controls",
+    "comparator": "Participants without the exposure",
+    "outcome": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+    "covariates": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, and Born in the United States",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "eosinophilia",
+    "concept_label": "Eosinophilia",
+    "variable": "eosinophilia_05",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+    "definition_id": "eosinophilia_05",
+    "alternatives": [
+      "hypereosinophilia_15"
+    ],
+    "companions": [],
+    "domain": "hematology"
+  },
+  "exposure": {
+    "concept": "arms:toxoplasma+toxocara",
+    "concept_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+    "variable": "arms",
+    "kind": "custom",
+    "type": "categorical",
+    "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+    "definition_id": null,
+    "alternatives": [],
+    "companions": [],
+    "domain": "infection",
+    "custom": {
+      "name": "arms",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+      "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "type": "categorical",
+      "levels": [
+        "Healthy controls",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "source": "comparison arms"
+    },
+    "arms": {
+      "arms": [
+        {
+          "concept": "toxoplasma",
+          "variable": "toxoplasma_seropos",
+          "label": "Toxoplasma gondii seropositivity"
+        },
+        {
+          "concept": "toxocara",
+          "variable": "toxocara_seropos",
+          "label": "Toxocara seropositivity"
+        }
+      ],
+      "control_mode": "healthy",
+      "control_label": "Healthy controls",
+      "control_criteria": [
+        {
+          "variable": "asthma",
+          "label": "Asthma"
+        },
+        {
+          "variable": "diabetes",
+          "label": "Diabetes"
+        },
+        {
+          "variable": "cvd",
+          "label": "Cardiovascular disease"
+        },
+        {
+          "variable": "ckd",
+          "label": "Chronic kidney disease"
+        },
+        {
+          "variable": "cancer_hx",
+          "label": "Cancer history"
+        },
+        {
+          "variable": "liver_hx",
+          "label": "Liver disease"
+        }
+      ],
+      "control_criteria_unavailable": [
+        "COPD"
+      ],
+      "both": "separate",
+      "levels": [
+        "Healthy controls",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "reference": "Healthy controls"
+    },
+    "alt_seroneg": {
+      "name": "arms_seroneg",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+      "label": "Comparison groups (all seronegative controls)",
+      "type": "categorical",
+      "levels": [
+        "Controls (negative for all)",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "source": "comparison arms (sensitivity)"
+    },
+    "arm_custom": [],
+    "alt_sensitivity": {
+      "type": "alt_exposure",
+      "label": "Alternative control group: everyone negative for all groups, no health screening (healthy-control bias check)",
+      "exposure": "arms_seroneg"
+    }
+  },
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "us_born"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "interactions": [
+    "sex",
+    "agecat"
+  ],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "covariates": []
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth"
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth",
+        "pir_cat",
+        "bmi",
+        "us_born"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "eosinophilia_05",
+    "hypereosinophilia_15"
+  ],
+  "prevalence_by": [
+    "arms",
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "sensitivity": [
+    {
+      "type": "alt_outcome",
+      "label": "Alternative outcome definition: AEC >=1.5",
+      "outcome": "hypereosinophilia_15",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "alt_family",
+      "label": "Logistic regression (odds ratio)",
+      "family": "quasibinomial",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "mi",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "m": 10,
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "alt_exposure",
+      "label": "Alternative control group: everyone negative for all groups, no health screening (healthy-control bias check)",
+      "exposure": "arms_seroneg",
+      "id": "s4",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s5",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "bmi",
+    "us_born",
+    "aec",
+    "arms"
+  ],
+  "table1_by": "arms",
+  "benchmarks": [],
+  "custom_variables": [
+    {
+      "name": "arms",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+      "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "type": "categorical",
+      "levels": [
+        "Healthy controls",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "source": "comparison arms"
+    },
+    {
+      "name": "arms_seroneg",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+      "label": "Comparison groups (all seronegative controls)",
+      "type": "categorical",
+      "levels": [
+        "Controls (negative for all)",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "source": "comparison arms (sensitivity)"
+    }
+  ],
+  "arms": {
+    "arms": [
+      {
+        "concept": "toxoplasma",
+        "variable": "toxoplasma_seropos",
+        "label": "Toxoplasma gondii seropositivity"
+      },
+      {
+        "concept": "toxocara",
+        "variable": "toxocara_seropos",
+        "label": "Toxocara seropositivity"
+      }
+    ],
+    "control_mode": "healthy",
+    "control_label": "Healthy controls",
+    "control_criteria": [
+      {
+        "variable": "asthma",
+        "label": "Asthma"
+      },
+      {
+        "variable": "diabetes",
+        "label": "Diabetes"
+      },
+      {
+        "variable": "cvd",
+        "label": "Cardiovascular disease"
+      },
+      {
+        "variable": "ckd",
+        "label": "Chronic kidney disease"
+      },
+      {
+        "variable": "cancer_hx",
+        "label": "Cancer history"
+      },
+      {
+        "variable": "liver_hx",
+        "label": "Liver disease"
+      }
+    ],
+    "control_criteria_unavailable": [
+      "COPD"
+    ],
+    "both": "separate",
+    "levels": [
+      "Healthy controls",
+      "Toxoplasma gondii only",
+      "Toxocara only",
+      "Both positive"
+    ],
+    "reference": "Healthy controls"
+  },
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "epidemiologist": "Covariates were selected as plausible common causes of toxoplasma gondii vs toxocara vs healthy controls and eosinophilia - absolute eosinophil count >=0.5 x10^9/L (minimal confounder set from the domain library): Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, and Born in the United States. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Data Steward",
+      "message": "Eosinophilia, Toxoplasma gondii vs Toxocara vs healthy controls are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012."
+    },
+    {
+      "agent": "Investigator",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Investigator",
+      "message": "Comparison of 2 group(s) against healthy controls for eosinophilia."
+    },
+    {
+      "agent": "Investigator",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    }
+  ],
+  "acknowledgements": {},
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Karan (investigator)",
+      "at": "2026-10-10T19:16:16.791841+00:00",
+      "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "association",
+    "arms": {
+      "arms": [
+        "toxoplasma",
+        "toxocara"
+      ],
+      "outcome": "eosinophilia",
+      "control_mode": "healthy",
+      "control_mentioned": true
+    },
+    "outcome_concept": "eosinophilia",
+    "exposure_concept": "arms:toxoplasma+toxocara",
+    "extra_concepts": [],
+    "populations": [],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": false,
+    "out_of_scope": [],
+    "notes": [
+      "First clinical concept treated as exposure, second as outcome (swap in the UI if needed).",
+      "Comparison of 2 group(s) against healthy controls for eosinophilia."
+    ],
+    "matched_phrases": [
+      {
+        "concept": "toxoplasma",
+        "phrase": "toxoplasma"
+      },
+      {
+        "concept": "toxocara",
+        "phrase": "toxocara"
+      },
+      {
+        "concept": "eosinophilia",
+        "phrase": "eosinophilia"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [
+      "healthy control"
+    ],
+    "association_cue": true,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "eosinophilia_05",
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 0.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "G": [
+          "CBC_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Conventional laboratory definition.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "arms",
+      "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "role": "Exposure",
+      "kind": "custom",
+      "direct": false,
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+      "raw_variables": [
+        "DIQ010",
+        "DIQ050",
+        "DIQ070",
+        "LBDTO1",
+        "LBXGH",
+        "LBXSCR",
+        "LBXTO1",
+        "MCQ010",
+        "MCQ160B",
+        "MCQ160C",
+        "MCQ160E",
+        "MCQ160F",
+        "MCQ160L",
+        "MCQ220",
+        "RIAGENDR",
+        "RIDAGEYR",
+        "SSTCAR",
+        "SSTOXG",
+        "URDACT"
+      ],
+      "files": {
+        "G": [
+          "ALB_CR_G",
+          "BIOPRO_G",
+          "DEMO_G",
+          "DIQ_G",
+          "GHB_G",
+          "L17_G",
+          "MCQ_G",
+          "SSTOCA_G",
+          "SSTOXO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "comparison arms",
+      "status": "curated",
+      "confidence": 0.6
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "G": [
+          "BMX_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "us_born",
+      "label": "Born in the United States",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+      "raw_variables": [
+        "DMDBORN",
+        "DMDBORN2",
+        "DMDBORN4"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "G": [
+          "DEMO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "hypereosinophilia_15",
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "aec >= 1.5",
+      "raw_variables": [
+        "LBDEONO"
+      ],
+      "files": {
+        "G": [
+          "CBC_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "Valent P, et al. Contemporary consensus proposal on criteria and classification of eosinophilic disorders and related syndromes (ICOG-EO). J Allergy Clin Immunol. 2012;130:607-612.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "arms_seroneg",
+      "label": "Comparison groups (all seronegative controls)",
+      "role": "Sensitivity",
+      "kind": "custom",
+      "direct": false,
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+      "raw_variables": [
+        "LBDTO1",
+        "LBXTO1",
+        "SSTCAR",
+        "SSTOXG"
+      ],
+      "files": {
+        "G": [
+          "L17_G",
+          "SSTOCA_G",
+          "SSTOXO_G"
+        ]
+      },
+      "available": {
+        "G": true
+      },
+      "source": "comparison arms (sensitivity)",
+      "status": "curated",
+      "confidence": 0.6
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 4,
+      "caution": 4,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "caution",
+        "title": "Multi-arm comparison against 'Healthy controls'",
+        "detail": "Mutually exclusive groups: Healthy controls, Toxoplasma gondii only, Toxocara only, Both positive. Healthy controls are screened for other diseases while the arms are not, which inflates contrasts (healthy-control bias); the all-seronegative control group runs as a sensitivity analysis.",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "temporality",
+        "area": "Temporality",
+        "status": "caution",
+        "title": "Cross-sectional: temporality cannot be established",
+        "detail": "Results are reported as associations; causal language is blocked in the manuscript.",
+        "critique": "Causal over-interpretation",
+        "fix": null
+      },
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 5 prespecified sensitivity analyses are reported regardless of result; 6 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "confounding",
+        "area": "Confounding",
+        "status": "pass",
+        "title": "Prespecified adjustment set",
+        "detail": "Adjusted for 6 covariates. Mediators and definitional overlaps are removed automatically, and an E-value quantifies how strong unmeasured confounding would need to be.",
+        "critique": "Residual confounding (only platform-captured variables)",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 0 on the topic in any data source.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [
+    {
+      "id": "multiplicity",
+      "severity": "minor",
+      "agent": "Reviewer",
+      "title": "Multiplicity",
+      "detail": "Many subgroup/interaction tests - interpret as exploratory or adjust for multiple comparisons.",
+      "fix": null
+    }
+  ],
+  "feasibility": {
+    "score": 100,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable with caveats",
+    "status": "caution",
+    "n_fail": 0,
+    "n_caution": 2,
+    "suggestions": [
+      "Rephrase with the clinical measurement (e.g. 'serum ferritin'), build the full variable catalog, or ignore if it is not a study variable.",
+      "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+    ],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Coverage",
+        "status": "caution",
+        "title": "Could not find 'healthy control' in the NHANES dictionary",
+        "message": "No concept, curated variable or catalog entry matched this phrase.",
+        "suggestion": "Rephrase with the clinical measurement (e.g. 'serum ferritin'), build the full variable catalog, or ignore if it is not a study variable."
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in G, H; selected G.",
+        "suggestion": "Pooling H could increase precision."
+      },
+      {
+        "dimension": "Eligibility",
+        "status": "caution",
+        "title": "Some measures are collected only at older ages",
+        "message": "MCQ: typically age >=20 (population starts at 18 y).",
+        "suggestion": "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as an association question. Outcome: Eosinophilia - absolute eosinophil count >=0.5 x10^9/L. Exposure: Toxoplasma gondii vs Toxocara vs healthy controls. Population: Age >=18 years."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 11 analysis variables (2 direct NHANES measures, 9 derived/guideline definitions) onto 27 raw variables in 11 files: ALB_CR_G, BIOPRO_G, BMX_G, CBC_G, DEMO_G, DIQ_G, GHB_G, L17_G...."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Eosinophilia, Toxoplasma gondii vs Toxocara vs healthy controls are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "Comparison of 2 group(s) against healthy controls for eosinophilia."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "No age group specified - defaulted to adults aged >=18 years."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis."
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 0 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (3 pass, 5 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable with caveats (0 blocking, 2 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "novelty": {
+    "score": 95,
+    "label": "High",
+    "summary": "0 PubMed NHANES paper(s) on this question in 10 years (0 in the last 3); 0 on the topic in any data source.",
+    "checked": "2026-10-10"
+  }
+}
