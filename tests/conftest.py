@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 def _isolated_workspace(tmp_path_factory):
     ws = tmp_path_factory.mktemp("ws")
     os.environ["Q2E_WORKSPACE"] = str(ws)
-    os.environ.setdefault("Q2E_LLM_PROVIDER", "offline")
+    os.environ["Q2E_LLM_PROVIDER"] = "offline"     # tests never call a paid AI, even when .env turns one on
     from q2e import config
     config.settings.workspace = ws
     from q2e import store as st

@@ -116,8 +116,9 @@ class BedrockProvider(BaseProvider):
             return False, "boto3 not installed (pip install boto3)"
         if not self.model:
             return False, "Q2E_BEDROCK_MODEL_ID not set (run: python -m q2e bedrock-check)"
-        if boto3.Session().get_credentials() is None:
-            return False, "No AWS credentials (set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN in .env)"
+        if not _env("AWS_BEARER_TOKEN_BEDROCK") and boto3.Session().get_credentials() is None:
+            return False, ("No AWS credentials (set AWS_BEARER_TOKEN_BEDROCK, or AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / "
+                           "AWS_SESSION_TOKEN in .env)")
         return True, ""
 
     def complete(self, system, user, max_tokens=2000):
@@ -125,12 +126,17 @@ class BedrockProvider(BaseProvider):
         from botocore.config import Config
         client = boto3.client("bedrock-runtime", region_name=self.region,
                               config=Config(read_timeout=120, retries={"max_attempts": 2}))
-        try:
-            resp = client.converse(modelId=self.model, system=[{"text": system}],
-                                   messages=[{"role": "user", "content": [{"text": user}]}],
-                                   inferenceConfig={"maxTokens": max_tokens, "temperature": 0.1})
-        except Exception as e:  # noqa: BLE001 - botocore raises many types; show the AWS message
-            raise LLMError(f"Bedrock: {e}") from e
+        cfg = {"maxTokens": max_tokens, "temperature": 0.1}
+        for _ in range(2):
+            try:
+                resp = client.converse(modelId=self.model, system=[{"text": system}],
+                                       messages=[{"role": "user", "content": [{"text": user}]}], inferenceConfig=cfg)
+                break
+            except Exception as e:  # noqa: BLE001 - botocore raises many types; show the AWS message
+                if "temperature" in str(e) and "temperature" in cfg:
+                    cfg = {"maxTokens": max_tokens}     # newer models reject a temperature setting
+                    continue
+                raise LLMError(f"Bedrock: {e}") from e
         return "".join(c.get("text", "") for c in resp["output"]["message"]["content"])
 
 
@@ -166,9 +172,9 @@ def bedrock_check() -> int:
         print("boto3 is not installed. Run: pip install boto3")
         return 1
     region = _env("AWS_REGION", "us-east-1")
-    if boto3.Session().get_credentials() is None:
-        print("No AWS credentials found. Put AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (and AWS_SESSION_TOKEN if your "
-              "student account gives one) in the .env file, then run this again.")
+    if not _env("AWS_BEARER_TOKEN_BEDROCK") and boto3.Session().get_credentials() is None:
+        print("No AWS credentials found. In the .env file, put either your Bedrock API key in AWS_BEARER_TOKEN_BEDROCK, "
+              "or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY (+ AWS_SESSION_TOKEN if given), then run this again.")
         return 1
     print(f"AWS region: {region}")
     bed = boto3.client("bedrock", region_name=region)

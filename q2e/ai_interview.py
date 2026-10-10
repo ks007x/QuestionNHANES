@@ -106,6 +106,7 @@ def suggest(question: str, understood: list[dict], asked: list[dict], k: Knowled
         return [], f"The AI interviewer is unavailable ({str(e)[:160]}); the questions below come from Q2E's rules."
     qs: list[dict[str, Any]] = []
     seen_text = {q["text"].lower() for q in asked}
+    who_asked = any(q["id"] in ("population", "ages") for q in asked)    # the rules already ask who / which ages
     for n, raw in enumerate((out.get("questions") or [])[:MAX_AI_QUESTIONS]):
         if not isinstance(raw, dict):
             continue
@@ -114,7 +115,9 @@ def suggest(question: str, understood: list[dict], asked: list[dict], k: Knowled
             continue
         opts, labels = [], set()
         for i, o in enumerate(raw.get("options") or []):
-            opt = _option(o, i, question, k) if isinstance(o, dict) else None
+            if not isinstance(o, dict) or (who_asked and ("group" in o or "age_from" in o)):
+                continue
+            opt = _option(o, i, question, k)
             if opt and opt["label"] not in labels:
                 labels.add(opt["label"])
                 opts.append(opt)
