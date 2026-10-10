@@ -63,7 +63,9 @@ jobs:
         run: |
           if [ "$CYCLES" = "auto" ] || [ -z "$CYCLES" ]; then CY=""; else CY="--cycles $CYCLES"; fi
           python -m q2e study "$QUESTION" --source cdc $CY --approver "$APPROVER" --out outputs/real 2>&1 | tee outputs_log.txt
-          exit ${PIPESTATUS[0]}
+          rc=${PIPESTATUS[0]}
+          if [ $rc -ne 0 ]; then echo "::error title=Q2E run failed::$(grep -E 'Run failed|Error|ERROR|in:|Blockers|Traceback|Exception' outputs_log.txt | tail -8 | tr '\n' ' ' | cut -c1-900)"; fi
+          exit $rc
       - name: Summary
         if: always()
         env:
