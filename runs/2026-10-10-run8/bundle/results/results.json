@@ -1,0 +1,2600 @@
+{
+  "design": {
+    "weight_variable": "WTMECPRP",
+    "weight_level": "mec",
+    "cycles": [
+      "P"
+    ],
+    "n_strata": 24,
+    "n_psu": 49,
+    "design_df": 25,
+    "analytic_strata": 24,
+    "analytic_psu": 49,
+    "analytic_df": 25,
+    "sum_weights_millions": 231.28,
+    "lonely_psu": "adjust"
+  },
+  "flow": [
+    {
+      "step": "source",
+      "label": "Participants in source files (P)",
+      "n": 15560,
+      "excluded": 0
+    },
+    {
+      "step": "weight",
+      "label": "Examined in the MEC (positive MEC weight)",
+      "n": 14300,
+      "excluded": 1260
+    },
+    {
+      "step": "c1",
+      "label": "Age >=18 years",
+      "kind": "inclusion",
+      "n": 8965,
+      "excluded": 5335
+    },
+    {
+      "step": "c2",
+      "label": "Measured serum ferritin, transferrin saturation",
+      "kind": "inclusion",
+      "n": 8212,
+      "excluded": 753
+    },
+    {
+      "step": "outcome",
+      "label": "Non-missing outcome (Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%)",
+      "n": 8212,
+      "excluded": 0
+    },
+    {
+      "step": "complete_case",
+      "label": "Complete covariate data (complete-case model sample)",
+      "n": 6939,
+      "excluded": 1273
+    }
+  ],
+  "table1": {
+    "by": "fid_tawfik2024",
+    "by_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+    "columns": [
+      {
+        "key": "g1",
+        "label": "No",
+        "n": 6833,
+        "weighted_pct": 84.6
+      },
+      {
+        "key": "g2",
+        "label": "Yes",
+        "n": 1379,
+        "weighted_pct": 15.4
+      },
+      {
+        "key": "overall",
+        "label": "Overall",
+        "n": 8212,
+        "weighted_pct": 100
+      }
+    ],
+    "rows": [
+      {
+        "variable": "agecat",
+        "label": "Age group, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.16467857975,
+        "p_text": ".16",
+        "header": true
+      },
+      {
+        "variable": "agecat",
+        "label": "18-39",
+        "level": "18-39",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,273 (37.1)",
+            "n": 2273,
+            "pct": 37.0551296484,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "458 (40.3)",
+            "n": 458,
+            "pct": 40.299812336,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "2,731 (37.6)",
+            "n": 2731,
+            "pct": 37.5559930905,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "40-64",
+        "level": "40-64",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,888 (42.1)",
+            "n": 2888,
+            "pct": 42.1195379185,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "595 (41.3)",
+            "n": 595,
+            "pct": 41.317260483,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "3,483 (42.0)",
+            "n": 3483,
+            "pct": 41.9956948569,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "65+",
+        "level": "65+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,672 (20.8)",
+            "n": 1672,
+            "pct": 20.8253324331,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "326 (18.4)",
+            "n": 326,
+            "pct": 18.3829271811,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,998 (20.4)",
+            "n": 1998,
+            "pct": 20.4483120526,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Sex, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 9.5702618249e-07,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "sex",
+        "label": "Male",
+        "level": "Male",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "3,457 (50.4)",
+            "n": 3457,
+            "pct": 50.3558300883,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "522 (36.9)",
+            "n": 522,
+            "pct": 36.9403446494,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "3,979 (48.3)",
+            "n": 3979,
+            "pct": 48.2849569516,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Female",
+        "level": "Female",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "3,376 (49.6)",
+            "n": 3376,
+            "pct": 49.6441699117,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "857 (63.1)",
+            "n": 857,
+            "pct": 63.0596553506,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "4,233 (51.7)",
+            "n": 4233,
+            "pct": 51.7150430484,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Race and ethnicity, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.03059659528,
+        "p_text": ".03",
+        "header": true
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic White",
+        "level": "Non-Hispanic White",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,450 (63.6)",
+            "n": 2450,
+            "pct": 63.5797258679,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "445 (59.5)",
+            "n": 445,
+            "pct": 59.4719086967,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "2,895 (62.9)",
+            "n": 2895,
+            "pct": 62.9456252035,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Black",
+        "level": "Non-Hispanic Black",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,651 (10.2)",
+            "n": 1651,
+            "pct": 10.1957142995,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "414 (13.6)",
+            "n": 414,
+            "pct": 13.6224985619,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "2,065 (10.7)",
+            "n": 2065,
+            "pct": 10.7246877389,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Hispanic",
+        "level": "Hispanic",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,574 (16.6)",
+            "n": 1574,
+            "pct": 16.5860714758,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "301 (16.1)",
+            "n": 301,
+            "pct": 16.0905606765,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,875 (16.5)",
+            "n": 1875,
+            "pct": 16.5095822568,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Asian",
+        "level": "Non-Hispanic Asian",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "834 (5.8)",
+            "n": 834,
+            "pct": 5.7582614186,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "137 (5.3)",
+            "n": 137,
+            "pct": 5.3405425544,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "971 (5.7)",
+            "n": 971,
+            "pct": 5.6937805037,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Other or multiracial",
+        "level": "Other or multiracial",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "324 (3.9)",
+            "n": 324,
+            "pct": 3.8802269383,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "82 (5.5)",
+            "n": 82,
+            "pct": 5.4744895104,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "406 (4.1)",
+            "n": 406,
+            "pct": 4.1263242971,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "Income-to-poverty ratio, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.053779238035,
+        "p_text": ".05",
+        "header": true
+      },
+      {
+        "variable": "pir_cat",
+        "label": "<1.30",
+        "level": "<1.30",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,654 (18.6)",
+            "n": 1654,
+            "pct": 18.5579102681,
+            "n_missing": 949
+          },
+          "g2": {
+            "text": "393 (22.5)",
+            "n": 393,
+            "pct": 22.5260081417,
+            "n_missing": 181
+          },
+          "overall": {
+            "text": "2,047 (19.2)",
+            "n": 2047,
+            "pct": 19.1706386686,
+            "n_missing": 1130
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "1.30-3.49",
+        "level": "1.30-3.49",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,299 (34.7)",
+            "n": 2299,
+            "pct": 34.6579070511,
+            "n_missing": 949
+          },
+          "g2": {
+            "text": "466 (34.9)",
+            "n": 466,
+            "pct": 34.9444701468,
+            "n_missing": 181
+          },
+          "overall": {
+            "text": "2,765 (34.7)",
+            "n": 2765,
+            "pct": 34.7021562992,
+            "n_missing": 1130
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "3.50+",
+        "level": "3.50+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,931 (46.8)",
+            "n": 1931,
+            "pct": 46.7841826808,
+            "n_missing": 949
+          },
+          "g2": {
+            "text": "339 (42.5)",
+            "n": 339,
+            "pct": 42.5295217115,
+            "n_missing": 181
+          },
+          "overall": {
+            "text": "2,270 (46.1)",
+            "n": 2270,
+            "pct": 46.1272050322,
+            "n_missing": 1130
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Educational attainment, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.066960981331,
+        "p_text": ".07",
+        "header": true
+      },
+      {
+        "variable": "educ",
+        "label": "Less than high school",
+        "level": "Less than high school",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,220 (10.9)",
+            "n": 1220,
+            "pct": 10.9292687051,
+            "n_missing": 314
+          },
+          "g2": {
+            "text": "247 (11.6)",
+            "n": 247,
+            "pct": 11.5772729035,
+            "n_missing": 70
+          },
+          "overall": {
+            "text": "1,467 (11.0)",
+            "n": 1467,
+            "pct": 11.0290952081,
+            "n_missing": 384
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "High school or GED",
+        "level": "High school or GED",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,545 (26.5)",
+            "n": 1545,
+            "pct": 26.5273311474,
+            "n_missing": 314
+          },
+          "g2": {
+            "text": "339 (28.9)",
+            "n": 339,
+            "pct": 28.8924619541,
+            "n_missing": 70
+          },
+          "overall": {
+            "text": "1,884 (26.9)",
+            "n": 1884,
+            "pct": 26.8916848633,
+            "n_missing": 384
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Some college",
+        "level": "Some college",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "2,099 (30.2)",
+            "n": 2099,
+            "pct": 30.1742153683,
+            "n_missing": 314
+          },
+          "g2": {
+            "text": "452 (32.7)",
+            "n": 452,
+            "pct": 32.6899496758,
+            "n_missing": 70
+          },
+          "overall": {
+            "text": "2,551 (30.6)",
+            "n": 2551,
+            "pct": 30.5617698919,
+            "n_missing": 384
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "College graduate or above",
+        "level": "College graduate or above",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,655 (32.4)",
+            "n": 1655,
+            "pct": 32.3691847793,
+            "n_missing": 314
+          },
+          "g2": {
+            "text": "271 (26.8)",
+            "n": 271,
+            "pct": 26.8403154666,
+            "n_missing": 70
+          },
+          "overall": {
+            "text": "1,926 (31.5)",
+            "n": 1926,
+            "pct": 31.5174500367,
+            "n_missing": 384
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "bmi",
+        "label": "Body mass index, kg/m2, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "29.3 (0.18)",
+            "median_iqr": "28.2 (24.5-32.8)",
+            "n_missing": 103
+          },
+          "g2": {
+            "text": "32.2 (0.43)",
+            "median_iqr": "31.0 (26.2-36.8)",
+            "n_missing": 33
+          },
+          "overall": {
+            "text": "29.8 (0.18)",
+            "median_iqr": "28.5 (24.7-33.5)",
+            "n_missing": 136
+          }
+        },
+        "p": 1.0032698339e-06,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "inflammation",
+        "label": "Systemic inflammation (hsCRP >5 mg/L), No. (weighted %)",
+        "level": null,
+        "type": "binary",
+        "values": {
+          "g1": {
+            "text": "1,232 (16.8)",
+            "n": 1232,
+            "pct": 16.7915888313,
+            "n_missing": 34
+          },
+          "g2": {
+            "text": "584 (42.7)",
+            "n": 584,
+            "pct": 42.7289373343,
+            "n_missing": 6
+          },
+          "overall": {
+            "text": "1,816 (20.8)",
+            "n": 1816,
+            "pct": 20.793812249,
+            "n_missing": 40
+          }
+        },
+        "p": 1.4697972399e-12,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "ckd",
+        "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g), No. (weighted %)",
+        "level": null,
+        "type": "binary",
+        "values": {
+          "g1": {
+            "text": "1,195 (13.5)",
+            "n": 1195,
+            "pct": 13.4859771607,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "317 (16.5)",
+            "n": 317,
+            "pct": 16.5471276606,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,512 (14.0)",
+            "n": 1512,
+            "pct": 13.9585097699,
+            "n_missing": 0
+          }
+        },
+        "p": 0.017936004637,
+        "p_text": ".02",
+        "header": true
+      },
+      {
+        "variable": "ferritin",
+        "label": "Serum ferritin, ng/mL, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "150.8 (3.25)",
+            "median_iqr": "107.0 (49.9-197.0)",
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "116.1 (4.13)",
+            "median_iqr": "84.7 (52.0-140.0)",
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "145.5 (2.57)",
+            "median_iqr": "103.0 (50.5-187.0)",
+            "n_missing": 0
+          }
+        },
+        "p": 8.9994976462e-06,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "tsat",
+        "label": "Transferrin saturation, %, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "29.6 (0.23)",
+            "median_iqr": "28.0 (23.0-35.0)",
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "15.7 (0.09)",
+            "median_iqr": "16.0 (14.0-18.0)",
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "27.5 (0.20)",
+            "median_iqr": "26.0 (20.0-34.0)",
+            "n_missing": 0
+          }
+        },
+        "p": 2.0539230522e-27,
+        "p_text": "<.001",
+        "header": true
+      }
+    ],
+    "note": "Counts are unweighted; percentages, means and SEs are survey weighted. P values: design-based Wald F test (continuous) or Rao-Scott F test (categorical)."
+  },
+  "prevalence": [
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.15436438332,
+      "lcl": 0.14436345026,
+      "ucl": 0.16477818128,
+      "se": 0.0049080566036,
+      "n": 8212,
+      "events": 1379,
+      "n_eff": 5418.9013301796,
+      "df": 25,
+      "pop_millions": 35.7,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.11809627431,
+      "lcl": 0.10648591281,
+      "ucl": 0.13049469693,
+      "se": 0.0057461879134,
+      "n": 3979,
+      "events": 522,
+      "n_eff": 3154.2617205306,
+      "df": 25,
+      "pop_millions": 13.19,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0.18822694978,
+      "lcl": 0.1699415723,
+      "ucl": 0.20759031735,
+      "se": 0.0090049332336,
+      "n": 4233,
+      "events": 857,
+      "n_eff": 1884.3233921192,
+      "df": 25,
+      "pop_millions": 22.51,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0.16564215634,
+      "lcl": 0.14660257876,
+      "ucl": 0.18608481741,
+      "se": 0.0094222746955,
+      "n": 2731,
+      "events": 458,
+      "n_eff": 1556.7243036784,
+      "df": 25,
+      "pop_millions": 14.39,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.15187064904,
+      "lcl": 0.13544007287,
+      "ucl": 0.16946640504,
+      "se": 0.0081290492286,
+      "n": 3483,
+      "events": 595,
+      "n_eff": 1949.2001437495,
+      "df": 25,
+      "pop_millions": 14.75,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0.13877278528,
+      "lcl": 0.1213462726,
+      "ucl": 0.15768240463,
+      "se": 0.008661940396,
+      "n": 1998,
+      "events": 326,
+      "n_eff": 1592.9115751165,
+      "df": 25,
+      "pop_millions": 6.56,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic White",
+      "est": 0.14584563234,
+      "lcl": 0.13238455376,
+      "ucl": 0.16012265368,
+      "se": 0.0066434942421,
+      "n": 2895,
+      "events": 445,
+      "n_eff": 2822.5176596571,
+      "df": 25,
+      "pop_millions": 21.23,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Black",
+      "est": 0.19607364251,
+      "lcl": 0.17930622172,
+      "ucl": 0.21369184223,
+      "se": 0.0082407790333,
+      "n": 2065,
+      "events": 414,
+      "n_eff": 2065,
+      "df": 25,
+      "pop_millions": 4.86,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Hispanic",
+      "est": 0.15044653689,
+      "lcl": 0.13364781377,
+      "ucl": 0.16848036424,
+      "se": 0.0083199580572,
+      "n": 1875,
+      "events": 301,
+      "n_eff": 1846.4205964425,
+      "df": 25,
+      "pop_millions": 5.74,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Asian",
+      "est": 0.14478773066,
+      "lcl": 0.1087049753,
+      "ucl": 0.18737094169,
+      "se": 0.018385971604,
+      "n": 971,
+      "events": 137,
+      "n_eff": 366.2962849856,
+      "df": 24,
+      "pop_millions": 1.91,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Other or multiracial",
+      "est": 0.20479878372,
+      "lcl": 0.12611635252,
+      "ucl": 0.30424021521,
+      "se": 0.041094727767,
+      "n": 406,
+      "events": 82,
+      "n_eff": 96.4344467216,
+      "df": 25,
+      "pop_millions": 1.95,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.13729927212,
+      "lcl": 0.12732506584,
+      "ucl": 0.14775110729,
+      "se": 0.00490573546,
+      "n": 8212,
+      "events": 1153,
+      "n_eff": 4921.756785059,
+      "df": 25,
+      "pop_millions": 31.75,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.039977149483,
+      "lcl": 0.032421517925,
+      "ucl": 0.048705143644,
+      "se": 0.0038473302611,
+      "n": 3979,
+      "events": 151,
+      "n_eff": 2592.8324744609,
+      "df": 25,
+      "pop_millions": 4.46,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0.22816634338,
+      "lcl": 0.21132846674,
+      "ucl": 0.24568490284,
+      "se": 0.0082432109384,
+      "n": 4233,
+      "events": 1002,
+      "n_eff": 2591.6865108541,
+      "df": 25,
+      "pop_millions": 27.29,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0.19206695649,
+      "lcl": 0.17488786642,
+      "ucl": 0.21016740018,
+      "se": 0.0084491152702,
+      "n": 2731,
+      "events": 596,
+      "n_eff": 2173.7297780078,
+      "df": 25,
+      "pop_millions": 16.68,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.11393011617,
+      "lcl": 0.099691697261,
+      "ucl": 0.12942537136,
+      "se": 0.0070888420221,
+      "n": 3483,
+      "events": 394,
+      "n_eff": 2008.8889040211,
+      "df": 25,
+      "pop_millions": 11.07,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0.08470564822,
+      "lcl": 0.069413974493,
+      "ucl": 0.10211223594,
+      "se": 0.0077353011803,
+      "n": 1998,
+      "events": 163,
+      "n_eff": 1295.7424790144,
+      "df": 25,
+      "pop_millions": 4.01,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic White",
+      "est": 0.12209464284,
+      "lcl": 0.10875139502,
+      "ucl": 0.1364447507,
+      "se": 0.0066177039841,
+      "n": 2895,
+      "events": 355,
+      "n_eff": 2447.5390759452,
+      "df": 25,
+      "pop_millions": 17.77,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Black",
+      "est": 0.1638127872,
+      "lcl": 0.14927366247,
+      "ucl": 0.17917046185,
+      "se": 0.007164124049,
+      "n": 2065,
+      "events": 300,
+      "n_eff": 2065,
+      "df": 25,
+      "pop_millions": 4.06,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Hispanic",
+      "est": 0.17897072481,
+      "lcl": 0.16094921344,
+      "ucl": 0.19811678769,
+      "se": 0.0088892737627,
+      "n": 1875,
+      "events": 310,
+      "n_eff": 1859.5509285067,
+      "df": 25,
+      "pop_millions": 6.83,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Asian",
+      "est": 0.15659531777,
+      "lcl": 0.12715908398,
+      "ucl": 0.18979505601,
+      "se": 0.014769409119,
+      "n": 971,
+      "events": 145,
+      "n_eff": 605.4642966714,
+      "df": 24,
+      "pop_millions": 2.06,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Other or multiracial",
+      "est": 0.10697446261,
+      "lcl": 0.055138546021,
+      "ucl": 0.18226257131,
+      "se": 0.028753721955,
+      "n": 406,
+      "events": 43,
+      "n_eff": 115.5462497046,
+      "df": 25,
+      "pop_millions": 1.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.54432544066,
+      "lcl": 0.52507047603,
+      "ucl": 0.56348170983,
+      "se": 0.0092386755129,
+      "n": 8212,
+      "events": 4380,
+      "n_eff": 2905.9891437427,
+      "df": 25,
+      "pop_millions": 125.89,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.33197301656,
+      "lcl": 0.31030824076,
+      "ucl": 0.35418276042,
+      "se": 0.010527612905,
+      "n": 3979,
+      "events": 1337,
+      "n_eff": 2000.9533997099,
+      "df": 25,
+      "pop_millions": 37.07,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0.74259323764,
+      "lcl": 0.71857626484,
+      "ucl": 0.76556536972,
+      "se": 0.011242401485,
+      "n": 4233,
+      "events": 3043,
+      "n_eff": 1512.3515678606,
+      "df": 25,
+      "pop_millions": 88.82,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0.63247633118,
+      "lcl": 0.60912747435,
+      "ucl": 0.65536982182,
+      "se": 0.011097180434,
+      "n": 2731,
+      "events": 1778,
+      "n_eff": 1887.5753448163,
+      "df": 25,
+      "pop_millions": 54.94,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.49596589999,
+      "lcl": 0.47053718405,
+      "ucl": 0.52141022054,
+      "se": 0.012205209776,
+      "n": 3483,
+      "events": 1673,
+      "n_eff": 1678.1131498068,
+      "df": 25,
+      "pop_millions": 48.17,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0.48174317378,
+      "lcl": 0.44605511132,
+      "ucl": 0.51757055667,
+      "se": 0.017087035654,
+      "n": 1998,
+      "events": 929,
+      "n_eff": 855.1201679041,
+      "df": 25,
+      "pop_millions": 22.78,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic White",
+      "est": 0.54280012362,
+      "lcl": 0.51475897516,
+      "ucl": 0.57064021417,
+      "se": 0.013391793717,
+      "n": 2895,
+      "events": 1553,
+      "n_eff": 1383.7847503227,
+      "df": 25,
+      "pop_millions": 79.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Black",
+      "est": 0.55660839347,
+      "lcl": 0.52758026502,
+      "ucl": 0.58535082782,
+      "se": 0.013840159094,
+      "n": 2065,
+      "events": 1088,
+      "n_eff": 1288.4128684159,
+      "df": 25,
+      "pop_millions": 13.81,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Hispanic",
+      "est": 0.55049556854,
+      "lcl": 0.52397811104,
+      "ucl": 0.5768003716,
+      "se": 0.012669579969,
+      "n": 1875,
+      "events": 1030,
+      "n_eff": 1541.5704282468,
+      "df": 25,
+      "pop_millions": 21.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Asian",
+      "est": 0.52796780384,
+      "lcl": 0.47897726743,
+      "ucl": 0.57656161745,
+      "se": 0.02316319504,
+      "n": 971,
+      "events": 491,
+      "n_eff": 464.4961655177,
+      "df": 24,
+      "pop_millions": 6.95,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "fid_esc_hf",
+      "outcome_label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Other or multiracial",
+      "est": 0.53355356813,
+      "lcl": 0.43826247438,
+      "ucl": 0.62707688928,
+      "se": 0.044376268437,
+      "n": 406,
+      "events": 218,
+      "n_eff": 126.3799688213,
+      "df": 25,
+      "pop_millions": 5.09,
+      "nchs": "meets standard"
+    }
+  ],
+  "primary_model": {
+    "id": "full",
+    "label": "Mutually adjusted correlates",
+    "family": "quasipoisson",
+    "effect": "PR",
+    "effect_label": "Prevalence ratio",
+    "formula": "fid_tawfik2024 ~ sex + agecat + race_eth + pir_cat + bmi + inflammation + ckd",
+    "call": "svyglm(fid_tawfik2024 ~ sex + agecat + race_eth + pir_cat + bmi + inflammation + ckd, design = <full>, family = quasipoisson)",
+    "n": 6939,
+    "events": 1166,
+    "df_residual": 13,
+    "df_design": 25,
+    "n_params": 13,
+    "converged": true,
+    "warnings": [],
+    "dispersion": 0.83161282699,
+    "terms": [
+      {
+        "term": "(Intercept)",
+        "variable": "(Intercept)",
+        "level": "",
+        "label": "Intercept",
+        "beta": -2.7444823408,
+        "se": 0.19890256022,
+        "est": 0.064281568276,
+        "lcl": 0.042675519718,
+        "ucl": 0.096826472115,
+        "p": 3.406475322e-13
+      },
+      {
+        "term": "sexFemale",
+        "variable": "sex",
+        "level": "Female",
+        "label": "Sex: Female (vs Male)",
+        "beta": 0.35121330495,
+        "se": 0.084368955678,
+        "est": 1.4207903552,
+        "lcl": 1.1941709609,
+        "ucl": 1.6904156101,
+        "p": 0.00032580667299
+      },
+      {
+        "term": "agecat40-64",
+        "variable": "agecat",
+        "level": "40-64",
+        "label": "Age group: 40-64 (vs 18-39)",
+        "beta": -0.14940173051,
+        "se": 0.085797709482,
+        "est": 0.86122306581,
+        "lcl": 0.72172909807,
+        "ucl": 1.0276780735,
+        "p": 0.093920882758
+      },
+      {
+        "term": "agecat65+",
+        "variable": "agecat",
+        "level": "65+",
+        "label": "Age group: 65+ (vs 18-39)",
+        "beta": -0.19332067,
+        "se": 0.096186830116,
+        "est": 0.82421762989,
+        "lcl": 0.67609535521,
+        "ucl": 1.0047912564,
+        "p": 0.055356411487
+      },
+      {
+        "term": "race_ethNon-Hispanic Black",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Black",
+        "label": "Race and ethnicity: Non-Hispanic Black (vs Non-Hispanic White)",
+        "beta": 0.12355430615,
+        "se": 0.067904874608,
+        "est": 1.1315114509,
+        "lcl": 0.98383369927,
+        "ucl": 1.3013562805,
+        "p": 0.080828854261
+      },
+      {
+        "term": "race_ethHispanic",
+        "variable": "race_eth",
+        "level": "Hispanic",
+        "label": "Race and ethnicity: Hispanic (vs Non-Hispanic White)",
+        "beta": -0.0019202511672,
+        "se": 0.073138622301,
+        "est": 0.99808159134,
+        "lcl": 0.85851419555,
+        "ucl": 1.1603382543,
+        "p": 0.9792624404
+      },
+      {
+        "term": "race_ethNon-Hispanic Asian",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Asian",
+        "label": "Race and ethnicity: Non-Hispanic Asian (vs Non-Hispanic White)",
+        "beta": 0.028134874835,
+        "se": 0.13295277397,
+        "est": 1.0285343985,
+        "lcl": 0.7821674047,
+        "ucl": 1.3525020379,
+        "p": 0.83412265328
+      },
+      {
+        "term": "race_ethOther or multiracial",
+        "variable": "race_eth",
+        "level": "Other or multiracial",
+        "label": "Race and ethnicity: Other or multiracial (vs Non-Hispanic White)",
+        "beta": 0.1646038436,
+        "se": 0.19349010092,
+        "est": 1.1789259871,
+        "lcl": 0.79144374284,
+        "ucl": 1.7561153217,
+        "p": 0.40300552783
+      },
+      {
+        "term": "pir_cat1.30-3.49",
+        "variable": "pir_cat",
+        "level": "1.30-3.49",
+        "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+        "beta": -0.081138493999,
+        "se": 0.086834201289,
+        "est": 0.922065982,
+        "lcl": 0.7710694133,
+        "ucl": 1.102631826,
+        "p": 0.35903219151
+      },
+      {
+        "term": "pir_cat3.50+",
+        "variable": "pir_cat",
+        "level": "3.50+",
+        "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+        "beta": -0.062104904933,
+        "se": 0.10755183264,
+        "est": 0.93978429361,
+        "lcl": 0.75305873667,
+        "ucl": 1.1728096037,
+        "p": 0.56880568569
+      },
+      {
+        "term": "bmi",
+        "variable": "bmi",
+        "level": "",
+        "label": "Body mass index",
+        "beta": 0.016785222382,
+        "se": 0.0051106838431,
+        "est": 1.0169268857,
+        "lcl": 1.006279204,
+        "ucl": 1.0276872331,
+        "p": 0.0030198006135
+      },
+      {
+        "term": "inflammation",
+        "variable": "inflammation",
+        "level": "",
+        "label": "Systemic inflammation (hsCRP >5 mg/L)",
+        "beta": 0.87342498831,
+        "se": 0.096261953671,
+        "est": 2.3951000112,
+        "lcl": 1.9643664648,
+        "ucl": 2.9202820178,
+        "p": 2.1970460588e-09
+      },
+      {
+        "term": "ckd",
+        "variable": "ckd",
+        "level": "",
+        "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+        "beta": 0.084122332393,
+        "se": 0.086962266724,
+        "est": 1.0877619542,
+        "lcl": 0.9093912962,
+        "ucl": 1.3011187527,
+        "p": 0.34263830364
+      }
+    ]
+  },
+  "models": [
+    {
+      "id": "full",
+      "label": "Mutually adjusted correlates",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "fid_tawfik2024 ~ sex + agecat + race_eth + pir_cat + bmi + inflammation + ckd",
+      "call": "svyglm(fid_tawfik2024 ~ sex + agecat + race_eth + pir_cat + bmi + inflammation + ckd, design = <full>, family = quasipoisson)",
+      "n": 6939,
+      "events": 1166,
+      "df_residual": 13,
+      "df_design": 25,
+      "n_params": 13,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.83161282699,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -2.7444823408,
+          "se": 0.19890256022,
+          "est": 0.064281568276,
+          "lcl": 0.042675519718,
+          "ucl": 0.096826472115,
+          "p": 3.406475322e-13
+        },
+        {
+          "term": "sexFemale",
+          "variable": "sex",
+          "level": "Female",
+          "label": "Sex: Female (vs Male)",
+          "beta": 0.35121330495,
+          "se": 0.084368955678,
+          "est": 1.4207903552,
+          "lcl": 1.1941709609,
+          "ucl": 1.6904156101,
+          "p": 0.00032580667299
+        },
+        {
+          "term": "agecat40-64",
+          "variable": "agecat",
+          "level": "40-64",
+          "label": "Age group: 40-64 (vs 18-39)",
+          "beta": -0.14940173051,
+          "se": 0.085797709482,
+          "est": 0.86122306581,
+          "lcl": 0.72172909807,
+          "ucl": 1.0276780735,
+          "p": 0.093920882758
+        },
+        {
+          "term": "agecat65+",
+          "variable": "agecat",
+          "level": "65+",
+          "label": "Age group: 65+ (vs 18-39)",
+          "beta": -0.19332067,
+          "se": 0.096186830116,
+          "est": 0.82421762989,
+          "lcl": 0.67609535521,
+          "ucl": 1.0047912564,
+          "p": 0.055356411487
+        },
+        {
+          "term": "race_ethNon-Hispanic Black",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Black",
+          "label": "Race and ethnicity: Non-Hispanic Black (vs Non-Hispanic White)",
+          "beta": 0.12355430615,
+          "se": 0.067904874608,
+          "est": 1.1315114509,
+          "lcl": 0.98383369927,
+          "ucl": 1.3013562805,
+          "p": 0.080828854261
+        },
+        {
+          "term": "race_ethHispanic",
+          "variable": "race_eth",
+          "level": "Hispanic",
+          "label": "Race and ethnicity: Hispanic (vs Non-Hispanic White)",
+          "beta": -0.0019202511672,
+          "se": 0.073138622301,
+          "est": 0.99808159134,
+          "lcl": 0.85851419555,
+          "ucl": 1.1603382543,
+          "p": 0.9792624404
+        },
+        {
+          "term": "race_ethNon-Hispanic Asian",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Asian",
+          "label": "Race and ethnicity: Non-Hispanic Asian (vs Non-Hispanic White)",
+          "beta": 0.028134874835,
+          "se": 0.13295277397,
+          "est": 1.0285343985,
+          "lcl": 0.7821674047,
+          "ucl": 1.3525020379,
+          "p": 0.83412265328
+        },
+        {
+          "term": "race_ethOther or multiracial",
+          "variable": "race_eth",
+          "level": "Other or multiracial",
+          "label": "Race and ethnicity: Other or multiracial (vs Non-Hispanic White)",
+          "beta": 0.1646038436,
+          "se": 0.19349010092,
+          "est": 1.1789259871,
+          "lcl": 0.79144374284,
+          "ucl": 1.7561153217,
+          "p": 0.40300552783
+        },
+        {
+          "term": "pir_cat1.30-3.49",
+          "variable": "pir_cat",
+          "level": "1.30-3.49",
+          "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+          "beta": -0.081138493999,
+          "se": 0.086834201289,
+          "est": 0.922065982,
+          "lcl": 0.7710694133,
+          "ucl": 1.102631826,
+          "p": 0.35903219151
+        },
+        {
+          "term": "pir_cat3.50+",
+          "variable": "pir_cat",
+          "level": "3.50+",
+          "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+          "beta": -0.062104904933,
+          "se": 0.10755183264,
+          "est": 0.93978429361,
+          "lcl": 0.75305873667,
+          "ucl": 1.1728096037,
+          "p": 0.56880568569
+        },
+        {
+          "term": "bmi",
+          "variable": "bmi",
+          "level": "",
+          "label": "Body mass index",
+          "beta": 0.016785222382,
+          "se": 0.0051106838431,
+          "est": 1.0169268857,
+          "lcl": 1.006279204,
+          "ucl": 1.0276872331,
+          "p": 0.0030198006135
+        },
+        {
+          "term": "inflammation",
+          "variable": "inflammation",
+          "level": "",
+          "label": "Systemic inflammation (hsCRP >5 mg/L)",
+          "beta": 0.87342498831,
+          "se": 0.096261953671,
+          "est": 2.3951000112,
+          "lcl": 1.9643664648,
+          "ucl": 2.9202820178,
+          "p": 2.1970460588e-09
+        },
+        {
+          "term": "ckd",
+          "variable": "ckd",
+          "level": "",
+          "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+          "beta": 0.084122332393,
+          "se": 0.086962266724,
+          "est": 1.0877619542,
+          "lcl": 0.9093912962,
+          "ucl": 1.3011187527,
+          "p": 0.34263830364
+        }
+      ]
+    }
+  ],
+  "primary_estimate": {
+    "effect": "prevalence",
+    "effect_label": "Weighted prevalence",
+    "term": "fid_tawfik2024",
+    "label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+    "est": 0.15436438332,
+    "lcl": 0.14436345026,
+    "ucl": 0.16477818128,
+    "n": 8212,
+    "pop_millions": 35.7
+  },
+  "interactions": [],
+  "sensitivity": [
+    {
+      "id": "s1",
+      "label": "Alternative outcome definition: ESC HF",
+      "type": "alt_outcome",
+      "est": 0.54432544066,
+      "lcl": 0.52507047603,
+      "ucl": 0.56348170983,
+      "n": 8212,
+      "effect": "prevalence"
+    },
+    {
+      "id": "s2",
+      "label": "Exclude hsCRP >5 mg/L (inflammation raises ferritin)",
+      "type": "exclude",
+      "est": 0.11186118981,
+      "lcl": 0.10299963053,
+      "ucl": 0.12120664925,
+      "n": 6396,
+      "effect": "prevalence"
+    },
+    {
+      "id": "s3",
+      "label": "Exclude participants treated for anemia",
+      "type": "exclude",
+      "est": 0.15351861435,
+      "lcl": 0.14286892988,
+      "ucl": 0.16464092277,
+      "n": 7782,
+      "effect": "prevalence"
+    },
+    {
+      "id": "s4",
+      "label": "Exclude pregnant participants",
+      "type": "exclude",
+      "est": 0.15474738683,
+      "lcl": 0.14439135889,
+      "ucl": 0.16554522674,
+      "n": 8137,
+      "effect": "prevalence"
+    },
+    {
+      "id": "s5",
+      "label": "Unweighted analysis (design ignored)",
+      "type": "unweighted",
+      "est": 0.16803574002,
+      "lcl": 0.15935204973,
+      "ucl": 0.17708978785,
+      "n": 6939,
+      "effect": "prevalence",
+      "note": "Unweighted sample proportion (ignores design)"
+    }
+  ],
+  "vif": [
+    {
+      "term": "sexFemale",
+      "vif": 1.02
+    },
+    {
+      "term": "agecat40-64",
+      "vif": 1.35
+    },
+    {
+      "term": "agecat65+",
+      "vif": 1.51
+    },
+    {
+      "term": "race_ethNon-Hispanic Black",
+      "vif": 1.32
+    },
+    {
+      "term": "race_ethHispanic",
+      "vif": 1.3
+    },
+    {
+      "term": "race_ethNon-Hispanic Asian",
+      "vif": 1.23
+    },
+    {
+      "term": "race_ethOther or multiracial",
+      "vif": 1.09
+    },
+    {
+      "term": "pir_cat1.30-3.49",
+      "vif": 1.48
+    },
+    {
+      "term": "pir_cat3.50+",
+      "vif": 1.55
+    },
+    {
+      "term": "bmi",
+      "vif": 1.22
+    },
+    {
+      "term": "inflammation",
+      "vif": 1.18
+    },
+    {
+      "term": "ckd",
+      "vif": 1.14
+    }
+  ],
+  "benchmarks": [
+    {
+      "outcome": "fid_tawfik2024",
+      "outcome_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "label": "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020",
+      "published": 0.15,
+      "published_lcl": 0.14,
+      "published_ucl": 0.17,
+      "published_n": 8021,
+      "replicated": 0.15436438332,
+      "replicated_lcl": 0.14436345026,
+      "replicated_ucl": 0.16477818128,
+      "replicated_n": 8212,
+      "overlap": true,
+      "difference_pts": 0.4,
+      "message": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%: Q2E 15.4% (14.4-16.5) vs published 15.0% (14.0-17.0) [Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020] - confidence intervals overlap (consistent)"
+    },
+    {
+      "outcome": "aid_tawfik2024",
+      "outcome_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "label": "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020",
+      "published": 0.14,
+      "published_lcl": 0.13,
+      "published_ucl": 0.15,
+      "published_n": 8021,
+      "replicated": 0.13729927212,
+      "replicated_lcl": 0.12732506584,
+      "replicated_ucl": 0.14775110729,
+      "replicated_n": 8212,
+      "overlap": true,
+      "difference_pts": -0.3,
+      "message": "Absolute iron deficiency - ferritin <30 ng/mL: Q2E 13.7% (12.7-14.8) vs published 14.0% (13.0-15.0) [Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020] - confidence intervals overlap (consistent)"
+    }
+  ],
+  "figures": [
+    {
+      "id": "prevalence",
+      "title": "Weighted prevalence of functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "file": "fig_prevalence.png"
+    },
+    {
+      "id": "correlates",
+      "title": "Adjusted correlates of functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "file": "fig_correlates.png"
+    },
+    {
+      "id": "distribution",
+      "title": "Distribution of serum ferritin",
+      "file": "fig_distribution.png"
+    }
+  ],
+  "derivation_audit": [
+    {
+      "name": "ferritin",
+      "expr": "LBXFER",
+      "type": "continuous",
+      "n_nonmissing": 10557,
+      "quantiles": [1.04, 37, 80.7, 166, 5190]
+    },
+    {
+      "name": "tsat_reported",
+      "expr": "LBDPCT",
+      "type": "continuous",
+      "n_nonmissing": 9453,
+      "quantiles": [2, 19, 25, 33, 92]
+    },
+    {
+      "name": "serum_iron",
+      "expr": "LBXIRN",
+      "type": "continuous",
+      "n_nonmissing": 9505,
+      "quantiles": [8, 60, 81, 105, 481]
+    },
+    {
+      "name": "tibc",
+      "expr": "LBDTIB",
+      "type": "continuous",
+      "n_nonmissing": 9453,
+      "quantiles": [139, 293, 325, 359, 621]
+    },
+    {
+      "name": "tsat",
+      "expr": "coalesce(tsat_reported, 100 * serum_iron / tibc)",
+      "type": "continuous",
+      "n_nonmissing": 9453,
+      "quantiles": [2, 19, 25, 33, 92]
+    },
+    {
+      "name": "fid_tawfik2024",
+      "expr": "ferritin >= 30 & tsat < 20",
+      "type": "binary",
+      "n_nonmissing": 9903,
+      "n_positive": 1604
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "n_nonmissing": 15560,
+      "quantiles": [0, 10, 30, 56, 80]
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "n_nonmissing": 15560,
+      "n_positive": 7839
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "Male": 7721,
+        "Female": 7839
+      }
+    },
+    {
+      "name": "race_eth",
+      "expr": "cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\")",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "Non-Hispanic White": 5271,
+        "Non-Hispanic Black": 4098,
+        "Hispanic": 3534,
+        "Non-Hispanic Asian": 1638,
+        "Other or multiracial": 1019
+      }
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "n_nonmissing": 13359,
+      "quantiles": [0, 1.02, 1.96, 3.88, 5]
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "n_nonmissing": 13359,
+      "levels": {
+        "<1.30": 4483,
+        "1.30-3.49": 5035,
+        "3.50+": 3841
+      }
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "n_nonmissing": 13137,
+      "quantiles": [11.9, 20.4, 25.8, 31.4, 92.3]
+    },
+    {
+      "name": "crp",
+      "expr": "LBXHSCRP",
+      "type": "continuous",
+      "n_nonmissing": 11614,
+      "quantiles": [0.11, 0.52, 1.32, 3.62, 246.86]
+    },
+    {
+      "name": "inflammation",
+      "expr": "crp > 5",
+      "type": "binary",
+      "n_nonmissing": 11614,
+      "n_positive": 2075
+    },
+    {
+      "name": "creatinine",
+      "expr": "LBXSCR",
+      "type": "continuous",
+      "n_nonmissing": 9475,
+      "quantiles": [0.25, 0.68, 0.82, 0.98, 14.97]
+    },
+    {
+      "name": "egfr",
+      "expr": "142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+      "type": "continuous",
+      "n_nonmissing": 9475,
+      "quantiles": [2.958, 83.388, 101.225, 118.455, 194.035]
+    },
+    {
+      "name": "uacr",
+      "expr": "URDACT",
+      "type": "continuous",
+      "n_nonmissing": 12509,
+      "quantiles": [0.27, 5.2, 8.21, 15.83, 11676.92]
+    },
+    {
+      "name": "ckd",
+      "expr": "any_of(egfr < 60, uacr >= 30)",
+      "type": "binary",
+      "n_nonmissing": 12676,
+      "n_positive": 2094
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "n_nonmissing": 15560,
+      "levels": {
+        "<18": 5867,
+        "18-39": 3260,
+        "40-64": 4022,
+        "65+": 2411
+      }
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "n_nonmissing": 9217,
+      "levels": {
+        "Less than high school": 1760,
+        "High school or GED": 2225,
+        "Some college": 2975,
+        "College graduate or above": 2257
+      }
+    },
+    {
+      "name": "aid_tawfik2024",
+      "expr": "ferritin < 30",
+      "type": "binary",
+      "n_nonmissing": 10557,
+      "n_positive": 2015
+    },
+    {
+      "name": "fid_esc_hf",
+      "expr": "ferritin < 100 | (ferritin >= 100 & ferritin < 300 & tsat < 20)",
+      "type": "binary",
+      "n_nonmissing": 10462,
+      "n_positive": 6505
+    },
+    {
+      "name": "anemia_tx",
+      "expr": "MCQ053 == 1",
+      "type": "binary",
+      "n_nonmissing": 14961,
+      "n_positive": 582
+    },
+    {
+      "name": "pregnant",
+      "expr": "coalesce(RIDEXPRG, 2) == 1",
+      "type": "binary",
+      "n_nonmissing": 15560,
+      "n_positive": 87
+    }
+  ],
+  "ranges": [
+    {
+      "variable": "BMXBMI",
+      "n_nonmissing": 13137,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 1,
+      "min_allowed": 10,
+      "max_allowed": 90,
+      "observed_min": 11.9,
+      "observed_max": 92.3
+    },
+    {
+      "variable": "DMDEDUC2",
+      "n_nonmissing": 9217,
+      "n_nonresponse_codes": 15,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 5,
+      "observed_min": 1,
+      "observed_max": 5
+    },
+    {
+      "variable": "INDFMPIR",
+      "n_nonmissing": 13359,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 5,
+      "observed_min": 0,
+      "observed_max": 5
+    },
+    {
+      "variable": "LBDPCT",
+      "n_nonmissing": 9453,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 100,
+      "observed_min": 2,
+      "observed_max": 92
+    },
+    {
+      "variable": "LBDTIB",
+      "n_nonmissing": 9453,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 100,
+      "max_allowed": 800,
+      "observed_min": 139,
+      "observed_max": 621
+    },
+    {
+      "variable": "LBXFER",
+      "n_nonmissing": 10557,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 1,
+      "min_allowed": 1,
+      "max_allowed": 5000,
+      "observed_min": 1.04,
+      "observed_max": 5190
+    },
+    {
+      "variable": "LBXHSCRP",
+      "n_nonmissing": 11614,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0.01,
+      "max_allowed": 300,
+      "observed_min": 0.11,
+      "observed_max": 246.86
+    },
+    {
+      "variable": "LBXIRN",
+      "n_nonmissing": 9505,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 5,
+      "max_allowed": 500,
+      "observed_min": 8,
+      "observed_max": 481
+    },
+    {
+      "variable": "LBXSCR",
+      "n_nonmissing": 9475,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0.2,
+      "max_allowed": 15,
+      "observed_min": 0.25,
+      "observed_max": 14.97
+    },
+    {
+      "variable": "MCQ053",
+      "n_nonmissing": 14961,
+      "n_nonresponse_codes": 25,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIAGENDR",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIDAGEYR",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 80,
+      "observed_min": 0,
+      "observed_max": 80
+    },
+    {
+      "variable": "RIDEXPRG",
+      "n_nonmissing": 1691,
+      "n_nonresponse_codes": 183,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 3,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIDRETH3",
+      "n_nonmissing": 15560,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 7,
+      "observed_min": 1,
+      "observed_max": 7
+    },
+    {
+      "variable": "URDACT",
+      "n_nonmissing": 12509,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 2,
+      "min_allowed": 0,
+      "max_allowed": 10000,
+      "observed_min": 0.27,
+      "observed_max": 11676.92
+    }
+  ],
+  "checks": [
+    {
+      "id": "variable_availability",
+      "category": "Data",
+      "title": "Requested variables present in source files",
+      "status": "pass",
+      "message": "All 15 raw variables found in 8 file(s).",
+      "detail": null
+    },
+    {
+      "id": "synthetic_data",
+      "category": "Data",
+      "title": "Real vs synthetic data",
+      "status": "pass",
+      "message": "Official source files were used (MD5 recorded in provenance).",
+      "detail": null
+    },
+    {
+      "id": "cycle_overlap",
+      "category": "Design",
+      "title": "Survey cycles do not overlap",
+      "status": "pass",
+      "message": "Cycles: P",
+      "detail": null
+    },
+    {
+      "id": "weight_choice",
+      "category": "Design",
+      "title": "Appropriate sample weight",
+      "status": "pass",
+      "message": "mec weight (WTMECPRP) matches the most restrictive component used; weights rescaled by cycle length when combining cycles.",
+      "detail": null
+    },
+    {
+      "id": "weight_values",
+      "category": "Design",
+      "title": "Analytic weights positive and non-missing",
+      "status": "pass",
+      "message": "0 analytic records with missing/zero weight. Weighted population represented: 231.3 million.",
+      "detail": null
+    },
+    {
+      "id": "design_df",
+      "category": "Design",
+      "title": "Design degrees of freedom",
+      "status": "pass",
+      "message": "Analytic population spans 49 PSUs in 24 strata (df = 25). NCHS flags estimates with df < 8.",
+      "detail": null
+    },
+    {
+      "id": "sample_size",
+      "category": "Sample",
+      "title": "Analytic sample size",
+      "status": "pass",
+      "message": "Analytic n = 8,212.",
+      "detail": null
+    },
+    {
+      "id": "events_per_parameter",
+      "category": "Model",
+      "title": "Events per model parameter",
+      "status": "pass",
+      "message": "1166 events, 5773 non-events, 12 parameters -> 97.2 per parameter (rule of thumb >= 10).",
+      "detail": null
+    },
+    {
+      "id": "missing_outcome",
+      "category": "Missing data",
+      "title": "Outcome missingness",
+      "status": "pass",
+      "message": "0.0% of the eligible population lacks the outcome (0 of 8212). Missing outcome is assumed missing at random within the design.",
+      "detail": null
+    },
+    {
+      "id": "missing_covariates",
+      "category": "Missing data",
+      "title": "Complete-case loss",
+      "status": "warn",
+      "message": "15.5% of the analytic sample (1273) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.",
+      "detail": null
+    },
+    {
+      "id": "value_ranges",
+      "category": "Data",
+      "title": "Raw values within plausible ranges",
+      "status": "warn",
+      "message": "Out-of-range values: BMXBMI (0 low, 1 high); LBXFER (0 low, 1 high); URDACT (0 low, 2 high)",
+      "detail": [
+        {
+          "variable": "BMXBMI",
+          "n_nonmissing": 13137,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 1,
+          "min_allowed": 10,
+          "max_allowed": 90,
+          "observed_min": 11.9,
+          "observed_max": 92.3
+        },
+        {
+          "variable": "LBXFER",
+          "n_nonmissing": 10557,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 1,
+          "min_allowed": 1,
+          "max_allowed": 5000,
+          "observed_min": 1.04,
+          "observed_max": 5190
+        },
+        {
+          "variable": "URDACT",
+          "n_nonmissing": 12509,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 2,
+          "min_allowed": 0,
+          "max_allowed": 10000,
+          "observed_min": 0.27,
+          "observed_max": 11676.92
+        }
+      ]
+    },
+    {
+      "id": "nchs_standards",
+      "category": "Reporting",
+      "title": "NCHS presentation standards for proportions",
+      "status": "pass",
+      "message": "33 of 33 estimates meet the standard; 0 should be suppressed, 0 flagged for review.",
+      "detail": null
+    },
+    {
+      "id": "model_convergence",
+      "category": "Model",
+      "title": "Models converged without warnings",
+      "status": "pass",
+      "message": "1 models converged cleanly.",
+      "detail": null
+    },
+    {
+      "id": "implausible_estimates",
+      "category": "Model",
+      "title": "No implausible effect sizes",
+      "status": "pass",
+      "message": "All ratio estimates within 0.1-10 with SE(log) < 2.5.",
+      "detail": null
+    },
+    {
+      "id": "design_df_params",
+      "category": "Model",
+      "title": "Model size vs design degrees of freedom",
+      "status": "pass",
+      "message": "Primary model has 13 parameters; design df = 25. Wald tests and CIs use the design df (t distribution).",
+      "detail": null
+    },
+    {
+      "id": "collinearity",
+      "category": "Model",
+      "title": "Collinearity (generalized VIF)",
+      "status": "pass",
+      "message": "Maximum VIF 1.55 (pir_cat3.50+).",
+      "detail": null
+    },
+    {
+      "id": "robustness",
+      "category": "Robustness",
+      "title": "Sensitivity analyses agree with primary result",
+      "status": "pass",
+      "message": "4 of 4 sensitivity analyses agree in direction (associations) or magnitude (prevalence).",
+      "detail": null
+    },
+    {
+      "id": "benchmark_fid_tawfik2024",
+      "category": "External validity",
+      "title": "Replication of published estimate - Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "status": "pass",
+      "message": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%: Q2E 15.4% (14.4-16.5) vs published 15.0% (14.0-17.0) [Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020] - confidence intervals overlap (consistent)",
+      "detail": null
+    },
+    {
+      "id": "benchmark_aid_tawfik2024",
+      "category": "External validity",
+      "title": "Replication of published estimate - Absolute iron deficiency - ferritin <30 ng/mL",
+      "status": "pass",
+      "message": "Absolute iron deficiency - ferritin <30 ng/mL: Q2E 13.7% (12.7-14.8) vs published 14.0% (13.0-15.0) [Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020] - confidence intervals overlap (consistent)",
+      "detail": null
+    },
+    {
+      "id": "age_topcode",
+      "category": "Data",
+      "title": "Age top-coding",
+      "status": "info",
+      "message": "NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.",
+      "detail": null
+    },
+    {
+      "id": "derivations",
+      "category": "Data",
+      "title": "Derived variables computable",
+      "status": "pass",
+      "message": "25 derived variables computed; see derivation audit.",
+      "detail": null
+    }
+  ],
+  "meta": {
+    "engine_version": "1.0.0",
+    "plan_id": "plan_8737dc128e",
+    "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "packages": {
+      "survey": "4.5",
+      "jsonlite": "2.0.0",
+      "ggplot2": "4.0.3",
+      "haven": "2.5.5",
+      "mice": "3.19.0",
+      "mitools": "2.7"
+    },
+    "started": "2026-10-10T16:12:06+0000",
+    "finished": "2026-10-10T16:12:12+0000",
+    "seconds": 6,
+    "synthetic": false,
+    "files": [
+      {
+        "cycle": "P",
+        "file": "P_DEMO",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_DEMO.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_DEMO.xpt",
+        "md5": "850382076eca1bef83b681d721c8362d",
+        "nrow": 15560,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_BMX",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BMX.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_BMX.xpt",
+        "md5": "62ff0ed76b35124059ddf97af4510310",
+        "nrow": 14300,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_FETIB",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FETIB.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_FETIB.xpt",
+        "md5": "ab6b5287e0a2423ab3d3a5b2b9f6f133",
+        "nrow": 10409,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_FERTIN",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FERTIN.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_FERTIN.xpt",
+        "md5": "8a0ac6f7e25de3e91a5d9198f9645c58",
+        "nrow": 11983,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_HSCRP",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HSCRP.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_HSCRP.xpt",
+        "md5": "9a111c710dee4d4efa64c14ccec14651",
+        "nrow": 13772,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_BIOPRO",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BIOPRO.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_BIOPRO.xpt",
+        "md5": "c8751a52982cafc58235438866d3dff6",
+        "nrow": 10409,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_MCQ",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_MCQ.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_MCQ.xpt",
+        "md5": "7e80e861d82b2c363bd16da08a6a4248",
+        "nrow": 14986,
+        "synthetic": false
+      },
+      {
+        "cycle": "P",
+        "file": "P_ALB_CR",
+        "origin": "cdc",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALB_CR.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/P_ALB_CR.xpt",
+        "md5": "ca66fa7762e0d682e1e58d39e8c5222e",
+        "nrow": 13027,
+        "synthetic": false
+      }
+    ],
+    "seed": 2026
+  },
+  "trace": [
+    "# data: P_DEMO, P_BMX, P_FETIB, P_FERTIN, P_HSCRP, P_BIOPRO, P_MCQ, P_ALB_CR",
+    "ferritin <- LBXFER",
+    "tsat_reported <- LBDPCT",
+    "serum_iron <- LBXIRN",
+    "tibc <- LBDTIB",
+    "tsat <- coalesce(tsat_reported, 100 * serum_iron / tibc)",
+    "fid_tawfik2024 <- ferritin >= 30 & tsat < 20",
+    "age <- RIDAGEYR",
+    "female <- RIAGENDR == 2",
+    "sex <- cases(female == 0, \"Male\", female == 1, \"Female\")",
+    "race_eth <- cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\")",
+    "pir <- INDFMPIR",
+    "pir_cat <- cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+    "bmi <- BMXBMI",
+    "crp <- LBXHSCRP",
+    "inflammation <- crp > 5",
+    "creatinine <- LBXSCR",
+    "egfr <- 142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+    "uacr <- URDACT",
+    "ckd <- any_of(egfr < 60, uacr >= 30)",
+    "agecat <- cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+    "educ <- cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+    "aid_tawfik2024 <- ferritin < 30",
+    "fid_esc_hf <- ferritin < 100 | (ferritin >= 100 & ferritin < 300 & tsat < 20)",
+    "anemia_tx <- MCQ053 == 1",
+    "pregnant <- coalesce(RIDEXPRG, 2) == 1",
+    "# inclusion: age >= 18",
+    "# inclusion: !is.na(ferritin) & !is.na(tsat)",
+    "des <- svydesign(ids = ~SDMVPSU, strata = ~SDMVSTRA, weights = ~WT, nest = TRUE, data = <positive-weight records>)",
+    "options(survey.lonely.psu = 'adjust'); subpopulations via subset(des, ...)",
+    "svyciprop(~I(fid_tawfik2024 == 1), subset(des, analytic), method = 'beta')  # by sex, agecat, race_eth",
+    "svyglm(fid_tawfik2024 ~ sex + agecat + race_eth + pir_cat + bmi + inflammation + ckd, design = <full>, family = quasipoisson)"
+  ],
+  "log": [
+    "16:12:06  Plan plan_8737dc128e (hash 5a458b4208e1) loaded",
+    "16:12:06  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FETIB.xpt",
+    "16:12:06  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FERTIN.xpt",
+    "16:12:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HSCRP.xpt",
+    "16:12:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BIOPRO.xpt",
+    "16:12:07  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_MCQ.xpt",
+    "16:12:08  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALB_CR.xpt",
+    "16:12:08  Loaded 15,560 records from 8 file(s)",
+    "16:12:09  Derived 25 analysis variables",
+    "16:12:09  Analytic population: 8,212",
+    "16:12:10  Computed 33 prevalence estimates",
+    "16:12:10  Fitted 1 models (family quasipoisson)",
+    "16:12:10  Ran 5 sensitivity analyses",
+    "16:12:12  QC: 21 checks, 0 fail, 2 warn"
+  ]
+}
