@@ -9,7 +9,8 @@ Transparent and conservative. It answers "has this NHANES question already been 
   levers            what this plan adds that prior NHANES papers probably did not: the newest survey cycle,
                     a 2025+ guideline definition, a prespecified effect-modification analysis
 
-score = 90 * exp(-exact / 8)  (0 papers -> 90, 1 -> 79, 5 -> 48, 13 -> 18)  + levers (max +20), clipped to 5-100.
+score = 90 * exp(-exact / 8)  (0 papers -> 90, 1 -> 79, 5 -> 48, 13 -> 18)  + levers (max +20)
+        - 25 per direct precedent (a prior title naming the whole question; max -40), clipped to 5-100.
 """
 from __future__ import annotations
 
@@ -46,6 +47,24 @@ def _count(term: str, mindate: str | None = None) -> int:
         q.update({"mindate": mindate, "maxdate": "3000", "datetype": "pdat"})
     r = literature.eutils_get("esearch.fcgi", literature._params(q))
     return int(r.json().get("esearchresult", {}).get("count", 0))
+
+
+PREV_WORDS = ("prevalence", "prevalent", "burden", "trends", "in the us", "in the united states")
+
+
+def direct_precedents(plan: dict, closest: list[dict]) -> list[dict]:
+    """Prior papers whose TITLE names every element of this question (outcome + exposure, or outcome + prevalence)."""
+    y, x = plan["outcome"], plan.get("exposure")
+    ys = _synonyms(y, 6)
+    xs = _synonyms(x, 6) if x else None
+    out = []
+    for c in closest or []:
+        t = (c.get("title") or "").lower()
+        hit_y = any(w in t for w in ys)
+        hit_x = any(w in t for w in xs) if xs is not None else any(w in t for w in PREV_WORDS) or "in the us" in t
+        if hit_y and hit_x:
+            out.append({"title": c.get("title"), "journal": c.get("journal"), "url": c.get("url")})
+    return out
 
 
 def levers(plan: dict) -> list[dict]:
@@ -86,7 +105,7 @@ def novelty(plan: dict, live: bool = True, today: dt.date | None = None) -> dict
     q = queries(plan)
     lv = levers(plan)
     base = {"queries": q, "levers": lv, "source": "PubMed/MEDLINE (NCBI E-utilities)", "checked": today.isoformat(),
-            "method": "score = 90*exp(-exact/8) + levers (max +20), clipped 5-100; exact = PubMed NHANES papers on the same "
+            "method": "score = 90*exp(-exact/8) + levers (max +20) - 25 per direct precedent (max -40), clipped 5-100; exact = PubMed NHANES papers on the same "
                       "outcome/exposure in the last 10 years."}
     if not live:
         return {**base, "score": None, "label": "Not checked", "exact": None, "error": "offline"}
@@ -97,10 +116,15 @@ def novelty(plan: dict, live: bool = True, today: dt.date | None = None) -> dict
         closest = literature.pubmed_search(q["exact"], retmax=5, sort="relevance", mindate=f"{today.year - 10}/01/01")
     except Exception as e:  # noqa: BLE001
         return {**base, "score": None, "label": "Not checked", "exact": None, "error": f"PubMed unavailable: {e}"}
+    direct = direct_precedents(plan, closest)
     bonus = min(20, sum(x["points"] for x in lv))
-    score = max(5, min(100, round(90 * math.exp(-exact / 8) + bonus)))
+    penalty = min(40, 25 * len(direct))
+    score = max(5, min(100, round(90 * math.exp(-exact / 8) + bonus - penalty)))
     label = "High" if score >= 70 else ("Moderate" if score >= 40 else "Low")
     return {**base, "score": score, "label": label, "exact": exact, "recent_3y": recent, "broader": broader,
-            "closest": closest, "suggestions": suggestions(plan, exact), "error": None,
-            "summary": (f"{exact} PubMed NHANES paper(s) on this question in 10 years ({recent} in the last 3); "
+            "closest": closest, "direct_precedents": direct, "penalty": penalty,
+            "suggestions": [f"Direct precedent: '{d['title']}' ({d['journal']}) - frame as an update or replication, or add a new angle."
+                            for d in direct] + suggestions(plan, max(exact, 5 if direct else 0)), "error": None,
+            "summary": (f"{exact} PubMed NHANES paper(s) on this question in 10 years ({recent} in the last 3)"
+                        + (f", {len(direct)} with a title naming the whole question" if direct else "") + "; "
                         f"{broader:,} on the topic in any data source.")}

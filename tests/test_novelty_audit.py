@@ -42,3 +42,14 @@ def test_reverse_causation_fix_and_review_item():
 def test_validated_instrument_and_objective_outcomes_pass():
     assert _audit("Is insomnia associated with depression in adults?")["outcome_ascertainment"]["status"] == "pass"
     assert _audit("Is waist circumference associated with HbA1c?")["outcome_ascertainment"]["status"] == "pass"
+
+
+def test_direct_precedent_penalty(monkeypatch):
+    plan = planner.draft("What is the prevalence of functional iron deficiency?")
+    monkeypatch.setattr(novelty, "_count", lambda term, mindate=None: 2)
+    monkeypatch.setattr(novelty.literature, "pubmed_search", lambda *a, **k: [
+        {"title": "Absolute and Functional Iron Deficiency in the US, 2017-2020.", "journal": "JAMA network open", "url": "u", "pubdate": "2024"},
+        {"title": "Microalbuminuria and Functional Iron Deficiency are Risk Factors for Hearing Loss", "journal": "Laryngoscope", "url": "u", "pubdate": "2024"}])
+    nv = novelty.novelty(plan)
+    assert len(nv["direct_precedents"]) == 1 and nv["penalty"] == 25
+    assert nv["label"] in ("Moderate", "Low") and nv["suggestions"][0].startswith("Direct precedent")
