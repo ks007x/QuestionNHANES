@@ -37,7 +37,7 @@ _CACHE: dict[str, tuple[float, Any]] = {}
 
 @lru_cache(maxsize=1)
 def config() -> dict:
-    return yaml.safe_load((ROOT / "knowledge" / "high_impact_journals.yaml").read_text())
+    return yaml.safe_load((ROOT / "knowledge" / "high_impact_journals.yaml").read_text(encoding="utf-8"))
 
 
 def journals() -> list[dict]:
@@ -347,21 +347,21 @@ def remember(plan: dict, ev: dict) -> None:
         return
     f = _memory_path()
     try:
-        mem = json.loads(f.read_text()) if f.exists() else {}
+        mem = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
     except Exception:  # noqa: BLE001
         mem = {}
     mem[topic_key(plan)] = {"checked": ev["checked"], "landscape": ev["landscape"], "summary": ev["summary"],
                             "published": [{"pmid": r["pmid"], "journal": r["journal"], "year": r["year"],
                                            "estimate": r["comparison"].get("published")} for r in ev["papers"][:12]]}
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(json.dumps(mem, indent=1, default=str))
+    f.write_text(json.dumps(mem, indent=1, default=str), encoding="utf-8")
 
 
 def recall(plan: dict) -> dict | None:
     import json
     f = _memory_path()
     try:
-        return (json.loads(f.read_text()) if f.exists() else {}).get(topic_key(plan))
+        return (json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}).get(topic_key(plan))
     except Exception:  # noqa: BLE001
         return None
 
@@ -416,11 +416,15 @@ def check(plan: dict, results: dict | None = None, live: bool = True, retmax: in
     need = 5 if terms["exposure"] else 4          # outcome and exposure both mentioned (title counts triple)
     papers = [p for p in ranked if relevance(p, terms) >= need][:12]
     rows = []
-    for p in papers:
+    llm_all: list = [None] * len(papers)
+    if client and papers:
+        # one AI call per abstract; run them side by side instead of one after another
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=min(6, len(papers))) as pool:
+            llm_all = list(pool.map(lambda p: extract_llm(client, p), papers))
+    for p, llm_info in zip(papers, llm_all):
         ex = extract_rules(p["abstract"])
-        llm_info = None
         if client:
-            llm_info = extract_llm(client, p)
             if llm_info:
                 known = {(e["measure"], e["value"], e["lcl"], e["ucl"]) for e in ex["estimates"] + ex["prevalence"]}
                 for e in llm_info["estimates"]:
