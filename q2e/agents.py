@@ -182,6 +182,8 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     plan["agent_dialogue"] = dialogue
     plan["llm"] = {**client.status(), "calls": [c.__dict__ for c in client.calls]}
     plan["privacy"] = {"findings": findings, **privacy.boundary_summary(client.provider.name)}
+    from . import expertise
+    plan["idea_gaps"] = expertise.idea_gaps(plan.get("question", ""), plan, k)
     return plan
 
 
@@ -217,9 +219,10 @@ def refresh_plan(plan: dict, provider: str | None = None) -> dict:
     plan["answerability"] = answerability.assess(plan, plan.get("parsed", {}), probe if probe and not probe.get("stale") else None)
     _answer_issue(plan)
     clar = plan.get("clarification") or {}
+    from . import expertise
     if clar.get("answers"):
-        from . import expertise
         clar["typed"] = expertise.typed_notes(clar["answers"], plan, plan.get("question", ""), original=clar.get("original_question"))
+    plan["idea_gaps"] = expertise.idea_gaps(clar.get("original_question") or plan.get("question", ""), plan, k)
     return plan
 
 

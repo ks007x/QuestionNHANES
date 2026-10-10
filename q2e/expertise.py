@@ -164,6 +164,9 @@ PROXY_WORDS = {"stress", "stressed", "anxiety", "work", "job", "working", "study
                "school", "student", "students", "college", "grades", "habits", "lifestyle", "screen", "phone", "gaming", "tv"}
 # Behaviours NHANES measures well, offered as close alternatives when a question's exposure is not in NHANES
 COMMON_EXPOSURES = ["short_sleep", "physical_activity", "sedentary", "smoking", "alcohol", "obesity"]
+# Pairs that measure nearly the same behaviour, so "is one linked to the other?" is not a useful question
+SAME_THING = {frozenset(("sedentary", "physical_activity")), frozenset(("obesity", "bmi_concept")),
+              frozenset(("obesity", "abdominal_obesity"))}
 POP_WORDS = re.compile(r"\b(older adults|young adults|adults|women|men|children|adolescents|teenagers|teens|elderly|seniors)\b", re.I)
 
 
@@ -242,6 +245,45 @@ def typed_notes(answers: dict | None, plan: dict, question: str, k: Knowledge | 
     return notes
 
 
+def missing_topics(parsed: dict, k: Knowledge) -> list[str]:
+    """Words from the idea that no official NHANES variable mentions at all (e.g. 'cortisol')."""
+    return [t for t in unclear_terms(parsed) if not POP_WORDS.search(t) and not term_suggestions(t, k)
+            and all(not_measured(w, k) for w in t.split())]
+
+
+def idea_gaps(original: str, plan: dict, k: Knowledge | None = None) -> list[dict]:
+    """Compare the user's ORIGINAL idea with the study that was built, and name every difference:
+    topics NHANES does not measure, topics it measures that did not make it into the study, and a
+    'does X relate to Y?' idea that became a 'how common is X?' study. Nothing changes silently."""
+    k = k or get_knowledge()
+    if not original:
+        return []
+    text, _ = fix_spelling(privacy.scrub(original)[0], k)
+    first = planner.parse_question(text, k)
+    out_c = (plan.get("outcome") or {}).get("concept")
+    exp_c = (plan.get("exposure") or {}).get("concept")
+    in_study = {out_c, exp_c} | set(plan.get("covariates") or [])
+    current = {out_c, exp_c}
+    alts = [a for a in close_questions(text, k, limit=4)
+            if {(p := planner.parse_question(a["question"], k)).get("outcome_concept"), p.get("exposure_concept")} != current][:3]
+    gaps = []
+    for t in missing_topics(first, k):
+        gaps.append({"text": t, "status": "not_in_nhanes", "alternatives": alts,
+                     "note": f"\"{t}\" is not in this study: none of the {len(k.dictionary):,} official NHANES variables mention it, "
+                             "so it cannot be measured. Q2E does not swap in a different measure without asking."})
+    for c in (first.get("outcome_concept"), first.get("exposure_concept")):
+        if c and c not in in_study and not c.startswith("dict:"):
+            gaps.append({"text": _label(c, k), "status": "not_used", "alternatives": [],
+                         "note": f"{_label(c, k)} was in your idea but is not in this study (it was changed during set-up). "
+                                 "Ask below to put it back."})
+    if (first.get("association_cue") or len(missing_topics(first, k)) + len([c for c in (first.get("outcome_concept"), first.get("exposure_concept")) if c]) >= 2) \
+            and plan.get("study_type") == "prevalence" and gaps:
+        gaps.append({"text": "kind of study", "status": "changed", "alternatives": [],
+                     "note": f"Your idea asks whether two things are related, but this study only estimates how common "
+                             f"{_label(out_c, k).lower()} is, because the other half of the question is not in NHANES."})
+    return gaps
+
+
 def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -> list[dict]:
     """Full questions NHANES CAN answer that stay as close as possible to one it cannot: keep the topic that was
     understood and swap the missing one for the nearest thing NHANES measures. Every suggestion is re-read by the
@@ -255,7 +297,7 @@ def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -
     if not anchor or anchor.startswith("dict:"):
         return []
     pops = POP_WORDS.findall(question)
-    pop = pops[-1].lower() if pops else "US adults"
+    pop = pops[-1].lower() if pops else _population_phrase(parsed, k)
     pop = {"teenagers": "adolescents", "teens": "adolescents", "elderly": "older adults", "seniors": "older adults"}.get(pop, pop)
     anchor_words = {w for s in k.concepts[anchor]["synonyms"] + [k.concepts[anchor]["label"]] for w in re.findall(r"[a-z]+", s.lower())}
     words = [w for w in re.findall(r"[a-z]+", question.lower()) if w not in anchor_words]   # "blood sugar" is the topic itself
@@ -274,6 +316,8 @@ def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -
     a_syn = k.concepts[anchor]["synonyms"][0]
     res = []
     for cid, w in cands:
+        if frozenset((cid, anchor)) in SAME_THING:
+            continue
         syn = k.concepts[cid]["synonyms"][0]
         q = f"Is {syn} associated with {a_syn} in {pop}?" if out_c else f"Is {a_syn} associated with {syn} in {pop}?"
         p = planner.parse_question(q, k)
@@ -538,6 +582,28 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
 
     # (no health topic at all is handled by rewrite_help(): the user is sent back to retype the idea)
 
+    # (a1) part of the idea is something NHANES never measured (e.g. cortisol) -> say so first and let the user decide
+    gone = missing_topics(parsed, k) if bool(out_c) != bool(exp_c) else []
+    if gone:
+        names = " or ".join(f"\"{g}\"" for g in gone[:2])
+        anchor = out_c or exp_c
+        lbl = _label(anchor, k).lower()
+        opts = [{"id": f"switch{i}", "label": a["question"], "hint": a["why"], "question": a["question"]}
+                for i, a in enumerate(close_questions(question, k, limit=3))]
+        opts.append({"id": "only", "label": f"Only study {lbl}, without {names}",
+                     "hint": f"The study estimates how common {lbl} is, and the protocol states that {names} was not studied.",
+                     "append": " Estimate the prevalence."})
+        qs.append(_question("missing", level, {
+            "novice": f"NHANES never measured {names}, so it cannot be part of the study. What would you like to do instead?",
+            "intermediate": f"{names} is not measured in NHANES. How should the question be reframed?",
+            "expert": f"{names}: no NHANES variable. Reframe?"}, {
+            "novice": f"None of the {len(k.dictionary):,} official NHANES variables mention {names}. Q2E will not quietly use something "
+                      f"else in its place, so you choose: a close question that keeps {lbl} and uses something NHANES does measure, "
+                      f"or a study of {lbl} on its own.",
+            "intermediate": f"No CDC variable mentions {names}. Choose a measured substitute topic or a descriptive study of {lbl}.",
+            "expert": "Construct not measured; substitute or descriptive estimand."},
+            opts, {"placeholder": f"Or type another factor to compare with {lbl}", "template": " Is it associated with {text}?"}))
+
     # (a2) more health topics than the parser could keep -> which one is the main thing to measure?
     missed = missed_topics(question, parsed, k) if out_c else []
     if missed:
@@ -631,7 +697,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
 
     # (d) only one topic, no clear aim -> "how common" or "linked to something"?
     has_prev_cue = any(c in q for c in planner.PREVALENCE_CUES)
-    if out_c and not exp_c and not has_prev_cue and not goal and i == 0:
+    if out_c and not exp_c and not has_prev_cue and not goal and i == 0 and not gone:
         lbl = _label(out_c, k).lower()
         qs.append(_question("aim", level, {
             "novice": f"What would you like to find out about {lbl}?",
@@ -950,6 +1016,8 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
         opt = next((o for o in q["options"] if o["id"] == a.get("option")), None)
         text = privacy.scrub(str(a.get("text") or ""))[0].strip()[:120]
         ft = q.get("free_text") or {}
+        if opt and opt.get("question"):
+            refined = opt["question"]       # the user picked a close question NHANES can answer instead
         if opt:
             refined += opt.get("append", "")
             fixes += opt.get("fixes", [])

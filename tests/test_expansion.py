@@ -153,6 +153,27 @@ def test_follow_ups_come_from_the_idea_itself():
         assert len(labels) == len(set(labels))
 
 
+def test_study_never_silently_drops_part_of_the_idea():
+    from fastapi.testclient import TestClient
+    from q2e.server import app
+    c = TestClient(app)
+    q = "does high cortisol relate to lack of physical activity?"
+    qs = c.post("/api/clarify", json={"question": q}).json()["questions"]
+    first = qs[0]
+    assert first["id"] == "missing" and "cortisol" in first["text"] and not any(x["id"] == "aim" for x in qs)
+    switches = [o for o in first["options"] if o.get("question")]
+    assert switches and all("physical activity" in o["question"] for o in switches)
+    assert not any("sedentary" in o["question"] for o in switches)
+    only = c.post("/api/projects", json={"question": q, "source": "synthetic", "answers": {"missing": {"option": "only"}}}).json()["plan"]
+    notes = " ".join(g["note"] for g in only["idea_gaps"])
+    assert "cortisol" in notes and "only estimates how common" in notes
+    sw = c.post("/api/projects", json={"question": q, "source": "synthetic", "answers": {"missing": {"option": "switch0"}}}).json()["plan"]
+    assert sw["study_type"] == "association" and any("cortisol" in g["note"] for g in sw["idea_gaps"])
+    assert switches[0]["question"] not in [a["question"] for g in sw["idea_gaps"] for a in g["alternatives"]]
+    plain = c.post("/api/projects", json={"question": "Is short sleep associated with hypertension in US adults?", "source": "synthetic"}).json()
+    assert plain["plan"]["idea_gaps"] == []
+
+
 def test_missing_r_gives_a_clear_message(monkeypatch):
     from fastapi.testclient import TestClient
     from q2e import runner

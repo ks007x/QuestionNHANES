@@ -509,6 +509,22 @@ function typedPoints() {
       ${altButtons(t.alternatives, key, title, " ")}${ptTalk(key, title)}</div>`;
   }).join("");
 }
+/* Differences between the analyst's original idea and the study that was built - always shown, never silent. */
+function ideaGapBox() {
+  const g = S.project.plan.idea_gaps || []; if (!g.length) return "";
+  return `<div class="banner warn" style="margin:10px 0 0"><b>How this study differs from your idea</b>
+    <ul class="small" style="margin:4px 0 0;padding-left:18px">${g.map((x) => `<li>${esc(x.note)}</li>`).join("")}</ul>
+    ${g.some((x) => (x.alternatives || []).length) ? `<div class="tiny" style="margin-top:4px">Close questions NHANES can answer are listed just below.</div>` : ""}</div>`;
+}
+function ideaGapPoints() {
+  const g = (S.project.plan.idea_gaps || []).filter((x) => (x.alternatives || []).length);
+  return g.map((x, i) => {
+    const key = `gap:${i}:${x.text.slice(0, 40)}`; const title = `Not in this study: "${x.text}"`;
+    return `<div class="pt sev-major"><div class="pt-row"><span class="sev major">your idea</span>
+      <div style="flex:1"><b class="small">${esc(title)}</b><div class="small muted">Switch to a close question that NHANES can answer, or keep the study as it is.</div></div></div>
+      ${altButtons(x.alternatives, key, title, " ")}${ptTalk(key, title)}</div>`;
+  }).join("");
+}
 function typedUsed() {
   const used = ((S.project.plan.clarification || {}).typed || []).filter((t) => t.status === "used");
   return used.length ? `<h3 class="sub">Your own words</h3><ul class="small" style="margin:0;padding-left:18px">${used.map((t) => `<li>“${esc(t.text)}” - ✓ ${esc(t.note)}</li>`).join("")}</ul>` : "";
@@ -640,11 +656,12 @@ function viewProtocol() {
     lede: "The AI drafted your study. Check it one step at a time. Items that need your attention are marked, and you can change or comment on them right there.",
     parts: [
       { id: "question", title: "Your study question", help: "Check that this says what you want to study. Click any underlined text to edit it yourself.",
-        attn: typedPoints(),
+        attn: ideaGapPoints() + typedPoints(),
         html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
         <div class="card"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional</div>
           <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
-          <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc(p.question)}”</p>
+          <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc((p.clarification || {}).original_question || p.question)}”</p>
+          ${ideaGapBox()}
           <h3 class="sub">Research question</h3>
           <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
           ${p.refined_question_llm ? `<div class="row" style="margin-top:8px"><span class="chip accent">AI phrasing</span><span class="small" style="flex:1">${nice(p.refined_question_llm)}</span><button class="btn sm" data-act="usellm" data-field="refined_question">Use</button></div>` : ""}
