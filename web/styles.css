@@ -203,3 +203,16 @@ body:has(.cq-overlay) { overflow: hidden; }
 .rewrite { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--warn); border-left: 5px solid var(--warn); border-radius: 12px; background: var(--warn-bg); }
 .rewrite .examples button { border-style: solid; }
 .rw-miss { background: var(--bad-bg); color: var(--bad); padding: 0 4px; border-radius: 4px; font-weight: 600; }
+
+/* Protocol agent chat + change history */
+.pc-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.pc-msg { background: var(--line-2); border-radius: 10px; padding: 8px 10px; max-width: 92%; }
+.pc-msg.me { background: var(--accent-2); align-self: flex-end; }
+.pc-msg .who { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.pc-msg .who small { font-weight: 400; color: var(--ink-3); margin-left: 4px; }
+.pc-msg ul, .ch-item ul { margin: 4px 0; padding-left: 18px; }
+.ch { border-left: 4px solid var(--accent); }
+.ch-list { max-height: 360px; overflow-y: auto; }
+.ch-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 10px 0 4px; }
+.ch-item { border-top: 1px solid var(--line); padding: 8px 0; font-size: 13.5px; }
+.ch-item.undone ul { text-decoration: line-through; color: var(--ink-3); }

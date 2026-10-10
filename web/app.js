@@ -310,6 +310,66 @@ function avatar(name) {
 function editable(field, text, cls = "") {
   return `<span class="editable ${cls}" data-act="edittext" data-field="${field}" title="Click to edit">${nice(text)}</span>`;
 }
+/* Protocol agent chat + change history (so the lead investigator can follow every change) */
+const PC_EXAMPLES = ["only adults over 40", "report odds ratios", "adjust for alcohol", "use 2015-2018 data", "swap the exposure and outcome"];
+const SOURCE_NAME = { chat: "asked the AI", edit: "edited by hand", undo: "undo" };
+function when(at) {
+  const d = new Date(at); if (isNaN(d)) return esc(at || "");
+  return d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+function ageGroup(at) {
+  const d = new Date(at); const now = new Date();
+  if (d.toDateString() === now.toDateString()) return "Today";
+  return now - d < 7 * 864e5 ? "This week" : "Earlier";
+}
+function protocolChatCard() {
+  const msgs = S.project.protocol_chat || [];
+  const list = msgs.length ? msgs.slice(-12).map((m) => {
+    const me = m.who !== "Protocol agent";
+    return `<div class="pc-msg ${me ? "me" : ""}"><div class="who">${esc(me ? m.who || "analyst" : "Protocol agent")} <small>${when(m.at)}</small></div>
+      <div class="txt">${nice(m.text || "")}</div>
+      ${(m.summary || []).length ? `<ul class="small">${m.summary.map((s) => `<li>${nice(s)}</li>`).join("")}</ul>` : ""}
+      ${(m.options || []).length ? `<div class="examples">${m.options.map((o) => `<button data-act="pcSend" data-msg="${esc(o.send)}" title="${esc(o.hint || "")}">${esc(o.label)}</button>`).join("")}</div>` : ""}</div>`;
+  }).join("") : `<p class="small muted" style="margin:0">Tell the AI what you want to change in plain words. It changes the protocol right away, shows what changed, and you can undo it.</p>`;
+  return `<div class="card pc"><h3 class="sub" style="margin-top:0">Ask the AI to change the protocol</h3>
+    <div class="pc-list" id="pcList">${list}</div>
+    <div class="row" style="margin-top:10px"><input type="text" id="pcInput" placeholder="e.g. only adults over 40" style="flex:1" maxlength="1000">
+      <button class="btn primary sm" data-act="pcSend" id="pcBtn">Send</button></div>
+    <div class="examples" style="margin-top:6px">${PC_EXAMPLES.map((e) => `<button data-act="pcSend" data-msg="${esc(e)}">${esc(e)}</button>`).join("")}</div></div>`;
+}
+function changeHistoryCard() {
+  const ams = (S.project.amendments || []).slice().reverse();
+  const live = ams.filter((a) => !a.undone && a.source !== "undo");
+  const latest = live.length ? live[0].id : null;
+  const n = (g) => ams.filter((a) => ageGroup(a.at) === g).length;
+  let lastGroup = "";
+  const rows = ams.map((a) => {
+    const g = ageGroup(a.at); const head = g !== lastGroup ? `<div class="ch-group">${g}</div>` : ""; lastGroup = g;
+    return `${head}<div class="ch-item ${a.undone ? "undone" : ""}">
+      <div class="row" style="justify-content:space-between;gap:8px"><span><b>${when(a.at)}</b> · ${esc(a.by || "analyst")} <span class="chip">${SOURCE_NAME[a.source] || esc(a.source)}</span>${a.undone ? ` <span class="chip warn">undone</span>` : ""}</span>
+        <span class="tiny muted">v${a.version_before ?? "?"} → v${a.version_after ?? "?"}</span></div>
+      ${a.source === "chat" ? `<div class="small muted">Asked: “${esc(a.request)}”</div>` : ""}
+      <ul class="small">${(a.summary || []).map((s) => `<li>${nice(s)}</li>`).join("")}</ul>
+      <div class="row" style="gap:6px">${a.reason ? `<span class="small"><b>Why:</b> ${esc(a.reason)}</span>` : (a.source !== "undo" ? `<button class="btn sm ghost" data-act="amReason" data-id="${a.id}">+ Why? (optional)</button>` : "")}
+        ${a.id === latest ? `<button class="btn sm" data-act="amUndo" data-id="${a.id}">↶ Undo this change</button>` : ""}</div></div>`;
+  }).join("");
+  return `<div class="card ch"><div class="row" style="justify-content:space-between"><h3 class="sub" style="margin:0">Change history <span class="chip accent">${ams.length}</span></h3>
+      ${ams.length ? `<button class="btn sm ghost" data-act="amCopy" title="Copy a weekly summary to paste into an email or report">Copy weekly summary</button>` : ""}</div>
+    <p class="tiny muted" style="margin:4px 0 8px">Every change to this protocol, with date, time and who made it, so the lead investigator can follow along. Today: ${n("Today")} · This week: ${n("Today") + n("This week")} · Total: ${ams.length}</p>
+    <div class="ch-list">${rows || `<p class="small muted" style="margin:0">No changes yet. This is the AI's first draft (v1).</p>`}</div></div>`;
+}
+function weeklySummary() {
+  const p = S.project.plan; const ams = (S.project.amendments || []).filter((a) => new Date() - new Date(a.at) < 7 * 864e5);
+  const lines = [`Protocol change summary (last 7 days): ${p.title}`, `Current version: v${p.version}. Changes: ${ams.length}.`, ""];
+  for (const a of ams) {
+    lines.push(`${new Date(a.at).toLocaleString()} - ${a.by || "analyst"} (${SOURCE_NAME[a.source] || a.source}${a.undone ? ", later undone" : ""})`);
+    if (a.source === "chat") lines.push(`  Asked: "${a.request}"`);
+    for (const s of a.summary || []) lines.push(`  - ${s}`);
+    if (a.reason) lines.push(`  Why: ${a.reason}`);
+  }
+  return lines.join("\n");
+}
+
 function viewProtocol() {
   const p = S.project.plan; const f = p.feasibility; const k = S.meta.knowledge;
   const defs = Object.fromEntries(k.definitions.map((d) => [d.id, d]));
@@ -339,6 +399,7 @@ function viewProtocol() {
       <details><summary class="tiny">components</summary><ul class="tiny" style="padding-left:16px;margin:4px 0">${f.components.map((c) => `<li>${esc(c.name)}: ${c.score}/${c.max}${c.note ? " - " + esc(c.note) : ""}</li>`).join("")}</ul></details></div></div>
     ${noveltyGauge()}
   </div>
+  <div class="grid g2" style="margin-top:16px;align-items:start">${protocolChatCard()}${changeHistoryCard()}</div>
   <div class="card" style="margin-top:16px"><h3 class="sub" style="margin-top:0">Refined research question</h3>
     <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
     ${p.refined_question_llm ? `<div class="row" style="margin-top:8px"><span class="chip accent">AI phrasing</span><span class="small" style="flex:1">${nice(p.refined_question_llm)}</span><button class="btn sm" data-act="usellm" data-field="refined_question">Use</button></div>` : ""}
@@ -714,6 +775,28 @@ const A = {
   swap: () => edit({ op: "swap_roles" }, "swap exposure/outcome"),
   fix: (el) => { const i = (S.project.plan.review || []).find((x) => x.id === el.dataset.id); if (i?.fix) edit({ ...i.fix, by: store.get("q2e.name", "") || "investigator" }, `fix: ${i.title}`); },
   rmpill: (el) => { const f = el.dataset.field; edit({ op: `set_${f}`, value: S.project.plan[f].filter((x) => x !== el.dataset.v) }); },
+  pcSend: async (el) => {
+    const inp = $("#pcInput"); const msg = (el.dataset.msg || (inp && inp.value) || "").trim();
+    if (msg.length < 2) return toast("Type what you want to change first", true);
+    const btn = $("#pcBtn"); if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>`; }
+    try {
+      S.project = await api(`/api/projects/${S.project.id}/protocol-chat`, { method: "POST", body: { message: msg, actor: store.get("q2e.name", "") || "analyst" } });
+      await rerender(); const l = $("#pcList"); if (l) l.scrollTop = l.scrollHeight; const i2 = $("#pcInput"); if (i2) i2.focus();
+    } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = "Send"; } }
+  },
+  amUndo: async (el) => {
+    try { S.project = await api(`/api/projects/${S.project.id}/amendments/${el.dataset.id}/undo`, { method: "POST", body: { actor: store.get("q2e.name", "") || "analyst" } }); toast("Change undone"); rerender(); }
+    catch (e) { toast(e.message, true); }
+  },
+  amReason: async (el) => {
+    const why = prompt("Why did you make this change? (optional - helps the lead investigator)"); if (!why || !why.trim()) return;
+    try { S.project = await api(`/api/projects/${S.project.id}/amendments/${el.dataset.id}/reason`, { method: "POST", body: { reason: why.trim(), actor: store.get("q2e.name", "") || "analyst" } }); rerender(); }
+    catch (e) { toast(e.message, true); }
+  },
+  amCopy: async () => {
+    try { await navigator.clipboard.writeText(weeklySummary()); toast("Weekly summary copied - paste it into an email or report"); }
+    catch (e) { prompt("Copy this summary:", weeklySummary()); }
+  },
   addcrit: async () => {
     const expr = $("#critExpr").value.trim(); const v = await api("/api/expressions/validate", { method: "POST", body: { expr } });
     if (!v.ok) return toast(v.error, true); edit({ op: "add_criterion", label: $("#critLabel").value || expr, expr, kind: $("#critKind").value });
@@ -769,6 +852,9 @@ const A = {
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const fn = A[el.dataset.act]; if (fn && !(el.tagName === "INPUT" || el.tagName === "SELECT")) { e.preventDefault(); fn(el, e); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.id === "pcInput") { e.preventDefault(); A.pcSend(e.target); }
 });
 document.addEventListener("change", (e) => {
   const el = e.target; const act = el.dataset?.act; if (!act) return;

@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expertise, expressions, generic, literature, novelty, planner, privacy, report, tools as qtools, venues, voice
+from . import __version__, agents, answerability, expertise, expressions, generic, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -183,9 +183,118 @@ def edit_project(pid: str, body: Edit):
         rec = generic.get_dataset(new_plan["dataset"]["dataset_id"])
         new_plan["generic_status"] = generic.suggest_mapping(new_plan, rec)["status"]
     new_plan["status"] = "draft"
+    old_plan, v_before = proj["plan"], proj["plan"].get("version")
     proj["plan"] = new_plan
     store.snapshot(proj, body.actor, body.note or f"edit: {body.fix.get('op')}")
     store.event(proj, body.actor, "plan_edited", {"fix": body.fix})
+    _record_edit(proj, body.actor, body.fix, old_plan, v_before)
+    store.save(proj)
+    return _public(proj)
+
+
+# ------------------------------------------------------------------ protocol agent + amendment history
+EDIT_NAMES = {"title": "Title", "refined_question": "Refined research question", "hypothesis": "Hypothesis"}
+
+
+def _record_edit(proj: dict, actor: str, fix: dict, old_plan: dict, v_before: int | None) -> None:
+    """Every manual edit also goes into the readable amendment history."""
+    changes = protocol_chat.diff_plans(old_plan, proj["plan"])
+    if not changes:
+        path = str(fix.get("path") or "")
+        what = EDIT_NAMES.get(path.split(".")[-1], (fix.get("op") or "edit").replace("_", " ").capitalize())
+        changes = [{"what": what, "before": "-", "after": "edited"}]
+    am = protocol_chat.new_amendment(actor, "Edited on the protocol page", changes, v_before, proj["plan"].get("version"),
+                                     [], None, _now(), source="edit", edit_ops=[fix])
+    proj.setdefault("amendments", []).append(am)
+
+
+class ChatMsg(BaseModel):
+    message: str = Field(min_length=2, max_length=1000)
+    actor: str = "analyst"
+
+
+@app.post("/api/projects/{pid}/protocol-chat")
+def protocol_chat_send(pid: str, body: ChatMsg):
+    """Analyst asks the Protocol agent for a change; it is applied right away (with Undo) and logged."""
+    proj = _project(pid)
+    if proj.get("signoff"):
+        _bad("Project is signed off; create a new version to change the protocol")
+    msg, _ = privacy.scrub(body.message)
+    chat = proj.setdefault("protocol_chat", [])
+    chat.append({"at": _now(), "who": body.actor, "text": msg})
+    pub = _public(proj)
+    try:
+        r = protocol_chat.respond(pub, msg)
+    except (ValueError, KeyError, expressions.ExpressionError) as e:
+        r = {"reply": None, "new_plan": None, "changes": [], "ask": {"text": f"I couldn't apply that: {e}", "options": []}}
+    if r["new_plan"]:
+        v_before = proj["plan"].get("version")
+        proj["plan"] = r["new_plan"]
+        store.snapshot(proj, body.actor, f"Protocol agent: {msg[:80]}")
+        am = protocol_chat.new_amendment(body.actor, msg, r["changes"], v_before, proj["plan"].get("version"),
+                                         r["ops"], r["text_request"], _now())
+        proj.setdefault("amendments", []).append(am)
+        if r["text_request"]:
+            proj.setdefault("protocol_requests", []).append(r["text_request"])
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"], "summary": am["summary"], "amendment": am["id"]})
+        store.event(proj, body.actor, "protocol_amended", {"amendment": am["id"], "request": msg, "summary": am["summary"],
+                                                           "version": proj["plan"].get("version")})
+    elif r.get("reply"):
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"]})
+    else:
+        chat.append({"at": _now(), "who": "Protocol agent", "text": r["ask"]["text"], "options": r["ask"]["options"]})
+        store.event(proj, body.actor, "protocol_request_not_applied", {"request": msg})
+    store.save(proj)
+    return _public(proj)
+
+
+class AmendAction(BaseModel):
+    actor: str = "analyst"
+    reason: str | None = Field(default=None, max_length=500)
+
+
+@app.post("/api/projects/{pid}/amendments/{aid}/undo")
+def amendment_undo(pid: str, aid: str, body: AmendAction):
+    proj = _project(pid)
+    if proj.get("signoff"):
+        _bad("Project is signed off; create a new version to change the protocol")
+    active = [a for a in proj.get("amendments", []) if not a.get("undone") and a.get("source") != "undo"]
+    if not active or active[-1]["id"] != aid:
+        _bad("Only the most recent change can be undone", 409)
+    am = active[-1]
+    f = store.path(pid) / "plans" / f"plan_v{am['version_before']}.json"
+    if not am.get("version_before") or not f.exists():
+        _bad("The earlier version of the protocol was not found", 404)
+    old = json.loads(f.read_text())
+    for key in ("approvals", "acknowledgements"):
+        if key in proj["plan"]:
+            old[key] = proj["plan"][key]
+    v_from = proj["plan"].get("version")
+    proj["plan"] = agents.refresh_plan(old)
+    proj["plan"]["status"] = "draft"
+    store.snapshot(proj, body.actor, f"Undo: {am['request'][:80]}")
+    am["undone"] = True
+    if am.get("text_request") and am["text_request"] in proj.get("protocol_requests", []):
+        proj["protocol_requests"].remove(am["text_request"])
+    undo = protocol_chat.new_amendment(body.actor, f"Undid: {am['request']}",
+                                       [{"what": c["what"], "before": c["after"], "after": c["before"]} for c in am["changes"]],
+                                       v_from, proj["plan"].get("version"), [], None, _now(), source="undo")
+    proj["amendments"].append(undo)
+    proj.setdefault("protocol_chat", []).append({"at": _now(), "who": "Protocol agent", "text": "Undone. The protocol is back to how it was.",
+                                                 "summary": undo["summary"]})
+    store.event(proj, body.actor, "amendment_undone", {"amendment": aid, "version": proj["plan"].get("version")})
+    store.save(proj)
+    return _public(proj)
+
+
+@app.post("/api/projects/{pid}/amendments/{aid}/reason")
+def amendment_reason(pid: str, aid: str, body: AmendAction):
+    proj = _project(pid)
+    am = next((a for a in proj.get("amendments", []) if a["id"] == aid), None)
+    if not am:
+        _bad("Change not found", 404)
+    am["reason"] = privacy.scrub((body.reason or "").strip())[0] or None
+    store.event(proj, body.actor, "amendment_reason_added", {"amendment": aid, "reason": am["reason"]})
     store.save(proj)
     return _public(proj)
 
