@@ -1,0 +1,108 @@
+# Association of Abdominal Obesity (Waist Circumference) With Glycemic Control (HbA1c) Among US Adults: NHANES 2017-March 2020 pre-pandemic
+
+**Key Points**
+
+- **Question:** Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is greater waist circumference (per 10 cm) associated with higher HbA1c, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, and body mass index?
+- **Findings:** In this cross-sectional study of 7,988 participants (weighted to represent approximately 226.3 million US residents; 51.1% were female (weighted) and 20.1% were aged 65 years or older), waist circumference per 10 cm was associated with HbA1c (β, 0.15 (95% CI, 0.10-0.21)) after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, body mass index.
+- **Meaning:** This association is cross-sectional and may reflect residual confounding or reverse causation; prospective studies are needed to establish temporality.
+
+## Abstract
+
+**Importance:** Whether waist circumference is associated with HbA1c beyond established risk factors is uncertain in nationally representative data.
+
+**Objective:** To evaluate whether waist circumference is associated with HbA1c among US adults.
+
+**Design, Setting, and Participants:** This cross-sectional study used NHANES 2017-March 2020 pre-pandemic data. Eligible participants: Age >=18 years; excluded: pregnant at examination. Data were analyzed on October 10, 2026.
+
+**Exposures:** Waist circumference per 10 cm.
+
+**Main Outcomes and Measures:** HbA1c
+
+**Results:** The analytic sample included 7,988 participants (weighted to represent approximately 226.3 million US residents; 51.1% were female (weighted) and 20.1% were aged 65 years or older). Overall, waist circumference per 10 cm was associated with HbA1c (β, 0.15 (95% CI, 0.10-0.21)) after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, body mass index.  7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity - waist-to-height ratio >=0.5
+
+**Conclusions and Relevance:** In this cross-sectional study of US adults, waist circumference per 10 cm was associated with HbA1c (β, 0.15 (95% CI, 0.10-0.21)) after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, body mass index. This association is cross-sectional and may reflect residual confounding or reverse causation; prospective studies are needed to establish temporality.
+
+## Introduction
+
+Whether waist circumference is associated with HbA1c beyond established risk factors is uncertain in nationally representative data. National Health and Nutrition Examination Survey (NHANES) data permit design-based estimation that generalizes to the noninstitutionalized US population. We aimed to evaluate whether waist circumference is associated with HbA1c among US adults.
+
+## Study population
+
+- 15,560 - Participants in source files (P)
+- 14,300 - Examined in the MEC (positive MEC weight)
+- 8,965 - Age >=18 years
+- 8,878 - Excluded: Pregnant at examination
+- 8,388 - Non-missing outcome (HbA1c)
+- 7,988 - Non-missing exposure (Waist circumference)
+- 6,610 - Complete covariate data (complete-case model sample)
+
+## Results
+
+The analytic sample included 7,988 participants (weighted to represent approximately 226.3 million US residents; 51.1% were female (weighted) and 20.1% were aged 65 years or older). Overall, waist circumference per 10 cm was associated with HbA1c (β, 0.15 (95% CI, 0.10-0.21)) after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, body mass index.  7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity - waist-to-height ratio >=0.5
+
+| Outcome | Subgroup | Level | n | Weighted % (95% CI) | NCHS |
+|---|---|---|---|---|---|
+| Elevated HbA1c (>=6.5%) |  | Overall | 7,988 | 9.8 (8.8-10.9) | meets standard |
+| Elevated HbA1c (>=6.5%) | Sex | Male | 3,942 | 11.1 (9.8-12.4) | meets standard |
+| Elevated HbA1c (>=6.5%) | Sex | Female | 4,046 | 8.5 (7.2-10.1) | meets standard |
+| Elevated HbA1c (>=6.5%) | Age group | 18-39 | 2,643 | 1.9 (1.3-2.6) | meets standard |
+| Elevated HbA1c (>=6.5%) | Age group | 40-64 | 3,452 | 12.1 (10.2-14.2) | meets standard |
+| Elevated HbA1c (>=6.5%) | Age group | 65+ | 1,893 | 19.6 (17.9-21.3) | meets standard |
+| Elevated HbA1c (>=6.5%) | Race and ethnicity | Non-Hispanic White | 2,819 | 8.6 (7.0-10.4) | meets standard |
+| Elevated HbA1c (>=6.5%) | Race and ethnicity | Non-Hispanic Black | 2,029 | 12.7 (10.9-14.6) | meets standard |
+| Elevated HbA1c (>=6.5%) | Race and ethnicity | Hispanic | 1,796 | 10.6 (9.3-12.0) | meets standard |
+| Elevated HbA1c (>=6.5%) | Race and ethnicity | Non-Hispanic Asian | 957 | 12.2 (10.4-14.2) | meets standard |
+| Elevated HbA1c (>=6.5%) | Race and ethnicity | Other or multiracial | 387 | 13.8 (10.0-18.3) | meets standard |
+
+| Model | Term | n | Estimate (95% CI) | P |
+|---|---|---|---|---|
+| Unadjusted | Waist circumference (per 10 cm) | 6,610 | 0.14 (95% CI, 0.13-0.16) | P < .001 |
+| Adjusted for age, sex, and race and ethnicity | Waist circumference (per 10 cm) | 6,610 | 0.12 (95% CI, 0.11-0.14) | P < .001 |
+| Fully adjusted (primary) | Waist circumference (per 10 cm) | 6,610 | 0.15 (95% CI, 0.10-0.21) | P < .001 |
+
+## Sensitivity analyses
+
+- Binary outcome: Elevated HbA1c (>=6.5%) (PR): 1.631 (1.387-1.917)
+- Exclude participants on glucose-lowering therapy: 0.053 (0.012-0.094)
+- Exclude anemia (HbA1c unreliable): 0.145 (0.086-0.205)
+- Multiple imputation of missing covariates (m = 10): 0.149 (0.102-0.196)
+- Exposure in weighted quartiles (Q4 vs Q1, P for trend): 0.471 (0.238-0.704)
+- Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women): 0.074 (-0.032-0.179)
+- Alternative exposure: Central adiposity - waist-to-height ratio >=0.5: -0.062 (-0.142-0.018)
+- Unweighted analysis (design ignored): 0.215 (0.173-0.257)
+
+## Discussion
+
+In this nationally representative cross-sectional analysis, waist circumference per 10 cm was associated with HbA1c (β, 0.15 (95% CI, 0.10-0.21)) after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, body mass index. Strengths include a prespecified, investigator-approved protocol; guideline-versioned, citable case definitions; design-based variance estimation with appropriate examination weights; NCHS reliability standards; multiple prespecified sensitivity analyses; and a fully reproducible, provenance-tracked pipeline. Limitations: Cross-sectional design: temporality cannot be established and associations must not be interpreted causally. Single measurement of laboratory values; within-person variability and chronicity cannot be assessed. Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss). Self-reported comorbidities and behaviours are subject to recall and social-desirability bias. NHANES excludes institutionalized and active-duty military populations.
+
+## Limitations
+
+- Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.
+- Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.
+- Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).
+- Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.
+- NHANES excludes institutionalized and active-duty military populations.
+
+## Validation checks
+
+- **PASS** Requested variables present in source files: All 15 raw variables found in 6 file(s).
+- **PASS** Real vs synthetic data: Official source files were used (MD5 recorded in provenance).
+- **PASS** Survey cycles do not overlap: Cycles: P
+- **PASS** Appropriate sample weight: mec weight (WTMECPRP) matches the most restrictive component used; weights rescaled by cycle length when combining cycles.
+- **PASS** Analytic weights positive and non-missing: 0 analytic records with missing/zero weight. Weighted population represented: 226.3 million.
+- **PASS** Design degrees of freedom: Analytic population spans 49 PSUs in 24 strata (df = 25). NCHS flags estimates with df < 8.
+- **PASS** Analytic sample size: Analytic n = 7,988.
+- **PASS** Outcome missingness: 5.5% of the eligible population lacks the outcome (490 of 8878). Missing outcome is assumed missing at random within the design.
+- **WARN** Complete-case loss: 17.3% of the analytic sample (1378) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.
+- **WARN** Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high)
+- **PASS** NCHS presentation standards for proportions: 11 of 11 estimates meet the standard; 0 should be suppressed, 0 flagged for review.
+- **PASS** Models converged without warnings: 3 models converged cleanly.
+- **PASS** No implausible effect sizes: All ratio estimates within 0.1-10 with SE(log) < 2.5.
+- **PASS** Model size vs design degrees of freedom: Primary model has 16 parameters; design df = 25. Wald tests and CIs use the design df (t distribution).
+- **WARN** Collinearity (generalized VIF): Maximum VIF 8.46 (waist_per10). Consider removing/combining collinear covariates or interpreting with care.
+- **WARN** Sensitivity analyses agree with primary result: 7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity - waist-to-height ratio >=0.5
+- **INFO** Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+- **PASS** Derived variables computable: 22 derived variables computed; see derivation audit.
+
+---
+Plan hash `780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1` · run `run_4c3482b6` · R version 4.6.1 (2026-06-24)
