@@ -11,9 +11,9 @@ on:
         required: true
         default: "I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight."
       cycles:
-        description: "NHANES cycles, space-separated (P = 2017-Mar 2020; L = 2021-2023; J = 2017-2018; I = 2015-2016)"
+        description: "NHANES cycles: 'auto' picks the most recent cycle(s) that measured the variables; or list codes, e.g. 'P' (2017-Mar 2020), 'L' (2021-2023), 'G' (2011-2012)"
         required: true
-        default: "P"
+        default: "auto"
       approver:
         description: "Name recorded as the approving investigator"
         required: true
@@ -61,7 +61,8 @@ jobs:
           CYCLES: ${{ inputs.cycles }}
           APPROVER: ${{ inputs.approver }}
         run: |
-          python -m q2e study "$QUESTION" --source cdc --cycles $CYCLES --approver "$APPROVER" --out outputs/real 2>&1 | tee outputs_log.txt
+          if [ "$CYCLES" = "auto" ] || [ -z "$CYCLES" ]; then CY=""; else CY="--cycles $CYCLES"; fi
+          python -m q2e study "$QUESTION" --source cdc $CY --approver "$APPROVER" --out outputs/real 2>&1 | tee outputs_log.txt
           exit ${PIPESTATUS[0]}
       - name: Summary
         if: always()

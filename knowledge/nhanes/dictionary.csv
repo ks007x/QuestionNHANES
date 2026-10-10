@@ -4,6 +4,7 @@ RIDSTATR,DEMO,Interview/Examination status (1=interviewed only; 2=interviewed an
 RIAGENDR,DEMO,Gender (1=Male; 2=Female),categorical,,1,2,interview,I;J;P;L,,sex gender male female demographic
 RIDAGEYR,DEMO,Age in years at screening (top-coded at 80),continuous,years,0,80,interview,I;J;P;L,,age demographic
 RIDRETH3,DEMO,Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial),categorical,,1,7,interview,I;J;P;L,,race ethnicity demographic
+RIDRETH1,DEMO,Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial),categorical,,1,5,interview,A;B;C;D;E;F;G;H;I;J;P;L,,race ethnicity demographic
 DMDEDUC2,DEMO,Education level - adults 20+ (1=<9th grade ... 5=college graduate),categorical,,1,5,interview,I;J;P;L,7;9,education socioeconomic
 INDFMPIR,DEMO,Ratio of family income to poverty,continuous,ratio,0,5,interview,I;J;P;L,,income poverty socioeconomic
 RIDEXPRG,DEMO,Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain),categorical,,1,3,interview,I;J;P;L,3,pregnancy pregnant

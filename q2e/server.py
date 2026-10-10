@@ -120,7 +120,7 @@ def create_project(body: NewProject):
     else:
         dataset = {"type": "nhanes", "cycles": cycles, "source": body.source}
     try:
-        plan = agents.design_study(body.question, cycles, dataset, body.provider)
+        plan = agents.design_study(body.question, body.cycles or None, dataset, body.provider)   # no cycles = automatic choice
     except planner.HardStop as e:
         from .privacy import scrub
         return JSONResponse(status_code=422, content={"error": str(e), "hard_stop": True,
@@ -497,12 +497,42 @@ def dictionary_match(body: MatchQuery):
         idx = BM25Index([DictEntry(variable=d["variable"], label=d.get("label", ""), type=d.get("type", ""), units=d.get("units", ""))
                          for d in rec["dictionary"]])
     else:
-        idx = BM25Index(entries_from_nhanes(k.dictionary))
+        idx = k.var_index()
     hits = idx.search(body.query, top_k=body.top_k)
     for h in hits:
         if not body.dataset_id and h["variable"] in k.dictionary:
             h["cycles"] = k.dictionary[h["variable"]]["cycles"]
     return hits
+
+
+class Learn(BaseModel):
+    term: str = Field(min_length=2, max_length=80)
+    target: str = Field(min_length=3, max_length=80, description="concept:<id> or var:<NHANES variable>")
+    by: str = Field(min_length=2, max_length=120)
+
+
+@app.get("/api/learn")
+def learned_list():
+    from .knowledge import load_learned
+    return {"learned": load_learned()}
+
+
+@app.post("/api/learn")
+def learn(body: Learn):
+    """Teach Q2E a synonym. Human-confirmed (named); applies to every future question on this server."""
+    from .knowledge import save_learned
+    k = get_knowledge()
+    kind, _, target = body.target.partition(":")
+    if kind == "concept" and target not in k.concepts:
+        _bad(f"Unknown concept '{target}'", 422)
+    if kind == "var" and target.upper() not in k.dictionary:
+        _bad(f"Unknown dataset variable '{target}'", 422)
+    if kind not in ("concept", "var"):
+        _bad("target must be concept:<id> or var:<VARIABLE>", 422)
+    entry = {"term": body.term.lower().strip(), "target": f"{kind}:{target.upper() if kind == 'var' else target}",
+             "by": body.by, "at": _now()}
+    items = save_learned(entry)
+    return {"saved": entry, "total": len(items)}
 
 
 class Expr(BaseModel):

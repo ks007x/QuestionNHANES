@@ -50,7 +50,8 @@ load_nhanes <- function(spec, log = message) {
   cycles <- unlist(ds$cycles)
   meta <- spec$cycles_meta
   raw <- spec$raw_variables
-  raw_stems <- unique(c("DEMO", vapply(raw, function(r) r$file, "")))
+  # older cycles name files differently (e.g. eosinophils: LAB25 1999-2000, L25_B, L25_C, CBC_D ...): use the per-cycle stem
+  stem_for <- function(r, cy) { s <- r$stems[[cy]]; if (is.null(s) || !nzchar(s)) r$file else s }
   dirs <- c(ds$local_dir, ds$synthetic_dir, ds$cache_dir)
   allow_download <- isTRUE(ds$allow_download)
   files_used <- list(); missing_vars <- list(); per_cycle <- list()
@@ -61,9 +62,10 @@ load_nhanes <- function(spec, log = message) {
     merged <- NULL
     wvar <- unlist(cm$weights)[[spec$weight_level]]
     wfile <- if (!is.null(cm$weight_files[[spec$weight_level]])) cm$weight_files[[spec$weight_level]] else "DEMO"
+    raw_stems <- unique(c("DEMO", vapply(raw, function(r) stem_for(r, cy), "")))
     stems <- unique(c(raw_stems, wfile))
     for (stem in stems) {
-      vars_here <- unique(c("SEQN", vapply(Filter(function(r) r$file == stem && cy %in% unlist(r$cycles), raw), function(r) r$variable, "")))
+      vars_here <- unique(c("SEQN", vapply(Filter(function(r) stem_for(r, cy) == stem && cy %in% unlist(r$cycles), raw), function(r) r$variable, "")))
       if (stem == "DEMO") {
         vars_here <- unique(c(vars_here, "RIDSTATR", cm$psu, cm$strata))
       }
@@ -114,6 +116,8 @@ load_nhanes <- function(spec, log = message) {
   all_cols <- unique(unlist(lapply(per_cycle, names)))
   per_cycle <- lapply(per_cycle, function(d) { for (cl in setdiff(all_cols, names(d))) d[[cl]] <- NA; d[, all_cols] })
   dat <- do.call(rbind, per_cycle)
+  # variables not collected in any selected cycle exist as NA, so coalesce() fallbacks (e.g. RIDRETH3 -> RIDRETH1) work
+  for (r in raw) if (!r$variable %in% names(dat)) dat[[r$variable]] <- NA
   total_years <- sum(vapply(cycles, function(cy) meta[[cy]]$years, 0))
   dat$.wt <- dat$.wt_raw * dat$.years / total_years
   rownames(dat) <- NULL

@@ -3,6 +3,88 @@
 # url_folder:   folder used by https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/{url_folder}/DataFiles/{file}.xpt
 # years:        cycle length used to rescale weights when cycles are combined (NCHS analytic guidelines).
 cycles:
+  A:
+    label: "NHANES 1999-2000"
+    file_pattern: "{stem}"
+    url_folder: "1999"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, fasting: WTSAF2YR}
+    weight_files: {fasting: LAB10AM}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+    note: "1999-2002: NCHS provides 4-year weights for combined 1999-2002 analyses; Q2E rescales 2-year weights (approximation). Dietary weights not configured for this cycle."
+  B:
+    label: "NHANES 2001-2002"
+    file_pattern: "{stem}_B"
+    url_folder: "2001"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, fasting: WTSAF2YR}
+    weight_files: {fasting: L10AM}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+    note: "1999-2002: NCHS provides 4-year weights for combined 1999-2002 analyses; Q2E rescales 2-year weights (approximation). Dietary weights not configured for this cycle."
+  C:
+    label: "NHANES 2003-2004"
+    file_pattern: "{stem}_C"
+    url_folder: "2003"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: L10AM}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  D:
+    label: "NHANES 2005-2006"
+    file_pattern: "{stem}_D"
+    url_folder: "2005"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  E:
+    label: "NHANES 2007-2008"
+    file_pattern: "{stem}_E"
+    url_folder: "2007"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  F:
+    label: "NHANES 2009-2010"
+    file_pattern: "{stem}_F"
+    url_folder: "2009"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  G:
+    label: "NHANES 2011-2012"
+    file_pattern: "{stem}_G"
+    url_folder: "2011"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  H:
+    label: "NHANES 2013-2014"
+    file_pattern: "{stem}_H"
+    url_folder: "2013"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
   I:
     label: "NHANES 2015-2016"
     file_pattern: "{stem}_I"
