@@ -93,20 +93,21 @@ def _execute(pid: str, rid: str, run_dir: Path) -> None:
     run = RUNS[rid]
     try:
         cmd = [require_r(), str(settings.engine_script), "--plan", str(run_dir / "compiled_plan.json"), "--out", str(run_dir / "out")]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=str(settings.root))
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                encoding="utf-8", errors="replace", cwd=str(settings.root))
         for line in proc.stdout:  # type: ignore[union-attr]
             run["log"].append(line.rstrip())
         proc.wait(timeout=settings.run_timeout)
         if proc.returncode != 0:
             err = run_dir / "out" / "error.json"
-            msg = json.loads(err.read_text())["error"] if err.exists() else "\n".join(run["log"][-5:])
+            msg = json.loads(err.read_text(encoding="utf-8"))["error"] if err.exists() else "\n".join(run["log"][-5:])
             raise RunError(msg)
         run["status"] = "completed"
     except Exception as e:  # noqa: BLE001
         run["status"] = "failed"
         run["error"] = str(e)
     run["finished"] = _now()
-    (run_dir / "run_log.txt").write_text("\n".join(run["log"]))
+    (run_dir / "run_log.txt").write_text("\n".join(run["log"]), encoding="utf-8")
     proj = store.get(pid)
     for r in proj["runs"]:
         if r["id"] == rid:
@@ -114,7 +115,7 @@ def _execute(pid: str, rid: str, run_dir: Path) -> None:
     detail = {"run_id": rid, "status": run["status"], "error": run["error"]}
     res = run_dir / "out" / "results.json"
     if res.exists():
-        results = json.loads(res.read_text())
+        results = json.loads(res.read_text(encoding="utf-8"))
         checks = results.get("checks", [])
         detail.update({"results_sha256": __import__("hashlib").sha256(res.read_bytes()).hexdigest(),
                        "qc": {s: sum(1 for c in checks if c["status"] == s) for s in ("pass", "warn", "fail", "info")},
@@ -131,7 +132,7 @@ def get_run(pid: str, rid: str) -> dict:
     for r in proj["runs"]:
         if r["id"] == rid:
             log = Path(r["dir"]) / "run_log.txt"
-            return {**r, "log": log.read_text().splitlines() if log.exists() else []}
+            return {**r, "log": log.read_text(encoding="utf-8").splitlines() if log.exists() else []}
     raise KeyError(rid)
 
 
@@ -154,7 +155,7 @@ def load_results(pid: str, rid: str) -> dict:
         if r["id"] == rid:
             f = Path(r["dir"]) / "out" / "results.json"
             if f.exists():
-                return _normalize(json.loads(f.read_text()))
+                return _normalize(json.loads(f.read_text(encoding="utf-8")))
     raise KeyError(rid)
 
 
@@ -170,14 +171,15 @@ def run_probe(pid: str, actor: str = "investigator") -> dict:
     write_compiled(compiled, d / "compiled_plan.json")
     cmd = [rscript, str(settings.engine_script), "--plan", str(d / "compiled_plan.json"), "--out", str(d / "out"), "--probe"]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(settings.root), timeout=settings.run_timeout)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              cwd=str(settings.root), timeout=settings.run_timeout)
     except subprocess.TimeoutExpired as e:
         raise RunError(f"The feasibility probe took longer than {settings.run_timeout} seconds and was stopped.") from e
     if proc.returncode != 0:
         err = d / "out" / "error.json"
-        msg = json.loads(err.read_text())["error"] if err.exists() else (proc.stderr or proc.stdout)[-500:]
+        msg = json.loads(err.read_text(encoding="utf-8"))["error"] if err.exists() else (proc.stderr or proc.stdout)[-500:]
         raise RunError(msg)
-    probe = json.loads((d / "out" / "probe.json").read_text())
+    probe = json.loads((d / "out" / "probe.json").read_text(encoding="utf-8"))
     probe.update({"id": probe_id, "plan_hash": compiled["plan_hash"], "at": _now()})
     proj = store.get(pid)
     proj["plan"]["probe"] = probe

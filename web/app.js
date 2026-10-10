@@ -838,12 +838,23 @@ function viewPlan() {
 }
 
 /* ------------------------------------------------------------------ RUN */
+/* The step the R engine is on now: its latest timestamped log line, without the time. */
+function runStep(r) {
+  const steps = (r.log || []).filter((l) => /^\d\d:\d\d:\d\d  /.test(l));
+  return steps.length ? steps[steps.length - 1].slice(10).replace(/ \.\.\.$/, "…") : "Starting the R engine…";
+}
+function runElapsed(r) {
+  const s = r.started ? Math.max(0, Math.round((Date.now() - Date.parse(r.started)) / 1000)) : 0;
+  return s ? `(${s >= 60 ? `${Math.floor(s / 60)} min ` : ""}${s % 60} s so far)` : "";
+}
 function startPolling() {
   clearInterval(S.poll);
   S.poll = setInterval(async () => {
     const lr = latestRun(); if (!lr) return;
     S.run = await api(`/api/projects/${S.project.id}/runs/${lr.id}`);
     const con = $("#console"); if (con) { con.textContent = S.run.log.join("\n"); con.scrollTop = con.scrollHeight; }
+    const st = $("#runStep"); if (st) st.textContent = runStep(S.run);
+    const tm = $("#runTime"); if (tm) tm.textContent = runElapsed(S.run);
     if (S.run.status !== "running") { clearInterval(S.poll); S.project = await api(`/api/projects/${S.project.id}`); S.results = null; render(); }
   }, 1200);
 }
@@ -855,7 +866,7 @@ function viewRun() {
   const stale = lr.plan_hash !== S.project.plan_hash;
   const staleBanner = stale ? `<div class="banner warn">The plan has changed since this run (run plan ${esc(lr.plan_hash.slice(0, 10))}). Re-approve and re-run to update results. ${S.project.approved_current ? `<button class="btn sm" data-act="run">Re-run now</button>` : ""}</div>` : "";
   if (r.status === "running") return { ...head, parts: [{ id: "running", title: "Running…", help: "This usually takes under a minute. The page updates by itself.", noTalk: true,
-    html: `${staleBanner}<div class="card"><p><span class="spinner"></span> Executing approved plan in the R engine (survey package)…</p><div class="console" id="console">${esc(r.log.join("\n"))}</div></div>` }] };
+    html: `${staleBanner}<div class="card"><p><span class="spinner"></span> <b id="runStep">${esc(runStep(r))}</b> <span class="small muted" id="runTime">${esc(runElapsed(r))}</span></p><div class="console" id="console">${esc(r.log.join("\n"))}</div></div>` }] };
   if (r.status === "failed") return { ...head, parts: [{ id: "failed", title: "The run failed", help: "Read the message below. You can leave a comment for the lead investigator.",
     html: `${staleBanner}<div class="banner bad"><b>Run failed:</b> ${esc(r.error)}</div>${/WinError 2|cannot find the file|No such file or directory: '?Rscript|R is not installed/i.test(r.error || "")
       ? (rReady() ? `<div class="banner info">The missing file was <b>R</b> (the statistics program). R is installed now, so press <button class="btn sm" data-act="run" ${S.project.approved_current ? "" : "disabled"}>Run again</button></div>` : rMissing("Running the analysis"))

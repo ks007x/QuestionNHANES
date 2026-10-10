@@ -24,7 +24,7 @@ DEMO = {"RIAGENDR", "RIDAGEYR", "RIDEXPRG"}
 
 @lru_cache(maxsize=1)
 def library() -> list[dict]:
-    return yaml.safe_load((ROOT / "knowledge" / "covariates.yaml").read_text())["covariates"]
+    return yaml.safe_load((ROOT / "knowledge" / "covariates.yaml").read_text(encoding="utf-8"))["covariates"]
 
 
 def _domains(v: dict | None, k: Knowledge) -> set[str]:

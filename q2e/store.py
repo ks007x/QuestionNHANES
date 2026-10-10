@@ -58,7 +58,7 @@ class ProjectStore:
         plan["version"] = version
         d = self.path(proj["id"]) / "plans"
         d.mkdir(parents=True, exist_ok=True)
-        (d / f"plan_v{version}.json").write_text(json.dumps(plan, indent=2, default=str))
+        (d / f"plan_v{version}.json").write_text(json.dumps(plan, indent=2, default=str), encoding="utf-8")
         proj["history"].append({"version": version, "hash": h, "at": _now(), "by": actor, "note": note})
 
     def event(self, proj: dict, actor: str, action: str, detail: dict | None = None) -> dict:
@@ -84,7 +84,7 @@ class ProjectStore:
             p = self.path(proj["id"])
             p.mkdir(parents=True, exist_ok=True)
             tmp = p / "project.json.tmp"
-            tmp.write_text(json.dumps(proj, indent=2, default=str))
+            tmp.write_text(json.dumps(proj, indent=2, default=str), encoding="utf-8")
             tmp.replace(p / "project.json")
 
     def get(self, pid: str) -> dict:
@@ -92,13 +92,13 @@ class ProjectStore:
             f = self.path(pid) / "project.json"
             if not f.exists():
                 raise KeyError(pid)
-            return json.loads(f.read_text())
+            return json.loads(f.read_text(encoding="utf-8"))
 
     def list(self) -> list[dict]:
         out = []
         for f in sorted(self.root.glob("prj_*/project.json"), key=lambda p: p.stat().st_mtime, reverse=True):
             try:
-                pr = json.loads(f.read_text())
+                pr = json.loads(f.read_text(encoding="utf-8"))
                 out.append({"id": pr["id"], "created": pr["created"], "title": pr["plan"].get("title"), "question": pr["question"],
                             "status": pr["plan"].get("status"), "runs": len(pr.get("runs", [])), "signed": bool(pr.get("signoff"))})
             except Exception:  # noqa: BLE001

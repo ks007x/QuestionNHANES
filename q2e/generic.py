@@ -41,7 +41,7 @@ def register_dataset(name: str, data_bytes: bytes, dict_bytes: bytes | None = No
     rec = {"id": did, "name": name, "path": str(d / "data.csv"), "n_columns": len(entries),
            "columns": [e.variable for e in entries], "design": design,
            "dictionary": [{"variable": e.variable, "label": e.label, "type": e.type, "units": e.units, "table": e.table, **(e.extra or {})} for e in entries]}
-    (d / "dataset.json").write_text(json.dumps(rec, indent=2))
+    (d / "dataset.json").write_text(json.dumps(rec, indent=2), encoding="utf-8")
     return rec
 
 
@@ -49,13 +49,13 @@ def get_dataset(did: str) -> dict:
     f = datasets_dir() / did / "dataset.json"
     if not f.exists():
         raise KeyError(did)
-    return json.loads(f.read_text())
+    return json.loads(f.read_text(encoding="utf-8"))
 
 
 def list_datasets() -> list[dict]:
     out = []
     for f in sorted(datasets_dir().glob("ds_*/dataset.json")):
-        r = json.loads(f.read_text())
+        r = json.loads(f.read_text(encoding="utf-8"))
         out.append({"id": r["id"], "name": r["name"], "n_columns": r["n_columns"], "design": r["design"]})
     return out
 

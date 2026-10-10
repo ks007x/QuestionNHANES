@@ -53,10 +53,10 @@ class Knowledge:
     def __init__(self, root: Path | None = None):
         root = Path(root or settings.knowledge_dir)
         self.root = root
-        self.cycles: dict[str, dict] = yaml.safe_load((root / "nhanes" / "cycles.yaml").read_text())["cycles"]
-        self.default_cycles: list[str] = yaml.safe_load((root / "nhanes" / "cycles.yaml").read_text()).get("default_cycles", ["P"])
+        self.cycles: dict[str, dict] = yaml.safe_load((root / "nhanes" / "cycles.yaml").read_text(encoding="utf-8"))["cycles"]
+        self.default_cycles: list[str] = yaml.safe_load((root / "nhanes" / "cycles.yaml").read_text(encoding="utf-8")).get("default_cycles", ["P"])
         self.dictionary: dict[str, dict] = {}
-        with open(root / "nhanes" / "dictionary.csv", newline="") as fh:
+        with open(root / "nhanes" / "dictionary.csv", newline="", encoding="utf-8") as fh:
             for row in csv.DictReader(fh):
                 row["cycles"] = [c for c in row["cycles"].split(";") if c]
                 row["missing_codes"] = [float(x) for x in row["missing_codes"].split(";") if x.strip()]
@@ -69,7 +69,7 @@ class Knowledge:
         self.subsample_weights: dict[tuple[str, str], list[str]] = {}   # (cycle, FILE) -> weight variables in/for that file
         cat = root / "nhanes" / "catalog.csv"
         if cat.exists():
-            with open(cat, newline="") as fh:
+            with open(cat, newline="", encoding="utf-8") as fh:
                 for r in csv.DictReader(fh):
                     v = r["variable"]
                     if not r.get("cycles"):
@@ -101,16 +101,16 @@ class Knowledge:
         self.tables: list[dict] = []
         tf = root / "nhanes" / "tables.csv"
         if tf.exists():
-            with open(tf, newline="") as fh:
+            with open(tf, newline="", encoding="utf-8") as fh:
                 self.tables = list(csv.DictReader(fh))
-        blocks = yaml.safe_load((root / "building_blocks.yaml").read_text())["blocks"]
+        blocks = yaml.safe_load((root / "building_blocks.yaml").read_text(encoding="utf-8"))["blocks"]
         self.blocks: dict[str, dict] = {b["name"]: b for b in blocks}
         self.definitions: dict[str, dict] = {}
         for f in sorted((root / "definitions").glob("*.yaml")):
-            for d in yaml.safe_load(f.read_text()).get("definitions", []):
+            for d in yaml.safe_load(f.read_text(encoding="utf-8")).get("definitions", []):
                 d["_file"] = f.name
                 self.definitions[d["id"]] = d
-        c = yaml.safe_load((root / "concepts.yaml").read_text())
+        c = yaml.safe_load((root / "concepts.yaml").read_text(encoding="utf-8"))
         self.concepts: dict[str, dict] = {x["id"]: x for x in c["concepts"]}
         self.populations: list[dict] = c["populations"]
         self.domains: dict[str, dict] = c["domains"]
@@ -132,7 +132,7 @@ class Knowledge:
                     syns.append(term)
             elif kind == "var" and target in self.dictionary:
                 self.learned_vars[term] = target
-        self.examples: list[dict] = yaml.safe_load((root / "examples.yaml").read_text())["examples"]
+        self.examples: list[dict] = yaml.safe_load((root / "examples.yaml").read_text(encoding="utf-8"))["examples"]
 
     # ------------------------------------------------------------------
     def _index_weight(self, v: str, r: dict) -> None:
@@ -246,7 +246,7 @@ def learned_path() -> Path:
 def load_learned() -> list[dict]:
     p = learned_path()
     try:
-        return (yaml.safe_load(p.read_text()) or {}).get("learned", []) if p.exists() else []
+        return (yaml.safe_load(p.read_text(encoding="utf-8")) or {}).get("learned", []) if p.exists() else []
     except Exception:  # noqa: BLE001
         return []
 
@@ -256,7 +256,7 @@ def save_learned(entry: dict) -> list[dict]:
     items.append(entry)
     p = learned_path()
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(yaml.safe_dump({"learned": items}, sort_keys=False, allow_unicode=True))
+    p.write_text(yaml.safe_dump({"learned": items}, sort_keys=False, allow_unicode=True), encoding="utf-8")
     get_knowledge.cache_clear()
     return items
 

@@ -190,7 +190,12 @@ fit_mi <- function(des, spec, outcome, terms, fam, m = 10, seed = 2026) {
   n_inc <- sum(!stats::complete.cases(sub))
   if (n_inc == 0) return(list(note = "No missing covariate data; multiple imputation not needed", n_imputed_rows = 0))
   set.seed(seed)
-  imp <- tryCatch(mice::mice(sub, m = m, printFlag = FALSE, seed = seed), error = function(e) e)
+  # categories with 3+ levels use predictive mean matching: polyreg (the mice default) takes minutes on NHANES-sized
+  # samples. Q2E_MI_FACTOR_METHOD=polyreg restores the default.
+  meth <- mice::make.method(sub)
+  fm <- Sys.getenv("Q2E_MI_FACTOR_METHOD", "pmm")
+  meth[meth %in% c("polyreg", "polr")] <- fm
+  imp <- tryCatch(mice::mice(sub, m = m, method = meth, printFlag = FALSE, seed = seed), error = function(e) e)
   if (inherits(imp, "error")) return(list(error = paste("mice failed:", conditionMessage(imp))))
   fi <- family_info(fam)
   coefs <- list(); vcovs <- list()
@@ -214,9 +219,9 @@ fit_mi <- function(des, spec, outcome, terms, fam, m = 10, seed = 2026) {
     coefs[[i]] <- stats::coef(fit); vcovs[[i]] <- stats::vcov(fit)
   }
   comb <- mitools::MIcombine(coefs, vcovs)
-  s <- summary(comb)
   list(coef = stats::coef(comb), se = sqrt(diag(stats::vcov(comb))), df = comb$df,
        names = names(stats::coef(comb)), n_imputed_rows = n_inc, m = m, exp = fi$exp,
+       methods = paste(names(meth)[nzchar(meth)], meth[nzchar(meth)], sep = ": ", collapse = "; "),
        missing_by_var = as.list(colSums(is.na(sub))))
 }
 

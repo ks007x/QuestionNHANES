@@ -33,7 +33,7 @@ DOMAIN_ALIASES = {"iron": ["hematology"], "anthropometry": ["glycemia"], "inflam
 
 @lru_cache(maxsize=1)
 def venues_db() -> dict:
-    return yaml.safe_load((ROOT / "knowledge" / "venues.yaml").read_text())
+    return yaml.safe_load((ROOT / "knowledge" / "venues.yaml").read_text(encoding="utf-8"))
 
 
 def _clean(label: str) -> str:

@@ -182,7 +182,10 @@ run_pipeline <- function(plan_path, outdir) {
     }
     r
   }
+  n_sens <- length(spec$analysis$sensitivity)
   for (s in spec$analysis$sensitivity) {
+    t_s <- Sys.time()
+    log(sprintf("Sensitivity analysis %d of %d: %s ...", length(sens) + 1, n_sens, s$label %||% s$type))
     res_s <- tryCatch({
       type <- s$type
       if (type == "exclude" || type == "restrict") {
@@ -253,7 +256,8 @@ run_pipeline <- function(plan_path, outdir) {
           b <- mi$coef[ix]; se <- mi$se[ix]; tq <- stats::qt(0.975, df = max(mi$df[ix], 3))
           tf <- if (mi$exp) exp else identity
           list(est = tf(b), lcl = tf(b - tq * se), ucl = tf(b + tq * se), n = sum(des$variables$.in_analytic), effect = family_info(fam)$effect,
-               note = sprintf("Multiple imputation by chained equations (m = %d; %d rows imputed), Rubin's rules", mi$m, mi$n_imputed_rows))
+               note = sprintf("Multiple imputation by chained equations (m = %d; %d rows imputed; methods %s), Rubin's rules",
+                              mi$m, mi$n_imputed_rows, mi$methods))
         }
       } else if (type == "exposure_quartiles") {
         if (is.null(x) || !is.numeric(des$variables[[x]])) stop("Quartile analysis needs a continuous exposure")
@@ -271,6 +275,7 @@ run_pipeline <- function(plan_path, outdir) {
       } else stop("Unknown sensitivity type: ", type)
     }, error = function(e) list(error = conditionMessage(e)))
     sens[[length(sens) + 1]] <- c(list(id = s$id, label = s$label, type = s$type), .estimable(res_s))
+    log(sprintf("   done in %.1f s", as.numeric(difftime(Sys.time(), t_s, units = "secs"))))
   }
   results$sensitivity <- sens
   log(sprintf("Ran %d sensitivity analyses", length(sens)))

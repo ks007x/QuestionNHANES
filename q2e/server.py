@@ -60,7 +60,7 @@ def _public(proj: dict) -> dict:
 # ------------------------------------------------------------------ UI
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return (WEB / "index.html").read_text()
+    return (WEB / "index.html").read_text(encoding="utf-8")
 
 
 # ------------------------------------------------------------------ meta
@@ -345,7 +345,7 @@ def amendment_undo(pid: str, aid: str, body: AmendAction):
     f = store.path(pid) / "plans" / f"plan_v{am['version_before']}.json"
     if not am.get("version_before") or not f.exists():
         _bad("The earlier version of the protocol was not found", 404)
-    old = json.loads(f.read_text())
+    old = json.loads(f.read_text(encoding="utf-8"))
     for key in ("approvals", "acknowledgements"):
         if key in proj["plan"]:
             old[key] = proj["plan"][key]
@@ -486,11 +486,11 @@ def _report(pid: str, rid: str, use_llm: bool) -> tuple[dict, dict, dict, dict |
     cache = Path(r["dir"]) / "narrative.json"
     if use_llm:
         if cache.exists():
-            narr = json.loads(cache.read_text())
+            narr = json.loads(cache.read_text(encoding="utf-8"))
         else:
             narr = agents.narrative(proj["plan"], results)
             if narr:
-                cache.write_text(json.dumps(narr))
+                cache.write_text(json.dumps(narr), encoding="utf-8")
                 store.event(proj, "agents", "narrative_drafted", {"run_id": rid, "llm_calls": narr.get("llm", {}).get("calls", [])})
                 store.save(proj)
     return proj, r, results, narr
@@ -575,7 +575,7 @@ def plan_version(pid: str, version: int):
     f = store.path(pid) / "plans" / f"plan_v{version}.json"
     if not f.exists():
         _bad("Version not found", 404)
-    return json.loads(f.read_text())
+    return json.loads(f.read_text(encoding="utf-8"))
 
 
 @app.get("/api/projects/{pid}/compiled")
@@ -698,9 +698,9 @@ def guideline_import(body: GuidelineText):
     except (LLMError, expressions.ExpressionError) as e:
         _bad(str(e), 422)
     f = Path(settings.workspace) / "proposed_definitions.json"
-    props = json.loads(f.read_text()) if f.exists() else []
+    props = json.loads(f.read_text(encoding="utf-8")) if f.exists() else []
     props.append({**d, "proposed_at": _now()})
-    f.write_text(json.dumps(props, indent=2))
+    f.write_text(json.dumps(props, indent=2), encoding="utf-8")
     return d
 
 
@@ -713,15 +713,15 @@ class Promote(BaseModel):
 def guideline_approve(body: Promote):
     import yaml
     f = Path(settings.workspace) / "proposed_definitions.json"
-    props = json.loads(f.read_text()) if f.exists() else []
+    props = json.loads(f.read_text(encoding="utf-8")) if f.exists() else []
     d = next((p for p in props if p.get("id") == body.id), None)
     if not d:
         _bad("Proposal not found", 404)
     d = {**d, "status": "investigator-approved", "approved_by": body.by, "approved_at": _now()}
     target = settings.knowledge_dir / "definitions" / "local_approved.yaml"
-    data = yaml.safe_load(target.read_text()) if target.exists() else {"definitions": []}
+    data = yaml.safe_load(target.read_text(encoding="utf-8")) if target.exists() else {"definitions": []}
     data["definitions"] = [x for x in data["definitions"] if x["id"] != d["id"]] + [d]
-    target.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
+    target.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8")
     get_knowledge.cache_clear()
     return d
 

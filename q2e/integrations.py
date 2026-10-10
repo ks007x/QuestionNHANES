@@ -76,6 +76,6 @@ def write_all(base_url: str, out: Path) -> list[Path]:
     written = []
     for name, obj in files.items():
         p = out / name
-        p.write_text(json.dumps(obj, indent=2))
+        p.write_text(json.dumps(obj, indent=2), encoding="utf-8")
         written.append(p)
     return written

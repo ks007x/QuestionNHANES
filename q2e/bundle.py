@@ -27,7 +27,7 @@ cat("Reproduction successful.\\n")
 
 def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str | None, store: ProjectStore) -> bytes:
     run_dir = Path(run["dir"])
-    compiled = json.loads((run_dir / "compiled_plan.json").read_text())
+    compiled = json.loads((run_dir / "compiled_plan.json").read_text(encoding="utf-8"))
     ds = compiled["dataset"]
     if ds.get("type") == "nhanes":
         synthetic = ds.get("source") == "synthetic"
