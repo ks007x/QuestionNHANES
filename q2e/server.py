@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expressions, generic, literature, planner, novelty, privacy, report, tools as qtools, venues, voice
+from . import __version__, agents, answerability, expertise, expressions, generic, literature, novelty, planner, privacy, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -84,6 +84,21 @@ class NewProject(BaseModel):
     provider: str | None = None
     dataset_id: str | None = None
     actor: str = "investigator"
+    # answers to the Interviewer's follow-up questions: {question_id: {"option": id, "text": str}}
+    answers: dict[str, dict[str, str]] | None = None
+    level: str | None = None
+
+
+class ClarifyQ(BaseModel):
+    question: str = Field(min_length=4, max_length=2000)
+    cycles: list[str] | None = None
+    level: str | None = None     # optional override of the detected expertise level
+
+
+@app.post("/api/clarify")
+def clarify(body: ClarifyQ):
+    """Detect the user's expertise from their wording and return adaptive follow-up questions."""
+    return expertise.clarify(body.question, body.cycles, body.level)
 
 
 @app.post("/api/projects")
@@ -93,6 +108,10 @@ def create_project(body: NewProject):
     for c in cycles:
         if c not in k.cycles:
             _bad(f"Unknown cycle {c}")
+    clar = None
+    if body.answers is not None:
+        clar = expertise.apply_answers(body.question, body.answers, body.level, cycles)
+        body.question = clar["question"]
     dataset = None
     if body.dataset_id:
         rec = generic.get_dataset(body.dataset_id)
@@ -113,7 +132,20 @@ def create_project(body: NewProject):
         plan["generic_status"] = sug["status"]
         plan = generic.prune_unavailable(plan, k)
         plan = agents.refresh_plan(plan)
+    if clar:
+        try:
+            plan = agents.refresh_plan(expertise.apply_fixes(plan, clar["fixes"]))
+        except (ValueError, KeyError, expressions.ExpressionError) as e:
+            _bad(f"Could not apply your answers: {e}", 422)
+        ex = clar["expertise"]
+        plan["clarification"] = {k2: clar[k2] for k2 in ("record", "expertise", "level_used")}
+        plan["agent_dialogue"].insert(0, {"agent": "Interviewer", "source": "rules", "message":
+                                          f"From the wording I estimated your experience as {clar['level_used']} (score {ex['score']}/100) and asked "
+                                          f"{len(clar['record'])} follow-up question(s): " + ("; ".join(f"{r['question']} → {r['answer']}" for r in clar["record"]) or "none answered") + "."})
     proj = store.create(body.question, plan, body.actor)
+    if clar:
+        store.event(proj, body.actor, "clarification_answered", plan["clarification"])
+        store.save(proj)
     return _public(proj)
 
 
