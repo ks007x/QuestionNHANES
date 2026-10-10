@@ -28,7 +28,7 @@ function stopVoice() {
   VOICE.key = null; markVoiceButtons();
 }
 function markVoiceButtons() {
-  document.querySelectorAll("[data-act=say]").forEach((b) => { b.textContent = VOICE.key === b.dataset.key ? "■ Stop reading" : "🔊 Read aloud"; });
+  document.querySelectorAll("[data-act=say]").forEach((b) => { b.textContent = VOICE.key === b.dataset.key ? "Stop reading" : "Read aloud"; });
 }
 async function speak(text, key) {
   stopVoice();
@@ -48,13 +48,14 @@ async function speak(text, key) {
     const u = new SpeechSynthesisUtterance(text); u.onend = done; u.onerror = done; speechSynthesis.speak(u);
   } else { done(); toast("No speech output available in this browser", true); }
 }
-function stepText() {
-  const el = document.querySelector(".sp-step"); if (!el) return "";
+function stepText(key) {
+  const id = (key || "").split(":")[1];
+  const el = (id && document.querySelector(`#part-${CSS.escape(id)} .part-body`)) || document.querySelector(".parts"); if (!el) return "";
   const c = el.cloneNode(true);
   c.querySelectorAll("button, input, select, textarea, audio, .gloss, .console, .pt-talk").forEach((x) => x.remove());
   return c.textContent;
 }
-const voiceHere = () => S.curStep ? `${S.curStep.stage}:${S.curStep.id}` : "";
+const voiceHere = () => S.curStep ? S.curStep.stage : "";
 
 /* ------------------------------------------------------------------ glossary of abbreviations on the current step */
 const GLOSS = {};
@@ -101,8 +102,8 @@ async function addGlossary(main) {
   wrapAbbr(box, found);
   const rows = found.map((t) => `<div class="g-row"><b>${esc(t)}</b><span>${esc(GLOSS[t].meaning)}</span></div>`).join("")
     + (cycles.length ? `<div class="g-row"><b>Cycle letters</b><span>${cycles.map(([l, y]) => `<b>${l}</b> = ${esc(y)}`).join(" · ")}</span></div>` : "");
-  const d = document.createElement("details"); d.className = "gloss"; d.open = S.glossOpen !== false;
-  d.innerHTML = `<summary>📖 What the abbreviations on this step mean (${found.length + (cycles.length ? 1 : 0)})</summary>
+  const d = document.createElement("details"); d.className = "gloss"; d.open = S.glossOpen === true;
+  d.innerHTML = `<summary>Abbreviations on this page (${found.length + (cycles.length ? 1 : 0)})</summary>
     <div class="g-list">${rows}</div><p class="tiny muted" style="margin:6px 0 0">NHANES codes and cycle letters are explained from the CDC NHANES codebook, file list and cycle list. Hover over an underlined abbreviation to see its meaning in place.</p>`;
   d.addEventListener("toggle", () => { S.glossOpen = d.open; });
   box.appendChild(d);
@@ -177,13 +178,13 @@ function renderRail(r) {
   rail.innerHTML = `<h4>Study</h4><p class="small" style="margin:0 0 14px"><b>${esc(p.plan.title)}</b><br><span class="muted">${esc(p.id)} · plan v${p.plan.version}</span></p>
     <ol class="steps"><li data-act="home"><span class="n">0</span>Ask</li>${STEPS.map((s, i) => {
       const cls = r.stage === s.id ? "active" : stageDone(s.id) ? "done" : unlocked(s.id) ? "" : "locked";
-      const reach = S.reach[stepKey(s.id)] || 0;
-      const subs = r.stage === s.id && (S.parts || []).length > 1 ? `<ol class="substeps">${S.parts.map((x, j) =>
-        `<li class="${j === S.partIndex ? "on" : j <= reach ? "done" : "locked"}" data-act="${j <= reach ? "sub" : ""}" data-i="${j}">${j <= reach && j !== S.partIndex ? "✓ " : ""}${esc(x.title)}</li>`).join("")}</ol>` : "";
+      const subs = r.stage === s.id && (S.parts || []).length > 1 ? `<ol class="substeps">${S.parts.map((x) => {
+        const st = (S.partState || {})[x.id] || {};
+        return `<li class="${st.attn ? "need" : ""}" data-act="jump" data-id="${esc(x.id)}">${esc(x.title)}</li>`; }).join("")}</ol>` : "";
       return `<li class="${cls}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}"><span class="n">${stageDone(s.id) && r.stage !== s.id ? "✓" : i + 1}</span>${s.label}${subs}</li>`;
     }).join("")}</ol>
-    <h4>Provenance <span class="chip ${p.chain.valid ? "ok" : "bad"}" style="font-size:10px">${p.chain.valid ? "chain valid" : "chain broken"}</span></h4>
-    <ul class="timeline">${p.events.slice(-9).reverse().map((e) => `<li><b>${esc(e.action.replace(/_/g, " "))}</b> · ${esc(e.actor)}<small>${esc(e.at.slice(5, 16).replace("T", " "))} · ${esc(e.hash.slice(0, 8))}</small></li>`).join("")}</ul>`;
+    <details class="prov"${S.provOpen ? " open" : ""}><summary>Audit trail <span class="chip ${p.chain.valid ? "ok" : "bad"}" style="font-size:11px">${p.chain.valid ? "intact" : "broken"}</span></summary>
+    <ul class="timeline" style="margin-top:8px">${p.events.slice(-9).reverse().map((e) => `<li><b>${esc(e.action.replace(/_/g, " "))}</b> · ${esc(e.actor)}<small>${esc(e.at.slice(5, 16).replace("T", " "))} · ${esc(e.hash.slice(0, 8))}</small></li>`).join("")}</ul></details>`;
   ms.innerHTML = STEPS.map((s) => `<button class="btn sm ${r.stage === s.id ? "primary" : ""}" data-act="${unlocked(s.id) ? "go" : ""}" data-stage="${s.id}" ${unlocked(s.id) ? "" : "disabled"}>${s.label}</button>`).join("");
 }
 
@@ -233,29 +234,30 @@ async function viewAsk() {
     <textarea id="q" class="ask${S.rewrite ? " needs-fix" : ""}" placeholder="e.g. Do a research study on the prevalence of functional iron deficiency in US adults.">${esc(store.get("q2e.q", ""))}</textarea>
     ${S.rewrite ? rewriteCard(S.rewrite) : ""}
     <div class="examples">${k.examples.map((e) => `<button data-act="example" data-q="${esc(e.question)}" title="${esc(e.title)}">${esc(e.title)}</button>`).join("")}</div>
-    <div class="grid g3" style="margin-top:16px">
+    <details class="settings"${S.settingsOpen ? " open" : ""}><summary>Data and settings <span class="muted">${a.dataset ? "uploaded dataset" : "NHANES"}, ${a.cycles.length ? a.cycles.length + " cycle(s) chosen" : "most recent cycle that has your variables"}, ${a.source === "synthetic" ? "synthetic demo data" : a.source === "local" ? "local files" : "CDC download"}</span></summary>
+    <div class="grid g3" style="margin-top:12px">
       <label class="field">Dataset<select id="dsSel"><option value="">NHANES (public)</option>${ds.map((d) => `<option value="${d.id}" ${a.dataset === d.id ? "selected" : ""}>${esc(d.name)} (uploaded)</option>`).join("")}</select></label>
       <label class="field">AI agents<select id="provSel">${provs.map((p) => `<option value="${p}" ${a.provider === p ? "selected" : ""}>${p === "" ? `Server default (${esc(S.meta.llm.provider)})` : p}</option>`).join("")}</select></label>
-      <div class="field">Voice<div class="row"><button class="btn" data-act="mic" id="micBtn">🎙 Dictate</button><span class="tiny muted">${S.meta.voice ? "ElevenLabs Scribe" : "browser speech"}</span></div></div>
+      <div class="field">Voice<div class="row"><button class="btn" data-act="mic" id="micBtn">Dictate</button><span class="tiny muted">${S.meta.voice ? "ElevenLabs Scribe" : "browser speech"}</span></div></div>
     </div>
     <div class="row" style="margin-top:14px;justify-content:space-between">
       <div class="row"><span class="small muted">Cycles</span><div class="seg">${cyc}</div></div>
       <div class="row"><span class="small muted">Data</span><div class="seg">${src}</div></div>
     </div>
-    <p class="tiny muted" style="margin:8px 0 0">${dataNote}</p>
-    <div class="row" style="margin-top:16px"><button class="btn" data-act="assess" id="assessBtn">Can NHANES answer this?</button><button class="btn primary" data-act="design" id="designBtn">Design my study →</button>
-      <span class="small muted">Agents: Investigator · Data Steward · Epidemiologist · Statistician · Reviewer</span></div>
+    </details>
+    <div class="row" style="margin-top:16px"><button class="btn primary" data-act="design" id="designBtn">Design my study</button><button class="btn" data-act="assess" id="assessBtn">Can NHANES answer this?</button>
+      <span class="tiny muted">${dataNote}</span></div>
   </div>
   ${S.clarify ? clarifyCard(S.clarify) : ""}
   ${S.assess ? `<div style="margin-top:14px">${answerCard(S.assess)}</div>` : ""}
   <div class="grid g2" style="margin-top:18px">
     <div class="card"><h3 class="sub" style="margin-top:0">Recent projects</h3>${recent.length ? recent.map((p) => `<div class="crit"><div class="lbl"><a href="#/p/${p.id}/protocol">${esc(p.title)}</a><div class="tiny muted">${esc(p.created.slice(0, 16).replace("T", " "))} · ${p.runs} run(s)</div></div><span class="chip ${p.signed ? "ok" : "info"}">${p.signed ? "signed" : esc(p.status)}</span></div>`).join("") : `<p class="muted small">No projects yet.</p>`}</div>
-    <div class="card"><h3 class="sub" style="margin-top:0">Bring your own open dataset</h3>
-      <p class="small muted" style="margin-top:0">Upload a CSV and (optionally) its data dictionary. Q2E detects weight/strata/PSU columns and maps building blocks to your variables for review.</p>
+    <details class="card"><summary><b>Use your own open dataset</b> <span class="muted small">CSV upload</span></summary>
+      <p class="small muted">Upload a CSV and (optionally) its data dictionary. Q2E detects weight/strata/PSU columns and maps building blocks to your variables for review.</p>
       <div class="grid" style="gap:8px"><input type="text" id="dsName" placeholder="Dataset name (e.g. BRFSS 2024 extract)">
       <label class="field">Data (.csv)<input type="file" id="dsData" accept=".csv"></label>
       <label class="field">Data dictionary (.csv, optional)<input type="file" id="dsDict" accept=".csv"></label>
-      <button class="btn" data-act="upload">Upload dataset</button></div></div>
+      <button class="btn" data-act="upload">Upload dataset</button></div></details>
   </div>`;
 }
 
@@ -330,7 +332,7 @@ function clarifyCard(c) {
     <p class="tiny muted" style="margin:6px 0 0">Your idea: “${esc(c.question)}”</p>
     ${c.fromProject ? `<div class="banner info" style="margin:10px 0 0;display:flex;justify-content:space-between;align-items:center;gap:10px">
       <span>These are your earlier answers. Changing them creates a new version of the study; the current one stays in Projects.</span>
-      <button class="btn sm" data-act="backToStudy">Return to my study →</button></div>` : ""}
+      <button class="btn sm" data-act="backToStudy">Return to my study</button></div>` : ""}
     <div style="margin-top:6px">${dots}</div>
     ${step === 0 && c.notice ? `<div class="banner info" style="margin:10px 0 0">${esc(c.notice)}</div>` : ""}
     ${step === 0 && (c.understood || []).length ? `<div class="tiny" style="margin-top:10px;padding:8px 10px;border:1px solid var(--line, #444);border-radius:8px">
@@ -342,8 +344,8 @@ function clarifyCard(c) {
     <div style="display:grid;gap:8px;margin-top:10px">${opts}</div>
     ${q.free_text ? `<input type="text" id="cqt_${q.id}" value="${esc(a.text || "")}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:10px;width:100%">` : ""}
     <div class="row" style="margin-top:16px;justify-content:space-between">
-      <button class="btn" data-act="cqBack" ${step === 0 ? "disabled" : ""}>← Back</button>
-      <button class="btn primary" id="cqNext" data-act="${last ? "clarifyGo" : "cqNext"}" ${answered(q, a) ? "" : "disabled"}>${last ? "Design my study →" : "Next →"}</button>
+      <button class="btn" data-act="cqBack" ${step === 0 ? "disabled" : ""}>Back</button>
+      <button class="btn primary" id="cqNext" data-act="${last ? "clarifyGo" : "cqNext"}" ${answered(q, a) ? "" : "disabled"}>${last ? "Design my study" : "Next question"}</button>
     </div>
     ${step === 0 ? `<details class="tiny muted" style="margin-top:10px"><summary style="cursor:pointer">Why these questions?</summary>
       <p style="margin:4px 0">We wrote them to match how your idea is worded. If they feel too simple or too technical, change "Explanations for" above.</p>
@@ -366,7 +368,7 @@ function rewriteCard(r) {
     </div>
     <ol class="small" style="margin:8px 0 0 18px;padding:0;display:grid;gap:4px">
       <li><b>What happened:</b> ${happened}</li>
-      <li><b>What to do:</b> ${esc(r.what_to_do)} Then press <b>Design my study →</b> again.</li>
+      <li><b>What to do:</b> ${esc(r.what_to_do)} Then press <b>Design my study</b> again.</li>
     </ol>
     ${r.examples.length ? `<div class="small" style="margin-top:12px"><b>Try one of these</b> <span class="muted tiny">(click to put it in the box)</span></div>
       <div class="examples" style="margin-top:6px">${r.examples.map((e) => `<button data-act="rwUse" data-q="${esc(e)}">${esc(e)}</button>`).join("")}</div>` : ""}
@@ -497,7 +499,7 @@ function ptTalk(key, title) {
   const msgs = (S.project.protocol_chat || []).filter((m) => m.step === key).slice(-6);
   const thread = msgs.length ? `<div class="pc-list">${msgs.map(msgHtml).join("")}</div>` : "";
   const data = `data-pt="${esc(key)}" data-ptitle="${esc(title)}"`;
-  if (S.openPt !== key) return `${thread}<button class="btn sm ghost pt-open" data-act="ptOpen" ${data}>${can ? "✎ Change or comment" : "💬 Comment"}</button>`;
+  if (S.openPt !== key) return `${thread}<button class="btn sm ghost pt-open" data-act="ptOpen" ${data}>${can ? "Change or comment" : "Comment"}</button>`;
   return `${thread}<div class="pt-input">
     <textarea id="pcInput" rows="2" maxlength="1000" ${data} placeholder="${can ? "Say what you want changed, or write a note for the lead investigator" : "Write a note for the lead investigator"}"></textarea>
     <div class="row" style="margin-top:6px">${can ? `<button class="btn primary sm" data-act="pcSend" id="pcBtn" ${data}>Ask the AI to change it</button>` : ""}
@@ -593,34 +595,53 @@ function historyBar() {
       <button class="btn sm ghost" data-act="histToggle">${S.histOpen ? "Hide ▴" : "Show ▾"}</button></div>
     ${S.histOpen ? `<div style="margin-top:10px">${changeHistoryCard()}</div>` : ""}</div>`;
 }
+/* One page per section. Every step is a foldable block on that page: the ones people use on every study are
+   open, the occasional ones start folded, and anything that needs a decision opens itself. Fold state is
+   remembered per browser. */
+const FOLDED = {
+  protocol: ["agents"],
+  map: ["dictionary"],
+  plan: ["covsuggest", "power", "sensitivity", "audit"],
+  run: ["flow", "technical"],
+  results: ["bench", "sensitivity", "literature", "where"],
+  signoff: ["human", "ledger"],
+};
+S.fold = (() => { try { return JSON.parse(store.get("q2e.fold", "{}")) || {}; } catch { return {}; } })();
+function isOpen(stage, id, needs) {
+  if (needs) return true;
+  const k = `${stage}:${id}`;
+  if (k in S.fold) return S.fold[k];
+  return !(FOLDED[stage] || []).includes(id);
+}
 function stepper(stage, v) {
-  const parts = v.parts.filter(Boolean); const key = stepKey(stage);
-  const i = Math.max(0, Math.min(S.sub[key] || 0, parts.length - 1));
-  S.sub[key] = i; S.reach[key] = Math.max(S.reach[key] || 0, i); saveSteps();
-  S.parts = parts; S.partIndex = i;
-  const part = parts[i]; S.curStep = { stage, id: part.id, title: part.title };
-  const reach = S.reach[key];
-  const dots = parts.length > 1 ? `<div class="sp-dots">${parts.map((x, j) => {
-    const ok = j <= reach; const cls = j === i ? "on" : ok ? "done" : "";
-    return `<button class="sp-dot ${cls}" data-act="${ok ? "sub" : ""}" data-i="${j}" ${ok ? "" : "disabled"} title="${ok ? "" : "Finish the steps before this one first"}"><span class="n">${ok && j !== i ? "✓" : j + 1}</span>${esc(x.title)}</button>`;
-  }).join("")}</div>` : "";
-  const si = STEPS.findIndex((s) => s.id === stage); const prevS = STEPS[si - 1]; const nextS = STEPS[si + 1];
+  const parts = v.parts.filter(Boolean);
+  S.parts = parts; S.partIndex = -1; S.curStep = { stage, id: "page", title: v.title };
+  const si = STEPS.findIndex((x) => x.id === stage); const prevS = STEPS[si - 1]; const nextS = STEPS[si + 1];
   const nextOk = nextS && unlocked(nextS.id);
-  const back = i > 0 ? `<button class="btn" data-act="sub" data-i="${i - 1}">← Back</button>`
-    : prevS ? `<button class="btn" data-act="go" data-stage="${prevS.id}">← Back to ${esc(prevS.label)}</button>`
-    : `<button class="btn" data-act="backToAsk">← Back to your idea</button>`;
-  const fwd = i < parts.length - 1 ? `<button class="btn primary" data-act="sub" data-i="${i + 1}">Looks good - next: ${esc(parts[i + 1].title)} →</button>`
-    : nextS ? `<button class="btn primary" data-act="${nextOk ? "go" : ""}" data-stage="${nextS.id}" ${nextOk ? "" : "disabled"}>Done - go to ${esc(nextS.label)} →</button>` : "";
-  return `${historyBar()}
-  <div class="sp-head"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">Section ${si + 1} of ${STEPS.length} · ${esc(STEPS[si].label)}${v.tag ? " · " + v.tag : ""}</div>
-    <h1 class="page" style="margin-bottom:4px">${v.title}</h1>${v.lede ? `<p class="lede" style="margin-top:0">${v.lede}</p>` : ""}</div>
-  ${dots}
-  <div class="sp-step"><div class="sp-title"><span class="sp-n">Step ${i + 1} of ${parts.length}</span><button class="btn sm say" data-act="say" data-key="${esc(stage + ":" + part.id)}">🔊 Read aloud</button><h2>${esc(part.title)}</h2>${part.help ? `<p class="small muted" style="margin:2px 0 0">${part.help}</p>` : ""}</div>
-    ${part.noTalk || part.noAttn ? "" : attention(stage, part.id, part.attn || "")}
-    ${part.html}</div>
-  ${part.noTalk ? "" : otherTalk(stage, part)}
-  <div class="card sp-nav"><div class="row" style="justify-content:space-between">${back}${fwd}</div>
-    ${i === parts.length - 1 && nextS && !nextOk ? `<p class="tiny muted" style="margin:8px 0 0;text-align:right">${esc(LOCK_REASON[nextS.id] || "Finish this section first.")}</p>` : ""}</div>`;
+  S.partState = {};
+  const blocks = parts.map((part) => {
+    const attn = part.noTalk || part.noAttn ? "" : attention(stage, part.id, part.attn || "");
+    const open = isOpen(stage, part.id, !!attn);
+    S.partState[part.id] = { attn: !!attn, open };
+    const flag = attn ? `<span class="pflag need">Needs a decision</span>` : (FOLDED[stage] || []).includes(part.id) ? `<span class="pflag">Optional</span>` : "";
+    return `<section class="part ${open ? "open" : ""}" id="part-${esc(part.id)}">
+      <header class="part-head"><button class="part-toggle" data-act="fold" data-id="${esc(part.id)}" aria-expanded="${open}" aria-controls="body-${esc(part.id)}">
+        <span class="caret" aria-hidden="true"></span><span class="part-title">${esc(part.title.replace(/\s*\(optional\)$/i, ""))}</span>${flag}</button>
+        ${open && !part.noTalk ? `<button class="btn sm ghost say" data-act="say" data-key="${esc(stage + ":" + part.id)}">Read aloud</button>` : ""}</header>
+      ${open ? `<div class="part-body" id="body-${esc(part.id)}">${part.help ? `<p class="part-help">${part.help}</p>` : ""}${attn}${part.html}${part.noTalk ? "" : otherTalk(stage, part)}</div>` : ""}
+    </section>`;
+  }).join("");
+  const back = prevS ? `<button class="btn" data-act="go" data-stage="${prevS.id}">Back to ${esc(prevS.label)}</button>`
+    : `<button class="btn" data-act="backToAsk">Back to your idea</button>`;
+  const fwd = nextS ? `<button class="btn primary" data-act="${nextOk ? "go" : ""}" data-stage="${nextS.id}" ${nextOk ? "" : "disabled"}>Continue to ${esc(nextS.label)}</button>` : "";
+  const needs = parts.filter((x) => S.partState[x.id].attn).length;
+  return `<div class="page-head"><p class="crumb">${esc(STEPS[si].label)}${v.tag ? ` <span>${v.tag}</span>` : ""}</p>
+    <h1 class="page">${v.title}</h1>${v.lede ? `<p class="lede">${v.lede}</p>` : ""}
+    <div class="page-tools">${parts.length > 2 ? `<button class="linkbtn" data-act="foldall" data-v="1">Open all</button><button class="linkbtn" data-act="foldall" data-v="0">Fold all</button>` : ""}
+      ${needs ? `<span class="need-count">${needs} ${needs === 1 ? "section needs" : "sections need"} a decision</span>` : ""}</div></div>
+  ${historyBar()}
+  <div class="parts">${blocks}</div>
+  <div class="page-nav">${back}<span class="spacer"></span>${nextS && !nextOk ? `<span class="tiny muted">${esc(LOCK_REASON[nextS.id] || "Finish this section first.")}</span>` : ""}${fwd}</div>`;
 }
 function changeHistoryCard() {
   const ams = (S.project.amendments || []).slice().reverse();
@@ -681,12 +702,12 @@ function viewProtocol() {
   const pop = p.population.map((c) => `<div class="crit"><label class="toggle"><input type="checkbox" data-act="crit" data-id="${c.id}" ${c.enabled ? "checked" : ""}><span></span></label>
     <div class="lbl"><span class="chip ${c.kind === "exclusion" ? "warn" : "accent"}" style="font-size:11px">${c.kind}</span> ${nice(c.label)}<div class="tiny muted">${esc(c.source || "")} · <code>${esc(c.expr)}</code></div></div></div>`).join("");
   return { title: "Your research protocol", tag: `plan v${p.version}`,
-    lede: "The AI drafted your study. Check it one step at a time. Items that need your attention are marked, and you can change or comment on them right there.",
+    lede: "A first draft of your study. Read it through, click any underlined text to change it, and deal with anything marked as needing a decision.",
     parts: [
       { id: "question", title: "Your study question", help: "Check that this says what you want to study. Click any underlined text to edit it yourself.",
         attn: ideaGapPoints() + typedPoints(),
         html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
-        <div class="card"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional</div>
+        <div class="card"><div class="tiny muted">${esc(p.study_type[0].toUpperCase() + p.study_type.slice(1))} study, cross-sectional design</div>
           <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
           <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc((p.clarification || {}).original_question || p.question)}”</p>
           ${ideaGapBox()}
@@ -738,7 +759,7 @@ function viewMap() {
       <td><button class="btn sm" data-act="gmap" data-block="${b}">Save</button></td></tr>`).join("")}</tbody></table></div>` : "";
   const custom = (p.custom_variables || []).filter((c) => c.source === "ai");
   return { title: "Where the data comes from",
-    lede: `Each part of your study is linked to the exact ${p.dataset.type === "nhanes" ? "NHANES files and survey questions" : "columns in your dataset"} it uses. Check it one step at a time.`,
+    lede: `Each part of your study is linked to the exact ${p.dataset.type === "nhanes" ? "NHANES files and survey questions" : "columns in your dataset"} it uses.`,
     parts: [
       { id: "table", title: "Your variables and their sources",
         help: "Each row is one thing your study uses. <b>Availability</b> shows which survey years have it (✓ yes, ✗ no). Click <b>expr</b> to see the exact formula.",
@@ -771,7 +792,7 @@ function viewPlan() {
   const src = [["auto", "CDC/local"], ["local", "Local"], ["synthetic", "Synthetic"]].map(([v, l]) => `<button class="${p.dataset.source === v ? "on" : ""}" data-act="plansource" data-v="${v}">${l}</button>`).join("");
   const approved = S.project.approved_current;
   return { title: "How the analysis will be done", tag: `plan v${p.version}`,
-    lede: "The AI statistician drafted this and an AI reviewer checked it. Go through it step by step; the last step is your approval.",
+    lede: "Drafted by the statistician agent and checked by the reviewer agent. Settle anything marked, then approve at the bottom of the page.",
     parts: [
       { id: "model", title: "How the result is measured", help: "Which statistical model is used and what number it reports (for example an odds ratio).",
         html: `<div class="card"><h3 class="sub" style="margin-top:0">Estimand & model</h3>
@@ -805,9 +826,9 @@ function viewPlan() {
         noAttn: true,
         html: `<div class="card">${issues.length ? issues.map(issuePoint).join("") : `<p class="muted small">No issues - the reviewer found nothing to fix.</p>`}</div>` },
       { id: "approve", title: "Approve the plan", help: "Approving locks this exact version of the plan so it can be run. Any later change needs approval again.",
-        html: `<div class="card"><p class="small" style="margin:0 0 10px"><a class="btn sm" href="/api/projects/${S.project.id}/protocol.html" target="_blank">📄 Protocol &amp; statistical analysis plan</a> <span class="tiny muted">the document you are approving (Markdown: <a href="/api/projects/${S.project.id}/protocol.md" target="_blank">.md</a>)</span></p>${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
+        html: `<div class="card"><p class="small" style="margin:0 0 10px"><a class="btn sm" href="/api/projects/${S.project.id}/protocol.html" target="_blank">Open the protocol &amp; analysis plan</a> <span class="tiny muted">the document you are approving (Markdown: <a href="/api/projects/${S.project.id}/protocol.md" target="_blank">.md</a>)</span></p>${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
-      ${rMissing("Running the analysis")}<button class="btn primary" data-act="run" ${rReady() ? "" : "disabled"}>Run analysis in R →</button>` :
+      ${rMissing("Running the analysis")}<button class="btn primary" data-act="run" ${rReady() ? "" : "disabled"}>Run the analysis in R</button>` :
     `${blockers.length || pendingAck.length ? `<div class="banner warn" style="margin-top:0"><b>Before you can approve:</b> deal with the ${blockers.length + pendingAck.length} item(s) below.
       Press <b>✓ I accept this</b> (or the suggested fix) on each one. They disappear from this list as you go.</div>
       ${[...blockers, ...pendingAck].map(issuePoint).join("")}` : `<p class="small" style="margin-top:0">✓ Nothing is blocking approval.</p>`}
@@ -846,8 +867,14 @@ function viewRun() {
       { id: "checks", title: "Automatic quality checks", help: "Green passed. <b>Yellow</b> means look carefully. <b>Red</b> failed and needs a written reason at sign-off.",
         html: `${staleBanner}${R.meta.synthetic ? `<div class="banner warn">Synthetic NHANES-like data - pipeline demonstration only; estimates are not population estimates.</div>` : ""}
     <div class="row" style="margin-bottom:12px"><span class="chip ok">${cnt("pass")} pass</span><span class="chip warn">${cnt("warn")} warn</span><span class="chip bad">${cnt("fail")} fail</span><span class="chip info">${cnt("info")} info</span><span class="small muted">${R.meta.seconds}s · ${esc(R.meta.r_version)}</span></div>
-    <div class="checks">${c.map((x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)} · ${x.status.toUpperCase()}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p>
-      ${x.status === "warn" || x.status === "fail" ? ptTalk(`qc:${x.id || x.title}`, `Quality check: ${x.title}`) : ""}</div>`).join("")}</div>` },
+    ${(() => {
+      const word = { pass: "passed", warn: "look carefully", fail: "failed", info: "note" };
+      const one = (x) => `<div class="check ${x.status}"><span class="tiny muted">${esc(x.category)}, ${word[x.status] || esc(x.status)}</span><b>${nice(x.title)}</b><p>${nice(x.message)}</p>
+      ${x.status === "warn" || x.status === "fail" ? ptTalk(`qc:${x.id || x.title}`, `Quality check: ${x.title}`) : ""}</div>`;
+      const hot = c.filter((x) => x.status === "warn" || x.status === "fail"); const calm = c.filter((x) => !(x.status === "warn" || x.status === "fail"));
+      return `${hot.length ? `<div class="checks">${hot.map(one).join("")}</div>` : `<p class="small">Every check passed.</p>`}
+        ${calm.length ? `<details class="calm"><summary>${calm.length} passed or informational checks</summary><div class="checks">${calm.map(one).join("")}</div></details>` : ""}`;
+    })()}` },
       { id: "flow", title: "Who was included", help: "How many people were in the data, how many were left out and why, and how the survey design was handled.",
         html: `<div class="grid g2"><div class="card"><h3 class="sub" style="margin-top:0">Participant flow</h3><div class="flow">${R.flow.map((f, i) => `${i ? `<div class="arrow">${f.excluded ? `<span>− ${f.excluded.toLocaleString()} ${esc(f.kind === "exclusion" ? "excluded" : "not eligible")}</span>` : ""}</div>` : ""}<div class="box"><b>${f.n.toLocaleString()}</b> <span class="small">${nice(f.label)}</span></div>`).join("")}</div></div>
       <div class="card"><h3 class="sub" style="margin-top:0">Survey design</h3><dl class="kv"><dt>Weight</dt><dd><code>${esc(R.design.weight_variable)}</code> (${esc(R.design.weight_level)})</dd><dt>Cycles</dt><dd>${esc(R.design.cycles.join(", "))}</dd><dt>Strata / PSUs</dt><dd>${R.design.n_strata} / ${R.design.n_psu} (design df ${R.design.design_df})</dd><dt>Analytic df</dt><dd>${R.design.analytic_df}</dd><dt>Represents</dt><dd>${fx(R.design.sum_weights_millions, 1)} million people</dd><dt>Variance</dt><dd>Taylor linearization; lonely PSU: ${esc(R.design.lonely_psu)}</dd></dl>
@@ -895,7 +922,7 @@ function viewResults() {
     { id: "main", title: "The main finding", help: "The headline number, then the same result in plain words. Press Listen to hear it.",
       html: `${synth}<div class="card">${headline()}</div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3><p style="margin:0 0 10px">${nice(sm.plain_language || "")}</p>
-    <div class="row"><button class="btn sm" data-act="listen">🔊 Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
+    <div class="row"><button class="btn sm" data-act="listen">Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
     benchCards() && { id: "bench", title: "Does it match published studies?", help: "Q2E's numbers next to numbers already published, as a sanity check.",
       html: `<div class="grid g2">${benchCards()}</div>` },
     R.figures.length && { id: "figures", title: "Figures", help: "Charts of the results.",
@@ -1071,7 +1098,7 @@ function viewSignoff() {
     <li><b>Data governance</b> - restricted data use only approved/local models; row-level data never reach an LLM.</li></ul></div>` },
       { id: "ledger", title: "Full record of every action", help: "Every action taken on this study so far, in a tamper-evident chain. You can skim this.", html: provTable(true) },
       { id: "sign", title: "Sign off", help: "Tick each box you agree with, explain any failed check, type your name and sign.",
-        html: `<div class="card">${ATTEST.map((a, i) => `<label class="row small" style="align-items:flex-start;margin-bottom:8px"><input type="checkbox" class="att" data-i="${i}"> ${esc(a)}</label>`).join("")}
+        html: `<div class="card">${ATTEST.map((a, i) => `<label class="row small" style="align-items:flex-start;margin-bottom:8px;flex-wrap:nowrap"><input type="checkbox" class="att" data-i="${i}"><span>${esc(a)}</span></label>`).join("")}
     ${fails.map((c) => `<label class="field" style="margin-top:8px">Override reason for failed check: ${esc(c.title)}<textarea class="ovr" data-id="${esc(c.id)}" rows="2"></textarea></label>`).join("")}
     <div class="row" style="margin-top:12px"><input type="text" id="signer" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><button class="btn primary" data-act="sign">Sign off results</button></div></div>` },
     ] };
@@ -1202,7 +1229,7 @@ const A = {
       if (S.rec) { S.rec.stop(); return; }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const chunks = []; const rec = new MediaRecorder(stream); S.rec = rec;
       rec.ondataavailable = (e) => chunks.push(e.data);
-      rec.onstop = async () => { S.rec = null; stream.getTracks().forEach((t) => t.stop()); el.textContent = "🎙 Dictate"; const fd = new FormData(); fd.append("audio", new Blob(chunks, { type: "audio/webm" }), "idea.webm");
+      rec.onstop = async () => { S.rec = null; stream.getTracks().forEach((t) => t.stop()); el.textContent = "Dictate"; const fd = new FormData(); fd.append("audio", new Blob(chunks, { type: "audio/webm" }), "idea.webm");
         try { const r = await api("/api/voice/stt", { method: "POST", body: fd }); $("#q").value = r.text; } catch (e) { toast(e.message, true); } };
       rec.start(); el.textContent = "⏹ Stop"; return;
     }
@@ -1219,9 +1246,20 @@ const A = {
   swap: () => edit({ op: "swap_roles" }, "swap exposure/outcome"),
   fix: (el) => { const i = (S.project.plan.review || []).find((x) => x.id === el.dataset.id); if (i?.fix) edit({ ...i.fix, by: store.get("q2e.name", "") || "investigator" }, `fix: ${i.title}`); },
   rmpill: (el) => { const f = el.dataset.field; edit({ op: `set_${f}`, value: S.project.plan[f].filter((x) => x !== el.dataset.v) }); },
-  sub: (el) => {
-    const key = stepKey(route().stage); const i = parseInt(el.dataset.i, 10) || 0;
-    S.sub[key] = i; S.reach[key] = Math.max(S.reach[key] || 0, i); saveSteps(); render();
+  sub: (el) => { const x = (S.parts || [])[parseInt(el.dataset.i, 10) || 0]; if (x) A.jump({ dataset: { id: x.id } }); },
+  jump: (el) => {
+    const id = el.dataset.id; const stage = route().stage;
+    const go2 = () => { const t = document.getElementById(`part-${id}`); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    if (!(S.partState || {})[id]?.open) { S.fold[`${stage}:${id}`] = true; store.set("q2e.fold", JSON.stringify(S.fold)); rerender().then(go2); } else go2();
+  },
+  fold: (el) => {
+    const id = el.dataset.id; const stage = route().stage; const st = (S.partState || {})[id] || {};
+    S.fold[`${stage}:${id}`] = !st.open; store.set("q2e.fold", JSON.stringify(S.fold)); rerender();
+  },
+  foldall: (el) => {
+    const stage = route().stage; const v = el.dataset.v === "1";
+    for (const x of S.parts || []) S.fold[`${stage}:${x.id}`] = v;
+    store.set("q2e.fold", JSON.stringify(S.fold)); rerender();
   },
   histToggle: () => { S.histOpen = !S.histOpen; rerender(); },
   ptOpen: (el) => { S.openPt = el.dataset.pt; rerender().then(() => { const i = $("#pcInput"); if (i) i.focus(); }); },
@@ -1305,7 +1343,7 @@ const A = {
   },
   say: (el) => {
     if (VOICE.key === el.dataset.key) return stopVoice();
-    speak(stepText(), el.dataset.key);
+    speak(stepText(el.dataset.key), el.dataset.key);
   },
   lit: async () => { S.lit = await api(`/api/projects/${S.project.id}/literature`); rerender(); },
   novelty: async () => { toast("Searching PubMed/MEDLINE for prior NHANES work..."); S.project.novelty = await api(`/api/projects/${S.project.id}/novelty`, { method: "POST" }); rerender(); },
@@ -1364,3 +1402,10 @@ $("#themeBtn").addEventListener("click", () => {
   try { S.meta = await api("/api/meta"); } catch (e) { $("#main").innerHTML = `<div class="banner bad">Cannot reach the Q2E server: ${esc(e.message)}</div>`; return; }
   renderBoundary(); render();
 })();
+
+/* remember which optional panels are open across re-renders */
+document.addEventListener("toggle", (e) => {
+  const d = e.target; if (!(d instanceof HTMLDetailsElement)) return;
+  if (d.classList.contains("settings")) S.settingsOpen = d.open;
+  if (d.classList.contains("prov")) S.provOpen = d.open;
+}, true);

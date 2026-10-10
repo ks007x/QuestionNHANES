@@ -150,6 +150,8 @@ After a run, **Find journals, deadlines & funding** (Results page; also `where_n
 
 ## The workflow (maps to the challenge stages)
 
+Item-by-item check against the challenge brief, with evidence from a real-data run: [docs/CHALLENGE_CHECKLIST.md](docs/CHALLENGE_CHECKLIST.md).
+
 | Stage | Q2E | Who decides |
 |---|---|---|
 | 1 Refine the question | **Investigator agent** parses population, exposure, comparator, outcome, covariates, inclusion and exclusion criteria, and the hypothesis. It handles guideline cues ("KDIGO 2026", "Baveno VIII", "ASH") and "at similar weight" style adjustments, and flags questions outside a cross-sectional design (incidence, mortality). | Edit any text, switch definitions, swap exposure and outcome |
