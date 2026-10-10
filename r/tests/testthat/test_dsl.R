@@ -30,3 +30,9 @@ test_that("functional iron deficiency definition", {
   d <- data.frame(ferritin = c(20, 50, 50, NA), tsat = c(10, 15, 25, 10))
   expect_equal(dsl_coerce(dsl_eval("ferritin >= 30 & tsat < 20", d), "binary"), c(0L, 1L, 0L, NA))
 })
+
+test_that("coalesce takes any number of alternatives", {
+  d <- data.frame(a = c(NA, NA, 1), b = c(NA, 2, NA), c = c(3, 3, 3))
+  expect_equal(dsl_eval("coalesce(a, b, c)", d), c(3, 2, 1))
+  expect_equal(dsl_eval("coalesce(a == 1, b == 2, c == 1)", d), c(FALSE, TRUE, TRUE))
+})
