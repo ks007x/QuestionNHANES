@@ -361,8 +361,7 @@ function issuePoint(i) {
   return `<div class="pt sev-${esc(i.severity)}"><div class="pt-row"><span class="sev ${esc(i.severity)}">${esc(i.severity)}</span>
       <div style="flex:1"><b class="small">${nice(i.title)}</b><div class="small muted">${nice(i.detail)}</div></div></div>
     ${lbl ? `<div class="examples" style="margin:6px 0 0"><span class="tiny muted">Suggested fix:</span> <button data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">${esc(lbl)}</button></div>` : ""}
-    ${(i.alternatives || []).length && canChangeHere() ? `<div class="alts"><div class="tiny muted">Close questions NHANES <b>can</b> answer - click one to switch the study to it (you can undo):</div>
-      ${i.alternatives.map((a) => `<button class="alt" data-act="pcSend" data-msg="${esc(a.question)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}"><b>${esc(a.question)}</b><span class="tiny muted">${esc(a.why)}</span></button>`).join("")}</div>` : ""}
+    ${altButtons(i.alternatives, key, i.title)}
     ${ack ? `<div style="margin-top:6px"><button class="btn sm" data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">${(i.alternatives || []).length ? "Keep my question as it is (accept the reframing)" : "✓ I accept this"}</button></div>` : ""}
     ${ptTalk(key, i.title)}</div>`;
 }
@@ -370,6 +369,26 @@ function issuePoint(i) {
 function notePoint(key, title, detail, sev = "minor") {
   return `<div class="pt sev-${sev}"><div class="pt-row"><span class="sev ${sev}">check</span>
       <div style="flex:1"><b class="small">${nice(title)}</b>${detail ? `<div class="small muted">${nice(detail)}</div>` : ""}</div></div>${ptTalk(key, title)}</div>`;
+}
+/* Clickable close questions; picking one switches the study (logged, undoable). */
+function altButtons(alts, key, title, intro) {
+  if (!(alts || []).length || !canChangeHere()) return "";
+  return `<div class="alts"><div class="tiny muted">${intro || "Close questions NHANES <b>can</b> answer - click one to switch the study to it (you can undo):"}</div>
+    ${alts.map((a) => `<button class="alt" data-act="pcSend" data-msg="${esc(a.question)}" data-pt="${esc(key)}" data-ptitle="${esc(title)}"><b>${esc(a.question)}</b><span class="tiny muted">${esc(a.why)}</span></button>`).join("")}</div>`;
+}
+/* What happened to every answer the analyst typed in the follow-up questions (nothing is dropped silently). */
+function typedPoints() {
+  const typed = ((S.project.plan.clarification || {}).typed || []).filter((t) => t.status !== "used");
+  return typed.map((t, i) => {
+    const key = `typed:${i}:${t.text.slice(0, 40)}`; const title = `You typed: "${t.text}"`;
+    return `<div class="pt sev-${t.status === "not_in_nhanes" ? "major" : "minor"}"><div class="pt-row"><span class="sev ${t.status === "not_in_nhanes" ? "major" : "minor"}">your words</span>
+      <div style="flex:1"><b class="small">${esc(title)}</b><div class="small muted">${esc(t.note)}</div></div></div>
+      ${altButtons(t.alternatives, key, title, " ")}${ptTalk(key, title)}</div>`;
+  }).join("");
+}
+function typedUsed() {
+  const used = ((S.project.plan.clarification || {}).typed || []).filter((t) => t.status === "used");
+  return used.length ? `<h3 class="sub">Your own words</h3><ul class="small" style="margin:0;padding-left:18px">${used.map((t) => `<li>“${esc(t.text)}” - ✓ ${esc(t.note)}</li>`).join("")}</ul>` : "";
 }
 /* Which step each Reviewer finding belongs to. */
 function issueStep(id) {
@@ -498,6 +517,7 @@ function viewProtocol() {
     lede: "The AI drafted your study. Check it one step at a time. Items that need your attention are marked, and you can change or comment on them right there.",
     parts: [
       { id: "question", title: "Your study question", help: "Check that this says what you want to study. Click any underlined text to edit it yourself.",
+        attn: typedPoints(),
         html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
         <div class="card"><div class="tiny muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(p.study_type)} · cross-sectional</div>
           <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
@@ -506,6 +526,7 @@ function viewProtocol() {
           <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
           ${p.refined_question_llm ? `<div class="row" style="margin-top:8px"><span class="chip accent">AI phrasing</span><span class="small" style="flex:1">${nice(p.refined_question_llm)}</span><button class="btn sm" data-act="usellm" data-field="refined_question">Use</button></div>` : ""}
           <h3 class="sub">What we expect to find (hypothesis)</h3><p style="margin:0">${editable("hypothesis", p.hypothesis)}</p>
+          ${typedUsed()}
           <details style="margin-top:12px"><summary class="small">Study summary in research terms (PICO)</summary><dl class="kv" style="margin-top:8px">${Object.entries(p.pico).map(([k2, v]) => `<dt>${esc(k2[0].toUpperCase() + k2.slice(1))}</dt><dd>${nice(v)}</dd>`).join("")}</dl></details>
         </div>` },
       { id: "feasible", title: "Can NHANES answer it?", help: "How well the NHANES data fits your question, and how often it has been studied before.",
@@ -615,7 +636,9 @@ function viewPlan() {
         html: `<div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
       <button class="btn primary" data-act="run">Run analysis in R →</button>` :
-    `${blockers.length ? `<div class="banner bad">Resolve ${blockers.length} blocker(s) before approval.</div>` : ""}${pendingAck.length ? `<div class="banner warn">Acknowledge ${pendingAck.length} operational assumption(s) (see critique).</div>` : ""}
+    `${blockers.length || pendingAck.length ? `<div class="banner warn" style="margin-top:0"><b>Before you can approve:</b> deal with the ${blockers.length + pendingAck.length} item(s) below.
+      Press <b>✓ I accept this</b> (or the suggested fix) on each one. They disappear from this list as you go.</div>
+      ${[...blockers, ...pendingAck].map(issuePoint).join("")}` : `<p class="small" style="margin-top:0">✓ Nothing is blocking approval.</p>`}
     <div class="row"><input type="text" id="approver" placeholder="Your name" value="${esc(store.get("q2e.name", ""))}"><label class="row small"><input type="checkbox" id="attest"> I reviewed the protocol, variable mappings, definitions and this analysis plan.</label>
     <button class="btn primary" data-act="approve" ${canApprove ? "" : "disabled"}>Approve protocol</button></div>`}</div>` },
     ] };

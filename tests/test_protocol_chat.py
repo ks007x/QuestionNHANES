@@ -129,6 +129,27 @@ def test_asking_for_something_close_offers_questions_and_switching_can_be_undone
     assert pj["question"] == STUDY_HABITS
 
 
+def test_typed_answers_are_never_silently_dropped():
+    pj = client.post("/api/projects", json={"question": "I have high blood sugar, how does that relate to my studying. Study children.",
+                                            "source": "synthetic", "level": "novice",
+                                            "answers": {"term0": {"text": "studying"}, "population": {"option": "children"}}}).json()
+    typed = pj["plan"]["clarification"]["typed"]
+    note = next(t for t in typed if t["text"] == "studying")
+    assert note["status"] == "not_in_nhanes" and "studying" in note["note"]
+    assert note["alternatives"] and all("blood sugar" in a["question"] for a in note["alternatives"])
+
+
+def test_accepting_assumptions_unlocks_approval():
+    pj = _project()
+    pending = [i for i in pj["plan"]["review"] if (i.get("fix") or {}).get("op") == "acknowledge" and i["severity"] == "major"]
+    assert pending
+    assert client.post(f"/api/projects/{pj['id']}/approve", json={"by": "Aly"}).status_code != 200
+    for i in pending:
+        pj = client.post(f"/api/projects/{pj['id']}/edit", json={"fix": i["fix"], "step": f"issue:{i['id']}", "step_title": i["title"]}).json()
+    assert client.post(f"/api/projects/{pj['id']}/approve", json={"by": "Aly"}).status_code == 200
+    assert [a["step_title"] for a in pj["amendments"]] == [i["title"] for i in pending]
+
+
 def test_diff_is_plain_language():
     old = {"model": {"family": "quasipoisson"}, "covariates": ["age"], "population": []}
     new = {"model": {"family": "quasibinomial"}, "covariates": ["age", "smoking"], "population": []}

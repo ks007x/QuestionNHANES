@@ -216,6 +216,10 @@ def refresh_plan(plan: dict, provider: str | None = None) -> dict:
         probe["stale"] = probe.get("plan_hash") != plan_hash(plan)
     plan["answerability"] = answerability.assess(plan, plan.get("parsed", {}), probe if probe and not probe.get("stale") else None)
     _answer_issue(plan)
+    clar = plan.get("clarification") or {}
+    if clar.get("answers"):
+        from . import expertise
+        clar["typed"] = expertise.typed_notes(clar["answers"], plan, plan.get("question", ""), original=clar.get("original_question"))
     return plan
 
 

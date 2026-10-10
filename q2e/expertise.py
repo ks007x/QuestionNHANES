@@ -158,6 +158,81 @@ COMMON_EXPOSURES = ["short_sleep", "physical_activity", "sedentary", "smoking", 
 POP_WORDS = re.compile(r"\b(older adults|young adults|adults|women|men|children|adolescents|teenagers|teens|elderly|seniors)\b", re.I)
 
 
+def _switch_questions(cids: list[str], outcome: str, pop: str, k: Knowledge, why: str, limit: int = 3) -> list[dict]:
+    """'Is <cid> associated with <outcome> in <pop>?' for each candidate topic, kept only if the parser reads it back."""
+    res = []
+    for cid in cids:
+        if cid == outcome or cid not in k.concepts or outcome not in k.concepts:
+            continue
+        q = f"Is {k.concepts[cid]['synonyms'][0]} associated with {k.concepts[outcome]['synonyms'][0]} in {pop}?"
+        p = planner.parse_question(q, k)
+        if {p.get("outcome_concept"), p.get("exposure_concept")} == {outcome, cid}:
+            w = why.format(label=_label(cid, k).lower())
+            res.append({"question": q, "label": _label(cid, k), "why": w[:1].upper() + w[1:]})
+        if len(res) >= limit:
+            break
+    return res
+
+
+def typed_notes(answers: dict | None, plan: dict, question: str, k: Knowledge | None = None,
+                original: str | None = None) -> list[dict]:
+    """Account for everything the user TYPED in the follow-up answers, so nothing is silently dropped:
+    status 'used' (and as what), 'not_used' (a measurable topic that did not fit) or 'not_in_nhanes'."""
+    k = k or get_knowledge()
+    out_c = (plan.get("outcome") or {}).get("concept")
+    exp_c = (plan.get("exposure") or {}).get("concept")
+    first = planner.parse_question(original, k) if original else {}
+    # keep the topic the user started with (e.g. 'high blood sugar') when suggesting what to swap in
+    anchor = next((c for c in (first.get("outcome_concept"), first.get("exposure_concept")) if c in (out_c, exp_c) and c), out_c)
+    pops = POP_WORDS.findall(question)
+    pop = {"teenagers": "adolescents", "teens": "adolescents", "elderly": "older adults", "seniors": "older adults"}.get(
+        pops[-1].lower(), pops[-1].lower()) if pops else "US adults"
+    used_text = " ".join([_label(out_c, k), _label(exp_c, k) if exp_c else ""] +
+                         [k.label(c) for c in plan.get("covariates", [])] +
+                         [c["label"] for c in plan.get("population", []) if c.get("enabled")]).lower()
+    notes, seen = [], set()
+    for qid, a in (answers or {}).items():
+        text = privacy.scrub(str((a or {}).get("text") or ""))[0].strip()[:120]
+        if len(text) < 2 or text.lower() in seen:
+            continue
+        seen.add(text.lower())
+        p = planner.parse_question(text, k)
+        found = [c for c in (p.get("outcome_concept"), p.get("exposure_concept")) if c and not c.startswith("dict:")]
+        words = [w for w in re.findall(r"[a-z]+", text.lower()) if w not in FILLER_WORDS and len(w) > 2]
+        if any(c in (out_c, exp_c) for c in found):
+            role = "outcome" if out_c in found else "exposure"
+            notes.append({"text": text, "status": "used", "note": f"Used as your {role}: {_label(out_c if role == 'outcome' else exp_c, k)}."})
+            continue
+        if POP_WORDS.search(text) or p.get("populations") or any(a is not None for a in (p.get("age_range") or ())):
+            notes.append({"text": text, "status": "used", "note": "Used to choose who is in the study (see 'Who is in the study')."})
+            continue
+        if words and all(w in used_text for w in words):
+            notes.append({"text": text, "status": "used", "note": "Used in the protocol (see the study group and adjustments)."})
+            continue
+        if found:
+            labs = ", ".join(_label(c, k) for c in found)
+            notes.append({"text": text, "status": "not_used",
+                          "note": f"NHANES measures this ({labs}), but " +
+                                  (f"your study already compares {_label(exp_c, k).lower()} with {_label(out_c, k).lower()}. "
+                                   if exp_c else f"it was not added to your study of {_label(out_c, k).lower()}. ") +
+                                  "Pick a question below to study it.",
+                          "alternatives": _switch_questions([c for c in found if c != anchor], anchor, pop, k,
+                                                            "Uses what you typed: {label}.") if anchor else []})
+            continue
+        proxies = [cid for w in words for cid in LAY_TERMS.get(w, []) if cid != anchor]
+        proxies = list(dict.fromkeys(proxies))
+        proxy_word = next((w for w in words if LAY_TERMS.get(w)), "")
+        alts = _switch_questions(proxies, anchor, pop, k, f"Closest NHANES measure to '{proxy_word}': {{label}}.") if anchor and proxies else []
+        if anchor and not alts:
+            alts = _switch_questions([c for c in COMMON_EXPOSURES if c not in (out_c, exp_c)], anchor, pop, k,
+                                     "{label} is measured well in NHANES and often studied with " + _label(anchor, k).lower() + ".")
+        notes.append({"text": text, "status": "not_in_nhanes",
+                      "note": f"NHANES has no questions on \"{text}\", so it could not be added to the study." +
+                              (" These close questions use things NHANES does measure:" if alts else ""),
+                      "alternatives": alts})
+    return notes
+
+
 def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -> list[dict]:
     """Full questions NHANES CAN answer that stay as close as possible to one it cannot: keep the topic that was
     understood and swap the missing one for the nearest thing NHANES measures. Every suggestion is re-read by the
