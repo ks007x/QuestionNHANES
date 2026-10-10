@@ -146,3 +146,9 @@ def test_methods_and_limitations(arms_plan):
     assert {"Temporality", "Confounding", "Precision", "Data"} <= areas
     assert ap["limitations"][0]["impact"] == "major"
     assert "GRADE-informed" in appraisal.certainty_line(ap["certainty"])
+
+
+def test_large_but_imprecise_effect_not_rated_up(arms_plan):
+    c = appraisal.certainty(arms_plan, _res(2.0, 1.16, 3.47), {"checks": []},
+                            {"verdict": "Underpowered for the target effect", "settings": {"target_ratio": 1.5}})
+    assert c["net_up"] == 0 and c["level"] == "Very low"

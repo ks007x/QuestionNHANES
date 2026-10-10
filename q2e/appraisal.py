@@ -222,7 +222,7 @@ def certainty(plan: dict, results: dict | None = None, audit: dict | None = None
     # rating up ------------------------------------------------------------------------
     up = 0
     ups = []
-    if pe and _ratio(effect) and _excludes_null(pe, effect) and rob == 0:
+    if pe and _ratio(effect) and _excludes_null(pe, effect) and rob == 0 and imp == 0:   # only a large AND precise effect counts
         r = pe["est"] if pe["est"] >= 1 else 1 / pe["est"]
         lo = pe["lcl"] if pe["est"] >= 1 else 1 / pe["ucl"]
         if r > 5 and lo > 2:
@@ -247,7 +247,7 @@ def certainty(plan: dict, results: dict | None = None, audit: dict | None = None
                     ups.append({"domain": "Dose-response", "change": 1, "reason": f"Gradient across exposure quartiles (P for trend {m.group(1).strip()})."})
                 break
     if not ups:
-        ups.append({"domain": "Rating up", "change": 0, "reason": "No large effect or dose-response gradient" + (" (not considered when risk of bias is serious)." if rob else ".")})
+        ups.append({"domain": "Rating up", "change": 0, "reason": "No large effect or dose-response gradient" + ((" (not considered when risk of bias or imprecision is serious)." if (rob or imp) else "."))})
 
     down = rob + inc + ind + imp
     level_i = max(0, min(3, base - down + min(up, 2)))
