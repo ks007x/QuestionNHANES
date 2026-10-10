@@ -519,10 +519,11 @@ function ideaGapBox() {
 function ideaGapPoints() {
   const g = (S.project.plan.idea_gaps || []).filter((x) => (x.alternatives || []).length);
   return g.map((x, i) => {
-    const key = `gap:${i}:${x.text.slice(0, 40)}`; const title = `Not in this study: "${x.text}"`;
-    return `<div class="pt sev-major"><div class="pt-row"><span class="sev major">your idea</span>
-      <div style="flex:1"><b class="small">${esc(title)}</b><div class="small muted">Switch to a close question that NHANES can answer, or keep the study as it is.</div></div></div>
-      ${altButtons(x.alternatives, key, title, " ")}${ptTalk(key, title)}</div>`;
+    const assumed = x.status === "assumed";
+    const key = `gap:${i}:${x.text.slice(0, 40)}`; const title = assumed ? `Which ages is "${x.text}"?` : `Not in this study: "${x.text}"`;
+    return `<div class="pt sev-major"><div class="pt-row"><span class="sev major">${assumed ? "please specify" : "your idea"}</span>
+      <div style="flex:1"><b class="small">${esc(title)}</b><div class="small muted">${assumed ? esc(x.note) : "Switch to a close question that NHANES can answer, or keep the study as it is."}</div></div></div>
+      ${altButtons(x.alternatives, key, title, assumed ? "Click the ages you mean, or type them below (e.g. \"study people aged 70 and older\"):" : " ")}${ptTalk(key, title)}</div>`;
   }).join("");
 }
 function typedUsed() {
@@ -539,6 +540,7 @@ function issueStep(id) {
   if (/^(pregnancy|small_pop)$/.test(id)) return "protocol:population";
   if (/^causal_/.test(id)) return "protocol:question";
   if (id === "answerability") return "protocol:feasible";
+  if (/^ages_/.test(id)) return "protocol:population";
   if (/^(or_common|scale)$/.test(id)) return "plan:model";
   if (/^(mediator_|collinearity|multiplicity)/.test(id)) return "plan:adjust";
   if (/^(iron_inflammation|a1c_anemia|mi)$/.test(id)) return "plan:sensitivity";

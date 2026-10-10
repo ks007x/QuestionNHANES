@@ -174,6 +174,32 @@ def test_study_never_silently_drops_part_of_the_idea():
     assert plain["plan"]["idea_gaps"] == []
 
 
+def test_vague_groups_are_asked_never_guessed():
+    from fastapi.testclient import TestClient
+    from q2e import expertise
+    from q2e.server import app
+    c = TestClient(app)
+    for idea, word in [("Is obesity associated with hypertension in seniors?", "seniors"),
+                       ("Is depression linked to smoking among older people?", "older people"),
+                       ("is obesity linked to blood pressure in kids?", "kids")]:
+        ages = next(x for x in expertise.clarify(idea)["questions"] if x["id"] == "ages")
+        assert word in ages["text"] and len(ages["options"]) >= 2 and ages["free_text"]["template"]
+    assert not any(x["id"] == "ages" for x in expertise.clarify("Is obesity associated with hypertension in adults aged 40 to 60?")["questions"])
+    # built without confirming the ages -> flagged, blocks approval, and one chat message fixes it
+    pj = c.post("/api/projects", json={"question": "Is obesity associated with hypertension in seniors?", "source": "synthetic"}).json()
+    gap = next(g for g in pj["plan"]["idea_gaps"] if g["status"] == "assumed")
+    assert "seniors" in gap["note"] and gap["alternatives"]
+    assert any(i["id"].startswith("ages_") for i in pj["plan"]["review"])
+    c.post(f"/api/projects/{pj['id']}/protocol-chat", json={"message": gap["alternatives"][0]["question"]})
+    pj = c.get(f"/api/projects/{pj['id']}").json()
+    assert "Age >=60 years" in [x["label"] for x in pj["plan"]["population"]]
+    assert not pj["plan"]["idea_gaps"] and not any(i["id"].startswith("ages_") for i in pj["plan"]["review"])
+    # answered up front -> nothing to flag
+    pj = c.post("/api/projects", json={"question": "Is obesity associated with hypertension in seniors?", "source": "synthetic",
+                                       "answers": {"ages": {"text": "70 and older"}}}).json()
+    assert "Age >=70 years" in [x["label"] for x in pj["plan"]["population"]] and not pj["plan"]["idea_gaps"]
+
+
 def test_missing_r_gives_a_clear_message(monkeypatch):
     from fastapi.testclient import TestClient
     from q2e import runner

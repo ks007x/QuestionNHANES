@@ -5,6 +5,7 @@ anything the LLM invents (new variables, definitions) is flagged for explicit hu
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from . import answerability, expressions, planner, privacy
@@ -184,7 +185,19 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     plan["privacy"] = {"findings": findings, **privacy.boundary_summary(client.provider.name)}
     from . import expertise
     plan["idea_gaps"] = expertise.idea_gaps(plan.get("question", ""), plan, k)
+    _gap_issues(plan)
     return plan
+
+
+def _gap_issues(plan: dict) -> None:
+    """An age group the analyst never confirmed ('seniors' -> 65+?) must be confirmed or accepted before approval."""
+    plan["review"] = [i for i in plan.get("review", []) if not i["id"].startswith("ages_")]
+    for g in plan.get("idea_gaps", []):
+        key = "ages_" + re.sub(r"\W+", "_", g["text"].lower())
+        if g["status"] == "assumed" and not plan.get("acknowledgements", {}).get(key):
+            plan["review"].append({"id": key, "severity": "major", "agent": "Epidemiologist",
+                                   "title": f"Which ages does \"{g['text']}\" mean?", "detail": g["note"] + " Or accept the current choice.",
+                                   "fix": {"op": "acknowledge", "key": key}, "alternatives": g["alternatives"]})
 
 
 def _answer_issue(plan: dict) -> None:
@@ -223,6 +236,7 @@ def refresh_plan(plan: dict, provider: str | None = None) -> dict:
     if clar.get("answers"):
         clar["typed"] = expertise.typed_notes(clar["answers"], plan, plan.get("question", ""), original=clar.get("original_question"))
     plan["idea_gaps"] = expertise.idea_gaps(clar.get("original_question") or plan.get("question", ""), plan, k)
+    _gap_issues(plan)
     return plan
 
 

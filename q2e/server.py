@@ -180,6 +180,7 @@ def create_project(body: NewProject):
         plan["clarification"] = {k2: clar[k2] for k2 in ("record", "expertise", "level_used", "original_question", "answers", "understood")}
         plan["clarification"]["typed"] = expertise.typed_notes(body.answers, plan, body.question, original=clar["original_question"])
         plan["idea_gaps"] = expertise.idea_gaps(clar["original_question"], plan, k)
+        agents._gap_issues(plan)
         read = "; ".join(f"{u['label']}: {u['value']}" for u in clar["understood"])
         asked = ("; ".join(f"{r['question']} → {r['answer']}" for r in clar["record"])
                  if clar["record"] else "none were needed")

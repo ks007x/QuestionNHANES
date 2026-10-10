@@ -91,7 +91,9 @@ def test_only_needed_questions_are_asked():
     # a precise expert question and a short business question need few or no follow-ups
     assert len(expertise.clarify("Among adults 20-59 in NHANES 2015-2018, is HbA1c >= 6.5% associated with ferritin "
                                  "< 30 ng/mL, survey-weighted, adjusted for age, sex, BMI, prevalence ratio")["questions"]) <= 1
-    assert expertise.clarify("How common is chronic kidney disease in older adults?")["questions"] == []
+    # "older adults" does not say which ages, so that (and only that) is asked
+    assert [q["id"] for q in expertise.clarify("How common is chronic kidney disease in older adults?")["questions"]] == ["ages"]
+    assert expertise.clarify("How common is chronic kidney disease in adults aged 65 and older?")["questions"] == []
 
 
 def test_extra_topic_the_parser_dropped_is_asked_about():

@@ -276,6 +276,17 @@ def idea_gaps(original: str, plan: dict, k: Knowledge | None = None) -> list[dic
             gaps.append({"text": _label(c, k), "status": "not_used", "alternatives": [],
                          "note": f"{_label(c, k)} was in your idea but is not in this study (it was changed during set-up). "
                                  "Ask below to put it back."})
+    vg = vague_group(text)
+    user_ages = any(c.get("source") == "question (age range)" for c in plan.get("population", []))
+    if vg and not user_ages:
+        word, _, bands = vg
+        used = "; ".join(c["label"] for c in plan.get("population", []) if c.get("kind") == "inclusion" and c.get("enabled", True)) or "everyone"
+        floor, by = measured_from_age(plan, k)
+        gaps.append({"text": word, "status": "assumed",
+                     "alternatives": [{"question": o["append"].strip(), "label": o["label"], "why": o["hint"]}
+                                      for o in age_band_options(bands, floor, by)],
+                     "note": f"You said \"{word}\", which can mean different ages. The study currently uses: {used}. "
+                             "You have not confirmed this - pick the ages you mean below."})
     if (first.get("association_cue") or len(missing_topics(first, k)) + len([c for c in (first.get("outcome_concept"), first.get("exposure_concept")) if c]) >= 2) \
             and plan.get("study_type") == "prevalence" and gaps:
         gaps.append({"text": "kind of study", "status": "changed", "alternatives": [],
@@ -713,9 +724,46 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             {"placeholder": "The other factor (e.g. sleep, smoking, waist size)", "template": " Is it associated with {text}?",
              "requires_option": "assoc"}))
 
+    # (e0) a group word without exact ages ("children", "seniors", "older people") -> ask which ages, never assume
+    has_ages = any(a is not None for a in (parsed.get("age_range") or (None, None)))
+    vg = None if has_ages else vague_group(question)
+    if vg:
+        word, kind, bands = vg
+        floor, by = measured_from_age(plan, k)
+        opts = age_band_options(bands, floor, by)
+        if opts and all(o["moved"] for o in opts):
+            qs.append(_question("ages", level, {
+                "novice": f"NHANES only asked about {by.lower()} from age {floor}, so most \"{word}\" were never asked. "
+                          "Which ages should we study?",
+                "intermediate": f"{by} is only collected from age {floor}, which excludes most \"{word}\". Which ages?",
+                "expert": f"{by}: age >= {floor}; \"{word}\" only partly covered. Bounds?"}, {
+                "novice": "Q2E will not pretend the younger ones were measured. You can study the older part of the group, "
+                          "or go back and pick a topic NHANES measured at younger ages.",
+                "intermediate": "Younger participants have the measure missing by design.",
+                "expert": "Missing by design below the component's minimum age."},
+                opts, {"placeholder": "Or type the exact ages", "template": " Study people aged {text}."}))
+        elif opts:
+            qs.append(_question("ages", level, {
+                "novice": f"You said \"{word}\". Which ages do you mean exactly?",
+                "intermediate": f"\"{word}\" can mean different age ranges. Which one?",
+                "expert": f"Age bounds for \"{word}\"?"}, {
+                "novice": f"People use \"{word}\" for different age ranges, and the result depends on who is counted, "
+                          "so Q2E asks instead of guessing. Pick one or type the exact ages.",
+                "intermediate": "Studies define this group differently; the age bounds change the estimate and its comparability.",
+                "expert": "Explicit age bounds are required for the analytic domain."},
+                opts, {"placeholder": "Or type the exact ages, e.g. 8 to 15, or 70 and older", "template": " Study people aged {text}."}))
+        else:
+            qs.append(_question("ages", level, {
+                "novice": f"NHANES does not measure your topic in \"{word}\". Which group should we study instead?",
+                "intermediate": f"The study's measures are not collected in \"{word}\". Alternative group?",
+                "expert": f"Measures unavailable for \"{word}\". Alternative domain?"}, {
+                "novice": f"In NHANES, {by.lower()} is only collected from age {floor}.",
+                "intermediate": f"{by} is only collected from age {floor}.", "expert": f"{by}: age >= {floor}."},
+                age_band_options([(floor, None, f"Everyone aged {floor} and older")], floor, by),
+                {"placeholder": "Or type the exact ages", "template": " Study people aged {text}."}))
+
     # (e) who is being studied? (asked at every level when the idea does not say)
-    if not parsed.get("populations") \
-            and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
+    if not vg and not parsed.get("populations") and not has_ages:
         opts, floor, by = population_options(plan, out_c, exp_c, k)
         if len(opts) > 2:
             measured = f"{by} is only collected from age {floor}" if floor else ""
@@ -784,7 +832,53 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                              {"id": "or", "label": "Odds ratio", "hint": "Quasi-binomial, logit link.",
                               "fixes": [{"op": "set", "path": "model.family", "value": "quasibinomial"}]}]))
 
-    return qs[:MAX_QUESTIONS]
+    # questions that resolve something ambiguous are never cut; optional method questions go first
+    must = {"missing", "ages", "focus", "check_outcome", "check_exposure", "population"}
+    while len(qs) > MAX_QUESTIONS:
+        drop = next((j for j in range(len(qs) - 1, -1, -1) if qs[j]["id"] not in must and not qs[j]["id"].startswith("term")), len(qs) - 1)
+        qs.pop(drop)
+    return qs
+
+
+# Group words that do not say which ages are meant. Q2E never guesses: it asks, offering the age ranges commonly
+# used for that word (each one only if NHANES measures the study's topics at those ages), or exact ages typed in.
+VAGUE_GROUPS = [
+    (re.compile(r"\b(?:kids?|children|child|youths?|young people|minors|pediatric|paediatric)\b", re.I), "children",
+     [(2, 5, "Young children"), (6, 11, "School-age children"), (12, 17, "Teenagers"), (2, 17, "All children and teenagers")]),
+    (re.compile(r"\b(?:teens?|teenagers?|adolescents?|adolescence)\b", re.I), "teenagers",
+     [(12, 17, "Under 18 only"), (13, 19, "Ages 13 to 19 (the 'teen' years)"), (12, 19, "Ages 12 to 19 (common in NHANES reports)")]),
+    (re.compile(r"\byoung adults?\b", re.I), "young adults",
+     [(18, 25, "Late teens to mid-twenties"), (18, 29, "Under 30"), (18, 39, "Under 40")]),
+    (re.compile(r"\bmiddle[- ]aged?\b", re.I), "middle-aged",
+     [(40, 59, "Forties and fifties"), (45, 64, "45 to 64"), (40, 64, "40 to 64")]),
+    (re.compile(r"\b(?:older (?:people|adults?|persons?|americans|individuals|men|women|population)|old(?:er)? age|old people|elderly|"
+                r"seniors?|senior citizens?|aged people|the aged|retirees|geriatric)\b", re.I), "older people",
+     [(60, None, "60 and older"), (65, None, "65 and older (most common in US studies)"), (75, None, "75 and older")]),
+]
+
+
+def vague_group(question: str) -> tuple[str, str, list] | None:
+    """(word the user wrote, kind of group, candidate age bands) for the first group word with no exact ages."""
+    for pat, kind, bands in VAGUE_GROUPS:
+        m = pat.search(question)
+        if m:
+            return m.group(0), kind, bands
+    return None
+
+
+def age_band_options(bands: list, floor: int, by: str) -> list[dict]:
+    opts = []
+    for lo, hi, label in bands:
+        lo2 = max(lo, floor)
+        if hi is not None and lo2 > hi:
+            continue
+        span = f"{lo2} to {hi}" if hi is not None else f"{lo2} and older"
+        if any(o["append"] == f" Study people aged {span}." for o in opts):
+            continue
+        hint = label + "." if lo2 == lo else f"The part of '{label.split('(')[0].strip().lower()}' that NHANES measured ({by.lower()} starts at age {floor})."
+        opts.append({"id": f"age_{lo2}_{hi or 'up'}", "label": f"Age {span}", "hint": hint,
+                     "append": f" Study people aged {span}.", "moved": lo2 != lo})
+    return opts
 
 
 CONDITION_GROUPS = {"diabetes": "diabetes", "ckd": "ckd", "hypertension": "htn_pop"}   # concept -> population id
