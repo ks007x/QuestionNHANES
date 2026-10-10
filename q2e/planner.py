@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import copy
 import datetime as _dt
+import functools
 import re
 import uuid
 from typing import Any
@@ -153,10 +154,28 @@ def residual_phrases(q: str, taken: list[tuple[int, int]]) -> list[str]:
     return [c for c in dict.fromkeys(chunks)]
 
 
+_LABEL_NOISE = set("""test tests result results interpretation qualitative quantitative overall value values status code comment
+antibody antibodies level levels serum plasma urine total concentration""".split())
+
+
+@functools.lru_cache(maxsize=1)
+def _LABEL_NOISE_TOK() -> set:
+    from .matcher import tokens as _tok
+    return set(_tok(" ".join(_LABEL_NOISE))) | _LABEL_NOISE
+
+
+def _band(conf: float) -> int:
+    """BM25 confidences within a band are ties - then curation, recency and coverage decide."""
+    return 0 if conf >= 0.85 else (1 if conf >= 0.7 else 2)
+
+
+_ACUTE_OR_QC = re.compile(r"\b(avidity|igm|comment|lc|code|interpretation)\b", re.I)
+
+
 _BIOMARKER_CUES = re.compile(r"deficien|insufficien|serum|plasma|blood level|levels?\b|status|concentration|biomarker|toxicity")
 
 
-def dictionary_lookup(phrase: str, k: Knowledge, context: str = "") -> dict | None:
+def dictionary_lookup(phrase: str, k: Knowledge, context: str = "", acronyms: set | None = None) -> dict | None:
     """Best dataset variable for a free-text phrase; requires every content token to appear in the entry."""
     from .matcher import tokens as _tok
     if all(w in _GENERIC for w in phrase.lower().split()):
@@ -171,20 +190,27 @@ def dictionary_lookup(phrase: str, k: Knowledge, context: str = "") -> dict | No
         idx0 = k.var_index()
         # document frequency over the CURATED dictionary (the 13k-variable catalog would make every word look common)
         df = sum(1 for e, d in zip(idx0.entries, idx0.docs) if w in d and k.dictionary.get(e.variable, {}).get("curated"))
-        if w in _GENERIC or w in set(_tok(" ".join(_GENERIC))) or df > 3 or len(w) < 5:
+        short_ok = w in (acronyms or set()) and sum(1 for d in idx0.docs if w in d) <= 40   # typed acronyms: HIV, CMV
+        if w in _GENERIC or w in set(_tok(" ".join(_GENERIC))) or df > 3 or (len(w) < 5 and not short_ok):
             return None     # a lone generic word ("treatment", "cell") is not a variable
     idx = k.var_index()
     hits = idx.search([phrase], top_k=40)
     # equal-confidence ties: prefer curated, then more cycles, then the day-1 dietary recall over supplements
     lab_first = bool(_BIOMARKER_CUES.search(context or phrase))
+    has_digit = bool(re.search(r"\d", phrase))
     pref = lambda v: ((k.dictionary[v].get("weight_level") in ("mec", "fasting")) if lab_first else False,
-                      k.dictionary[v].get("curated", False), len(k.dictionary[v].get("cycles", [])),
+                      k.dictionary[v].get("curated", False),
+                      not v.startswith(("LB2", "SS")),          # second-exam replicates / surplus re-tests after the main assay
+                      not _ACUTE_OR_QC.search(k.dictionary[v].get("label", "")),   # seroprevalence = IgG result, not IgM/avidity/QC codes
+                      has_digit or not re.search(r"-\s?\d|\btype \d|\b\d{2}\b", k.dictionary[v].get("label", "")),  # "HIV" != "HIV-2"
+                      max([CYCLE_ORDER.index(c) for c in k.dictionary[v].get("cycles", []) if c in CYCLE_ORDER] or [0]),
+                      len(k.dictionary[v].get("cycles", [])),
                       not str(k.dictionary[v].get("file", "")).startswith(("DS", "DR2", "DRX")))
     if lab_first:   # "B12 deficiency", "serum folate": the biomarker outranks dietary intake
-        hits = sorted(hits, key=lambda h: (-int(pref(h["variable"])[0]), -round(h["confidence"], 1),
+        hits = sorted(hits, key=lambda h: (-int(pref(h["variable"])[0]), _band(h["confidence"]),
                                            *[-int(x) if isinstance(x, bool) else -x for x in pref(h["variable"])[1:]]))
     else:
-        hits = sorted(hits, key=lambda h: (-round(h["confidence"], 2), *[-int(x) if isinstance(x, bool) else -x for x in pref(h["variable"])]))
+        hits = sorted(hits, key=lambda h: (_band(h["confidence"]), *[-int(x) if isinstance(x, bool) else -x for x in pref(h["variable"])]))
     lettered = re.findall(r"\b(hepatitis|vitamin|type|stage|class|grade|factor|hpv|hsv|simplex)\s+([a-z0-9]{1,2})\b", phrase.lower())
     for h in hits:
         if lettered:
@@ -197,7 +223,7 @@ def dictionary_lookup(phrase: str, k: Knowledge, context: str = "") -> dict | No
             if not row.get("curated"):
                 # uncurated catalog labels are long questionnaire items: the phrase must BE the label's topic,
                 # not an incidental word ("cold weather" in a protective-gloves question)
-                label_toks = set(_tok(row["label"])) - _STOP
+                label_toks = set(_tok(row["label"])) - _STOP - _LABEL_NOISE_TOK()
                 if not label_toks or len(want & label_toks) / len(label_toks) < 0.33 or "?" in row["label"] or row["label"].startswith("["):
                     continue
             return {"phrase": original, "variable": h["variable"], "label": row["label"], "file": row["file"],
@@ -221,6 +247,7 @@ def _overlaps(a: tuple[int, int], taken: list[tuple[int, int]]) -> bool:
 def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     k = k or get_knowledge()
     q = " " + question.lower().replace("’", "'") + " "
+    acronyms = {w.lower() for w in re.findall(r"\b[A-Z][A-Z0-9]{1,5}\b", question)}
     taken: list[tuple[int, int]] = []
     pops: list[tuple[int, str]] = []
     pop_phrases = sorted(((p, pop["id"]) for pop in k.populations for p in pop["patterns"]), key=lambda x: -len(x[0]))
@@ -255,7 +282,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
                     after = q[b:].split()[:1]
                     for cand in [" ".join(before + [ph]), " ".join([ph] + after), ph]:
                         cand = re.sub(r"[^a-z0-9 \-]", "", cand).strip()
-                        hit = dictionary_lookup(cand, k, q) if cand else None
+                        hit = dictionary_lookup(cand, k, q, acronyms) if cand else None
                         if hit:
                             break
                 if hit:
@@ -286,7 +313,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     # residual phrases -> full data dictionary (curated + catalog)
     unmapped, dict_matches = [], list(dict_pre)
     for ph in residual_phrases(q, taken):
-        m = dictionary_lookup(ph, k, q)
+        m = dictionary_lookup(ph, k, q, acronyms)
         if not m and " " in ph:          # try the longest sub-phrases
             words = ph.split()
             for n in range(len(words) - 1, 0, -1):
@@ -296,7 +323,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
                     if any(u.split()[0] in sub.split() and u not in sub for u in units):
                         continue      # never drop the letter from "hepatitis e" / "herpes simplex 2"
                     if len(sub) >= 4:
-                        m = dictionary_lookup(sub, k, q)
+                        m = dictionary_lookup(sub, k, q, acronyms)
                     if m:
                         break
                 if m:

@@ -74,3 +74,18 @@ def test_learned_synonym_round_trip(tmp_path, monkeypatch):
     assert "dict:LBXGH" in [m["concept"] for m in p["matched_phrases"]]
     assert c.post("/api/learn", json={"term": "x y", "target": "var:NOPE", "by": "Dr Test"}).status_code == 422
     knowledge.get_knowledge.cache_clear()
+
+
+@needs_catalog
+@pytest.mark.parametrize("q,phrase", [("Is herpes zoster associated with diabetes?", "herpes zoster"),
+                                      ("Is Toxoplasma associated with schizophrenia?", "schizophrenia")])
+def test_unmeasured_conditions_refused_not_substituted(q, phrase):
+    p = planner.parse_question(q)
+    assert phrase in [n["phrase"] for n in p["not_in_nhanes"]]
+    assert not any(m["variable"].startswith("LBXHE") for m in p["dictionary_matches"])
+
+
+@needs_catalog
+def test_acronyms_only_when_typed_in_capitals():
+    assert planner.parse_question("What is the prevalence of HIV in US adults?")["dictionary_matches"]
+    assert not planner.parse_question("I have iron deficiency and want to learn how I can stop it")["dictionary_matches"]
