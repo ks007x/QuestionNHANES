@@ -228,7 +228,50 @@ def _dir(measure: str, v: float) -> int:
     return (v > null) - (v < null)
 
 
-def _relevant(est: dict, terms: list[str]) -> bool:
+def term_sets(plan: dict) -> dict:
+    """Lower-case words that identify the outcome and the exposure (or each arm) in titles and abstracts."""
+    from .knowledge import get_knowledge
+    from .venues import _synonyms
+    k = get_knowledge()
+
+    def stems(lst):
+        out = []
+        for t in lst:
+            t = t.lower().strip()
+            t = re.sub(r"\s*\(.*?\)", "", t).strip()
+            if len(t) > 2 and t not in out:
+                out.append(t)
+        return out
+    y, x = plan["outcome"], plan.get("exposure") or {}
+    outc = stems(_synonyms(y, 8))
+    if x.get("arms"):
+        exp = []
+        for a in x["arms"]["arms"]:
+            c = k.concepts.get(a["concept"], {})
+            exp += stems([a.get("label", ""), c.get("label", "")] + list(c.get("synonyms", []))[:6])
+    else:
+        exp = stems(_synonyms(x, 8)) if x else []
+    return {"outcome": outc, "exposure": exp}
+
+
+def _has(text: str, terms: list[str]) -> bool:
+    t = text.lower()
+    return any(re.search(r"(?<![a-z])" + re.escape(w) + r"(?![a-z])", t) for w in terms if w)
+
+
+def relevance(paper: dict, ts: dict) -> int:
+    ti, ab = paper["title"], paper.get("abstract", "")
+    sc = 3 * _has(ti, ts["outcome"]) + 1 * _has(ab, ts["outcome"])
+    if ts["exposure"]:
+        sc += 3 * _has(ti, ts["exposure"]) + 1 * _has(ab, ts["exposure"])
+    return sc
+
+
+def _relevant(est: dict, terms) -> bool:
+    if isinstance(terms, dict):
+        c = est.get("context", "")
+        need = terms["exposure"] or terms["outcome"]
+        return _has(c, need)
     c = est.get("context", "").lower()
     return any(t and t.lower()[:6] in c for t in terms)
 
@@ -239,7 +282,12 @@ def compare(ours: dict | None, paper: dict, terms: list[str]) -> dict:
     pool = paper["prevalence"] if ours["measure"] == "Prevalence %" else paper["estimates"]
     if not pool:
         return {"verdict": "No numbers in abstract", "why": "The abstract reports no estimate with a 95% CI that could be read."}
-    rel = [e for e in pool if _relevant(e, terms)] or pool
+    rel = [e for e in pool if _relevant(e, terms)]
+    if not rel:
+        return {"verdict": "No matching estimate", "why": "The numbers in this abstract describe other comparisons, not this exposure and outcome."}
+    if isinstance(terms, dict) and terms["exposure"]:
+        both = [e for e in rel if _has(e.get("context", ""), terms["outcome"])]
+        rel = both or rel
     e = rel[0]
     same = e["measure"] == ours["measure"] or (ours["measure"] in RATIO and e["measure"] in RATIO)
     if not same and not (ours["measure"] == "Beta" and e["measure"] == "Beta"):
@@ -327,7 +375,7 @@ def landscape(papers: list[dict]) -> dict:
 
 
 # ------------------------------------------------------------------ main entry
-def check(plan: dict, results: dict | None = None, live: bool = True, retmax: int = 12, use_llm: bool = True,
+def check(plan: dict, results: dict | None = None, live: bool = True, retmax: int = 25, use_llm: bool = True,
           provider: str | None = None) -> dict:
     q = queries(plan)
     base = {"queries": q, "checked": dt.date.today().isoformat(), "source": "PubMed/MEDLINE (NCBI E-utilities)",
@@ -363,7 +411,10 @@ def check(plan: dict, results: dict | None = None, live: bool = True, retmax: in
                       + (f", plus {client.provider.name} extraction verified against the abstract text" if client else "")
                       + "; our primary estimate is compared for direction and CI overlap.")
     ours = _ours(results, plan)
-    terms = [q["terms"]["outcome"]] + q["terms"]["exposures"]
+    terms = term_sets(plan)
+    ranked = sorted(papers, key=lambda p: -relevance(p, terms))
+    need = 5 if terms["exposure"] else 4          # outcome and exposure both mentioned (title counts triple)
+    papers = [p for p in ranked if relevance(p, terms) >= need][:12]
     rows = []
     for p in papers:
         ex = extract_rules(p["abstract"])
@@ -379,11 +430,12 @@ def check(plan: dict, results: dict | None = None, live: bool = True, retmax: in
         row.update({"group": journal_group(p.get("journal_abbrev") or p["journal"]) or "Other journal",
                     "estimates": ex["estimates"], "prevalence": ex["prevalence"], "methods": ex["methods"], "n": ex["n"],
                     "years": ex["years"], "llm": ({"rejected": llm_info["rejected"], "kept": len(llm_info["estimates"])} if llm_info else None)})
+        row["relevance"] = "direct" if relevance(p, terms) >= (6 if terms["exposure"] else 3) and _has(p["title"], terms["outcome"]) else "related"
         row["comparison"] = compare(ours, row, terms)
         rows.append(row)
     order = {"Consistent": 0, "Same direction, different size": 1, "Opposite direction": 2, "One estimate is null": 3,
-             "Different measure": 4, "No numbers in abstract": 5, "Not compared": 6}
-    rows.sort(key=lambda r: (r["group"] == "Other journal", order.get(r["comparison"]["verdict"], 9)))
+             "Different measure": 4, "No matching estimate": 5, "No numbers in abstract": 6, "Not compared": 7}
+    rows.sort(key=lambda r: (order.get(r["comparison"]["verdict"], 9), r["relevance"] != "direct", r["group"] == "Other journal"))
     out = {**base, "scope": scope, "ours": ours, "papers": rows, "summary": _summary(rows), "landscape": landscape(rows),
            "llm": ({"provider": client.provider.name, "model": client.provider.model} if client else None), "error": None}
     try:

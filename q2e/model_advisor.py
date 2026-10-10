@@ -179,7 +179,7 @@ def advise(plan: dict, probe: dict | None = None, results: dict | None = None, l
     if rec:
         cur = next((o for o in primary if o["current"]), None)
         rationale = (f"{rec['title']} scores highest ({rec['score']}/100) for this outcome"
-                     + (f"; {rec['literature'][0].lower() + rec['literature'][1:]}" if rec.get("literature") else "") + ".")
+                     + (f"; {rec['literature'][0].lower() + rec['literature'][1:]}" if rec.get("literature") and rec.get("literature_share") else "") + ".")
         if cur and cur["id"] != rec["id"]:
             rationale += f" The plan currently uses {cur['title'].lower()}; switching is one click."
         elif cur:
