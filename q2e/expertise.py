@@ -64,7 +64,14 @@ affected effect effects impact impacts amount amounts level levels high higher l
 many lot lots have has had does do how what why when which feel feeling give gives make makes cause causes being
 age ages sex gender race ethnicity tell telling show something anything interesting interested today tomorrow
 yesterday please thanks thank wonder question questions idea ideas thing things stuff
-extremely close closer closest similar near nearest change changes changing nhanes instead certain""".split())
+extremely close closer closest similar near nearest change changes changing nhanes instead certain
+due lack lacks lacking lacked absence absent noticed notice notices noticing think thought believe believed seem seems seemed
+maybe perhaps possibly probably likely unlikely because therefore thus hence people person persons folks someone everyone anyone
+kind kinds sort sorts type types way ways part parts reason reasons often sometimes usually always never possible normal
+lately recently currently generally mostly mainly especially actually basically involved related regarding concerning toward
+towards versus compared aged old young younger older year years""".split())
+# Everyday words a typo is most likely meant to be ("pepole" -> "people"); corrected, then ignored like any filler word.
+COMMON_WORDS = {w for w in FILLER_WORDS | planner._STOP | planner._RESEARCH_WORDS if len(w) >= 5}
 # "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
 GOAL_PATTERN = re.compile(r"\b(?:stop|prevent|fix|treat|cure|get rid of|reduce|lower|improve|avoid|manage|reverse|beat|overcome)\b")
 # "I have ...", "my ..." - the user is describing themselves, not a population.
@@ -149,6 +156,8 @@ LAY_TERMS = {
     "grades": ["short_sleep", "depression"], "habits": ["short_sleep", "physical_activity", "sedentary", "smoking", "alcohol"],
     "lifestyle": ["physical_activity", "short_sleep", "smoking", "alcohol"], "screen": ["sedentary"], "phone": ["sedentary"],
     "gaming": ["sedentary"], "tv": ["sedentary"],
+    "inactivity": ["sedentary", "physical_activity"], "inactive": ["sedentary", "physical_activity"],
+    "active": ["physical_activity"], "activity": ["physical_activity", "sedentary"], "lazy": ["sedentary", "physical_activity"],
 }
 # LAY_TERMS entries above that are stand-ins (not the same thing), so they are never treated as the topic itself
 PROXY_WORDS = {"stress", "stressed", "anxiety", "work", "job", "working", "study", "studying", "coursework", "homework",
@@ -302,20 +311,31 @@ def _years(var: str, k: Knowledge) -> str:
     return f"{min(s[0] for s in spans)}-{max(s[1] for s in spans)}" if spans else ""
 
 
+_LABEL_WORDS: dict[int, set[str]] = {}
+
+
+def _label_words(k: Knowledge) -> set[str]:
+    """Every word used in the official NHANES variable labels: real English, so not a typo."""
+    if id(k) not in _LABEL_WORDS:
+        _LABEL_WORDS[id(k)] = {w for r in k.dictionary.values() for w in re.findall(r"[a-z]+", str(r.get("label", "")).lower())}
+    return _LABEL_WORDS[id(k)]
+
+
 def fix_spelling(question: str, k: Knowledge) -> tuple[str, list[dict]]:
     """Correct misspelled health words, but only towards words in Q2E's NHANES vocabulary (never invents terms)."""
     vocab = {w for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]
              for w in re.findall(r"[a-z]+", s.lower()) if len(w) >= 5} | {w for w in LAY_TERMS if len(w) >= 5}
+    real = _label_words(k)
     fixes = []
 
     def sub(m: re.Match) -> str:
         w = m.group(0)
         lw = w.lower()
-        if len(lw) < 5 or lw in vocab or lw in FILLER_WORDS:
-            return w
-        best = difflib.get_close_matches(lw, vocab, n=1, cutoff=0.86)
-        if not best or best[0].startswith(lw) or lw.startswith(best[0]):
-            return w      # no close word, or just a plural/other form ("smoker" vs "smokers")
+        if len(lw) < 5 or lw in vocab or lw in FILLER_WORDS or lw in COMMON_WORDS or lw in real:
+            return w      # a real word (used somewhere in NHANES wording) is never "corrected" into another one
+        best = difflib.get_close_matches(lw, vocab, n=1, cutoff=0.86) or difflib.get_close_matches(lw, COMMON_WORDS, n=1, cutoff=0.83)
+        if not best or best[0] in lw or lw in best[0]:
+            return w      # no close word, or a longer/shorter form ("smokers", "inactivity" vs "activity")
         fixes.append({"from": w, "to": best[0]})
         return best[0]
 
@@ -326,7 +346,8 @@ def unclear_terms(parsed: dict) -> list[str]:
     """Unmapped phrases minus method words ("regression"), goals ("stop") and filler ("learn")."""
     out = []
     for ph in parsed.get("unmapped_terms") or []:
-        words = [w for w in re.split(r"[\s\-]+", ph.lower()) if w and w not in FILLER_WORDS]
+        words = [w for w in re.split(r"[\s\-]+", ph.lower()) if w and w not in FILLER_WORDS and w not in planner._STOP
+                 and w not in planner._GENERIC and w not in planner._RESEARCH_WORDS and w not in ("too", "much", "lot")]
         if words:
             out.append(" ".join(words))
     return out
@@ -436,6 +457,9 @@ def term_suggestions(term: str, k: Knowledge, limit: int = 4) -> list[dict]:
         seen.add(v)
         yrs = _years(v, k)
         lab = _plain_label(hit["label"]) or v
+        if lab.lower() in seen:
+            return      # the CDC repeats the same wording in several items; showing it twice looks like a bug
+        seen.add(lab.lower())
         out.append({"id": f"v_{v}", "label": lab, "replace": lab.lower(),
                     "hint": f"Official NHANES survey item {v}{f', asked in {yrs}' if yrs else ''}: {_plain_label(hit['label'], full=True)}"})
 
@@ -626,18 +650,17 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     # (e) who is being studied? (asked at every level when the idea does not say)
     if not parsed.get("populations") \
             and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
-        qs.append(_question("population", level, {
-            "novice": "Which group of people do you want to learn about?",
-            "intermediate": "Which population should be included?",
-            "expert": "Target population / age restriction?"}, {
-            "novice": "Results can differ a lot between, for example, children and older adults.",
-            "intermediate": "Sets the inclusion criteria for the study.",
-            "expert": "Defines the analytic domain (subpopulation)."},
-            [{"id": "adults", "label": "Adults", "hint": "Age 18 and older.", "append": " Study adults."},
-             {"id": "older", "label": "Older adults", "hint": "Age 65 and older.", "append": " Study older adults."},
-             {"id": "children", "label": "Children and teens", "hint": "Age 1 to 17.", "append": " Study children."},
-             {"id": "women", "label": "Women of reproductive age", "hint": "Women aged 18 to 49.", "append": " Study women of reproductive age."},
-             {"id": "auto", "label": "Let Q2E choose", "hint": "Q2E picks the usual group for this topic (most often adults)."}]))
+        opts, floor, by = population_options(plan, out_c, exp_c, k)
+        if len(opts) > 2:
+            measured = f"{by} is only collected from age {floor}" if floor else ""
+            qs.append(_question("population", level, {
+                "novice": "Which group of people do you want to learn about?",
+                "intermediate": "Which population should be included?",
+                "expert": "Target population / age restriction?"}, {
+                "novice": "Results can differ a lot between groups. " + (f"In NHANES, {measured.lower()}, so only groups where it was "
+                          "measured are offered." if floor else "These are the groups NHANES measured your topics in."),
+                "intermediate": "Sets the inclusion criteria. " + (f"{measured}; younger groups are not offered." if floor else ""),
+                "expert": "Analytic domain. " + (f"{measured}." if floor else "")}, opts))
 
     # (f) the rules guessed which concept is exposure vs outcome -> confirm direction
     x, o = _label(exp_c, k), _label(out_c, k)
@@ -698,6 +721,65 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     return qs[:MAX_QUESTIONS]
 
 
+CONDITION_GROUPS = {"diabetes": "diabetes", "ckd": "ckd", "hypertension": "htn_pop"}   # concept -> population id
+WOMEN_DOMAINS = {"iron", "hematology"}
+
+
+def measured_from_age(plan: dict | None, k: Knowledge) -> tuple[int, str]:
+    """Youngest age at which every main measure of the study is collected in NHANES, and the measure that sets it."""
+    from .answerability import MIN_AGE, VAR_MIN_AGE
+    if not plan:
+        return 0, ""
+    roles = [plan["outcome"]] + ([plan["exposure"]] if plan.get("exposure") else [])
+    custom = {c["name"]: c for c in plan.get("custom_variables", [])}
+    floor, by = 0, ""
+    for r in roles:
+        n = r["variable"]
+        for raw in planner._raw_dependencies(n, k, custom):
+            a = max(MIN_AGE.get(k.dictionary.get(raw, {}).get("file", ""), 0), VAR_MIN_AGE.get(raw, 0))
+            if a > floor:
+                lab = r.get("label") or k.label(n)
+                floor, by = a, (lab if lab != n else k.dictionary.get(raw, {}).get("label", n))
+    return floor, by
+
+
+def population_options(plan: dict | None, out_c: str | None, exp_c: str | None, k: Knowledge) -> tuple[list[dict], int, str]:
+    """Groups to offer for *this* study: age bands where its measures exist, plus groups that matter for its topic."""
+    floor, by = measured_from_age(plan, k)
+    note = f" ({by} starts at age {floor})" if floor else ""
+    opts: list[dict] = []
+
+    def band(oid: str, label: str, lo: int, hi: int | None, std: str | None = None):
+        lo2 = max(lo, floor)
+        if hi is not None and lo2 > hi:
+            return
+        span = f"{lo2} to {hi}" if hi is not None else f"{lo2} and older"
+        moved = lo2 != lo
+        opts.append({"id": oid, "label": label if not moved else f"{label} ({lo2}+)" if hi is None else f"{label} ({span})",
+                     "hint": f"Age {span}." + (note if moved else ""),
+                     "append": std if std and not moved else f" Study people aged {span}."})
+
+    band("adults", "Adults", 18, None, " Study adults.")
+    band("older", "Older adults", 65, None, " Study older adults.")
+    band("teens", "Teenagers", 12, 17)
+    band("children", "Children and teens", 1, 17, " Study children.")
+    if floor >= 12:
+        opts = [o for o in opts if o["id"] != "children"]
+    domains = {k.concepts.get(c, {}).get("domain") for c in (out_c, exp_c) if c}
+    if domains & WOMEN_DOMAINS and floor <= 18:
+        opts.append({"id": "women", "label": "Women of reproductive age", "hint": "Women aged 18 to 49 (iron needs and blood counts differ in this group).",
+                     "append": " Study women of reproductive age."})
+    related = {c for d in domains if d for c in RELATED_FACTORS.get(d, [])}
+    for cid, pid in CONDITION_GROUPS.items():
+        if cid in related and cid not in (out_c, exp_c) and cid in k.concepts and len(opts) < 6:
+            lab = k.concepts[cid]["label"].lower()
+            opts.append({"id": f"with_{cid}", "label": f"Adults with {lab}", "hint": f"Only people who have {lab}, a group often studied for this topic.",
+                         "append": f" Study adults with {k.concepts[cid]['synonyms'][0]}."})
+    default = "; ".join(c["label"] for c in (plan or {}).get("population", []) if c.get("kind") == "inclusion") or "adults (18 and older)"
+    opts.append({"id": "auto", "label": "Let Q2E choose", "hint": f"Q2E would use: {default}."})
+    return opts, floor, by
+
+
 def personal_notice(question: str) -> str:
     """Plain note when someone describes their own health ("I have ...")."""
     if PERSONAL_PATTERN.search(question.lower()):
@@ -735,6 +817,23 @@ DOMAIN_NAMES = {
 DEFAULT_TOPICS = ["hypertension", "diabetes", "total_cholesterol", "short_sleep", "depression", "obesity"]
 
 
+def _population_phrase(parsed: dict, k: Knowledge) -> str:
+    """The group of people the user named, worded so the parser reads it back the same way."""
+    lo, hi = parsed.get("age_range") or (None, None)
+    if lo is not None and hi is not None:
+        return f"people aged {lo} to {hi}"
+    if lo is not None:
+        return f"people aged {lo} and older"
+    if hi is not None:
+        return f"people aged {hi} and under"
+    pops = {p["id"]: p for p in k.populations}
+    for pid in parsed.get("populations") or []:
+        if pid in pops and pops[pid].get("patterns"):
+            p = pops[pid]["patterns"][0]
+            return f"people {p}" if p.startswith("with ") else p
+    return "US adults"
+
+
 def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
     """No health topic NHANES measures was found: explain why and offer rewrites that are checked to work."""
     missing = [t for t in unclear_terms(parsed) if not term_suggestions(t, k)]
@@ -752,19 +851,30 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
         if cid in k.concepts and cid not in related:
             related.append(cid)
     syn = {c: k.concepts[c]["synonyms"][0] for c in related}
+    group = {}                      # concept -> the word in the idea it came from (two stand-ins for one word are not a pair)
+    for w in words:
+        for c in LAY_TERMS.get(w, []):
+            group.setdefault(c, w)
+    pop = _population_phrase(parsed, k)
+    hi = (parsed.get("age_range") or (None, None))[1]
 
-    # example rewrites; each is kept only if Q2E's own parser finds a health topic in it
+    # example rewrites built from this idea's own words and group of people; each is kept only if Q2E's parser
+    # reads it and NHANES measures both topics at the ages asked about
     candidates = []
-    if len(related) >= 2:
-        candidates.append(f"Is {syn[related[0]]} linked to {syn[related[1]]} in US adults?")
-    if len(related) >= 3:
-        candidates.append(f"Is {syn[related[2]]} linked to {syn[related[1]]} in US adults?")
-    candidates += [f"How common is {syn[c]} among US adults?" for c in related[1:] + related[:1]]
+    own = [c for c in related if c in group]
+    others = [c for c in related if c not in own]
+    for a in own or related[:1]:
+        for b in [c for c in related if c != a and (group.get(c) is None or group.get(c) != group.get(a))] + others:
+            candidates.append(f"Is {syn[a]} linked to {syn[b]} in {pop}?")
+    candidates += [f"How common is {syn[c]} among {pop}?" for c in own + others]
     examples = []
-    for text in candidates:
+    for text in dict.fromkeys(candidates):
         p = planner.parse_question(text, k)
-        if p.get("outcome_concept") and not p.get("hard_stop") and text not in examples:
-            examples.append(text)
+        if not p.get("outcome_concept") or p.get("hard_stop"):
+            continue
+        if hi is not None and measured_from_age(_draft_plan(text, p, None, k), k)[0] > hi:
+            continue
+        examples.append(text)
         if len(examples) == 3:
             break
 

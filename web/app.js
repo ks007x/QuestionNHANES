@@ -267,6 +267,8 @@ function novChip(c, qid, oid) {
   if (n.loading) return ` <span class="chip" style="font-size:10.5px" title="Checking PubMed/MEDLINE">novelty …</span>`;
   const r = (n.options || {})[oid];
   if (!r || r.score == null) return "";
+  const scores = new Set(Object.values(n.options).map((x) => x && x.score).filter((s) => s != null));
+  if (scores.size < 2) return "";
   const cls = r.score >= 70 ? "ok" : r.score >= 40 ? "warn" : "bad";
   return ` <span class="chip ${cls}" style="font-size:10.5px" title="${esc(r.summary || "")}">novelty ${r.score}</span>`;
 }

@@ -129,6 +129,30 @@ def test_glossary_explains_codes_from_cdc_files():
     assert "CIs" in g and "Hello" not in g and "XYZZY9" not in g
 
 
+def test_follow_ups_come_from_the_idea_itself():
+    from q2e import expertise, planner
+    q = "I noticed that high cortisol levels may be due to a lack of inactivity. for pepole aged 18 and under"
+    r = expertise.clarify(q)
+    assert "inactivity" in r["question_used"] and "nativity" not in r["question_used"].replace("inactivity", "")
+    asked = {x.get("term") for x in r["questions"]}
+    assert not asked & {"due", "lack", "pepole"} and not any(x["id"] == "population" for x in r["questions"])
+    ex = r["needs_rewrite"]["examples"]
+    assert ex and all("18 and under" in e for e in ex) and any("sedentary" in e for e in ex)
+    assert planner.parse_age("for people aged 18 and under") == (None, 18)
+    assert planner.parse_age("in those under the age of 18") == (None, 17)
+    assert planner.parse_age("in people over 40") == (40, None)
+    assert planner.parse_age("a bmi of 30+ in adults") == (None, None)
+    # the "who to study" choices depend on the study: education is only asked from age 20, PHQ-9 from 18
+    pop = lambda idea: next(x for x in expertise.clarify(idea)["questions"] if x["id"] == "population")
+    edu = pop("Is education associated with weight?")
+    assert [o["label"] for o in edu["options"]][0] == "Adults (20+)" and not any("Children" in o["label"] for o in edu["options"])
+    iron = pop("is low iron linked to being tired?")
+    assert any(o["id"] == "women" for o in iron["options"]) and "nh_" not in iron["why"]
+    for qq in expertise.clarify("does a lack of activity make kids fat?")["questions"]:
+        labels = [o["label"].lower() for o in qq["options"]]
+        assert len(labels) == len(set(labels))
+
+
 def test_missing_r_gives_a_clear_message(monkeypatch):
     from fastapi.testclient import TestClient
     from q2e import runner

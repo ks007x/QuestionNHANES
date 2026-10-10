@@ -92,6 +92,14 @@ class HardStop(ValueError):
 
 
 AGE_PATTERNS = [
+    (r"(\d{1,2})\s*(?:years?\s*(?:old\s*)?|yrs\s*)?(?:and|or)\s*(?:under|younger|below|less)\b", "max_incl"),
+    (r"(?:under|younger than|below|less than)\s+(?:the\s+)?age\s+(?:of\s+)?(\d{1,2})\b", "max"),
+    (r"(?:up to|no older than|at most)\s+(?:age\s+)?(\d{1,2})\b", "max_incl"),
+    (r"(?:aged?|people|adults|persons|individuals|those|participants|patients|kids|children)\s+(?:under|younger than|below)\s+(\d{1,2})\b", "max"),
+    (r"(?:aged?|people|adults|persons|individuals|those|participants|patients)\s+(?:over|above|older than)\s+(\d{1,2})\b", "min"),
+    (r"(?:over|above|older than)\s+(?:the\s+)?age\s+(?:of\s+)?(\d{1,2})\b", "min"),
+    (r"(?:aged?\s+(\d{1,2})\s*\+)", "min"),
+    (r"\b(\d{1,2})\s*\+\s*(?:years|yrs|y\b|year)", "min"),
     (r"aged?\s+(\d{1,2})\s*(?:to|-|–|through|and)\s*(\d{1,2})", "range"),
     (r"(\d{1,2})\s*(?:to|-|–)\s*(\d{1,2})\s*(?:years|y\b|yrs)", "range"),
     (r"aged?\s+(\d{1,2})\s*(?:years\s*)?(?:and|or)\s*(?:older|over|above)", "min"),
@@ -108,6 +116,8 @@ def parse_age(q: str) -> tuple[int | None, int | None]:
                 return int(m.group(1)), int(m.group(2))
             if kind == "min":
                 return int(m.group(1)), None
+            if kind == "max_incl":
+                return None, int(m.group(1))
             return None, int(m.group(1)) - 1
     return None, None
 
