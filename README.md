@@ -14,6 +14,16 @@ Built for *Ops Unleashed — Challenge 4: AI Research Copilot (Research Services
 
 ---
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ks007x/QuestionNHANES?quickstart=1)
+
+## Use the app in your browser (no install)
+
+Click **Open in GitHub Codespaces** above (or **Code -> Codespaces -> Create codespace on main**). The first start
+takes ~3-5 minutes while R and Python packages install; after that the Q2E app opens in a new browser tab. If it
+does not, open the **PORTS** tab at the bottom and click the globe icon next to port 8000. Type your research
+question in the box on the first screen. Codespaces have internet access, so **CDC (download real data)** works.
+Stop the codespace when done (github.com/codespaces) to save your free monthly hours.
+
 ## Why it's different
 
 | Design choice | What it means |

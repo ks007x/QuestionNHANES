@@ -1,0 +1,14 @@
+{
+  "name": "Q2E AI Research Copilot",
+  "image": "rocker/r-ver:4.4.1",
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "Q2E app", "onAutoForward": "openBrowser" }
+  },
+  "hostRequirements": { "cpus": 2, "memory": "8gb" },
+  "customizations": {
+    "codespaces": { "openFiles": ["START_HERE.md"] }
+  }
+}
