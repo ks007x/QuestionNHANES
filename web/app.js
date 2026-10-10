@@ -108,7 +108,7 @@ async function render() {
   } else main.innerHTML = await views[r.view]();
   window.scrollTo({ top: 0 });
 }
-function rerender() { const y = window.scrollY; render().then(() => window.scrollTo({ top: y })); }
+function rerender() { const y = window.scrollY; return render().then(() => window.scrollTo({ top: y })); }
 
 /* ------------------------------------------------------------------ ASK */
 async function viewAsk() {
@@ -153,40 +153,46 @@ async function viewAsk() {
 
 /* Interviewer: follow-up questions adapted to the expertise detected from the user's wording */
 const LEVEL_NAMES = { novice: "Beginner", intermediate: "Intermediate", expert: "Expert" };
+/* One question per screen: Back / Next arrows; Next stays locked until the current question is answered. */
 function clarifyCard(c) {
-  const ex = c.expertise;
-  const qs = c.questions.map((q, i) => `<div class="crit" style="display:block;padding:12px 0">
-      <div><b>${i + 1}. ${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
-      <div style="display:grid;gap:6px;margin-top:8px">${q.options.map((o) =>
-        `<label class="small" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
-           <input type="radio" name="cq_${q.id}" value="${esc(o.id)}" style="margin-top:3px">
-           <span><b>${esc(o.label)}</b>${o.hint ? `<br><span class="tiny muted">${esc(o.hint)}</span>` : ""}</span></label>`).join("")}</div>
-      ${q.free_text ? `<input type="text" id="cqt_${q.id}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:8px;width:100%">` : ""}
-    </div>`).join("");
-  return `<div class="card" style="margin-top:14px">
+  const ex = c.expertise; const n = c.questions.length; const step = c.step || 0;
+  const q = c.questions[step]; const a = c.answers[q.id] || {};
+  const dots = c.questions.map((_, i) => `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;background:${i <= step ? "var(--accent, #4f8cc9)" : "var(--line, #555)"}"></span>`).join("");
+  const opts = q.options.map((o) =>
+    `<label class="small" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
+       <input type="radio" name="cq_${q.id}" value="${esc(o.id)}" data-act="cqopt" ${a.option === o.id ? "checked" : ""} style="margin-top:3px">
+       <span><b>${esc(o.label)}</b>${o.hint ? `<br><span class="tiny muted">${esc(o.hint)}</span>` : ""}</span></label>`).join("");
+  const last = step === n - 1;
+  return `<div class="card" id="clarifyCard" style="margin-top:14px">
     <div class="row" style="justify-content:space-between">
-      <h3 class="sub" style="margin:0">A few quick questions before we design your study</h3>
+      <h3 class="sub" style="margin:0">Question ${step + 1} of ${n}</h3>
       <label class="small muted">Explanations for
         <select id="levelSel" data-act="level">${["novice", "intermediate", "expert"].map((l) =>
           `<option value="${l}" ${c.level_used === l ? "selected" : ""}>${LEVEL_NAMES[l]}${l === ex.level ? " (detected)" : ""}</option>`).join("")}</select></label>
     </div>
-    ${c.notice ? `<div class="banner info" style="margin:10px 0">${esc(c.notice)}</div>` : ""}
-    <p class="tiny muted" style="margin:6px 0 0">We wrote these questions to match how your idea is worded. If they feel too simple or too technical, change the setting on the right.</p>
-    <details class="tiny muted" style="margin-top:4px"><summary style="cursor:pointer">Why this level?</summary>
-      <ul style="margin:4px 0 0 16px">${ex.signals.map((s) => `<li>${s.effect === "+" ? "More technical:" : "Less technical:"} ${esc(s.text)}</li>`).join("") || "<li>No strong signals either way.</li>"}</ul></details>
-    ${qs}
-    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="clarifyGo">Design my study with these answers →</button>
-      <button class="btn" data-act="clarifySkip">Skip questions</button></div>
+    <div style="margin-top:6px">${dots}</div>
+    ${step === 0 && c.notice ? `<div class="banner info" style="margin:10px 0 0">${esc(c.notice)}</div>` : ""}
+    <div style="margin-top:14px"><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
+    <div style="display:grid;gap:8px;margin-top:10px">${opts}</div>
+    ${q.free_text ? `<input type="text" id="cqt_${q.id}" value="${esc(a.text || "")}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:10px;width:100%">` : ""}
+    <div class="row" style="margin-top:16px;justify-content:space-between">
+      <button class="btn" data-act="cqBack" ${step === 0 ? "disabled" : ""}>← Back</button>
+      <button class="btn primary" id="cqNext" data-act="${last ? "clarifyGo" : "cqNext"}" ${answered(q, a) ? "" : "disabled"}>${last ? "Design my study →" : "Next →"}</button>
+    </div>
+    ${step === 0 ? `<details class="tiny muted" style="margin-top:10px"><summary style="cursor:pointer">Why these questions?</summary>
+      <p style="margin:4px 0">We wrote them to match how your idea is worded. If they feel too simple or too technical, change "Explanations for" above.</p>
+      <ul style="margin:4px 0 0 16px">${ex.signals.map((s) => `<li>${s.effect === "+" ? "More technical:" : "Less technical:"} ${esc(s.text)}</li>`).join("") || "<li>No strong signals either way.</li>"}</ul></details>` : ""}
   </div>`;
 }
-function collectAnswers() {
-  const ans = {};
-  for (const q of S.clarify.questions) {
-    const opt = document.querySelector(`input[name="cq_${q.id}"]:checked`);
-    const txt = $(`#cqt_${q.id}`);
-    if (opt || (txt && txt.value.trim())) ans[q.id] = { option: opt ? opt.value : "", text: txt ? txt.value.trim() : "" };
-  }
-  return ans;
+/* A question counts as answered when a choice is picked (plus any text that choice needs), or when text was typed. */
+function answered(q, a) {
+  const text = (a.text || "").trim(); const ft = q.free_text;
+  if (a.option) return !(ft && ft.requires_option === a.option && !text);
+  return !!(ft && !ft.requires_option && text);
+}
+function refreshNext() {
+  const c = S.clarify; const q = c.questions[c.step]; const btn = $("#cqNext");
+  if (btn) btn.disabled = !answered(q, c.answers[q.id] || {});
 }
 
 /* ------------------------------------------------------------------ PROJECTS / LIBRARY */
@@ -573,15 +579,21 @@ const A = {
     store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
     let c = null;
     try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
-    if (c && c.questions.length) { S.clarify = { ...c, question: q }; return rerender(); }
+    if (c && c.questions.length) {
+      S.clarify = { ...c, question: q, step: 0, answers: {} };
+      await rerender(); $("#clarifyCard")?.scrollIntoView({ behavior: "smooth", block: "center" }); return;
+    }
     await createProject(q, null, el);
   },
   level: async (el) => {
-    try { S.clarify = { ...(await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value } })), question: S.clarify.question }; rerender(); }
-    catch (e) { toast(e.message, true); }
+    try {
+      const c = await api("/api/clarify", { method: "POST", body: { question: S.clarify.question, cycles: S.ask.cycles, level: el.value } });
+      S.clarify = { ...c, question: S.clarify.question, step: 0, answers: S.clarify.answers }; rerender();
+    } catch (e) { toast(e.message, true); }
   },
-  clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: collectAnswers(), level: S.clarify.level_used }, el),
-  clarifySkip: (el) => createProject(S.clarify.question, null, el),
+  cqBack: () => { if (S.clarify.step > 0) { S.clarify.step--; rerender(); } },
+  cqNext: () => { const c = S.clarify; const q = c.questions[c.step]; if (answered(q, c.answers[q.id] || {})) { c.step++; rerender(); } },
+  clarifyGo: (el) => $("#q").value.trim() !== S.clarify.question ? A.design(el) : createProject(S.clarify.question, { answers: S.clarify.answers, level: S.clarify.level_used }, el),
   upload: async () => {
     const f = $("#dsData").files[0]; if (!f) return toast("Choose a CSV data file", true);
     const fd = new FormData(); fd.append("name", $("#dsName").value || f.name); fd.append("data", f); if ($("#dsDict").files[0]) fd.append("dictionary", $("#dsDict").files[0]);
@@ -661,6 +673,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("change", (e) => {
   const el = e.target; const act = el.dataset?.act; if (!act) return;
   if (act === "level") A.level(el);
+  else if (act === "cqopt") { const q = S.clarify.questions[S.clarify.step]; S.clarify.answers[q.id] = { ...(S.clarify.answers[q.id] || {}), option: el.value }; refreshNext(); }
   else if (act === "setdef") edit({ op: "set_definition", role: el.dataset.role, value: el.value });
   else if (act === "scale") edit({ op: "set", path: "exposure.scale", value: parseFloat(el.value) || 1 });
   else if (act === "crit") edit({ op: "enable_criterion", id: el.dataset.id, value: el.checked });
@@ -668,7 +681,9 @@ document.addEventListener("change", (e) => {
   else if (act === "family") edit({ op: "set", path: "model.family", value: el.value });
   else if (act === "addpill" && el.value) { const f = el.dataset.field; edit({ op: `set_${f}`, value: [...S.project.plan[f], el.value] }); }
 });
-document.addEventListener("input", (e) => { if (e.target.id === "q") store.set("q2e.q", e.target.value); if (e.target.id === "dsSel") S.ask.dataset = e.target.value; if (e.target.id === "provSel") S.ask.provider = e.target.value; });
+document.addEventListener("input", (e) => {
+  if (e.target.id?.startsWith("cqt_") && S.clarify) { const id = e.target.id.slice(4); S.clarify.answers[id] = { ...(S.clarify.answers[id] || {}), text: e.target.value }; refreshNext(); }
+  if (e.target.id === "q") store.set("q2e.q", e.target.value); if (e.target.id === "dsSel") S.ask.dataset = e.target.value; if (e.target.id === "provSel") S.ask.provider = e.target.value; });
 $("#themeBtn").addEventListener("click", () => {
   const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   document.documentElement.dataset.theme = cur === "dark" ? "light" : "dark"; store.set("q2e.theme", document.documentElement.dataset.theme);
