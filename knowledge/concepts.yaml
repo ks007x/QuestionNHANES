@@ -1,0 +1,414 @@
+# Clinical concept ontology: natural-language phrases -> building blocks or guideline definitions.
+# Used by the offline planner and as a constrained vocabulary for the LLM agents.
+# Longer synonyms are matched first, so "functional iron deficiency" wins over "iron deficiency".
+concepts:
+  - id: functional_iron_deficiency
+    label: "Functional iron deficiency"
+    synonyms: ["functional iron deficiency", "functional id", "fid", "iron-restricted erythropoiesis", "iron restricted erythropoiesis"]
+    definitions: [fid_tawfik2024, fid_esc_hf]
+    companion_definitions: [aid_tawfik2024]
+    domain: iron
+  - id: iron_deficiency_anemia
+    label: "Iron-deficiency anemia"
+    synonyms: ["iron deficiency anemia", "iron-deficiency anemia", "iron deficiency anaemia", "ida"]
+    definitions: [ida_ash2026]
+    domain: iron
+  - id: ckd_iron_deficiency
+    label: "Iron deficiency"
+    synonyms: ["kdigo iron", "ckd iron deficiency", "iron deficiency in ckd", "ckd-ida", "ckd ida", "iron deficiency in chronic kidney disease", "renal anemia iron"]
+    definitions: [ckd_id_kdigo2026, ckd_ire_kdigo2026, ckd_iron_indicated_kdigo2026, ckd_iron_kdigo2012]
+    domain: iron
+    implies_population: ckd
+  - id: iron_deficiency
+    label: "Iron deficiency"
+    synonyms: ["absolute iron deficiency", "iron deficiency", "iron deficient", "low iron", "iron depletion", "low iron stores"]
+    definitions: [id_ash2026, aid_tawfik2024, id_who2020]
+    domain: iron
+  - id: anemia
+    label: "Anemia"
+    synonyms: ["anemia", "anaemia", "low hemoglobin", "anemic"]
+    definitions: [anemia_who]
+    domain: iron
+  - id: ferritin
+    label: "Serum ferritin"
+    synonyms: ["ferritin", "iron stores"]
+    block: ferritin
+    domain: iron
+    default_scale: 1
+  - id: tsat
+    label: "Transferrin saturation"
+    synonyms: ["transferrin saturation", "tsat"]
+    block: tsat
+    domain: iron
+  - id: hemoglobin
+    label: "Hemoglobin"
+    synonyms: ["hemoglobin", "haemoglobin", "hgb"]
+    block: hgb
+    domain: iron
+  - id: inflammation
+    label: "Systemic inflammation"
+    synonyms: ["inflammation", "crp", "c-reactive protein", "inflammatory"]
+    block: crp
+    alt_block: inflammation
+    domain: inflammation
+  - id: csph
+    label: "Clinically significant portal hypertension"
+    synonyms: ["clinically significant portal hypertension", "portal hypertension", "csph", "baveno"]
+    definitions: [csph_baveno8, csph_baveno7]
+    domain: liver
+  - id: cacld
+    label: "Compensated advanced chronic liver disease"
+    synonyms: ["compensated advanced chronic liver disease", "advanced chronic liver disease", "cacld", "advanced fibrosis", "liver fibrosis", "cirrhosis"]
+    definitions: [cacld_bin_baveno, cacld_baveno8]
+    domain: liver
+  - id: liver_stiffness
+    label: "Liver stiffness"
+    synonyms: ["liver stiffness", "lsm", "fibroscan", "elastography", "transient elastography"]
+    block: lsm
+    domain: liver
+    default_scale: 5
+  - id: steatosis
+    label: "Hepatic steatosis"
+    synonyms: ["steatosis", "fatty liver", "masld", "nafld", "controlled attenuation parameter"]
+    block: steatosis
+    domain: liver
+  - id: fib4
+    label: "FIB-4"
+    synonyms: ["fib-4", "fib4"]
+    block: fib4
+    domain: liver
+  - id: thrombocytopenia
+    label: "Thrombocytopenia"
+    synonyms: ["thrombocytopenia", "low platelets", "low platelet count"]
+    definitions: [thrombocytopenia_150]
+    domain: hematology
+  - id: platelets
+    label: "Platelet count"
+    synonyms: ["platelet count", "platelets"]
+    block: plt
+    domain: hematology
+    default_scale: 50
+  - id: glycemic_control
+    label: "Glycemic control (HbA1c)"
+    synonyms: ["blood sugar control", "glycemic control", "glycaemic control", "blood sugar", "glucose control", "hba1c", "a1c", "glycated hemoglobin", "glycohemoglobin"]
+    block: hba1c
+    alt_definitions: [poor_glycemic_control]
+    domain: glycemia
+  - id: diabetes
+    label: "Diabetes"
+    synonyms: ["diabetes", "diabetic", "type 2 diabetes", "t2d"]
+    definitions: [diabetes_ada]
+    domain: glycemia
+  - id: abdominal_obesity
+    label: "Abdominal obesity (waist circumference)"
+    synonyms: ["abdominal obesity", "central obesity", "central adiposity", "visceral adiposity", "visceral fat", "belly fat", "waist circumference", "waist"]
+    block: waist
+    alt_definitions: [abd_obesity_atp3, whtr_05]
+    domain: anthropometry
+    default_scale: 10
+  - id: waist_to_height
+    label: "Waist-to-height ratio"
+    synonyms: ["waist-to-height ratio", "waist to height ratio", "whtr"]
+    block: whtr
+    domain: anthropometry
+    default_scale: 0.1
+  - id: obesity
+    label: "Obesity"
+    synonyms: ["obesity", "obese"]
+    definitions: [obesity_bmi30]
+    domain: anthropometry
+  - id: bmi_concept
+    label: "Body mass index"
+    synonyms: ["bmi", "body mass index", "overweight", "adiposity"]
+    block: bmi
+    domain: anthropometry
+    default_scale: 5
+  - id: ckd
+    label: "Chronic kidney disease"
+    synonyms: ["chronic kidney disease", "ckd", "kidney disease", "renal impairment"]
+    definitions: [ckd_kdigo]
+    domain: kidney
+  - id: egfr
+    label: "eGFR"
+    synonyms: ["egfr", "kidney function", "glomerular filtration"]
+    block: egfr
+    domain: kidney
+    default_scale: 10
+  - id: heart_failure
+    label: "Heart failure"
+    synonyms: ["heart failure", "chf"]
+    block: hf
+    domain: cardio
+  - id: smoking
+    label: "Smoking"
+    synonyms: ["smoking", "smokers", "smoker", "tobacco", "cigarette"]
+    block: smoking
+    domain: behaviour
+  - id: alcohol
+    label: "Alcohol use"
+    synonyms: ["alcohol", "drinking"]
+    block: alcohol_dpd
+    domain: behaviour
+  - id: income
+    label: "Income-to-poverty ratio"
+    synonyms: ["income", "poverty", "socioeconomic"]
+    block: pir_cat
+    domain: demographic
+  - id: race
+    label: "Race and ethnicity"
+    synonyms: ["race", "ethnicity", "racial"]
+    block: race_eth
+    domain: demographic
+  - id: age
+    label: "Age group"
+    synonyms: ["age group", "older age", "aging"]
+    block: agecat
+    domain: demographic
+  - id: sex
+    label: "Sex"
+    synonyms: ["sex differences", "gender", "sex"]
+    block: sex
+    domain: demographic
+
+  # ---------------- expansion ----------------
+  - {id: hypertension, label: "Hypertension", synonyms: ["hypertension", "high blood pressure", "elevated blood pressure", "hypertensive"], definitions: [htn_accaha2017, htn_jnc7], domain: cardio}
+  - {id: htn_awareness, label: "Hypertension awareness", synonyms: ["awareness of hypertension status", "awareness of hypertension", "hypertension awareness", "aware of their hypertension", "unaware of hypertension", "awareness"], block: htn_selfreport, domain: cardio}
+  - {id: htn_treatment_rec, label: "Told to take antihypertensive medication", synonyms: ["treatment recommendations", "treatment recommendation", "advised to take medication", "told to take medication"], block: bp_meds_advised, domain: cardio}
+  - {id: htn_medication, label: "Antihypertensive medication use", synonyms: ["antihypertensive medication use", "antihypertensive medication", "antihypertensive use", "blood pressure medication", "antihypertensives"], block: bp_meds, domain: cardio}
+  - {id: uncontrolled_htn, label: "Uncontrolled blood pressure", synonyms: ["uncontrolled hypertension", "uncontrolled blood pressure", "hypertension control", "controlled hypertension"], definitions: [uncontrolled_bp_130], domain: cardio}
+  - {id: systolic_bp, label: "Systolic blood pressure", synonyms: ["systolic blood pressure", "systolic bp", "sbp", "blood pressure"], block: sbp, domain: cardio, default_scale: 10}
+  - {id: diastolic_bp, label: "Diastolic blood pressure", synonyms: ["diastolic blood pressure", "diastolic bp", "dbp"], block: dbp, domain: cardio, default_scale: 10}
+  - {id: metabolic_syndrome, label: "Metabolic syndrome", synonyms: ["metabolic syndrome", "mets", "syndrome x"], definitions: [metsyn_atp3], domain: cardio}
+  - {id: cvd, label: "Cardiovascular disease", synonyms: ["cardiovascular disease", "cvd", "heart disease", "atherosclerotic cardiovascular disease"], block: cvd, domain: cardio}
+  - {id: mi, label: "Myocardial infarction", synonyms: ["heart attack", "myocardial infarction"], block: mi, domain: cardio}
+  - {id: stroke, label: "Stroke", synonyms: ["stroke", "cerebrovascular accident"], block: stroke, domain: cardio}
+  - {id: coronary_disease, label: "Coronary heart disease", synonyms: ["coronary heart disease", "coronary artery disease", "cad", "chd"], block: chd, domain: cardio}
+  - {id: ldl, label: "LDL cholesterol", synonyms: ["ldl cholesterol", "ldl", "bad cholesterol"], block: ldl, alt_definitions: [high_ldl], domain: cardio, default_scale: 10}
+  - {id: dyslipidemia, label: "Dyslipidemia", synonyms: ["dyslipidemia", "high cholesterol", "hyperlipidemia", "hypercholesterolemia"], definitions: [high_ldl], domain: cardio}
+  - {id: hdl, label: "HDL cholesterol", synonyms: ["hdl cholesterol", "hdl", "good cholesterol"], block: hdl, domain: cardio, default_scale: 10}
+  - {id: triglycerides, label: "Triglycerides", synonyms: ["triglycerides", "triglyceride", "hypertriglyceridemia"], block: tg, domain: cardio, default_scale: 50}
+  - {id: total_cholesterol, label: "Total cholesterol", synonyms: ["total cholesterol", "cholesterol"], block: tc, domain: cardio, default_scale: 10}
+  - {id: insulin_resistance, label: "Insulin resistance (HOMA-IR)", synonyms: ["insulin resistance", "homa-ir", "homa ir", "hyperinsulinemia"], block: homa_ir, alt_definitions: [insulin_resistance_homa], domain: glycemia}
+  - {id: fasting_glucose, label: "Fasting glucose", synonyms: ["fasting glucose", "fasting plasma glucose", "fpg"], block: fpg, domain: glycemia, default_scale: 10}
+  - {id: prediabetes, label: "Prediabetes (self-reported)", synonyms: ["prediabetes", "pre-diabetes", "borderline diabetes"], block: prediabetes_selfreport, domain: glycemia}
+  - {id: hyperuricemia, label: "Hyperuricemia", synonyms: ["hyperuricemia", "high uric acid", "gout"], definitions: [hyperuricemia], domain: kidney}
+  - {id: uric_acid, label: "Serum uric acid", synonyms: ["uric acid", "urate"], block: uric_acid, domain: kidney}
+  - {id: albuminuria, label: "Albuminuria (UACR)", synonyms: ["albuminuria", "proteinuria", "uacr", "urine albumin"], block: uacr, domain: kidney, default_scale: 30}
+  - {id: kidney_stones, label: "Kidney stones", synonyms: ["kidney stones", "nephrolithiasis", "renal stones"], block: kidney_stones, domain: kidney}
+  - {id: depression, label: "Depression (PHQ-9)", synonyms: ["depression", "depressive symptoms", "depressed", "phq-9", "phq9"], definitions: [depression_phq9, depression_phq8], domain: mental_health}
+  - {id: short_sleep, label: "Short sleep", synonyms: ["short sleep duration", "short sleep", "insufficient sleep", "sleep deprivation", "sleeping less than 7 hours"], definitions: [short_sleep_lt7], domain: behaviour}
+  - {id: sleep_duration, label: "Sleep duration", synonyms: ["sleep duration", "sleep hours", "hours of sleep", "sleep"], block: sleep_hours, alt_definitions: [short_sleep_lt7], domain: behaviour}
+  - {id: insomnia, label: "Trouble sleeping", synonyms: ["insomnia", "trouble sleeping", "sleep problems", "poor sleep", "sleep quality", "sleep disturbance"], block: sleep_trouble, domain: behaviour}
+  - {id: sleep_apnea, label: "Sleep-disordered breathing (symptom proxy)", synonyms: ["obstructive sleep apnea", "sleep apnea", "sleep apnoea", "osa", "sleep-disordered breathing", "snoring"], definitions: [osa_symptoms], domain: behaviour}
+  - {id: daytime_sleepiness, label: "Excessive daytime sleepiness", synonyms: ["excessive daytime sleepiness", "daytime sleepiness", "sleepiness", "daytime fatigue"], definitions: [excessive_sleepiness], domain: behaviour}
+  - {id: functional_limitation, label: "Functional (mobility) limitation", synonyms: ["functional limitation", "functional limitations", "mobility limitation", "physical limitation", "functional status", "physical function", "difficulty walking"], definitions: [mobility_limitation_pfq], domain: function}
+  - {id: disability, label: "Disability", synonyms: ["disability", "disabilities", "disabled", "functional disability"], definitions: [disability_wg], domain: function}
+  - {id: adl, label: "ADL limitation", synonyms: ["activities of daily living", "adl limitation", "adl"], block: adl_limitation, domain: function}
+  - {id: physical_activity, label: "Physical activity", synonyms: ["physical activity", "exercise", "physically active", "sedentary lifestyle"], block: vigorous_pa, domain: behaviour}
+  - {id: sedentary, label: "Sedentary time", synonyms: ["sedentary time", "sitting time", "screen time", "sedentary"], block: sedentary_min, domain: behaviour, default_scale: 60}
+  - {id: food_insecurity, label: "Food insecurity", synonyms: ["food insecurity", "food insecure", "food security", "hunger"], definitions: [food_insecurity_usda], domain: social}
+  - {id: nativity, label: "Nativity (US-born)", synonyms: ["immigrants", "foreign-born", "us-born", "country of birth", "nativity"], block: us_born, domain: social}
+  - {id: veteran, label: "Veteran status", synonyms: ["veterans", "veteran", "military service"], block: veteran, domain: social}
+  - {id: insurance, label: "Health insurance", synonyms: ["health insurance", "uninsured", "insurance"], block: insured, domain: social}
+  - {id: education, label: "Educational attainment", synonyms: ["education", "educational attainment", "schooling"], block: educ, domain: demographic}
+  - {id: lead_exposure, label: "Blood lead", synonyms: ["lead exposure", "blood lead", "lead poisoning", "lead levels"], block: blood_lead, alt_definitions: [elevated_lead_35], domain: environment}
+  - {id: cadmium, label: "Blood cadmium", synonyms: ["cadmium"], block: blood_cadmium, domain: environment}
+  - {id: mercury, label: "Blood mercury", synonyms: ["mercury"], block: blood_mercury, domain: environment}
+  - {id: cotinine, label: "Tobacco smoke exposure (cotinine)", synonyms: ["cotinine", "secondhand smoke", "tobacco smoke exposure", "passive smoking"], block: cotinine, domain: environment}
+  - {id: vitamin_d, label: "Vitamin D", synonyms: ["vitamin d deficiency", "vitamin d", "25-hydroxyvitamin d", "25(oh)d"], block: vitd, alt_definitions: [vitd_deficiency], domain: default, default_scale: 10}
+  - {id: energy_intake, label: "Energy intake", synonyms: ["calorie intake", "energy intake", "calories", "caloric intake"], block: energy_kcal, domain: nutrition, default_scale: 500}
+  - {id: protein_intake, label: "Protein intake", synonyms: ["protein intake", "dietary protein"], block: protein_g, domain: nutrition, default_scale: 10}
+  - {id: dietary_iron, label: "Dietary iron intake", synonyms: ["dietary iron", "iron intake"], block: diet_iron_mg, domain: nutrition, default_scale: 5}
+  - {id: fiber_intake, label: "Dietary fiber intake", synonyms: ["fiber intake", "dietary fiber", "fibre"], block: fiber_g, domain: nutrition, default_scale: 5}
+  - {id: sodium_intake, label: "Sodium intake", synonyms: ["sodium intake", "salt intake", "dietary sodium"], block: sodium_mg, domain: nutrition, default_scale: 1000}
+  - {id: sugar_intake, label: "Sugar intake", synonyms: ["sugar intake", "added sugar", "dietary sugar"], block: sugar_g, domain: nutrition, default_scale: 25}
+  - {id: asthma, label: "Asthma", synonyms: ["asthma", "asthmatic"], block: asthma, domain: respiratory}
+  - {id: copd, label: "COPD", synonyms: ["copd", "chronic obstructive pulmonary disease", "emphysema", "chronic bronchitis"], block: copd, domain: respiratory}
+  - {id: arthritis, label: "Arthritis", synonyms: ["arthritis", "osteoarthritis", "rheumatoid arthritis"], block: arthritis, domain: default}
+  - {id: thyroid, label: "Thyroid disease (self-report)", synonyms: ["thyroid disease", "thyroid problem", "hypothyroidism", "hyperthyroidism"], block: thyroid_hx, domain: default}
+  - {id: cancer, label: "Cancer history", synonyms: ["cancer survivors", "cancer history", "history of cancer", "cancer", "malignancy"], block: cancer_hx, domain: default}
+  - {id: liver_disease, label: "Liver disease (self-report)", synonyms: ["liver disease", "liver condition"], block: liver_hx, domain: liver}
+  - {id: hepatitis_c, label: "Hepatitis C (self-report)", synonyms: ["hepatitis c", "hcv"], block: hep_c, domain: liver}
+  - {id: alt_enzyme, label: "ALT", synonyms: ["alt", "alanine aminotransferase", "transaminase", "liver enzymes"], block: alt, domain: liver, default_scale: 10}
+  - {id: nlr, label: "Neutrophil-to-lymphocyte ratio", synonyms: ["neutrophil-to-lymphocyte ratio", "neutrophil to lymphocyte ratio", "nlr"], block: nlr, domain: inflammation}
+  - {id: neutropenia, label: "Neutropenia", synonyms: ["neutropenia", "benign ethnic neutropenia", "duffy-null associated neutrophil count", "low neutrophil count"], definitions: [neutropenia_15, neutropenia_10], domain: hematology}
+  - {id: neutrophils, label: "Neutrophil count", synonyms: ["neutrophil count", "neutrophils", "anc"], block: anc, domain: hematology, default_scale: 1}
+  - {id: lymphopenia, label: "Lymphopenia", synonyms: ["lymphopenia", "low lymphocyte count"], definitions: [lymphopenia_10], domain: hematology}
+  - {id: lymphocytes, label: "Lymphocyte count", synonyms: ["lymphocyte count", "lymphocytes"], block: alc, domain: hematology}
+  - {id: eosinophilia, label: "Eosinophilia", synonyms: ["eosinophilia"], definitions: [eosinophilia_05], domain: hematology}
+  - {id: eosinophils, label: "Eosinophil count", synonyms: ["eosinophil count", "eosinophils"], block: aec, domain: hematology}
+  - {id: wbc, label: "White blood cell count", synonyms: ["white blood cell count", "leukocytes", "wbc", "leukocytosis"], block: wbc, domain: hematology}
+  - {id: mcv, label: "Mean corpuscular volume", synonyms: ["mcv", "mean corpuscular volume", "microcytosis", "macrocytosis"], block: mcv, domain: hematology}
+  - {id: rdw, label: "Red cell distribution width", synonyms: ["rdw", "red cell distribution width"], block: rdw, domain: hematology}
+  - {id: mpv, label: "Mean platelet volume", synonyms: ["mean platelet volume", "mpv"], block: mpv, domain: hematology}
+  - {id: albumin, label: "Serum albumin", synonyms: ["albumin", "hypoalbuminemia"], block: albumin, domain: default}
+  - {id: smoking_status, label: "Smoking status", synonyms: ["current smokers", "former smokers", "smoking status"], block: smoking, domain: behaviour}
+  - {id: pregnancy, label: "Pregnancy", synonyms: ["pregnancy status"], block: pregnant, domain: demographic}
+
+# Population phrases -> inclusion criteria (applied in order of appearance in the question).
+populations:
+  - {id: children, patterns: ["children", "adolescents", "kids", "youth", "pediatric"], criteria: [{label: "Age 1-17 years", expr: "age >= 1 & age < 18"}]}
+  - {id: adults, patterns: ["adults", "adult", "grown-ups"], criteria: [{label: "Age >=18 years", expr: "age >= 18"}]}
+  - {id: older_adults, patterns: ["older adults", "elderly", "aged 65", "65 and older", "seniors"], criteria: [{label: "Age >=65 years", expr: "age >= 65"}]}
+  - {id: women_repro, patterns: ["women of reproductive age", "reproductive-age women", "premenopausal"], criteria: [{label: "Female", expr: "female == 1"}, {label: "Age 18-49 years", expr: "age >= 18 & age <= 49"}]}
+  - {id: women, patterns: ["women", "females", "female"], criteria: [{label: "Female", expr: "female == 1"}]}
+  - {id: men, patterns: ["men", "males", "male"], criteria: [{label: "Male", expr: "female == 0"}]}
+  - {id: pregnant, patterns: ["pregnant", "pregnancy"], criteria: [{label: "Pregnant at examination", expr: "pregnant == 1"}]}
+  - {id: ckd, patterns: ["with ckd", "with chronic kidney disease", "with kidney disease", "ckd patients"], criteria: [{label: "CKD (eGFR <60 or UACR >=30)", expr: "ckd == 1"}, {label: "Not on dialysis", expr: "coalesce(dialysis, 0) == 0"}]}
+  - {id: diabetes, patterns: ["with diabetes", "diabetic adults", "diabetics"], criteria: [{label: "Diabetes", expr: "diabetes == 1"}]}
+  - {id: uncontrolled_htn_pop, patterns: ["with uncontrolled hypertension", "with uncontrolled blood pressure"], criteria: [{label: "Uncontrolled BP (mean SBP >=130 or DBP >=80 mm Hg)", expr: "any_of(sbp >= 130, dbp >= 80)"}]}
+  - {id: htn_pop, patterns: ["with hypertension", "hypertensive adults", "with high blood pressure"], criteria: [{label: "Hypertension (ACC/AHA 2017)", expr: "hypertension == 1"}]}
+  - {id: nondiabetic, patterns: ["without diabetes", "non-diabetic", "nondiabetic"], criteria: [{label: "No diabetes", expr: "diabetes == 0"}]}
+  - {id: heart_failure, patterns: ["with heart failure"], criteria: [{label: "Heart failure", expr: "hf == 1"}]}
+
+# Domain defaults used by the Statistician / Epidemiologist agents.
+domains:
+  iron:
+    covariates: [age, sex, race_eth, pir_cat, bmi, inflammation, ckd]
+    exclusions: [{label: "Pregnant at examination", expr: "pregnant == 1", optional: true}]
+    required_measures: [ferritin, tsat]
+    subgroups: [sex, agecat, race_eth]
+    sensitivity:
+      - {type: exclude, label: "Exclude hsCRP >5 mg/L (inflammation raises ferritin)", expr: "coalesce(inflammation, 0) == 1"}
+      - {type: exclude, label: "Exclude participants treated for anemia", expr: "coalesce(anemia_tx, 0) == 1"}
+  glycemia:
+    covariates: [age, sex, race_eth, pir_cat, educ, smoking]
+    exclusions: [{label: "Pregnant at examination", expr: "pregnant == 1", optional: false}]
+    subgroups: [sex, agecat, race_eth]
+    sensitivity:
+      - {type: exclude, label: "Exclude participants on glucose-lowering therapy", expr: "coalesce(insulin_use, 0) == 1 | coalesce(dm_pills, 0) == 1"}
+      - {type: exclude, label: "Exclude anemia (HbA1c unreliable)", expr: "coalesce(anemia, 0) == 1"}
+  liver:
+    covariates: [age, sex, race_eth, pir_cat, bmi, diabetes, smoking]
+    exclusions: [{label: "Self-reported hepatitis B or C", expr: "coalesce(hep_b, 0) == 1 | coalesce(hep_c, 0) == 1", optional: true}]
+    required_measures: [lsm_valid]
+    subgroups: [sex, agecat]
+    sensitivity:
+      - {type: exclude, label: "Exclude heavy alcohol (>2 drinks/day men, >1 women)", expr: "coalesce(alcohol_dpd, 0) > ifelse(female == 1, 1, 2)"}
+  hematology:
+    covariates: [age, sex, race_eth, pir_cat, bmi]
+    exclusions: []
+    subgroups: [sex, agecat]
+    sensitivity: []
+  anthropometry:
+    covariates: [age, sex, race_eth, pir_cat, smoking]
+    exclusions: [{label: "Pregnant at examination", expr: "pregnant == 1", optional: false}]
+    subgroups: [sex, agecat]
+    sensitivity: []
+  kidney:
+    covariates: [age, sex, race_eth, pir_cat, diabetes, htn_selfreport]
+    exclusions: []
+    subgroups: [sex, agecat]
+    sensitivity: []
+  cardio:
+    covariates: [age, sex, race_eth, pir_cat, educ, smoking, bmi, diabetes]
+    exclusions: [{label: "Pregnant at examination", expr: "pregnant == 1", optional: false}]
+    subgroups: [sex, agecat, race_eth]
+    sensitivity:
+      - {type: exclude, label: "Exclude self-reported cardiovascular disease", expr: "coalesce(cvd, 0) == 1"}
+  mental_health:
+    covariates: [age, sex, race_eth, pir_cat, educ, smoking, bmi, insured]
+    exclusions: []
+    subgroups: [sex, agecat, race_eth]
+    sensitivity: []
+  behaviour:
+    covariates: [age, sex, race_eth, pir_cat, educ, bmi]
+    exclusions: []
+    subgroups: [sex, agecat]
+    sensitivity: []
+  social:
+    covariates: [age, sex, race_eth, educ]
+    exclusions: []
+    subgroups: [sex, agecat, race_eth]
+    sensitivity: []
+  environment:
+    covariates: [age, sex, race_eth, pir_cat, educ, smoking]
+    exclusions: []
+    subgroups: [sex, agecat, race_eth]
+    sensitivity:
+      - {type: exclude, label: "Exclude active smokers by cotinine", expr: "coalesce(active_smoker_cot, 0) == 1"}
+  nutrition:
+    covariates: [age, sex, race_eth, pir_cat, educ, bmi, energy_kcal]
+    exclusions: [{label: "Pregnant at examination", expr: "pregnant == 1", optional: false}]
+    required_measures: [diet_reliable]
+    subgroups: [sex, agecat]
+    sensitivity: []
+  function:
+    covariates: [age, sex, race_eth, pir_cat, educ, bmi, smoking]
+    exclusions: []
+    subgroups: [sex, agecat, race_eth]
+    sensitivity: []
+  respiratory:
+    covariates: [age, sex, race_eth, pir_cat, smoking, bmi]
+    exclusions: []
+    subgroups: [sex, agecat]
+    sensitivity: []
+  default:
+    covariates: [age, sex, race_eth, pir_cat]
+    exclusions: []
+    subgroups: [sex, agecat]
+    sensitivity: []
+
+# Known causal-structure warnings (exposure concept, outcome concept, variable, role, note)
+causal_flags:
+  - {exposure: abdominal_obesity, outcome: glycemic_control, variable: diabetes, role: mediator_or_outcome, note: "Diabetes status is defined partly by HbA1c and lies on the causal path; adjusting for it is over-adjustment."}
+  - {exposure: abdominal_obesity, outcome: glycemic_control, variable: bmi, role: intended_adjustment, note: "BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF check)."}
+  - {exposure: obesity, outcome: glycemic_control, variable: diabetes, role: mediator_or_outcome, note: "Do not adjust for diabetes when HbA1c is the outcome."}
+  - {exposure: ckd, outcome: anemia, variable: egfr, role: definitional, note: "eGFR defines CKD; adjusting for it removes the exposure."}
+  - {exposure: liver_stiffness, outcome: thrombocytopenia, variable: fib4, role: definitional, note: "FIB-4 contains platelet count - definitional overlap with the outcome."}
+  - {exposure: sodium_intake, outcome: hypertension, variable: bmi, role: possible_mediator, note: "BMI may partly mediate diet-blood pressure associations; consider a model without BMI."}
+  - {exposure: abdominal_obesity, outcome: hypertension, variable: diabetes, role: mediator_or_outcome, note: "Diabetes may lie on the path from adiposity to hypertension."}
+  - {exposure: insomnia, outcome: depression, variable: phq9_sleep_item, role: measurement_overlap, note: "PHQ-9 item 3 asks about trouble sleeping - the outcome partly measures the exposure. Run PHQ-8 (item 3 removed) as a sensitivity analysis."}
+  - {exposure: short_sleep, outcome: depression, variable: phq9_sleep_item, role: measurement_overlap, note: "PHQ-9 item 3 asks about sleep; use PHQ-8 sensitivity analysis."}
+  - {exposure: sleep_duration, outcome: depression, variable: phq9_sleep_item, role: measurement_overlap, note: "PHQ-9 item 3 asks about sleep; use PHQ-8 sensitivity analysis."}
+  - {exposure: depression, outcome: cvd, variable: smoking, role: possible_mediator, note: "Smoking may be both a confounder and a mediator of depression-CVD associations."}
+
+# Lay/clinical phrases -> NHANES components (tables) that measure them, for topics without curated variables.
+# Used to tell the investigator "NHANES does measure this, in these files" and to steer catalog searches.
+component_synonyms:
+  - {phrases: ["hearing", "hearing loss", "deafness", "audiometry", "tinnitus"], tables: [AUX, AUQ], note: "Audiometry exam (selected ages/cycles) and hearing questionnaire"}
+  - {phrases: ["bone density", "bone mineral density", "osteoporosis", "osteopenia", "dxa", "dexa"], tables: [DXXFEM, DXXSPN, DXX, OSQ], note: "DXA femur/spine (cycle- and age-dependent) and osteoporosis questionnaire"}
+  - {phrases: ["body composition", "low muscle mass", "muscle mass", "lean mass", "fat mass", "sarcopenia", "visceral fat area", "appendicular lean mass"], tables: [DXX, DXXAG], note: "Whole-body DXA (ages 8-59 in most cycles)"}
+  - {phrases: ["cognition", "cognitive function", "cognitive performance", "memory", "cognitive impairment"], tables: [CFQ], note: "Cognitive tests in adults >=60 y, 2011-2014 only (not in the 2015-2023 cycles Q2E supports)"}
+  - {phrases: ["grip strength", "muscle strength", "handgrip"], tables: [MGX], note: "Handgrip dynamometry, 2011-2014 only (not in the 2015-2023 cycles Q2E supports)"}
+  - {phrases: ["dental", "teeth", "oral health", "periodontitis", "periodontal disease", "tooth loss", "caries"], tables: [OHXDEN, OHXPER, OHQ], note: "Oral health exam and questionnaire"}
+  - {phrases: ["vision", "visual impairment", "eye disease", "retinopathy"], tables: [VIX, VIQ, OPXRET], note: "Vision exam/questionnaire (selected cycles)"}
+  - {phrases: ["grip", "handgrip strength"], tables: [MGX], note: "Handgrip dynamometry, 2011-2014"}
+  - {phrases: ["medications", "prescription drugs", "statin use", "polypharmacy", "metformin", "ppi use", "aspirin use"], tables: [RXQ_RX, RXQASA], note: "Prescription medication file (30-day use, drug names/classes)"}
+  - {phrases: ["supplements", "supplement use", "iron supplements", "multivitamin"], tables: [DSQTOT, DSQIDS, DS1TOT], note: "Dietary supplement use (30-day and 24-h)"}
+  - {phrases: ["health care utilization", "hospitalization", "hospital admissions", "emergency department visits"], tables: [HUQ], note: "Self-reported hospital use in past 12 months (no claims data)"}
+  - {phrases: ["hepatitis b", "hepatitis b serology", "hepatitis c antibody", "hcv rna"], tables: [HEPBD, HEPB_S, HEPC], note: "Hepatitis serology"}
+  - {phrases: ["hiv"], tables: [HIV], note: "HIV antibody (adults 18-59, selected cycles)"}
+  - {phrases: ["pfas", "perfluoroalkyl", "phthalates", "bisphenol", "pesticides", "arsenic", "volatile organic compounds"], tables: [PFAS, PHTHTE, EPHPP, UAS, UVOC], note: "Environmental chemicals (one-third subsamples, special weights)"}
+  - {phrases: ["testosterone", "estradiol", "sex hormones", "shbg"], tables: [TST], note: "Sex steroid hormones (selected cycles)"}
+  - {phrases: ["thyroid function", "tsh", "free t4"], tables: [THYROD], note: "Thyroid profile (selected cycles, subsample)"}
+  - {phrases: ["folate", "vitamin b12", "homocysteine"], tables: [FOLATE, FOLFMS], note: "Folate (most cycles); B12 not measured after 2006"}
+  - {phrases: ["urine sodium", "urinary sodium", "iodine"], tables: [UIO], note: "Urinary iodine (subsample)"}
+  - {phrases: ["alcohol use disorder", "binge drinking", "heavy drinking"], tables: [ALQ], note: "Alcohol use questionnaire"}
+  - {phrases: ["drug use", "marijuana", "cannabis", "cocaine", "opioid use"], tables: [DUQ], note: "Drug use questionnaire (ages 18-69, ACASI)"}
+  - {phrases: ["sexual behavior"], tables: [SXQ], note: "Sexual behavior (ACASI, restricted ages)"}
+  - {phrases: ["reproductive health", "menopause", "menarche", "parity", "pregnancies"], tables: [RHQ], note: "Reproductive health questionnaire (women)"}
+  - {phrases: ["shift work", "night shift", "night work", "work schedule", "occupation", "employment", "work hours"], tables: [OCQ], note: "Occupation questionnaire"}
+  - {phrases: ["housing", "housing characteristics"], tables: [HOQ], note: "Housing characteristics"}
+
+  - {phrases: ["falls", "fall", "fall risk", "balance"], tables: [BAQ, BAX], note: "Balance and falls questionnaire/exam were collected in 1999-2004 only"}
+
+# Things NHANES cannot measure (or only via linked/restricted files) - drives the answerability verdict.
+not_in_nhanes:
+  - {phrases: ["mortality", "death", "deaths", "die", "survival", "all-cause mortality", "cause-specific mortality"], severity: fail, hard_stop: true, reason: "NHANES itself has no follow-up. Mortality requires the NCHS Linked Mortality Files (NDI linkage) - not integrated in Q2E yet.", suggestion: "Download the public-use Linked Mortality File and analyse with survey-weighted Cox models, or reframe as a cross-sectional prevalence/association question."}
+  - {phrases: ["cumulative incidence", "incidence", "incident", "new-onset", "develop", "developing", "risk of developing", "future risk", "predicts future", "after transplant", "post-transplant"], severity: fail, hard_stop: true, reason: "NHANES is cross-sectional: each person is measured once, so incidence cannot be estimated.", suggestion: "Ask about prevalence or a cross-sectional association, or use a cohort (e.g., linked mortality, CMS linkage)."}
+  - {phrases: ["frailty index", "frailty", "frail"], severity: fail, reason: "No validated frailty measure is collected directly; a deficit-accumulation frailty index must be constructed from 30+ items and is not yet encoded in Q2E.", suggestion: "Use functional limitation or disability as the outcome, or add a frailty-index definition to the library."}
+  - {phrases: ["restless legs syndrome", "restless leg syndrome", "restless legs", "willis-ekbom"], severity: fail, reason: "NHANES does not ask about restless legs symptoms in recent cycles.", suggestion: "Use a cohort with RLS assessment (e.g., NHS/HPFS) or study iron deficiency with sleep complaints instead."}
+  - {phrases: ["polysomnography", "apnea-hypopnea index", "ahi", "sleep study", "actigraphy"], severity: fail, reason: "No polysomnography or (recent) actigraphy in NHANES; only questionnaire sleep measures.", suggestion: "Use questionnaire proxies (snoring/witnessed apneas) and state the limitation, or use MESA/SHHS."}
+  - {phrases: ["weight gain", "gain weight", "weight change", "weight loss over"], severity: fail, reason: "Change in weight requires repeated measurements; NHANES measures weight once (self-reported past weight is recall-based).", suggestion: "Study cross-sectional BMI/obesity, or use recalled weight 10 years ago (WHQ) with explicit recall-bias caveats."}
+  - {phrases: ["dementia", "alzheimer", "alzheimers"], severity: fail, reason: "No clinical dementia diagnosis in NHANES. Cognitive test scores exist only for adults >=60 y in 2011-2014 (CFQ).", suggestion: "Use CFQ cognitive scores (2011-2014) as the outcome."}
+  - {phrases: ["clostridioides difficile infection", "clostridium difficile infection", "c. difficile infection", "c. diff infection", "clostridioides difficile", "clostridium difficile", "c. difficile", "c. diff", "c diff", "cdi", "hospital-acquired infection", "nosocomial", "bacteremia", "bloodstream infection"], severity: fail, hard_stop: true, reason: "Acute infections such as C. difficile are diagnosed in clinical care; NHANES has no stool testing, infection episodes or hospital follow-up.", suggestion: "Use transplant registry (CIBMTR), EHR or claims data with time-to-event methods (e.g. cumulative incidence with competing risks)."}
+  - {phrases: ["sepsis", "septic shock", "icu", "intensive care", "febrile neutropenia", "neutropenic fever"], severity: fail, hard_stop: true, reason: "NHANES samples community-dwelling people at a single visit; acute hospital events are not captured.", suggestion: "Use EHR, claims, MIMIC or registry data; NHANES can describe community neutrophil counts (benign neutropenia) instead."}
+  - {phrases: ["hematopoietic cell transplantation", "hematopoietic stem cell transplantation", "hematopoietic cell transplant", "stem cell transplantation", "allogeneic transplantation", "allogeneic transplant", "allo-hct", "allo-hsct", "allogeneic hct", "allogeneic", "hsct", "transplantation", "transplant", "stem cell transplant", "bmt", "gvhd", "graft-versus-host"], severity: fail, hard_stop: true, reason: "Transplant recipients and procedures are not identifiable in NHANES.", suggestion: "Use CIBMTR or institutional transplant data."}
+  - {phrases: ["cardiovascular-kidney-metabolic syndrome", "cardiovascular kidney metabolic syndrome", "cardiovascular-kidney-metabolic", "ckm syndrome", "ckm stages", "ckm stage", "ckm"], severity: fail, reason: "CKM staging (AHA 2023 advisory) is computable from NHANES but needs the PREVENT 10-year risk equations and staging rules, which are not yet encoded in the definitions library. Q2E will not substitute metabolic syndrome.", suggestion: "Add a CKM staging definition (incl. PREVENT equations) to the library via Guideline import, or ask about its components (adiposity, metabolic syndrome, CKD, CVD)."}
+  - {phrases: ["chemotherapy", "cancer stage", "cancer treatment", "tumor", "leukemia", "lymphoma", "myeloma"], severity: fail, reason: "NHANES records only self-reported cancer history and type; no stage, treatment or pathology.", suggestion: "Use SEER, NCDB or registry data; NHANES can study cancer survivors (MCQ220) cross-sectionally."}
+  - {phrases: ["mri", "ct scan", "imaging", "echocardiogram", "ejection fraction", "coronary calcium"], severity: fail, reason: "No cross-sectional imaging beyond DXA and liver elastography.", suggestion: "Use MESA, UK Biobank or institutional imaging cohorts."}
+  - {phrases: ["genetic", "genome", "gene", "snp", "polygenic"], severity: fail, hard_stop: true, reason: "Genetic data are restricted-access (NCHS Research Data Center) and not in public files.", suggestion: "Apply to the NCHS RDC or use UK Biobank / All of Us."}
+  - {phrases: ["randomized", "treatment effect", "efficacy", "trial"], severity: fail, hard_stop: true, reason: "Observational survey data cannot estimate treatment efficacy like a trial.", suggestion: "Reframe as an association with confounding adjustment and a clear non-causal interpretation."}
+  - {phrases: ["over time", "trend", "trends", "changed since", "temporal"], severity: caution, reason: "Trends need several cycles with consistent methods and trend tests.", suggestion: "Select multiple non-overlapping cycles and add a cycle term (joinpoint/orthogonal polynomials)."}
+  - {phrases: ["children under", "infants", "toddlers"], severity: caution, reason: "Many laboratory measures are not collected in young children.", suggestion: "Check age eligibility of each component in the probe."}

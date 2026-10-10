@@ -1,0 +1,43 @@
+definitions:
+  - id: neutropenia_15
+    concept: neutropenia
+    label: "Neutropenia - ANC <1.5 x10^9/L"
+    short: "ANC <1.5"
+    type: binary
+    expr: "anc < 1.5"
+    criteria_text: "Absolute neutrophil count <1.5 x10^9/L."
+    operational_notes:
+      - "NHANES reports segmented neutrophils (LBDNENO); bands are not separately counted."
+      - "Duffy-null status is not measured; lower population reference ranges in people of African ancestry should be considered when interpreting race differences."
+    source: {citation: "Hsieh MM, et al. Prevalence of neutropenia in the U.S. population: age, sex, smoking status, and ethnic differences. Ann Intern Med. 2007;146:486-492.", year: 2007}
+    status: verified
+  - id: neutropenia_10
+    concept: neutropenia
+    label: "Moderate neutropenia - ANC <1.0 x10^9/L"
+    short: "ANC <1.0"
+    type: binary
+    expr: "anc < 1.0"
+    criteria_text: "Absolute neutrophil count <1.0 x10^9/L."
+    operational_notes: []
+    source: {citation: "Conventional grading (CTCAE grade >=3 corresponds to <1.0 x10^9/L).", year: 2017}
+    status: verified
+  - id: lymphopenia_10
+    concept: lymphopenia
+    label: "Lymphopenia - absolute lymphocyte count <1.0 x10^9/L"
+    short: "ALC <1.0"
+    type: binary
+    expr: "alc < 1.0"
+    criteria_text: "Absolute lymphocyte count <1.0 x10^9/L."
+    operational_notes: []
+    source: {citation: "Conventional laboratory definition.", year: 2020}
+    status: verified
+  - id: eosinophilia_05
+    concept: eosinophilia
+    label: "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L"
+    short: "AEC >=0.5"
+    type: binary
+    expr: "aec >= 0.5"
+    criteria_text: "Absolute eosinophil count >=0.5 x10^9/L."
+    operational_notes: []
+    source: {citation: "Conventional laboratory definition.", year: 2020}
+    status: verified

@@ -1,0 +1,48 @@
+# NHANES survey cycles known to Q2E.
+# file_pattern: how a component "stem" (e.g. DEMO) becomes a CDC file name.
+# url_folder:   folder used by https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/{url_folder}/DataFiles/{file}.xpt
+# years:        cycle length used to rescale weights when cycles are combined (NCHS analytic guidelines).
+cycles:
+  I:
+    label: "NHANES 2015-2016"
+    file_pattern: "{stem}_I"
+    url_folder: "2015"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+  J:
+    label: "NHANES 2017-2018"
+    file_pattern: "{stem}_J"
+    url_folder: "2017"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: [P]
+  P:
+    label: "NHANES 2017-March 2020 pre-pandemic"
+    file_pattern: "P_{stem}"
+    url_folder: "2017"
+    years: 3.2
+    weights: {interview: WTINTPRP, mec: WTMECPRP, diet: WTDRD1PP, fasting: WTSAFPRP}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: [J]
+    note: "Pre-pandemic file combines 2017-2018 with partial 2019-2020 data. Do not combine with J."
+  L:
+    label: "NHANES August 2021-August 2023"
+    file_pattern: "{stem}_L"
+    url_folder: "2021"
+    years: 2.0
+    weights: {interview: WTINT2YR, mec: WTMEC2YR, diet: WTDRD1, fasting: WTSAF2YR}
+    weight_files: {diet: DR1TOT, fasting: GLU}
+    psu: SDMVPSU
+    strata: SDMVSTRA
+    overlaps: []
+    note: "Sample design and data collection changed after the pandemic; NCHS cautions about combining with earlier cycles."
+default_cycles: [P]

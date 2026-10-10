@@ -1,0 +1,94 @@
+definitions:
+  - id: diabetes_ada
+    concept: diabetes
+    label: "Diabetes - self-report, medication, or HbA1c >=6.5%"
+    short: "ADA (HbA1c)"
+    type: binary
+    expr: "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)"
+    criteria_text: "Self-reported physician diagnosis, insulin or oral agent use, or HbA1c >=6.5%."
+    operational_notes:
+      - "Fasting glucose omitted so the full MEC sample/weight can be used; add FPG >=126 mg/dL in a fasting-subsample sensitivity analysis."
+    source:
+      citation: "American Diabetes Association Professional Practice Committee. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes."
+      year: 2026
+    status: verified
+
+  - id: poor_glycemic_control
+    concept: glycemic_control
+    label: "Elevated HbA1c (>=6.5%)"
+    short: "HbA1c >=6.5%"
+    type: binary
+    expr: "hba1c >= 6.5"
+    criteria_text: "HbA1c >=6.5%."
+    operational_notes: []
+    source:
+      citation: "American Diabetes Association Standards of Care."
+      year: 2026
+    status: verified
+
+  - id: abd_obesity_atp3
+    concept: abdominal_obesity
+    label: "Abdominal obesity - waist >102 cm (men) / >88 cm (women)"
+    short: "ATP III waist"
+    type: binary
+    expr: "ifelse(female == 1, waist > 88, waist > 102)"
+    criteria_text: "Waist circumference >102 cm in men or >88 cm in women."
+    operational_notes: []
+    source:
+      citation: "Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in Adults. JAMA. 2001;285:2486-2497 (NCEP ATP III)."
+      year: 2001
+    status: verified
+
+  - id: whtr_05
+    concept: abdominal_obesity
+    label: "Central adiposity - waist-to-height ratio >=0.5"
+    short: "WHtR >=0.5"
+    type: binary
+    expr: "waist / height_cm >= 0.5"
+    criteria_text: "Waist-to-height ratio >=0.5."
+    operational_notes: []
+    source:
+      citation: "Ashwell M, Gibson S. BMJ Open. 2016;6:e010159."
+      year: 2016
+    status: verified
+
+  - id: anemia_who
+    concept: anemia
+    label: "Anemia - WHO hemoglobin thresholds"
+    short: "WHO Hb"
+    type: binary
+    expr: "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))"
+    criteria_text: "Hemoglobin <13 g/dL (men), <12 g/dL (nonpregnant women), <11 g/dL (pregnancy)."
+    operational_notes:
+      - "No altitude or smoking adjustment applied."
+    source:
+      citation: "World Health Organization. Guideline on haemoglobin cutoffs to define anaemia in individuals and populations. Geneva: WHO; 2024."
+      year: 2024
+    status: verified
+
+  - id: ckd_kdigo
+    concept: ckd
+    label: "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)"
+    short: "KDIGO CKD"
+    type: binary
+    expr: "any_of(egfr < 60, uacr >= 30)"
+    criteria_text: "eGFR (CKD-EPI 2021) <60 mL/min/1.73m2 or UACR >=30 mg/g."
+    operational_notes:
+      - "Chronicity (>3 months) cannot be confirmed from one NHANES visit."
+    source:
+      citation: "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of CKD. Kidney Int. 2024;105(4S):S117-S314."
+      year: 2024
+    status: verified
+
+  - id: thrombocytopenia_150
+    concept: thrombocytopenia
+    label: "Thrombocytopenia - platelets <150 x10^9/L"
+    short: "<150"
+    type: binary
+    expr: "plt < 150"
+    criteria_text: "Platelet count <150 x10^9/L."
+    operational_notes: []
+    source:
+      citation: "Conventional laboratory definition."
+      year: 2020
+    status: verified

@@ -1,0 +1,63 @@
+definitions:
+  - id: ckd_id_kdigo2026
+    concept: ckd_iron_deficiency
+    label: "Systemic iron deficiency in non-dialysis CKD - KDIGO 2026 (TSAT <20% and ferritin <100 ng/mL)"
+    short: "KDIGO 2026 systemic ID"
+    type: binary
+    expr: "tsat < 20 & ferritin < 100"
+    criteria_text: "Non-dialysis CKD: TSAT <20% and ferritin <100 ng/mL (hemodialysis: ferritin <200 ng/mL)."
+    population_hint: "ckd == 1 & coalesce(dialysis, 0) == 0"
+    operational_notes:
+      - "Terminology ('systemic iron deficiency' / 'iron-restricted erythropoiesis') reported from the ERBP commentary on KDIGO 2026; confirm wording against the guideline PDF."
+      - "CKD defined from a single NHANES visit (eGFR <60 or UACR >=30); chronicity (>3 months) cannot be confirmed."
+    source:
+      citation: "Kidney Disease: Improving Global Outcomes (KDIGO) Anemia Work Group. KDIGO 2026 Clinical Practice Guideline for the Management of Anemia in Chronic Kidney Disease. Kidney Int. 2026."
+      url: "https://kdigo.org/wp-content/uploads/2026/01/KDIGO-2026-Anemia-in-CKD-Guideline.pdf"
+      year: 2026
+    status: secondary-source
+    watch_query: 'KDIGO[ti] AND anemia[ti] AND (guideline[ti] OR guideline[pt])'
+
+  - id: ckd_ire_kdigo2026
+    concept: ckd_iron_deficiency
+    label: "Iron-restricted erythropoiesis in CKD - KDIGO 2026 (TSAT <20% with ferritin >=100 ng/mL)"
+    short: "KDIGO 2026 IRE"
+    type: binary
+    expr: "tsat < 20 & ferritin >= 100"
+    criteria_text: "TSAT <20% with ferritin above 100 ng/mL (non-dialysis) - formerly 'functional' iron deficiency."
+    population_hint: "ckd == 1 & coalesce(dialysis, 0) == 0"
+    operational_notes:
+      - "Reported from the ERBP commentary on KDIGO 2026; confirm against the guideline PDF."
+    source:
+      citation: "KDIGO 2026 Clinical Practice Guideline for the Management of Anemia in CKD; ERBP commentary, Nephrol Dial Transplant 2026;41(8):1554."
+      year: 2026
+    status: secondary-source
+
+  - id: ckd_iron_indicated_kdigo2026
+    concept: ckd_iron_deficiency
+    label: "Iron therapy indicated, non-dialysis CKD - KDIGO 2026 Rec 2.3"
+    short: "KDIGO 2026 iron-eligible"
+    type: binary
+    expr: "(ferritin < 100 & tsat < 40) | (ferritin >= 100 & ferritin < 300 & tsat < 25)"
+    criteria_text: "Start iron if ferritin <100 ng/mL with TSAT <40%, or ferritin 100-299 ng/mL with TSAT <25% (Rec 2.3, grade 2D)."
+    population_hint: "ckd == 1 & coalesce(dialysis, 0) == 0"
+    operational_notes:
+      - "This is a treatment-eligibility rule, not a diagnostic definition; describe results as 'meeting KDIGO 2026 criteria for iron therapy'."
+    source:
+      citation: "KDIGO 2026 Clinical Practice Guideline for the Management of Anemia in CKD, Recommendation 2.3."
+      url: "https://www.guidelinecentral.com/insights/jan-2026-kdigo-managementanemiakcd-guideline-spotlight/"
+      year: 2026
+    status: secondary-source
+
+  - id: ckd_iron_kdigo2012
+    concept: ckd_iron_deficiency
+    label: "Iron trial threshold - KDIGO 2012 (TSAT <=30% and ferritin <=500 ng/mL)"
+    short: "KDIGO 2012"
+    type: binary
+    expr: "tsat <= 30 & ferritin <= 500"
+    criteria_text: "Trial of iron if TSAT <=30% and ferritin <=500 ng/mL (KDIGO 2012 anemia guideline)."
+    population_hint: "ckd == 1"
+    operational_notes: []
+    source:
+      citation: "KDIGO Anemia Work Group. KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl. 2012;2:279-335."
+      year: 2012
+    status: verified

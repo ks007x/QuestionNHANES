@@ -1,0 +1,340 @@
+table,description,component
+DR1IFF,"Dietary Interview - Individual Foods, First Day",DIET
+DR1TOT,"Dietary Interview - Total Nutrient Intakes, First Day",DIET
+DR2IFF,"Dietary Interview - Individual Foods, Second Day",DIET
+DR2TOT,"Dietary Interview - Total Nutrient Intakes, Second Day",DIET
+DRXFCD,Dietary Interview Technical Support File - Food Codes,DIET
+DRXIFF,Dietary Interview - Individual Foods,DIET
+DRXMCD,Dietary Interview Technical Support File - Modification Codes,DIET
+DRXTOT,Dietary Interview - Total Nutrient Intakes,DIET
+DS1IDS,"Dietary Supplement Use 24-Hour - Individual Dietary Supplements, First Day",DIET
+DS1TOT,"Dietary Supplement Use 24-Hour - Total Dietary Supplements, First Day",DIET
+DS2IDS,"Dietary Supplement Use 24-Hour - Individual Dietary Supplements, Second Day",DIET
+DS2TOT,"Dietary Supplement Use 24-Hour - Total Dietary Supplements, Second Day",DIET
+DSQ1,"Dietary Supplement Use 30-Day - File 1, Supplement Counts",DIET
+DSQ2,"Dietary Supplement Use 30-Day - File 2, Participant's Use of Supplements",DIET
+DSQFILE1,"Dietary Supplement Use 30-Day - File 1, Supplement Counts",DIET
+DSQFILE2,"Dietary Supplement Use 30-Day - File 2, Participant's Use of Supplements",DIET
+DSQIDS,Dietary Supplement Use 30 Day - Individual Dietary Supplements,DIET
+DSQTOT,Dietary Supplement Use 30-Day - Total Dietary Supplements,DIET
+DTQ,Dietary Screener Questionnaire,DIET
+FFQDC,Food Frequency Questionnaire - Output from DietCalc Software,DIET
+ARX,Arthritis Body Measures,EXAM
+AUX,Audiometry,EXAM
+AUX1,Audiometry,EXAM
+AUXAR,Audiometry - Acoustic Reflex,EXAM
+AUXTYM,Audiometry - Tympanometry,EXAM
+AUXWBR,Audiometry – Wideband Reflectance,EXAM
+BAX,Balance,EXAM
+BIX,Bioelectrical Impedance Analysis,EXAM
+BMX,Body Measures,EXAM
+BPX,Blood Pressure,EXAM
+BPXO,Blood Pressure - Oscillometric Measurements,EXAM
+CSX,Taste & Smell,EXAM
+CVX,Cardiovascular Fitness,EXAM
+DEX,Dermatology,EXAM
+DXX,Dual-Energy X-ray Absorptiometry - Whole Body,EXAM
+DXX_2,"Dual-Energy X-ray Absorptiometry - Whole Body, Second Exam",EXAM
+DXXAAC,Dual-Energy X-ray Absorptiometry - Abdominal Aortic Calcification,EXAM
+DXXAG,Dual Energy X-ray Absorptiometry - Android/Gynoid,EXAM
+DXXFEM,Dual Energy X-ray Absorptiometry - Femur,EXAM
+DXXFRX,Dual-Energy X-ray Absorptiometry - FRAX Score,EXAM
+DXXL1,Dual-Energy X-ray Absorptiometry - L1 Vertebrae Morphology,EXAM
+DXXL2,Dual-Energy X-ray Absorptiometry - L2 Vertebrae Morphology,EXAM
+DXXL3,Dual-Energy X-ray Absorptiometry - L3 Vertebrae Morphology,EXAM
+DXXL4,Dual-Energy X-ray Absorptiometry - L4 Vertebrae Morphology,EXAM
+DXXSPN,Dual Energy X-ray Absorptiometry - Spine,EXAM
+DXXT10,Dual-Energy X-ray Absorptiometry - T10 Vertebrae Morphology,EXAM
+DXXT11,Dual-Energy X-ray Absorptiometry - T11 Vertebrae Morphology,EXAM
+DXXT12,Dual-Energy X-ray Absorptiometry - T12 Vertebrae Morphology,EXAM
+DXXT4,Dual-Energy X-ray Absorptiometry - T4 Vertebrae Morphology,EXAM
+DXXT5,Dual-Energy X-ray Absorptiometry - T5 Vertebrae Morphology,EXAM
+DXXT6,Dual-Energy X-ray Absorptiometry - T6 Vertebrae Morphology,EXAM
+DXXT7,Dual-Energy X-ray Absorptiometry - T7 Vertebrae Morphology,EXAM
+DXXT8,Dual-Energy X-ray Absorptiometry - T8 Vertebrae Morphology,EXAM
+DXXT9,Dual-Energy X-ray Absorptiometry - T9 Vertebrae Morphology,EXAM
+DXXVFA,Dual-Energy X-ray Absorptiometry - Vertebral Fracture Assessment,EXAM
+ENX,Exhaled Nitric Oxide,EXAM
+FLXCLN,Fluorosis - Clinical,EXAM
+LEXAB,Lower Extremity Disease - Ankle Brachial Blood Pressure Index,EXAM
+LEXABPI,Lower Extremity Disease - Ankle Brachial Blood Pressure Index,EXAM
+LEXPN,Lower Extremity Disease - Peripheral Neuropathy,EXAM
+LUX,Liver Ultrasound Transient Elastography,EXAM
+MGX,Muscle Strength - Grip Test,EXAM
+MSX,Muscle Strength,EXAM
+OHX,Oral Health,EXAM
+OHXADD,Oral Health - Addendum,EXAM
+OHXDEN,Oral Health - Dentition,EXAM
+OHXDENT,Oral Health - Dentition,EXAM
+OHXPER,Oral Health - Periodontal,EXAM
+OHXPERIO,Oral Health - Periodontal,EXAM
+OHXPRL,Oral Health - Periodontal/Lower,EXAM
+OHXPRU,Oral Health - Periodontal/Upper,EXAM
+OHXREF,Oral Health - Recommendation of Care,EXAM
+OPXFDT,Ophthalmology - Frequency Doubling Technology,EXAM
+OPXRET,Ophthalmology - Retinal Imaging,EXAM
+PAXDAY,Physical Activity Monitor - Day,EXAM
+PAXHD,Physical Activity Monitor - Header,EXAM
+PAXHR,Physical Activity Monitor - Hour,EXAM
+PAXMIN,Physical Activity Monitor - Minute,EXAM
+SEQ,Shared Exclusion Questions,EXAM
+SPX,Spirometry - Pre and Post-Bronchodilator,EXAM
+TB,Tuberculosis,EXAM
+TBX,Tuberculosis,EXAM
+VIX,Vision,EXAM
+AA,Aromatic Amines - Urine,LAB
+AAS,Aromatic Amines - Urine - Special Sample,LAB
+AL_IGE,Allergen Specific IgE(s) & Total IgE - Serum,LAB
+ALB_CR,Albumin & Creatinine - Urine,LAB
+ALD,Aldehydes - Serum,LAB
+ALDS,Aldehydes - Serum - Special Sample,LAB
+ALDUST,Allergens - Household Dust,LAB
+AMDGDS,Acrylamide & Glycidamide - Special Sample,LAB
+AMDGYD,Acrylamide & Glycidamide,LAB
+APOB,Apolipoprotein B,LAB
+B12,Vitamin B12,LAB
+BIOPRO,Standard Biochemistry Profile,LAB
+CAFE,Caffeine & Caffeine Metabolites - Urine,LAB
+CARB,Pesticides - Carbamates & Organophosphorus Metabolites - Urine,LAB
+CBC,Complete Blood Count with 5-Part Differential - Whole Blood,LAB
+CHLMDA,Chlamydia & Gonorrhea - Urine,LAB
+CMV,Cytomegalovirus IgG & IgM Antibodies - Serum,LAB
+COT,Cotinine - Serum,LAB
+COTNAL,Cotinine - Serum & Total NNAL - Urine,LAB
+CRCO,Chromium & Cobalt,LAB
+CRP,C-Reactive Protein (CRP),LAB
+CUSEZN,"Copper, Selenium & Zinc - Serum",LAB
+DEET,DEET and Metabolites,LAB
+EPH,Environmental Phenols & Parabens,LAB
+EPHPP,Personal Care and Consumer Product Chemicals and Metabolites,LAB
+EPP,Erythrocyte Protoporphyrin,LAB
+ETHOX,Ethylene Oxide,LAB
+ETHOXS,Ethylene Oxide - Special Sample,LAB
+FAS,Fatty Acids - Serum,LAB
+FASTQX,Fasting Questionnaire,LAB
+FERTIN,Ferritin,LAB
+FETIB,"Iron, Total Iron Binding Capacity (TIBC), & Transferrin Saturation",LAB
+FLDEP,Fluoride - Plasma,LAB
+FLDEW,Fluoride - Water,LAB
+FOLATE,Folate - RBC & Serum,LAB
+FOLFMS,Folate Forms - Individual - Serum,LAB
+FORMAL,Formaldehyde,LAB
+FORMAS,Formaldehyde - Special Sample,LAB
+FR,Flame Retardants - Urine,LAB
+GHB,Glycohemoglobin,LAB
+GLU,Plasma Fasting Glucose & Insulin,LAB
+HCAA,Heterocyclic Aromatic Amines - Urine,LAB
+HCAAS,Heterocyclic Aromatic Amines (HCAA) - Urine - Special Sample,LAB
+HCY,Homocysteine,LAB
+HDL,Cholesterol - HDL,LAB
+HEPA,Hepatitis A Antibody,LAB
+HEPBD,"Hepatitis B: Core Antibody, Surface Antigen; Hepatitis D: Antibody",LAB
+HEPC,"Hepatitis C: Confirmed Antibody, RNA (HCV-RNA), & Genotype",LAB
+HEPE,Hepatitis E : IgG & IgM Antibodies,LAB
+HIV,"HIV Antibody Test, CD4+ T Lymphocytes & CD8+ T Cells",LAB
+HPVP,Human Papillomavirus (HPV) DNA Results from Penile Swab Samples: Roche Linear Array,LAB
+HPVSER,"Human Papillomavirus (HPV) - 6, 11, 16 & 18 Antibody – Serum: 4-plex CLIA",LAB
+HPVSRM,"Human Papillomavirus (HPV) - Multiplexed 6, 11, 16, 18, 31, 33, 45, 52 & 58 Antibody – Serum: 9-plex CLIA",LAB
+HPVSWC,Human Papillomavirus (HPV) DNA - Vaginal Swab: Roche Cobas High-Risk,LAB
+HPVSWR,Human Papillomavirus (HPV) DNA - Vaginal Swab: Digene Hybrid Capture & Roche Linear Array,LAB
+HSCRP,High-Sensitivity C-Reactive Protein (hs-CRP),LAB
+HSV,Herpes Simplex Virus Type-1 & Type-2,LAB
+IHG,Mercury: Inorganic - Blood,LAB
+IHGEM,"Mercury: Inorganic, Ethyl and Methyl - Blood",LAB
+INS,Insulin,LAB
+L02,Hepatitis B: Core Antibody & Surface Antigen; Hepatitis C: Confirmed Antibody & RNA (HCV-RNA); Hepatitis D Antibody,LAB
+L06,"Cadmium, Lead, Mercury, Cotinine & Nutritional Biochemistries",LAB
+L06AGE,Acrylamide & Glycidamide,LAB
+L06BMT,"Cadmium, Lead, & Total Mercury - Blood",LAB
+L06COT,Cotinine - Serum,LAB
+L06HM,Metals - Urine,LAB
+L06MH,Methylmalonic acid & Homocysteine,LAB
+L06NB,"Folate - RBC & Serum, and Vitamin B12",LAB
+L06PHY,Phytoestrogens - Urine,LAB
+L06TFR,Ferritin & Transferrin Receptor,LAB
+L06UAS,Arsenics - Total & Speciated - Urine,LAB
+L06UHG,Mercury: Inorganic - Urine,LAB
+L06UIO,Iodine - Urine,LAB
+L06VID,Vitamin D,LAB
+L06VIT,"Vitamin A, Vitamin E & Carotenoids",LAB
+L10,Glycohemoglobin,LAB
+L10AM,"Plasma Fasting Glucose, Serum C-peptide & Insulin",LAB
+L11,"C-Reactive protein (CRP), Fibrinogen, Bone Alkaline Phosphatase & Urinary N-telopeptides",LAB
+L11P_2_B,"Prostate-specific Antigen (PSA), Second Exam",LAB
+L11PSA,Prostate specific antigen (PSA),LAB
+L13AM,Cholesterol - LDL & Triglycerides,LAB
+L16,Albumin & Creatinine - Urine,LAB
+L17,"Toxoplasma (IgG), Toxoplasma (IgM),Toxoplasma (Dye),Toxoplasma Differential Agglutination, & Toxoplasma (Avidity)",LAB
+L19,"Measles, Rubella, & Varicella",LAB
+L20,Lead - Dust,LAB
+L24EPH,Environmental Phenols,LAB
+L24PFC,Polyfluoroalkyl Chemicals,LAB
+L24PH,Phthalates - Urine,LAB
+L24PP,Pesticides - Environmental - Urine,LAB
+L25,Complete Blood Count with 5-part Differential - Whole Blood,LAB
+L26OPD,Organophosphate Insecticides - Diakyl Phosphate Metabolites - Urine,LAB
+L26PP,"Pesticides - Current Use - Urine (Formerly Priority Pesticides, Non-persistent Pesticide Metabolites)",LAB
+L26UPP,"Pesticides - Current Use - Urine (Formerly Priority Pesticides, Non-persistent Pesticide Metabolites)",LAB
+L28DFP,"Dioxins, Furans, & Coplanar PCBs",LAB
+L28NPB,Non-dioxin-like Polychlorinated Biphenyls,LAB
+L28OCP,Pesticides - Organochlorine Metabolites - Serum (Surplus),LAB
+L28PBE,Brominated Flame Retardants (BFRs),LAB
+L28POC,"Dioxins, Furans, & Coplanar PCBs",LAB
+L31PAH,Polyaromatic Hydrocarbons (PAHs) - Urine,LAB
+L35,Methicillin - Resistant Staphylococcus aureus (MRSA),LAB
+L36,"Syphilis-IgG, Syphilis Rapid Plasma Reagin (RPR) & Treponema pallidum Particle Agglutination (TP-PA)",LAB
+L37SWA,Human Papillomavirus (HPV) DNA - Vaginal Swab: Digene Hybrid Capture & Prototype Line Blot Assay,LAB
+L37SWR,Human Papillomavirus (HPV) DNA - Vaginal Swab: Roche Linear Array,LAB
+L39,Erythrocyte Protoporphyrin,LAB
+L39EPP,Erythrocyte Protoporphyrin & Selenium,LAB
+L40,Standard Biochemistry Profile,LAB
+L40FE,"Iron, Total Iron Binding Capacity (TIBC), & Transferrin Saturation",LAB
+L40T4,Thyroid - Stimulating Hormone & Thyroxine (TSH & T4),LAB
+L43,Vitamin B6,LAB
+L45VIT,"Vitamin A, Vitamin E & Carotenoids",LAB
+L52SER,"Human Papillomavirus (HPV) - 6, 11, 16 & 18 Antibody - Serum: 4-plex CLIA",LAB
+LAB06HM,Metals - Urine,LAB
+LAB10AM,"Plasma Fasting Glucose, Serum C-peptide & Insulin",LAB
+LAB13AM,Cholesterol - LDL & Triglycerides,LAB
+LAB18T4,Thyroid - Stimulating Hormone & Thyroxine (TSH & T4),LAB
+LAB26PP,"Pesticides - Current Use - Urine (Formerly Priority Pesticides, Non-persistent Pesticide Metabolites)",LAB
+LAB28POC,"Dioxins, Furans, & Coplanar PCBs",LAB
+MMA,Methylmalonic Acid,LAB
+MMRV,"Measles, Mumps, Rubella & Varicella",LAB
+OGTT,Oral Glucose Tolerance Test,LAB
+OPD,Organophosphate Insecticides - Diakyl Phosphate Metabolites - Urine,LAB
+ORHPV,Human Papillomavirus (HPV) - Oral Rinse,LAB
+PAH,Polyaromatic Hydrocarbons (PAHs) - Urine,LAB
+PAHS,Polyaromatic Hydrocarbons (PAHs)- Urine - Special Sample,LAB
+PBCD,"Cadmium, Lead, & Total Mercury - Blood",LAB
+PERNT,"Perchlorate, Nitrate & Thiocyanate - Urine",LAB
+PERNTS,"Perchlorate, Nitrate & Thiocyanate - Urine - Special Sample",LAB
+PFAS,Perfluoroalkyl and Polyfluoroalkyl Substances (formerly Polyfluoroalkyl Chemicals - PFC),LAB
+PFC,Polyfluoroalkyl Chemicals,LAB
+PH,Fasting Questionnaire,LAB
+PHPYPA,"Phthalates, Phytoestrogens & PAHs - Urine PHPYPA Urinary Phthalates",LAB
+PHTHTE,Phthalates - Urine,LAB
+PHYTO,Phytoestrogens - Urine,LAB
+PP,Pesticides - Environmental - Urine,LAB
+PSA,Prostate Specific Antigen (PSA),LAB
+PTH,Parathyroid Hormone,LAB
+TCHOL,Cholesterol - Total,LAB
+TELO,Telomere Mean and Standard Deviation (Surplus),LAB
+TFA,Trans Fatty Acids,LAB
+TFR,Transferrin Receptor,LAB
+TGEMA,Tissue Transglutaminase Assay (IgA-TTG) & IgA Endomyseal Antibody Assay (IgA EMA),LAB
+THYROD,Thyroid Profile,LAB
+TRICH,Trichomonas - Urine,LAB
+TRIGLY,"Cholesterol - LDL, Triglyceride & Apoliprotein (ApoB)",LAB
+TSNA,Tobacco-specific Nitrosamines (TSNAs) - Urine,LAB
+TST,Total Testosterone,LAB
+UADM,Aromatic Diamines - Urine,LAB
+UAM,Atrazine and Metabolites,LAB
+UAS,Arsenics - Total & Speciated - Urine,LAB
+UASS,Arsenics - Total & Speciated - Urine - Special Sample,LAB
+UC,Pregnancy Test - Urine,LAB
+UCFLOW,Urine Flow Rate,LAB
+UCM,Chromium - Urine,LAB
+UCOSMO,Osmolality - Urine,LAB
+UCOT,"Cotinine, Hydroxycotinine, & Other Nicotine Metabolites and Analogs - Urine",LAB
+UCOTS,"Cotinine, Hydroxycotinine, & Other Nicotine Metabolites and Analogs - Urine - Special Sample",LAB
+UCPREG,Pregnancy Test - Urine,LAB
+UFLDE,Fluoride - Urine,LAB
+UHG,Mercury: Inorganic - Urine,LAB
+UHM,Metals - Urine,LAB
+UHMS,Metals - Urine - Special Sample,LAB
+UIO,Iodine - Urine,LAB
+UM,Metals - Urine,LAB
+UMS,Metals - Urine - Special Sample,LAB
+UNI,Nickel - Urine,LAB
+UPHOPM,"Pyrethroids, Herbicides, & OP Metabolites - Urine",LAB
+UPP,"Pesticides - Current Use - Urine (Formerly Priority Pesticides, Non-persistent Pesticide Metabolites)",LAB
+UTAS,Arsenic - Total - Urine,LAB
+UTASS,Arsenic - Total - Urine - Special Sample,LAB
+UVOC,Volatile Organic Compound (VOC) Metabolites - Urine,LAB
+UVOCS,Volatile Organic Compound (VOC) Metabolites - Urine - Special Sample,LAB
+VIC,Vitamin C,LAB
+VID,Vitamin D,LAB
+VID_2,"Vitamin D, Second Exam",LAB
+VIT_2,"Vitamin A, Vitamin E, & Carotenoids, Second Exam",LAB
+VIT_B6,Vitamin B6,LAB
+VITAEC,"Vitamin A, Vitamin E & Carotenoids",LAB
+VITB12,Vitamin B12,LAB
+VNA,Volatile N-Nitrosamine Compounds (VNAs) - Urine,LAB
+VNAS,Volatile N-Nitrosamine Compounds (VNAs) - Urine - Special Sample,LAB
+VOC,Volatile Organic Compounds - Water & Related Questionnaire Items,LAB
+VOCMWB,Volatile Organic Compounds - Trihalomethanes/MTBE/Nitromethane - Blood,LAB
+VOCWB,Volatile Organic Compounds - Blood & Related Questionnaire Items,LAB
+VOCWBS,Volatile Organic Compounds (VOCs) and Trihalomethanes/MTBE - Blood - Special Sample,LAB
+WPIN,"Perchlorate, Nitrate & Iodide - Tap Water",LAB
+ACQ,Acculturation,Q
+AGQ,Allergy,Q
+ALQ,Alcohol Use,Q
+ALQY,Alcohol Use (Ages 18-19),Q
+AQQ,Air Quality,Q
+ARQ,Arthritis,Q
+AUQ,Audiometry,Q
+BAQ,Balance,Q
+BHQ,Bowel Health,Q
+BPQ,Blood Pressure & Cholesterol,Q
+CBQ,Consumer Behavior,Q
+CBQPFA,Consumer Behavior Phone Follow-up Module - Adult,Q
+CBQPFC,Consumer Behavior Phone Follow-up Module - Child,Q
+CDQ,Cardiovascular Health,Q
+CFQ,Cognitive Functioning,Q
+CIQDEP,Mental Health - Depression,Q
+CIQGAD,Mental Health - Generalized Anxiety Disorder,Q
+CIQMDEP,Mental Health - Depression,Q
+CIQPAN,Mental Health - Panic Disorder,Q
+CIQPANIC,Mental Health - Panic Disorder,Q
+CKQ,Creatine Kinase,Q
+CSQ,Taste & Smell,Q
+DBQ,Diet Behavior & Nutrition,Q
+DEQ,Dermatology,Q
+DIQ,Diabetes,Q
+DLQ,Disability,Q
+DPQ,Mental Health - Depression Screener,Q
+DUQ,Drug Use,Q
+ECQ,Early Childhood,Q
+FSQ,Food Security,Q
+HCQ,Hepatitis C Follow Up,Q
+HEQ,Hepatitis,Q
+HIQ,Health Insurance,Q
+HOQ,Housing Characteristics,Q
+HSQ,Current Health Status,Q
+HUQ,Hospital Utilization & Access to Care,Q
+IMQ,Immunization,Q
+INQ,Income,Q
+KIQ,Kidney Conditions,Q
+KIQ_P,Prostate Conditions,Q
+KIQ_U,Kidney Conditions - Urology,Q
+MCQ,Medical Conditions,Q
+MPQ,Miscellaneous Pain,Q
+OCQ,Occupation,Q
+OHQ,Oral Health,Q
+OSQ,Osteoporosis,Q
+PAQ,Physical Activity,Q
+PAQIAF,Physical Activity - Individual Activities,Q
+PAQY,Physical Activity - Youth,Q
+PFQ,Physical Functioning,Q
+PSQ,Prostate Specific Antigen Follow-up,Q
+PUQ,Pesticide Use,Q
+PUQMEC,Pesticide Use,Q
+RDQ,Respiratory Health,Q
+RHQ,Reproductive Health,Q
+RXQ_ANA,Analgesic Pain Relievers,Q
+RXQ_RX,Prescription Medications,Q
+RXQANA,Analgesic Pain Relievers,Q
+RXQASA,Preventive Aspirin Use,Q
+SLQ,Sleep Disorders,Q
+SMQ,Smoking - Cigarette/Tobacco Use - Adult,Q
+SMQFAM,Smoking - Household Smokers,Q
+SMQMEC,Smoking - Adult Recent Tobacco Use & Youth Cigarette/Tobacco Use,Q
+SMQRTU,Smoking - Recent Tobacco Use,Q
+SMQSHS,Smoking - Secondhand Smoke Exposure,Q
+SXQ,Sexual Behavior,Q
+TBQ,Tuberculosis,Q
+VIQ,Vision,Q
+VTQ,Volatile Toxicant,Q
+WHQ,Weight History,Q
+WHQMEC,Weight History - Youth,Q

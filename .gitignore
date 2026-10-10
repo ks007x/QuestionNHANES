@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+workspace/
+outputs/
+data/cache/
+data/nhanes/*.xpt
+data/nhanes/*.XPT
+data/synthetic/*.xpt
+data/synthetic/README_SYNTHETIC.txt
+.Rhistory
+.venv/

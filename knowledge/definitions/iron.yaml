@@ -1,0 +1,123 @@
+# Versioned, citable case definitions. Every definition carries its provenance and a
+# verification status:
+#   verified          - thresholds checked against the primary publication
+#   secondary-source  - thresholds taken from society press releases / news coverage of the
+#                       primary publication; confirm against the full text before submission
+#   proposed          - drafted by an AI agent from pasted guideline text; NOT usable until a human
+#                       promotes it (Q2E refuses to run unapproved proposed definitions)
+# `operational_notes` record every assumption needed to make a clinical guideline computable
+# in a survey dataset - these are surfaced to the investigator for explicit approval.
+definitions:
+  - id: id_ash2026
+    concept: iron_deficiency
+    label: "Iron deficiency - ASH 2026 ferritin thresholds"
+    short: "ASH 2026"
+    type: binary
+    expr: "ifelse(coalesce(inflammation, 0) == 1, ferritin < 100 | tsat < 20, ifelse(pregnant == 1 & coalesce(anemia, 0) == 1, ferritin <= 50, ferritin <= 30))"
+    criteria_text: >-
+      Adults (including menstruating and pregnant individuals): ferritin <=30 ng/mL. High-risk groups
+      (heavy menstrual bleeding; pregnancy with anemia): ferritin <=50 ng/mL. Adults with inflammation
+      (e.g., cancer, IBD, infection): ferritin <100 ng/mL or TSAT <20%.
+    operational_notes:
+      - "Inflammation is not directly recorded in NHANES; operationalized as hsCRP >5 mg/L (investigator must approve this proxy)."
+      - "Heavy menstrual bleeding is not captured in NHANES examination data, so the 50 ng/mL high-risk threshold is applied only to pregnant participants with anemia."
+      - "Children 9 months-4 years use ferritin <=20 ng/mL; not encoded because Q2E plans default to adults."
+    source:
+      citation: "Powers JM, Lim MY, Achebe MO, et al. American Society of Hematology guidelines on the diagnosis of iron deficiency. Blood Adv. 2026."
+      doi: "10.1182/bloodadvances.2025015950"
+      url: "https://www.hematology.org/newsroom/press-releases/2026/ash-sets-new-standards-for-diagnosing-iron-deficiency"
+      year: 2026
+      published: "2026-09-16"
+    status: secondary-source
+    watch_query: '"iron deficiency"[ti] AND (guideline[pt] OR guideline[ti]) AND "American Society of Hematology"'
+
+  - id: aid_tawfik2024
+    concept: iron_deficiency
+    label: "Absolute iron deficiency - ferritin <30 ng/mL"
+    short: "Ferritin <30"
+    type: binary
+    expr: "ferritin < 30"
+    criteria_text: "Serum ferritin <30 ng/mL regardless of transferrin saturation."
+    operational_notes: []
+    source:
+      citation: "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and Functional Iron Deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126."
+      doi: "10.1001/jamanetworkopen.2024.33126"
+      url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
+      year: 2024
+    status: secondary-source
+    benchmark:
+      label: "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020"
+      cycles: [P]
+      population: "Adults >=18 y with ferritin, iron and UIBC measured"
+      n: 8021
+      estimate: 0.14
+      lcl: 0.13
+      ucl: 0.15
+
+  - id: fid_tawfik2024
+    concept: functional_iron_deficiency
+    label: "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%"
+    short: "Ferritin >=30 & TSAT <20%"
+    type: binary
+    expr: "ferritin >= 30 & tsat < 20"
+    criteria_text: "Serum ferritin >=30 ng/mL with transferrin saturation <20%."
+    operational_notes:
+      - "TSAT uses the NHANES-reported value (LBDPCT); if absent it is computed as 100 x serum iron / TIBC."
+    source:
+      citation: "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and Functional Iron Deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126."
+      doi: "10.1001/jamanetworkopen.2024.33126"
+      url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
+      year: 2024
+    status: secondary-source
+    benchmark:
+      label: "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020"
+      cycles: [P]
+      population: "Adults >=18 y with ferritin, iron and UIBC measured"
+      n: 8021
+      estimate: 0.15
+      lcl: 0.14
+      ucl: 0.17
+
+  - id: fid_esc_hf
+    concept: functional_iron_deficiency
+    label: "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%"
+    short: "ESC HF"
+    type: binary
+    expr: "ferritin < 100 | (ferritin >= 100 & ferritin < 300 & tsat < 20)"
+    criteria_text: "Ferritin <100 ng/mL, or ferritin 100-299 ng/mL with TSAT <20% (ESC heart-failure definition)."
+    operational_notes:
+      - "Developed for heart failure populations; applying it to the general population overestimates deficiency."
+    source:
+      citation: "McDonagh TA, et al. 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure. Eur Heart J. 2021;42:3599-3726."
+      doi: "10.1093/eurheartj/ehab368"
+      year: 2021
+    status: verified
+
+  - id: id_who2020
+    concept: iron_deficiency
+    label: "Iron deficiency - WHO 2020 ferritin thresholds"
+    short: "WHO 2020"
+    type: binary
+    expr: "ifelse(coalesce(inflammation, 0) == 1, ferritin < 70, ferritin < 15)"
+    criteria_text: "Ferritin <15 ng/mL in apparently healthy adults; <70 ng/mL in the presence of infection or inflammation."
+    operational_notes:
+      - "Inflammation operationalized as hsCRP >5 mg/L."
+    source:
+      citation: "World Health Organization. WHO guideline on use of ferritin concentrations to assess iron status in individuals and populations. Geneva: WHO; 2020."
+      year: 2020
+    status: verified
+
+  - id: ida_ash2026
+    concept: iron_deficiency_anemia
+    label: "Iron-deficiency anemia - WHO anemia plus ASH 2026 iron deficiency"
+    short: "IDA (ASH 2026)"
+    type: binary
+    expr: "anemia == 1 & (ifelse(coalesce(inflammation, 0) == 1, ferritin < 100 | tsat < 20, ifelse(pregnant == 1, ferritin <= 50, ferritin <= 30)))"
+    criteria_text: "WHO hemoglobin-defined anemia together with ASH 2026 iron deficiency criteria."
+    operational_notes:
+      - "Inflammation operationalized as hsCRP >5 mg/L."
+    source:
+      citation: "Powers JM, et al. Blood Adv. 2026 (ASH iron deficiency diagnosis guideline) + WHO hemoglobin thresholds."
+      doi: "10.1182/bloodadvances.2025015950"
+      year: 2026
+    status: secondary-source

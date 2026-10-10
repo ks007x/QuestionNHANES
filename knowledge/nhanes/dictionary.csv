@@ -1,0 +1,148 @@
+variable,file,label,type,units,min,max,weight_level,cycles,missing_codes,tags
+SEQN,DEMO,Respondent sequence number,id,,,,interview,I;J;P;L,,identifier
+RIDSTATR,DEMO,Interview/Examination status (1=interviewed only; 2=interviewed and MEC examined),categorical,,1,2,interview,I;J;P;L,,status
+RIAGENDR,DEMO,Gender (1=Male; 2=Female),categorical,,1,2,interview,I;J;P;L,,sex gender male female demographic
+RIDAGEYR,DEMO,Age in years at screening (top-coded at 80),continuous,years,0,80,interview,I;J;P;L,,age demographic
+RIDRETH3,DEMO,Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial),categorical,,1,7,interview,I;J;P;L,,race ethnicity demographic
+DMDEDUC2,DEMO,Education level - adults 20+ (1=<9th grade ... 5=college graduate),categorical,,1,5,interview,I;J;P;L,7;9,education socioeconomic
+INDFMPIR,DEMO,Ratio of family income to poverty,continuous,ratio,0,5,interview,I;J;P;L,,income poverty socioeconomic
+RIDEXPRG,DEMO,Pregnancy status at exam (1=pregnant; 2=not pregnant; 3=cannot ascertain),categorical,,1,3,interview,I;J;P;L,3,pregnancy pregnant
+SDMVPSU,DEMO,Masked variance pseudo-PSU,design,,1,3,interview,I;J;P;L,,design psu
+SDMVSTRA,DEMO,Masked variance pseudo-stratum,design,,1,200,interview,I;J;P;L,,design strata
+WTINT2YR,DEMO,Full sample 2-year interview weight,weight,,0,,interview,I;J;L,,weight
+WTMEC2YR,DEMO,Full sample 2-year MEC exam weight,weight,,0,,mec,I;J;L,,weight
+WTINTPRP,DEMO,Full sample interview weight (pre-pandemic),weight,,0,,interview,P,,weight
+WTMECPRP,DEMO,Full sample MEC exam weight (pre-pandemic),weight,,0,,mec,P,,weight
+LBXHGB,CBC,Hemoglobin,continuous,g/dL,3,22,mec,I;J;P;L,,hemoglobin hb anemia blood count
+LBXMCVSI,CBC,Mean corpuscular volume,continuous,fL,50,130,mec,I;J;P;L,,mcv red cell indices microcytosis
+LBXRDW,CBC,Red cell distribution width,continuous,%,9,30,mec,I;J;P;L,,rdw red cell distribution width
+LBXPLTSI,CBC,Platelet count,continuous,1000 cells/uL,5,1000,mec,I;J;P;L,,platelet platelets thrombocytopenia
+LBXWBCSI,CBC,White blood cell count,continuous,1000 cells/uL,0.5,100,mec,I;J;P;L,,wbc leukocyte white cell
+LBXFER,FERTIN,Ferritin,continuous,ng/mL,1,5000,mec,I;J;P;L,,ferritin iron stores iron deficiency
+LBXIRN,FETIB,Serum iron,continuous,ug/dL,5,500,mec,I;J;P,,serum iron iron
+LBXUIB,FETIB,Unsaturated iron binding capacity (UIBC),continuous,ug/dL,0,600,mec,I;J;P,,uibc unsaturated iron binding capacity
+LBDTIB,FETIB,Total iron binding capacity (TIBC),continuous,ug/dL,100,800,mec,I;J;P,,tibc total iron binding capacity transferrin
+LBDPCT,FETIB,Transferrin saturation,continuous,%,1,100,mec,I;J;P,,tsat transferrin saturation iron
+LBXHSCRP,HSCRP,High-sensitivity C-reactive protein,continuous,mg/L,0.01,300,mec,I;J;P;L,,crp c-reactive protein inflammation hscrp
+LBXSCR,BIOPRO,Serum creatinine,continuous,mg/dL,0.2,15,mec,I;J;P,,creatinine kidney renal egfr
+LBXSATSI,BIOPRO,Alanine aminotransferase (ALT),continuous,U/L,3,1000,mec,I;J;P,,alt alanine aminotransferase liver enzyme
+LBXSASSI,BIOPRO,Aspartate aminotransferase (AST),continuous,U/L,3,1000,mec,I;J;P,,ast aspartate aminotransferase liver enzyme
+LBXSAPSI,BIOPRO,Alkaline phosphatase,continuous,U/L,10,1000,mec,I;J;P,,alkaline phosphatase alp liver
+LBXSGTSI,BIOPRO,Gamma glutamyl transferase (GGT),continuous,U/L,3,2000,mec,I;J;P,,ggt gamma glutamyl transferase liver alcohol
+LBXSAL,BIOPRO,Albumin,continuous,g/dL,1.5,6,mec,I;J;P,,albumin nutrition liver
+LBXSTB,BIOPRO,Total bilirubin,continuous,mg/dL,0,20,mec,I;J;P,,bilirubin liver
+URDACT,ALB_CR,Urine albumin-to-creatinine ratio,continuous,mg/g,0,10000,mec,I;J;P;L,,uacr albuminuria albumin creatinine ratio kidney
+LBXGH,GHB,Glycohemoglobin (HbA1c),continuous,%,3,18,mec,I;J;P;L,,hba1c glycohemoglobin glycated hemoglobin glycemic control blood sugar diabetes
+LBXGLU,GLU,Fasting plasma glucose,continuous,mg/dL,40,600,fasting,I;J;P;L,,fasting glucose blood sugar glycemia diabetes
+WTSAF2YR,GLU,Fasting subsample 2-year MEC weight,weight,,0,,fasting,I;J;L,,weight fasting
+WTSAFPRP,GLU,Fasting subsample weight (pre-pandemic),weight,,0,,fasting,P,,weight fasting
+LBXIN,INS,Fasting insulin,continuous,uU/mL,0.5,500,fasting,I;J;P;L,,insulin insulin resistance homa
+LBXTC,TCHOL,Total cholesterol,continuous,mg/dL,50,600,mec,I;J;P;L,,cholesterol lipids
+LBDHDD,HDL,Direct HDL cholesterol,continuous,mg/dL,5,200,mec,I;J;P;L,,hdl cholesterol lipids
+LBXTR,TRIGLY,Triglycerides (fasting),continuous,mg/dL,10,5000,fasting,I;J;P;L,,triglycerides lipids
+BMXWT,BMX,Weight,continuous,kg,2,300,mec,I;J;P;L,,weight body weight anthropometry
+BMXHT,BMX,Standing height,continuous,cm,40,220,mec,I;J;P;L,,height anthropometry
+BMXBMI,BMX,Body mass index,continuous,kg/m2,10,90,mec,I;J;P;L,,bmi body mass index obesity anthropometry
+BMXWAIST,BMX,Waist circumference,continuous,cm,40,200,mec,I;J;P;L,,waist circumference abdominal obesity central adiposity visceral anthropometry
+BMXHIP,BMX,Hip circumference,continuous,cm,50,200,mec,J;P,,hip circumference anthropometry
+BPXOSY1,BPXO,Systolic blood pressure - oscillometric reading 1,continuous,mmHg,60,270,mec,P;L,,systolic blood pressure hypertension
+BPXODI1,BPXO,Diastolic blood pressure - oscillometric reading 1,continuous,mmHg,20,150,mec,P;L,,diastolic blood pressure hypertension
+BPXSY1,BPX,Systolic blood pressure - auscultatory reading 1,continuous,mmHg,60,270,mec,I;J,,systolic blood pressure hypertension
+LUAXSTAT,LUX,Elastography exam status (1=complete),categorical,,1,3,mec,J;P,,elastography status fibroscan
+LUXSMED,LUX,Median liver stiffness (VCTE),continuous,kPa,1,75,mec,J;P,,liver stiffness lsm fibroscan elastography fibrosis cacld portal hypertension
+LUXSIQR,LUX,Liver stiffness interquartile range,continuous,kPa,0,75,mec,J;P,,liver stiffness iqr fibroscan
+LUXCAPM,LUX,Median controlled attenuation parameter (CAP),continuous,dB/m,100,400,mec,J;P,,cap controlled attenuation parameter steatosis fatty liver masld
+DIQ010,DIQ,Doctor told you have diabetes (1=yes; 2=no; 3=borderline),categorical,,1,3,interview,I;J;P;L,7;9,diabetes self-report diagnosis
+DIQ050,DIQ,Taking insulin now (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,insulin diabetes medication
+DIQ070,DIQ,Taking diabetic pills (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,diabetes medication oral hypoglycemic
+MCQ160B,MCQ,Ever told had congestive heart failure (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,heart failure chf cardiovascular
+MCQ160C,MCQ,Ever told had coronary heart disease (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,coronary heart disease cad cardiovascular
+MCQ160F,MCQ,Ever told had a stroke (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,stroke cerebrovascular
+MCQ220,MCQ,Ever told had cancer or malignancy (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,cancer malignancy
+MCQ160L,MCQ,Ever told had any liver condition (1=yes; 2=no),categorical,,1,2,interview,I;J;P,7;9,liver disease liver condition
+MCQ053,MCQ,Taking treatment for anemia in past 3 months (1=yes; 2=no),categorical,,1,2,interview,I;J;P,7;9,anemia treatment iron therapy
+KIQ022,KIQ_U,Ever told had weak/failing kidneys (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,kidney disease ckd self-report
+KIQ025,KIQ_U,Received dialysis in past 12 months (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,dialysis kidney
+SMQ020,SMQ,Smoked at least 100 cigarettes in life (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,smoking tobacco cigarettes
+SMQ040,SMQ,Do you now smoke cigarettes (1=every day; 2=some days; 3=not at all),categorical,,1,3,interview,I;J;P;L,7;9,smoking current smoker tobacco
+ALQ130,ALQ,Average alcoholic drinks per day in past 12 months,continuous,drinks/day,0,30,interview,I;J;P;L,777;999,alcohol drinking
+ALQ121,ALQ,Frequency of alcohol use past 12 months (0=never ... 10=1-2 times/year),categorical,,0,10,interview,J;P;L,77;99,alcohol frequency
+BPQ020,BPQ,Ever told you had high blood pressure (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,hypertension high blood pressure self-report
+HEQ010,HEQ,Ever told you have hepatitis B (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,hepatitis b hbv viral hepatitis liver
+HEQ030,HEQ,Ever told you have hepatitis C (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,hepatitis c hcv viral hepatitis liver
+RHQ031,RHQ,Had regular periods in past 12 months (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,menstruation menstrual periods menopause women
+HIQ011,HIQ,Covered by health insurance (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,insurance access to care
+SLD012,SLQ,Usual sleep hours on weekdays or workdays,continuous,hours,2,14,interview,J;P;L,,sleep duration
+BPXOSY2,BPXO,Systolic blood pressure - oscillometric reading 2,continuous,mmHg,60,270,mec,P;L,,systolic blood pressure hypertension
+BPXOSY3,BPXO,Systolic blood pressure - oscillometric reading 3,continuous,mmHg,60,270,mec,P;L,,systolic blood pressure hypertension
+BPXODI2,BPXO,Diastolic blood pressure - oscillometric reading 2,continuous,mmHg,20,150,mec,P;L,,diastolic blood pressure hypertension
+BPXODI3,BPXO,Diastolic blood pressure - oscillometric reading 3,continuous,mmHg,20,150,mec,P;L,,diastolic blood pressure hypertension
+BPXSY2,BPX,Systolic blood pressure - auscultatory reading 2,continuous,mmHg,60,270,mec,I;J,,systolic blood pressure hypertension
+BPXSY3,BPX,Systolic blood pressure - auscultatory reading 3,continuous,mmHg,60,270,mec,I;J,,systolic blood pressure hypertension
+BPXDI1,BPX,Diastolic blood pressure - auscultatory reading 1,continuous,mmHg,0,150,mec,I;J,,diastolic blood pressure hypertension
+BPXDI2,BPX,Diastolic blood pressure - auscultatory reading 2,continuous,mmHg,0,150,mec,I;J,,diastolic blood pressure hypertension
+BPXDI3,BPX,Diastolic blood pressure - auscultatory reading 3,continuous,mmHg,0,150,mec,I;J,,diastolic blood pressure hypertension
+BPQ050A,BPQ,Now taking prescribed medicine for high blood pressure (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,antihypertensive medication blood pressure treatment
+LBDLDL,TRIGLY,LDL cholesterol (Friedewald),continuous,mg/dL,10,400,fasting,I;J;P;L,,ldl cholesterol lipids
+LBXSUA,BIOPRO,Uric acid,continuous,mg/dL,0.5,20,mec,I;J;P,,uric acid urate gout
+LBXSBU,BIOPRO,Blood urea nitrogen,continuous,mg/dL,1,150,mec,I;J;P,,bun urea nitrogen kidney
+LBXSTP,BIOPRO,Total protein,continuous,g/dL,3,12,mec,I;J;P,,total protein
+LBDNENO,CBC,Segmented neutrophils number,continuous,1000 cells/uL,0,60,mec,I;J;P;L,,neutrophil count anc
+LBDLYMNO,CBC,Lymphocyte number,continuous,1000 cells/uL,0,60,mec,I;J;P;L,,lymphocyte count
+LBDMONO,CBC,Monocyte number,continuous,1000 cells/uL,0,20,mec,I;J;P;L,,monocyte count
+LBDEONO,CBC,Eosinophils number,continuous,1000 cells/uL,0,20,mec,I;J;P;L,,eosinophil count
+LBXRBCSI,CBC,Red blood cell count,continuous,million cells/uL,1,9,mec,I;J;P;L,,red blood cell count rbc
+LBXHCT,CBC,Hematocrit,continuous,%,10,70,mec,I;J;P;L,,hematocrit
+LBXMCHSI,CBC,Mean cell hemoglobin,continuous,pg,10,50,mec,I;J;P;L,,mch mean cell hemoglobin
+LBXMPSI,CBC,Mean platelet volume,continuous,fL,4,20,mec,I;J;P;L,,mpv mean platelet volume
+LBXBPB,PBCD,Blood lead,continuous,ug/dL,0,100,mec,I;J;P,,blood lead heavy metal environmental exposure
+LBXBCD,PBCD,Blood cadmium,continuous,ug/L,0,50,mec,I;J;P,,blood cadmium heavy metal environmental exposure
+LBXTHG,PBCD,Blood total mercury,continuous,ug/L,0,100,mec,I;J;P,,blood mercury heavy metal environmental exposure
+LBXCOT,COT,Serum cotinine,continuous,ng/mL,0,2000,mec,I;J;P,,cotinine tobacco smoke exposure secondhand smoke
+LBXVIDMS,VID,25-hydroxyvitamin D2+D3,continuous,nmol/L,5,500,mec,I;J,,vitamin d 25-hydroxyvitamin d
+DPQ010,DPQ,PHQ-9: little interest or pleasure in doing things (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 mental health
+DPQ020,DPQ,PHQ-9: feeling down depressed or hopeless (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 mental health
+DPQ030,DPQ,PHQ-9: trouble sleeping or sleeping too much (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 sleep
+DPQ040,DPQ,PHQ-9: feeling tired or having little energy (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 fatigue
+DPQ050,DPQ,PHQ-9: poor appetite or overeating (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 appetite
+DPQ060,DPQ,PHQ-9: feeling bad about yourself (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9
+DPQ070,DPQ,PHQ-9: trouble concentrating (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9 concentration
+DPQ080,DPQ,PHQ-9: moving or speaking slowly or too fast (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9
+DPQ090,DPQ,PHQ-9: thoughts you would be better off dead (0-3),categorical,,0,3,interview,I;J;P;L,7;9,depression phq-9
+SLQ050,SLQ,Ever told doctor had trouble sleeping (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,sleep trouble insomnia
+PAQ650,PAQ,Vigorous recreational activities (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,physical activity exercise vigorous
+PAQ665,PAQ,Moderate recreational activities (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,physical activity exercise moderate
+PAD680,PAQ,Minutes of sedentary activity per day,continuous,minutes,0,1440,interview,I;J;P;L,7777;9999,sedentary sitting screen time
+FSDAD,FSQ,Adult food security category (1=full; 2=marginal; 3=low; 4=very low),categorical,,1,4,interview,I;J;P;L,,food security food insecurity social determinants
+DR1TKCAL,DR1TOT,Energy intake (day 1 recall),continuous,kcal,0,15000,diet,I;J;P;L,,energy intake calories diet nutrition
+DR1TPROT,DR1TOT,Protein intake (day 1 recall),continuous,g,0,600,diet,I;J;P;L,,protein intake diet nutrition
+DR1TIRON,DR1TOT,Iron intake (day 1 recall),continuous,mg,0,300,diet,I;J;P;L,,dietary iron intake diet nutrition
+DR1TFIBE,DR1TOT,Dietary fiber intake (day 1 recall),continuous,g,0,200,diet,I;J;P;L,,fiber intake diet nutrition
+DR1TSODI,DR1TOT,Sodium intake (day 1 recall),continuous,mg,0,30000,diet,I;J;P;L,,sodium salt intake diet nutrition
+DR1TSUGR,DR1TOT,Total sugars intake (day 1 recall),continuous,g,0,1500,diet,I;J;P;L,,sugar intake diet nutrition
+DR1DRSTZ,DR1TOT,Dietary recall status (1=reliable and met minimum criteria),categorical,,1,5,diet,I;J;P;L,,dietary recall status reliability
+WTDRD1,DR1TOT,Dietary day one sample weight,weight,,0,,diet,I;J;L,,weight diet
+WTDRD1PP,DR1TOT,Dietary day one sample weight (pre-pandemic),weight,,0,,diet,P,,weight diet
+MCQ010,MCQ,Ever told you have asthma (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,asthma respiratory
+MCQ160A,MCQ,Ever told you had arthritis (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,arthritis joint
+MCQ160E,MCQ,Ever told you had a heart attack (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,heart attack myocardial infarction cardiovascular
+MCQ160O,MCQ,Ever told you had COPD emphysema or chronic bronchitis (1=yes; 2=no),categorical,,1,2,interview,J;P;L,7;9,copd emphysema chronic bronchitis respiratory
+MCQ160M,MCQ,Ever told you had a thyroid problem (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,thyroid disease
+KIQ026,KIQ_U,Ever had kidney stones (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,kidney stones nephrolithiasis
+DIQ160,DIQ,Ever told you have prediabetes (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,prediabetes
+DMDBORN4,DEMO,Country of birth (1=born in US; 2=other),categorical,,1,2,interview,I;J;P;L,77;99,country of birth nativity immigrant foreign-born
+DMQMILIZ,DEMO,Served active duty in US Armed Forces (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,veteran military service
+BMXARMC,BMX,Arm circumference,continuous,cm,10,70,mec,I;J;P;L,,arm circumference anthropometry
+BPQ040A,BPQ,Ever told to take prescription for hypertension (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,antihypertensive prescription advised treatment recommendation
+SLQ030,SLQ,How often do you snore in past 12 months (0=never; 1=rarely; 2=occasionally; 3=frequently),categorical,,0,3,interview,I;J;P;L,7;9,snoring sleep apnea sleep-disordered breathing
+SLQ040,SLQ,How often do you snort gasp or stop breathing while asleep (0=never; 1=rarely; 2=occasionally; 3=frequently),categorical,,0,3,interview,I;J;P;L,7;9,apnea witnessed apneas sleep-disordered breathing
+SLQ120,SLQ,How often feel overly sleepy during day (0=never; 1=rarely; 2=sometimes; 3=often; 4=almost always),categorical,,0,4,interview,I;J;P;L,7;9,daytime sleepiness sleepy
+PFQ061B,PFQ,Difficulty walking a quarter mile (1=no difficulty; 2=some; 3=much; 4=unable; 5=do not do),categorical,,1,5,interview,I;J;P;L,7;9,functional limitation mobility walking physical function
+PFQ061C,PFQ,Difficulty walking up ten steps (1=no difficulty; 2=some; 3=much; 4=unable; 5=do not do),categorical,,1,5,interview,I;J;P;L,7;9,functional limitation mobility stairs physical function
+PFQ061H,PFQ,Difficulty walking between rooms on same floor (1=no difficulty; 2=some; 3=much; 4=unable; 5=do not do),categorical,,1,5,interview,I;J;P;L,7;9,functional limitation mobility physical function
+PFQ061L,PFQ,Difficulty dressing yourself (1=no difficulty; 2=some; 3=much; 4=unable; 5=do not do),categorical,,1,5,interview,I;J;P;L,7;9,functional limitation activities of daily living adl dressing
+DLQ050,DLQ,Serious difficulty walking or climbing stairs (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,disability mobility walking stairs
+DLQ060,DLQ,Difficulty dressing or bathing (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,disability self-care dressing bathing
+DLQ040,DLQ,Serious difficulty concentrating remembering or making decisions (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,disability cognition memory
+DLQ080,DLQ,Difficulty doing errands alone (1=yes; 2=no),categorical,,1,2,interview,I;J;P;L,7;9,disability independent living errands
+WHQ040,WHQ,Like to weigh more less or same (1=more; 2=less; 3=same),categorical,,1,3,interview,I;J;P;L,7;9,weight perception

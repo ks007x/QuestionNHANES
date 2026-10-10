@@ -1,0 +1,172 @@
+# Building blocks: the analysis-ready variables every study plan is assembled from.
+#
+# tier: measure  -> maps 1:1 (or nearly) onto a raw dataset variable. `nhanes` holds the
+#                   NHANES expression; for any other dataset the Data Steward agent matches
+#                   `match_terms` against that dataset's data dictionary and a human confirms.
+# tier: derived  -> dataset-agnostic expression over other building blocks.
+#
+# Expressions use the Q2E safe expression language (R syntax, whitelisted functions only):
+#   arithmetic + - * / ^, comparisons, & | !, %in%, c(), ifelse(), coalesce(), any_of(),
+#   all_of(), cases(cond, "label", ..., .default = "label"), pmin(), pmax(), log(), sqrt(), abs(),
+#   is.na(), round().  Binary results are stored as 0/1; categorical level order = order of
+#   appearance in cases() (first level is the reference group).
+blocks:
+  # ---------------- demographics ----------------
+  - {name: age, tier: measure, type: continuous, units: years, label: "Age", nhanes: "RIDAGEYR", match_terms: [age, years, age at exam]}
+  - {name: female, tier: measure, type: binary, label: "Female sex", nhanes: "RIAGENDR == 2", match_terms: [sex, gender, female]}
+  - {name: pregnant, tier: measure, type: binary, label: "Pregnant at examination", nhanes: "coalesce(RIDEXPRG, 2) == 1", match_terms: [pregnant, pregnancy status]}
+  - {name: race_eth, tier: measure, type: categorical, label: "Race and ethnicity",
+     nhanes: 'cases(RIDRETH3 == 3, "Non-Hispanic White", RIDRETH3 == 4, "Non-Hispanic Black", RIDRETH3 %in% c(1, 2), "Hispanic", RIDRETH3 == 6, "Non-Hispanic Asian", RIDRETH3 == 7, "Other or multiracial")',
+     match_terms: [race, ethnicity, hispanic origin]}
+  - {name: pir, tier: measure, type: continuous, units: ratio, label: "Family income-to-poverty ratio", nhanes: "INDFMPIR", match_terms: [income to poverty ratio, poverty, income]}
+  - {name: educ, tier: measure, type: categorical, label: "Educational attainment",
+     nhanes: 'cases(DMDEDUC2 %in% c(1, 2), "Less than high school", DMDEDUC2 == 3, "High school or GED", DMDEDUC2 == 4, "Some college", DMDEDUC2 == 5, "College graduate or above")',
+     match_terms: [education, schooling, educational attainment]}
+  - {name: insured, tier: measure, type: binary, label: "Has health insurance", nhanes: "HIQ011 == 1", match_terms: [health insurance, insured]}
+  # ---------------- hematology / iron ----------------
+  - {name: hgb, tier: measure, type: continuous, units: g/dL, label: "Hemoglobin", nhanes: "LBXHGB", match_terms: [hemoglobin, haemoglobin, hb, hgb]}
+  - {name: mcv, tier: measure, type: continuous, units: fL, label: "Mean corpuscular volume", nhanes: "LBXMCVSI", match_terms: [mean corpuscular volume, mcv]}
+  - {name: rdw, tier: measure, type: continuous, units: "%", label: "Red cell distribution width", nhanes: "LBXRDW", match_terms: [red cell distribution width, rdw]}
+  - {name: plt, tier: measure, type: continuous, units: "x10^9/L", label: "Platelet count", nhanes: "LBXPLTSI", match_terms: [platelet count, platelets]}
+  - {name: wbc, tier: measure, type: continuous, units: "x10^9/L", label: "White blood cell count", nhanes: "LBXWBCSI", match_terms: [white blood cell, leukocyte count, wbc]}
+  - {name: ferritin, tier: measure, type: continuous, units: ng/mL, label: "Serum ferritin", nhanes: "LBXFER", match_terms: [ferritin, serum ferritin]}
+  - {name: serum_iron, tier: measure, type: continuous, units: ug/dL, label: "Serum iron", nhanes: "LBXIRN", match_terms: [serum iron, iron]}
+  - {name: tibc, tier: measure, type: continuous, units: ug/dL, label: "Total iron-binding capacity", nhanes: "LBDTIB", match_terms: [total iron binding capacity, tibc]}
+  - {name: tsat_reported, tier: measure, type: continuous, units: "%", label: "Transferrin saturation (reported)", nhanes: "LBDPCT", match_terms: [transferrin saturation, tsat]}
+  - {name: crp, tier: measure, type: continuous, units: mg/L, label: "High-sensitivity C-reactive protein", nhanes: "LBXHSCRP", match_terms: [c-reactive protein, crp, hscrp]}
+  - {name: anemia_tx, tier: measure, type: binary, label: "Treated for anemia in past 3 months", nhanes: "MCQ053 == 1", match_terms: [anemia treatment, iron therapy]}
+  # ---------------- kidney / metabolic ----------------
+  - {name: creatinine, tier: measure, type: continuous, units: mg/dL, label: "Serum creatinine", nhanes: "LBXSCR", match_terms: [serum creatinine, creatinine]}
+  - {name: uacr, tier: measure, type: continuous, units: mg/g, label: "Urine albumin-to-creatinine ratio", nhanes: "URDACT", match_terms: [albumin creatinine ratio, uacr, albuminuria]}
+  - {name: dialysis, tier: measure, type: binary, label: "Dialysis in past 12 months", nhanes: "KIQ025 == 1", match_terms: [dialysis]}
+  - {name: hba1c, tier: measure, type: continuous, units: "%", label: "HbA1c", nhanes: "LBXGH", match_terms: [hba1c, glycohemoglobin, glycated hemoglobin, a1c]}
+  - {name: fpg, tier: measure, type: continuous, units: mg/dL, label: "Fasting plasma glucose", nhanes: "LBXGLU", match_terms: [fasting glucose, plasma glucose]}
+  - {name: insulin, tier: measure, type: continuous, units: uU/mL, label: "Fasting insulin", nhanes: "LBXIN", match_terms: [insulin]}
+  - {name: dm_selfreport, tier: measure, type: binary, label: "Self-reported diabetes diagnosis", nhanes: "DIQ010 == 1", match_terms: [diabetes diagnosis, told diabetes]}
+  - {name: insulin_use, tier: measure, type: binary, label: "Current insulin use", nhanes: "DIQ050 == 1", match_terms: [insulin use, taking insulin]}
+  - {name: dm_pills, tier: measure, type: binary, label: "Current oral diabetes medication", nhanes: "DIQ070 == 1", match_terms: [diabetic pills, oral hypoglycemic]}
+  - {name: tc, tier: measure, type: continuous, units: mg/dL, label: "Total cholesterol", nhanes: "LBXTC", match_terms: [total cholesterol]}
+  - {name: hdl, tier: measure, type: continuous, units: mg/dL, label: "HDL cholesterol", nhanes: "LBDHDD", match_terms: [hdl cholesterol, hdl]}
+  # ---------------- anthropometry ----------------
+  - {name: weight_kg, tier: measure, type: continuous, units: kg, label: "Body weight", nhanes: "BMXWT", match_terms: [body weight, weight kg]}
+  - {name: height_cm, tier: measure, type: continuous, units: cm, label: "Standing height", nhanes: "BMXHT", match_terms: [height, standing height]}
+  - {name: bmi, tier: measure, type: continuous, units: kg/m2, label: "Body mass index", nhanes: "BMXBMI", match_terms: [body mass index, bmi]}
+  - {name: waist, tier: measure, type: continuous, units: cm, label: "Waist circumference", nhanes: "BMXWAIST", match_terms: [waist circumference, waist]}
+  # ---------------- liver ----------------
+  - {name: alt, tier: measure, type: continuous, units: U/L, label: "Alanine aminotransferase", nhanes: "LBXSATSI", match_terms: [alanine aminotransferase, alt]}
+  - {name: ast, tier: measure, type: continuous, units: U/L, label: "Aspartate aminotransferase", nhanes: "LBXSASSI", match_terms: [aspartate aminotransferase, ast]}
+  - {name: ggt, tier: measure, type: continuous, units: U/L, label: "Gamma-glutamyl transferase", nhanes: "LBXSGTSI", match_terms: [gamma glutamyl transferase, ggt]}
+  - {name: albumin, tier: measure, type: continuous, units: g/dL, label: "Serum albumin", nhanes: "LBXSAL", match_terms: [serum albumin, albumin]}
+  - {name: lsm, tier: measure, type: continuous, units: kPa, label: "Liver stiffness (VCTE median)", nhanes: "LUXSMED", match_terms: [liver stiffness, lsm, transient elastography, fibroscan]}
+  - {name: lsm_iqr, tier: measure, type: continuous, units: kPa, label: "Liver stiffness IQR", nhanes: "LUXSIQR", match_terms: [liver stiffness iqr]}
+  - {name: cap, tier: measure, type: continuous, units: dB/m, label: "Controlled attenuation parameter", nhanes: "LUXCAPM", match_terms: [controlled attenuation parameter, cap]}
+  - {name: elasto_complete, tier: measure, type: binary, label: "Elastography exam complete", nhanes: "LUAXSTAT == 1", match_terms: [elastography status]}
+  - {name: hep_b, tier: measure, type: binary, label: "Self-reported hepatitis B", nhanes: "HEQ010 == 1", match_terms: [hepatitis b]}
+  - {name: hep_c, tier: measure, type: binary, label: "Self-reported hepatitis C", nhanes: "HEQ030 == 1", match_terms: [hepatitis c]}
+  - {name: liver_hx, tier: measure, type: binary, label: "Self-reported liver condition", nhanes: "MCQ160L == 1", match_terms: [liver condition, liver disease history]}
+  # ---------------- comorbidity / behaviour ----------------
+  - {name: hf, tier: measure, type: binary, label: "Heart failure (self-report)", nhanes: "MCQ160B == 1", match_terms: [heart failure, congestive heart failure]}
+  - {name: chd, tier: measure, type: binary, label: "Coronary heart disease (self-report)", nhanes: "MCQ160C == 1", match_terms: [coronary heart disease]}
+  - {name: stroke, tier: measure, type: binary, label: "Stroke (self-report)", nhanes: "MCQ160F == 1", match_terms: [stroke]}
+  - {name: cancer_hx, tier: measure, type: binary, label: "History of cancer (self-report)", nhanes: "MCQ220 == 1", match_terms: [cancer, malignancy]}
+  - {name: htn_selfreport, tier: measure, type: binary, label: "Self-reported hypertension", nhanes: "BPQ020 == 1", match_terms: [high blood pressure, hypertension]}
+  - {name: smoking, tier: measure, type: categorical, label: "Smoking status",
+     nhanes: 'cases(SMQ020 == 2, "Never", SMQ040 == 3, "Former", SMQ040 %in% c(1, 2), "Current")',
+     match_terms: [smoking status, cigarettes, tobacco]}
+  - {name: alcohol_dpd, tier: measure, type: continuous, units: drinks/day, label: "Alcoholic drinks per drinking day", nhanes: "ALQ130", match_terms: [alcohol drinks per day, alcohol]}
+  - {name: regular_periods, tier: measure, type: binary, label: "Regular menstrual periods past 12 months", nhanes: "RHQ031 == 1", match_terms: [regular periods, menstruation]}
+
+  # ================= derived (dataset-agnostic) =================
+  - {name: sex, tier: derived, type: categorical, label: "Sex", expr: 'cases(female == 0, "Male", female == 1, "Female")'}
+  - {name: agecat, tier: derived, type: categorical, label: "Age group", units: "y", expr: 'cases(age < 18, "<18", age < 40, "18-39", age < 65, "40-64", age >= 65, "65+")'}
+  - {name: pir_cat, tier: derived, type: categorical, label: "Income-to-poverty ratio", expr: 'cases(pir < 1.3, "<1.30", pir < 3.5, "1.30-3.49", pir >= 3.5, "3.50+")'}
+  - {name: tsat, tier: derived, type: continuous, units: "%", label: "Transferrin saturation", expr: "coalesce(tsat_reported, 100 * serum_iron / tibc)"}
+  - {name: log_ferritin, tier: derived, type: continuous, label: "log(ferritin)", expr: "log(ferritin)"}
+  - {name: anemia, tier: derived, type: binary, label: "Anemia (WHO hemoglobin thresholds)", expr: "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))",
+     source: "WHO hemoglobin thresholds (adult cutoffs retained in WHO 2024 guideline): <13 g/dL men, <12 g/dL nonpregnant women, <11 g/dL pregnancy"}
+  - {name: inflammation, tier: derived, type: binary, label: "Systemic inflammation (hsCRP >5 mg/L)", expr: "crp > 5"}
+  - {name: egfr, tier: derived, type: continuous, units: "mL/min/1.73m2", label: "eGFR (CKD-EPI 2021, race-free)",
+     expr: "142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+     source: "Inker LA et al. N Engl J Med 2021;385:1737-1749"}
+  - {name: ckd, tier: derived, type: binary, label: "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)", expr: "any_of(egfr < 60, uacr >= 30)", source: "KDIGO 2024 CKD definition (single-measurement approximation)"}
+  - {name: diabetes, tier: derived, type: binary, label: "Diabetes (self-report, medication, or HbA1c >=6.5%)", expr: "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)", source: "ADA Standards of Care (HbA1c criterion); fasting glucose excluded so MEC weights apply"}
+  - {name: obesity, tier: derived, type: binary, label: "Obesity (BMI >=30)", expr: "bmi >= 30"}
+  - {name: bmi_cat, tier: derived, type: categorical, label: "BMI category", expr: 'cases(bmi < 25, "<25", bmi < 30, "25-29.9", bmi >= 30, "30+")'}
+  - {name: whtr, tier: derived, type: continuous, label: "Waist-to-height ratio", expr: "waist / height_cm"}
+  - {name: abd_obesity, tier: derived, type: binary, label: "Abdominal obesity (waist >102 cm men, >88 cm women)", expr: "ifelse(female == 1, waist > 88, waist > 102)", source: "NCEP ATP III"}
+  - {name: fib4, tier: derived, type: continuous, label: "FIB-4 index", expr: "age * ast / (plt * sqrt(alt))", source: "Sterling RK et al. Hepatology 2006"}
+  - {name: lsm_valid, tier: derived, type: binary, label: "Reliable elastography (complete, IQR/median <30%)", expr: "elasto_complete == 1 & lsm_iqr / lsm < 0.30"}
+  - {name: thrombocytopenia, tier: derived, type: binary, label: "Thrombocytopenia (platelets <150 x10^9/L)", expr: "plt < 150"}
+  - {name: steatosis, tier: derived, type: binary, label: "Steatosis (CAP >=274 dB/m)", expr: "cap >= 274", source: "Eddowes PJ et al. Gastroenterology 2019 (CAP 274 dB/m, 90% sensitivity for S>=1)"}
+
+  # ================= expansion: cardiometabolic =================
+  - {name: sbp, tier: measure, type: continuous, units: mmHg, label: "Systolic blood pressure (mean of readings)", nhanes: "coalesce((BPXOSY1 + BPXOSY2 + BPXOSY3) / 3, (BPXSY1 + BPXSY2 + BPXSY3) / 3)", match_terms: [systolic blood pressure, systolic]}
+  - {name: dbp, tier: measure, type: continuous, units: mmHg, label: "Diastolic blood pressure (mean of readings)", nhanes: "coalesce((BPXODI1 + BPXODI2 + BPXODI3) / 3, (BPXDI1 + BPXDI2 + BPXDI3) / 3)", match_terms: [diastolic blood pressure, diastolic]}
+  - {name: bp_meds_advised, tier: measure, type: binary, label: "Told to take antihypertensive medication", nhanes: "BPQ040A == 1", match_terms: [told to take prescription for hypertension]}
+  - {name: bp_meds, tier: measure, type: binary, label: "Taking antihypertensive medication", nhanes: "BPQ050A == 1", match_terms: [blood pressure medication, antihypertensive]}
+  - {name: ldl, tier: measure, type: continuous, units: mg/dL, label: "LDL cholesterol", nhanes: "LBDLDL", match_terms: [ldl cholesterol, ldl]}
+  - {name: tg, tier: measure, type: continuous, units: mg/dL, label: "Triglycerides (fasting)", nhanes: "LBXTR", match_terms: [triglycerides]}
+  - {name: uric_acid, tier: measure, type: continuous, units: mg/dL, label: "Serum uric acid", nhanes: "LBXSUA", match_terms: [uric acid, urate]}
+  - {name: bun, tier: measure, type: continuous, units: mg/dL, label: "Blood urea nitrogen", nhanes: "LBXSBU", match_terms: [blood urea nitrogen, bun]}
+  - {name: prediabetes_selfreport, tier: measure, type: binary, label: "Self-reported prediabetes", nhanes: "DIQ160 == 1", match_terms: [prediabetes diagnosis]}
+  - {name: mi, tier: measure, type: binary, label: "Heart attack (self-report)", nhanes: "MCQ160E == 1", match_terms: [heart attack, myocardial infarction]}
+  - {name: arm_circ, tier: measure, type: continuous, units: cm, label: "Arm circumference", nhanes: "BMXARMC", match_terms: [arm circumference]}
+  # ================= expansion: hematology =================
+  - {name: anc, tier: measure, type: continuous, units: "x10^9/L", label: "Absolute neutrophil count", nhanes: "LBDNENO", match_terms: [neutrophil count, neutrophils]}
+  - {name: alc, tier: measure, type: continuous, units: "x10^9/L", label: "Absolute lymphocyte count", nhanes: "LBDLYMNO", match_terms: [lymphocyte count, lymphocytes]}
+  - {name: amc, tier: measure, type: continuous, units: "x10^9/L", label: "Absolute monocyte count", nhanes: "LBDMONO", match_terms: [monocyte count]}
+  - {name: aec, tier: measure, type: continuous, units: "x10^9/L", label: "Absolute eosinophil count", nhanes: "LBDEONO", match_terms: [eosinophil count]}
+  - {name: mpv, tier: measure, type: continuous, units: fL, label: "Mean platelet volume", nhanes: "LBXMPSI", match_terms: [mean platelet volume]}
+  - {name: hct, tier: measure, type: continuous, units: "%", label: "Hematocrit", nhanes: "LBXHCT", match_terms: [hematocrit]}
+  # ================= expansion: environment / exposures =================
+  - {name: blood_lead, tier: measure, type: continuous, units: ug/dL, label: "Blood lead", nhanes: "LBXBPB", match_terms: [blood lead, lead]}
+  - {name: blood_cadmium, tier: measure, type: continuous, units: ug/L, label: "Blood cadmium", nhanes: "LBXBCD", match_terms: [blood cadmium, cadmium]}
+  - {name: blood_mercury, tier: measure, type: continuous, units: ug/L, label: "Blood mercury", nhanes: "LBXTHG", match_terms: [blood mercury, mercury]}
+  - {name: cotinine, tier: measure, type: continuous, units: ng/mL, label: "Serum cotinine", nhanes: "LBXCOT", match_terms: [cotinine]}
+  - {name: vitd, tier: measure, type: continuous, units: nmol/L, label: "25-hydroxyvitamin D", nhanes: "LBXVIDMS", match_terms: [vitamin d, 25-hydroxyvitamin d]}
+  # ================= expansion: mental health / behaviour / social =================
+  - {name: phq9, tier: measure, type: continuous, label: "PHQ-9 depression score (0-27)", nhanes: "DPQ010 + DPQ020 + DPQ030 + DPQ040 + DPQ050 + DPQ060 + DPQ070 + DPQ080 + DPQ090", match_terms: [phq-9, depression score]}
+  - {name: sleep_hours, tier: measure, type: continuous, units: hours, label: "Usual sleep duration", nhanes: "SLD012", match_terms: [sleep duration, sleep hours]}
+  - {name: sleep_trouble, tier: measure, type: binary, label: "Told doctor about trouble sleeping", nhanes: "SLQ050 == 1", match_terms: [trouble sleeping, insomnia]}
+  - {name: vigorous_pa, tier: measure, type: binary, label: "Any vigorous recreational activity", nhanes: "PAQ650 == 1", match_terms: [vigorous physical activity]}
+  - {name: moderate_pa, tier: measure, type: binary, label: "Any moderate recreational activity", nhanes: "PAQ665 == 1", match_terms: [moderate physical activity]}
+  - {name: sedentary_min, tier: measure, type: continuous, units: min/day, label: "Sedentary time", nhanes: "PAD680", match_terms: [sedentary time, sitting]}
+  - {name: food_security, tier: measure, type: categorical, label: "Adult food security",
+     nhanes: 'cases(FSDAD == 1, "Full", FSDAD == 2, "Marginal", FSDAD == 3, "Low", FSDAD == 4, "Very low")', match_terms: [food security, food insecurity]}
+  - {name: us_born, tier: measure, type: binary, label: "Born in the United States", nhanes: "DMDBORN4 == 1", match_terms: [country of birth, born in us]}
+  - {name: veteran, tier: measure, type: binary, label: "Military veteran", nhanes: "DMQMILIZ == 1", match_terms: [veteran, military service]}
+  # ================= expansion: other conditions =================
+  - {name: asthma, tier: measure, type: binary, label: "Asthma (ever told)", nhanes: "MCQ010 == 1", match_terms: [asthma]}
+  - {name: arthritis, tier: measure, type: binary, label: "Arthritis (ever told)", nhanes: "MCQ160A == 1", match_terms: [arthritis]}
+  - {name: copd, tier: measure, type: binary, label: "COPD, emphysema or chronic bronchitis", nhanes: "MCQ160O == 1", match_terms: [copd, emphysema]}
+  - {name: thyroid_hx, tier: measure, type: binary, label: "Thyroid problem (ever told)", nhanes: "MCQ160M == 1", match_terms: [thyroid]}
+  - {name: kidney_stones, tier: measure, type: binary, label: "Kidney stones (ever)", nhanes: "KIQ026 == 1", match_terms: [kidney stones]}
+  # ================= expansion: diet (day-1 24-h recall; dietary weights) =================
+  - {name: energy_kcal, tier: measure, type: continuous, units: kcal/day, label: "Energy intake", nhanes: "DR1TKCAL", match_terms: [energy intake, calories]}
+  - {name: protein_g, tier: measure, type: continuous, units: g/day, label: "Protein intake", nhanes: "DR1TPROT", match_terms: [protein intake]}
+  - {name: diet_iron_mg, tier: measure, type: continuous, units: mg/day, label: "Dietary iron intake", nhanes: "DR1TIRON", match_terms: [dietary iron, iron intake]}
+  - {name: fiber_g, tier: measure, type: continuous, units: g/day, label: "Dietary fiber intake", nhanes: "DR1TFIBE", match_terms: [fiber intake]}
+  - {name: sodium_mg, tier: measure, type: continuous, units: mg/day, label: "Sodium intake", nhanes: "DR1TSODI", match_terms: [sodium intake, salt]}
+  - {name: sugar_g, tier: measure, type: continuous, units: g/day, label: "Total sugars intake", nhanes: "DR1TSUGR", match_terms: [sugar intake]}
+  - {name: diet_reliable, tier: measure, type: binary, label: "Reliable dietary recall", nhanes: "DR1DRSTZ == 1", match_terms: [dietary recall status]}
+
+  # ================= expansion: derived =================
+  - {name: hypertension, tier: derived, type: binary, label: "Hypertension (BP >=130/80 or treated; ACC/AHA 2017)", expr: "any_of(sbp >= 130, dbp >= 80, bp_meds)", source: "Whelton PK et al. 2017 ACC/AHA guideline"}
+  - {name: homa_ir, tier: derived, type: continuous, label: "HOMA-IR", expr: "fpg * insulin / 405", source: "Matthews DR et al. Diabetologia 1985"}
+  - {name: nlr, tier: derived, type: continuous, label: "Neutrophil-to-lymphocyte ratio", expr: "anc / alc"}
+  - {name: depression, tier: derived, type: binary, label: "Depression (PHQ-9 >=10)", expr: "phq9 >= 10", source: "Kroenke K et al. J Gen Intern Med 2001"}
+  - {name: short_sleep, tier: derived, type: binary, label: "Short sleep (<7 h)", expr: "sleep_hours < 7", source: "AASM/SRS consensus 2015"}
+  - {name: food_insecure, tier: derived, type: binary, label: "Food insecurity (low or very low)", expr: 'food_security %in% c("Low", "Very low")'}
+  - {name: cvd, tier: derived, type: binary, label: "Cardiovascular disease (CHD, MI, stroke or HF)", expr: "any_of(chd, mi, stroke, hf)"}
+  - {name: active_smoker_cot, tier: derived, type: binary, label: "Active smoking by cotinine (>10 ng/mL)", expr: "cotinine > 10"}
+
+  # ================= expansion: sleep / function =================
+  - {name: snoring_freq, tier: measure, type: continuous, label: "Snoring frequency (0-3)", nhanes: "SLQ030", match_terms: [snoring]}
+  - {name: apnea_freq, tier: measure, type: continuous, label: "Witnessed snorting/stopped breathing frequency (0-3)", nhanes: "SLQ040", match_terms: [stop breathing while asleep]}
+  - {name: sleepiness_freq, tier: measure, type: continuous, label: "Daytime sleepiness frequency (0-4)", nhanes: "SLQ120", match_terms: [overly sleepy during day]}
+  - {name: phq8, tier: derived, type: continuous, label: "PHQ-8 score (PHQ-9 without the sleep item)", expr: "phq9 - DPQ030", source: "Kroenke K et al. J Affect Disord 2009"}
+  - {name: mobility_limitation, tier: measure, type: binary, label: "Mobility limitation (any difficulty walking 1/4 mile or 10 steps)",
+     nhanes: "any_of(PFQ061B %in% c(2, 3, 4), PFQ061C %in% c(2, 3, 4))", match_terms: [difficulty walking]}
+  - {name: adl_limitation, tier: measure, type: binary, label: "ADL limitation (any difficulty dressing)", nhanes: "PFQ061L %in% c(2, 3, 4)", match_terms: [difficulty dressing]}
+  - {name: disability_any, tier: measure, type: binary, label: "Any functional disability (mobility, self-care, cognition, independent living)",
+     nhanes: "any_of(DLQ050 == 1, DLQ060 == 1, DLQ040 == 1, DLQ080 == 1)", match_terms: [disability]}

@@ -1,0 +1,16 @@
+examples:
+  - id: fid_prevalence
+    title: "Functional iron deficiency prevalence (replicates Tawfik et al., JAMA Netw Open 2024)"
+    question: "Do a research study on the prevalence of functional iron deficiency in US adults."
+  - id: waist_hba1c
+    title: "Abdominal obesity and glycemic control (challenge example)"
+    question: "I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight."
+  - id: ckd_iron
+    title: "KDIGO 2026 iron deficiency in CKD"
+    question: "What is the prevalence of iron deficiency in adults with chronic kidney disease using KDIGO 2026 criteria?"
+  - id: lsm_platelets
+    title: "Liver stiffness and thrombocytopenia (Baveno VIII)"
+    question: "Is higher liver stiffness associated with thrombocytopenia in US adults?"
+  - id: ash_id_women
+    title: "ASH 2026 iron deficiency in women"
+    question: "How common is iron deficiency among women of reproductive age under the new ASH 2026 ferritin thresholds?"

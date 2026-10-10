@@ -1,0 +1,8 @@
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+httpx>=0.27
+PyYAML>=6.0
+python-multipart>=0.0.9
+# optional: AWS Bedrock provider
+# boto3>=1.34

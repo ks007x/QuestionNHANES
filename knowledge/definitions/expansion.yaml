@@ -1,0 +1,187 @@
+definitions:
+  - id: htn_accaha2017
+    concept: hypertension
+    label: "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)"
+    short: "ACC/AHA 2017"
+    type: binary
+    expr: "any_of(sbp >= 130, dbp >= 80, bp_meds)"
+    criteria_text: "Mean SBP >=130 or DBP >=80 mm Hg, or current antihypertensive medication."
+    operational_notes:
+      - "BP is the mean of up to 3 readings at a single visit (oscillometric in 2017-2020/2021-2023; auscultatory in earlier cycles - mode differs across cycles)."
+    source: {citation: "Whelton PK, et al. 2017 ACC/AHA Guideline for High Blood Pressure in Adults. Hypertension. 2018;71:e13-e115.", year: 2017}
+    status: verified
+  - id: htn_jnc7
+    concept: hypertension
+    label: "Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)"
+    short: "JNC7 140/90"
+    type: binary
+    expr: "any_of(sbp >= 140, dbp >= 90, bp_meds)"
+    criteria_text: "Mean SBP >=140 or DBP >=90 mm Hg, or current antihypertensive medication."
+    operational_notes: []
+    source: {citation: "Chobanian AV, et al. JNC 7 report. JAMA. 2003;289:2560-2572.", year: 2003}
+    status: verified
+  - id: metsyn_atp3
+    concept: metabolic_syndrome
+    label: "Metabolic syndrome - harmonized/ATP III (>=3 of 5 criteria)"
+    short: "Harmonized MetS"
+    type: binary
+    expr: "(coalesce(ifelse(female == 1, waist > 88, waist > 102), 0) + coalesce(tg >= 150, 0) + coalesce(ifelse(female == 1, hdl < 50, hdl < 40), 0) + coalesce(any_of(sbp >= 130, dbp >= 85, bp_meds), 0) + coalesce(any_of(fpg >= 100, dm_pills, insulin_use), 0)) >= 3"
+    criteria_text: "Three or more of: waist >102/88 cm; triglycerides >=150 mg/dL; HDL <40/50 mg/dL; BP >=130/85 or treated; fasting glucose >=100 mg/dL or treated."
+    operational_notes:
+      - "Requires the fasting subsample (triglycerides, glucose) - analysis uses fasting weights."
+      - "Lipid-lowering treatment is not captured for TG/HDL criteria."
+    source: {citation: "Alberti KG, et al. Harmonizing the metabolic syndrome. Circulation. 2009;120:1640-1645.", year: 2009}
+    status: verified
+  - id: depression_phq9
+    concept: depression
+    label: "Depression - PHQ-9 score >=10"
+    short: "PHQ-9 >=10"
+    type: binary
+    expr: "phq9 >= 10"
+    criteria_text: "PHQ-9 total score >=10 (moderate or greater depressive symptoms)."
+    operational_notes:
+      - "A positive screen, not a clinical diagnosis; any missing item makes the score missing."
+    source: {citation: "Kroenke K, Spitzer RL, Williams JB. The PHQ-9. J Gen Intern Med. 2001;16:606-613.", year: 2001}
+    status: verified
+  - id: hyperuricemia
+    concept: hyperuricemia
+    label: "Hyperuricemia - uric acid >7.0 (men) / >6.0 (women) mg/dL"
+    short: "Uric acid >7/6"
+    type: binary
+    expr: "ifelse(female == 1, uric_acid > 6, uric_acid > 7)"
+    criteria_text: "Serum uric acid >7.0 mg/dL in men or >6.0 mg/dL in women."
+    operational_notes: []
+    source: {citation: "Conventional sex-specific cut points (e.g., Chen-Xu M, et al. Arthritis Rheumatol. 2019;71:991-999).", year: 2019}
+    status: verified
+  - id: high_ldl
+    concept: dyslipidemia
+    label: "High LDL cholesterol (>=160 mg/dL)"
+    short: "LDL >=160"
+    type: binary
+    expr: "ldl >= 160"
+    criteria_text: "LDL cholesterol >=160 mg/dL (fasting subsample)."
+    operational_notes: ["Requires the fasting subsample - analysis uses fasting weights."]
+    source: {citation: "NCEP ATP III. JAMA. 2001;285:2486-2497.", year: 2001}
+    status: verified
+  - id: food_insecurity_usda
+    concept: food_insecurity
+    label: "Food insecurity - USDA adult food security low or very low"
+    short: "USDA FS"
+    type: binary
+    expr: 'food_security %in% c("Low", "Very low")'
+    criteria_text: "Adult food security category low or very low (USDA 10-item adult module)."
+    operational_notes: []
+    source: {citation: "Bickel G, et al. Guide to Measuring Household Food Security. USDA; 2000.", year: 2000}
+    status: verified
+  - id: elevated_lead_35
+    concept: lead_exposure
+    label: "Elevated blood lead (>=3.5 ug/dL, CDC reference value)"
+    short: "BLL >=3.5"
+    type: binary
+    expr: "blood_lead >= 3.5"
+    criteria_text: "Blood lead >=3.5 ug/dL (CDC blood lead reference value, defined for children aged 1-5 years)."
+    operational_notes: ["The CDC reference value was defined for young children; adult thresholds differ."]
+    source: {citation: "Ruckart PZ, et al. Update of the Blood Lead Reference Value - United States, 2021. MMWR. 2021;70:1509-1512.", year: 2021}
+    status: verified
+  - id: vitd_deficiency
+    concept: vitamin_d
+    label: "Vitamin D deficiency - 25(OH)D <30 nmol/L (IOM risk of deficiency)"
+    short: "25(OH)D <30"
+    type: binary
+    expr: "vitd < 30"
+    criteria_text: "Serum 25-hydroxyvitamin D <30 nmol/L."
+    operational_notes: ["Available in 2015-2016 and 2017-2018 only (not the pre-pandemic file in this dictionary)."]
+    source: {citation: "Institute of Medicine. Dietary Reference Intakes for Calcium and Vitamin D. 2011.", year: 2011}
+    status: verified
+  - id: insulin_resistance_homa
+    concept: insulin_resistance
+    label: "Insulin resistance - HOMA-IR >=2.5"
+    short: "HOMA-IR >=2.5"
+    type: binary
+    expr: "fpg * insulin / 405 >= 2.5"
+    criteria_text: "HOMA-IR (fasting glucose mg/dL x fasting insulin uU/mL / 405) >=2.5."
+    operational_notes: ["Cut point varies by population; exclude insulin users in sensitivity analysis."]
+    source: {citation: "Matthews DR, et al. Diabetologia. 1985;28:412-419.", year: 1985}
+    status: verified
+  - id: uncontrolled_bp_130
+    concept: uncontrolled_htn
+    label: "Uncontrolled blood pressure - mean SBP >=130 or DBP >=80 mm Hg"
+    short: "BP >=130/80"
+    type: binary
+    expr: "any_of(sbp >= 130, dbp >= 80)"
+    criteria_text: "Mean measured SBP >=130 mm Hg or DBP >=80 mm Hg (ACC/AHA 2017 threshold), regardless of treatment."
+    operational_notes: ["Single-visit mean of up to three readings; no out-of-office confirmation."]
+    source: {citation: "Whelton PK, et al. 2017 ACC/AHA Guideline for High Blood Pressure in Adults. Hypertension. 2018;71:e13-e115.", year: 2017}
+    status: verified
+  - id: short_sleep_lt7
+    concept: short_sleep
+    label: "Short sleep - usual weekday sleep <7 h"
+    short: "Sleep <7 h"
+    type: binary
+    expr: "sleep_hours < 7"
+    criteria_text: "Self-reported usual sleep duration on weekdays/workdays <7 hours."
+    operational_notes: ["Self-reported habitual sleep; NHANES has no actigraphy in recent cycles."]
+    source: {citation: "Watson NF, et al. Recommended amount of sleep for a healthy adult (AASM/SRS). Sleep. 2015;38:843-844.", year: 2015}
+    status: verified
+  - id: obesity_bmi30
+    concept: obesity
+    label: "Obesity - BMI >=30 kg/m2"
+    short: "BMI >=30"
+    type: binary
+    expr: "bmi >= 30"
+    criteria_text: "Measured BMI >=30 kg/m2."
+    operational_notes: []
+    source: {citation: "WHO/CDC adult BMI categories.", year: 2000}
+    status: verified
+  - id: osa_symptoms
+    concept: sleep_apnea
+    label: "Probable sleep-disordered breathing - frequent snoring or witnessed apneas"
+    short: "OSA symptoms"
+    type: binary
+    expr: "any_of(snoring_freq >= 3, apnea_freq >= 2)"
+    criteria_text: "Frequent snoring (>=5 nights/wk) or snorting/stopped breathing >=3 nights/wk."
+    operational_notes:
+      - "Symptom-based proxy only: NHANES has no polysomnography, AHI or clinical OSA diagnosis."
+      - "Reported by the participant (bed-partner observation not captured)."
+    source: {citation: "Symptom proxy commonly used in NHANES analyses (e.g., Cowie MR / Appleton SL et al.); validate against STOP-BANG where possible.", year: 2018}
+    status: secondary-source
+  - id: excessive_sleepiness
+    concept: daytime_sleepiness
+    label: "Excessive daytime sleepiness - overly sleepy often or almost always"
+    short: "EDS"
+    type: binary
+    expr: "sleepiness_freq >= 3"
+    criteria_text: "Feeling overly sleepy during the day often (5-15 times/month) or almost always (16-30 times/month)."
+    operational_notes: ["Single self-report item; not an Epworth score."]
+    source: {citation: "NHANES Sleep Disorders questionnaire (SLQ120).", year: 2015}
+    status: verified
+  - id: mobility_limitation_pfq
+    concept: functional_limitation
+    label: "Mobility limitation - any difficulty walking a quarter mile or climbing 10 steps"
+    short: "PFQ mobility"
+    type: binary
+    expr: "mobility_limitation == 1"
+    criteria_text: "Some, much or unable to walk 1/4 mile or 10 steps without special equipment."
+    operational_notes: ["PFQ difficulty items are asked of adults >=20 y (verify cycle-specific skip patterns); 'do not do' treated as no limitation."]
+    source: {citation: "NHANES Physical Functioning questionnaire (PFQ061 series).", year: 2015}
+    status: secondary-source
+  - id: disability_wg
+    concept: disability
+    label: "Any disability - serious difficulty in mobility, self-care, cognition or independent living"
+    short: "DLQ any"
+    type: binary
+    expr: "disability_any == 1"
+    criteria_text: "Yes to serious difficulty walking/climbing stairs, dressing/bathing, concentrating/remembering, or doing errands alone."
+    operational_notes: ["Based on the ACS-6 style disability questions (DLQ); hearing/vision items not included."]
+    source: {citation: "NHANES Disability questionnaire (DLQ); ACS disability questions.", year: 2015}
+    status: secondary-source
+  - id: depression_phq8
+    concept: depression
+    label: "Depression - PHQ-8 score >=10 (sleep item removed)"
+    short: "PHQ-8 >=10"
+    type: binary
+    expr: "phq9 - DPQ030 >= 10"
+    criteria_text: "PHQ-8 total score >=10 (PHQ-9 without the sleep item)."
+    operational_notes: ["Use when sleep is the exposure to avoid measurement overlap."]
+    source: {citation: "Kroenke K, et al. The PHQ-8 as a measure of current depression in the general population. J Affect Disord. 2009;114:163-173.", year: 2009}
+    status: verified

@@ -1,0 +1,70 @@
+definitions:
+  - id: cacld_baveno8
+    concept: cacld
+    label: "cACLD - Baveno VIII LSM categories (rule of five)"
+    short: "Baveno VIII"
+    type: categorical
+    expr: 'cases(lsm < 10, "<10 kPa (cACLD ruled out)", lsm < 15, "10-14.9 kPa (suggestive)", lsm < 20, "15-19.9 kPa (highly suggestive)", lsm < 25, "20-24.9 kPa", lsm >= 25, ">=25 kPa")'
+    criteria_text: "LSM <10 kPa rules out cACLD; 10-15 suggestive; >15 highly suggestive. 'Rule of five' (10/15/20/25 kPa) stratifies risk of decompensation and liver-related death."
+    population_hint: "lsm_valid == 1"
+    operational_notes:
+      - "Only valid VCTE exams (complete, IQR/median <30%) are used."
+      - "Single VCTE in a population survey - 'absent other clinical/imaging signs' cannot be assessed."
+    source:
+      citation: "Baveno Cooperation. Baveno VIII consensus recommendations on portal hypertension (confirm full title). J Hepatol. 2026."
+      doi: "10.1016/j.jhep.2026.07.030"
+      url: "https://www.journal-of-hepatology.eu/"
+      year: 2026
+    status: secondary-source
+    watch_query: 'Baveno[ti] AND "portal hypertension"[tiab]'
+
+  - id: cacld_bin_baveno
+    concept: cacld
+    label: "cACLD likely - LSM >=10 kPa (Baveno VII/VIII)"
+    short: "LSM >=10 kPa"
+    type: binary
+    expr: "lsm >= 10"
+    criteria_text: "Liver stiffness >=10 kPa is suggestive of compensated advanced chronic liver disease."
+    population_hint: "lsm_valid == 1"
+    operational_notes: []
+    source:
+      citation: "de Franchis R, et al. Baveno VII - Renewing consensus in portal hypertension. J Hepatol. 2022;76:959-974."
+      doi: "10.1016/j.jhep.2021.12.022"
+      year: 2022
+    status: verified
+
+  - id: csph_baveno7
+    concept: csph
+    label: "CSPH - Baveno VII LSM/platelet rule"
+    short: "Baveno VII"
+    type: categorical
+    expr: 'cases(lsm <= 15 & plt >= 150, "CSPH ruled out", lsm >= 25, "CSPH ruled in", .default = "Grey zone")'
+    criteria_text: "LSM <=15 kPa and platelets >=150 rules out CSPH; LSM >=25 kPa rules in CSPH."
+    population_hint: "lsm_valid == 1 & lsm >= 10"
+    operational_notes: []
+    source:
+      citation: "de Franchis R, et al. Baveno VII - Renewing consensus in portal hypertension. J Hepatol. 2022;76:959-974."
+      doi: "10.1016/j.jhep.2021.12.022"
+      year: 2022
+    status: verified
+
+  - id: csph_baveno8
+    concept: csph
+    label: "CSPH - Baveno VIII (LSM >=25 rule-in restricted to BMI <30)"
+    short: "Baveno VIII"
+    type: categorical
+    expr: 'cases(lsm <= 15 & plt >= 150, "CSPH ruled out", lsm >= 25 & bmi < 30, "CSPH ruled in", lsm >= 25 & bmi >= 30, "Model-based assessment required (obese)", .default = "Grey zone")'
+    criteria_text: >-
+      LSM <=15 kPa + platelets >=150 rules out CSPH. LSM >=25 kPa rules in CSPH in viral/alcohol-related cACLD and
+      non-obese MASLD; in obese MASLD use a validated model (ANTICIPATE-NASH / NICER, probability >=75%).
+      Spleen stiffness >55 kPa (100 Hz) also rules in CSPH.
+    population_hint: "lsm_valid == 1 & lsm >= 10"
+    operational_notes:
+      - "Etiology is incompletely captured in NHANES; BMI >=30 is used as the obesity flag for every participant."
+      - "ANTICIPATE-NASH / NICER coefficients are NOT encoded - obese participants with LSM >=25 are reported as 'model-based assessment required' rather than guessed."
+      - "Spleen stiffness is not measured in NHANES."
+    source:
+      citation: "Baveno Cooperation. Baveno VIII consensus recommendations on portal hypertension (confirm full title). J Hepatol. 2026."
+      doi: "10.1016/j.jhep.2026.07.030"
+      year: 2026
+    status: secondary-source

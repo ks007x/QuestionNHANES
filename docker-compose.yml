@@ -1,0 +1,9 @@
+services:
+  q2e:
+    build: .
+    ports: ["8000:8000"]
+    env_file: [.env]
+    volumes:
+      - ./data/nhanes:/app/data/nhanes          # your NHANES .xpt files
+      - ./workspace:/app/workspace              # projects, plans, runs, provenance
+      - ./data/cache:/app/data/cache            # CDC download cache
