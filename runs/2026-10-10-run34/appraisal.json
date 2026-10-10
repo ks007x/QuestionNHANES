@@ -1,0 +1,184 @@
+{
+  "methods": "Design: cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic. Population: Age >=18 years; excluding pregnant at examination (analytic n = 6,701). Outcome: CKD - eGFR <60 or UACR >=30 mg/g (single measurement). Exposure: Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use). Comparator: participants without the exposure, from the same survey population. Covariates: Age, Sex, Race and ethnicity, Income-to-poverty ratio, Diabetes (self-report, medication, or HbA1c >=6.5%), Educational attainment, Smoking status, Body mass index. Descriptive: survey-weighted Table 1 by ckd - egfr <60 or uacr >=30 mg/g (single measurement); weighted prevalence with 95% CIs. Model: prevalence ratios (survey-weighted Poisson regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary). Effect modification: interaction tests and stratified estimates by sex, age group. Survey design: Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25. Sensitivity analyses: 5 prespecified. Missing data: complete-case primary analysis; multiple imputation as sensitivity. Reporting: STROBE; plan pre-registered by hash before data access.",
+  "methods_bullets": [
+    {
+      "label": "Design",
+      "text": "cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic."
+    },
+    {
+      "label": "Population",
+      "text": "Age >=18 years; excluding pregnant at examination (analytic n = 6,701)."
+    },
+    {
+      "label": "Outcome",
+      "text": "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)."
+    },
+    {
+      "label": "Exposure",
+      "text": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)."
+    },
+    {
+      "label": "Comparator",
+      "text": "participants without the exposure, from the same survey population."
+    },
+    {
+      "label": "Covariates",
+      "text": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Diabetes (self-report, medication, or HbA1c >=6.5%), Educational attainment, Smoking status, Body mass index."
+    },
+    {
+      "label": "Descriptive",
+      "text": "survey-weighted Table 1 by ckd - egfr <60 or uacr >=30 mg/g (single measurement); weighted prevalence with 95% CIs."
+    },
+    {
+      "label": "Model",
+      "text": "prevalence ratios (survey-weighted Poisson regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary)."
+    },
+    {
+      "label": "Effect modification",
+      "text": "interaction tests and stratified estimates by sex, age group."
+    },
+    {
+      "label": "Survey design",
+      "text": "Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25."
+    },
+    {
+      "label": "Sensitivity analyses",
+      "text": "5 prespecified.",
+      "items": [
+        "Exclude self-reported cardiovascular disease",
+        "Logistic regression (odds ratio)",
+        "Multiple imputation of missing covariates (m = 10)",
+        "Alternative exposure: Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)",
+        "Unweighted analysis (design ignored)"
+      ]
+    },
+    {
+      "label": "Missing data",
+      "text": "complete-case primary analysis; multiple imputation as sensitivity."
+    },
+    {
+      "label": "Reporting",
+      "text": "STROBE; plan pre-registered by hash before data access."
+    }
+  ],
+  "limitations": [
+    {
+      "area": "Temporality",
+      "text": "Cross-sectional: exposure and outcome are measured at the same visit, so the direction of association cannot be established.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Confounding",
+      "text": "Residual and unmeasured confounding cannot be excluded in an observational analysis.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Measurement",
+      "text": "Laboratory values come from a single blood or urine sample; transient abnormalities may be misclassified as persistent.",
+      "impact": "moderate",
+      "source": "Design"
+    },
+    {
+      "area": "Missing data",
+      "text": "Complete-case loss: 18.2% of the analytic sample (1486) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Data",
+      "text": "Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); BPXODI1 (0 low, 1 high); BPXOSY1 (1 low, 0 high); BPXOSY2 (2 low, 0 high); BPXOSY3 (2 low, 0 high); LBXGH (1 low, 0 high); URDACT (0 low, 2 high)",
+      "impact": "minor",
+      "source": "Quality control"
+    }
+  ],
+  "certainty": {
+    "framework": "GRADE-informed, single cross-sectional study",
+    "start": "Low (observational)",
+    "level": "Low",
+    "symbol": "\u2295\u2295\u25ef\u25ef",
+    "meaning": "The true association may be substantially different from the estimate.",
+    "domains": [
+      {
+        "domain": "Risk of bias",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Cross-sectional design already reflected in the Low starting level; adjusted, pre-specified analysis with design audit passed."
+      },
+      {
+        "domain": "Inconsistency",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Direction and inference stable across 3 sensitivity analyses."
+      },
+      {
+        "domain": "Indirectness",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "US civilian non-institutionalised population; outcome measured directly."
+      },
+      {
+        "domain": "Imprecision",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "95% CI 1.31-1.88 excludes no effect and is reasonably narrow."
+      },
+      {
+        "domain": "Publication bias",
+        "rating": "Not assessable",
+        "change": 0,
+        "reason": "Cannot be judged from a single study; pre-registration by plan hash reduces selective reporting."
+      }
+    ],
+    "rating_up": [
+      {
+        "domain": "Rating up",
+        "change": 0,
+        "reason": "No large effect or dose-response gradient."
+      }
+    ],
+    "net_down": 0,
+    "net_up": 0,
+    "caveat": "GRADE rates bodies of evidence; this single-study rating summarises how much this analysis can contribute and should be re-rated in any systematic review.",
+    "assessed": true
+  },
+  "power": {
+    "settings": {
+      "alpha": 0.05,
+      "power": 0.8,
+      "target_ratio": 1.5,
+      "target_sd": 0.2,
+      "target_halfwidth": 0.02,
+      "deff": 1.8,
+      "multiplicity": "bonferroni",
+      "p0_assumed": 0.1
+    },
+    "assumptions": [
+      "Outcome prevalence assumed 10% (run the blinded probe for the real rate band).",
+      "Design effect 1.8 (typical for NHANES; the post-run check uses the actual design-based SE).",
+      "Group sizes unknown before the probe - showing the total sample needed for equal groups."
+    ],
+    "comparisons": [
+      {
+        "label": "Two equal groups, PR 1.5",
+        "required_n_total": 2521,
+        "status": "unknown"
+      }
+    ],
+    "basis": "assumed",
+    "outcome_type": "binary",
+    "verdict": "Adequately powered for the target effect (from the run's design-based standard errors)",
+    "post_run": [
+      {
+        "label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+        "estimate": 1.571,
+        "se_log": 0.0913,
+        "mde": 1.291,
+        "power_at_target": 0.993,
+        "target": 1.5,
+        "ci_excludes_null": true
+      }
+    ]
+  }
+}

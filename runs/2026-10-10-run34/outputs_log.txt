@@ -1,0 +1,25 @@
+
+== Association of Hypertension With Chronic Kidney Disease Among US Adults: NHANES 2017-March 2020 pre-pandemic
+   Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is hypertension - ACC/AHA 2017 (BP >=130/80 mm hg or antihypertensive use) associated with a higher prevalence of CKD - eGFR <60 or UACR >=30 mg/g (single measurement), after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, diabetes (self-report, medication, or HbA1c >=6.5%), educational attainment, smoking status, and body mass index?
+   feasibility 100/100 (High)
+   novelty 5/100 (Low) - 225 PubMed NHANES paper(s) on the full question in 10 years (158 in the last 3). By element - Hypertension x Chronic kidney disease: 225 NHANES / 7,616 any data.
+   [Investigator] I read this as an association question. Outcome: CKD - eGFR <60 or UACR >=30 mg/g (single measurement). Exposure: Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg
+   [Data Steward] Mapped 12 analysis variables (2 direct NHANES measures, 10 derived/guideline definitions) onto 28 raw variables in 10 files: P_ALB_CR, P_BIOPRO, P_BMX, P_BPQ, P
+   [Investigator] First clinical concept treated as exposure, second as outcome (swap in the UI if needed).
+   [Epidemiologist] Removed covariate 'Self-reported hypertension': it measures the exposure itself (hypertension).
+   [Statistician] Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional d
+   [Reviewer] Critique: 0 blocker, 2 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval.
+   [Design auditor] Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail).
+   [Epidemiologist] Can NHANES answer this? Answerable with caveats (0 blocking, 1 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving.
+   [ack by Investigator] Operational assumptions for ACC/AHA 2017 need investigator approval
+   [ack by Investigator] Operational assumptions for KDIGO CKD need investigator approval
+   Alpha 0.05 (two-sided), power 80%, target PR 1.5, DEFF 1.8: Adequately powered for the target effect (from the run's design-based standard errors). After the run: Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use): minimum detectable PR 1.29.
+   Certainty of evidence (GRADE-informed, single study): Low ⊕⊕◯◯. Started Low (observational). The true association may be substantially different from the estimate.
+   Published evidence: Same direction as published studies, different size (12 papers, 1 comparable, 1 same direction)
+   Model advisor: Survey Poisson regression - prevalence ratio scores highest (86/100) for this outcome; used in 2 of 12 similar NHANES papers in high-impact journals. The plan already uses it.
+
+   Primary: Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use): 1.5711 (1.3137-1.8789) [PR]
+   QC WARN  Complete-case loss: 18.2% of the analytic sample (1486) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.
+   QC WARN  Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); BPXODI1 (0 low, 1 high); BPXOSY1 (1 low, 0 high); BPXOSY2 (2 low, 0 high); BPXOSY3 (2 low, 0 hi
+   QC INFO  Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+   Outputs: outputs/real/manuscript.html, manuscript.md, bundle.zip  (project prj_faa5a01b7a)

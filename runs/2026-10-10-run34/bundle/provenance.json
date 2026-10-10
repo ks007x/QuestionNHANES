@@ -1,0 +1,134 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-10T23:11:20+00:00",
+      "actor": "Investigator",
+      "action": "question_submitted",
+      "detail": {
+        "question": "Is hypertension associated with chronic kidney disease in US adults?"
+      },
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "25b5f774635c7e43f446ae5d65486bd2cfd72ecc16eaeb32f0c643e9d728bcc1"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-10T23:11:20+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_2a990e38e2",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "prev": "25b5f774635c7e43f446ae5d65486bd2cfd72ecc16eaeb32f0c643e9d728bcc1",
+      "hash": "319eb20d8c0efecd840a70e9ec297d447526c11a5317f5e73fe74ec5dadf74d0"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-10T23:11:23+00:00",
+      "actor": "Investigator",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "prev": "319eb20d8c0efecd840a70e9ec297d447526c11a5317f5e73fe74ec5dadf74d0",
+      "hash": "48106f8d6f1b074dee88324e045e7c564d4352be3c36c05fb96dcecc464c38c4"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-10T23:11:23+00:00",
+      "actor": "Investigator",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_292c4472",
+        "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+        "data_source": "cdc"
+      },
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "prev": "48106f8d6f1b074dee88324e045e7c564d4352be3c36c05fb96dcecc464c38c4",
+      "hash": "11114c9868907bcdc804dad3cb1cc88a9c61e8c56ba11ae4387f052d09b7b53b"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-10T23:12:23+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_292c4472",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "5223fa3bfc642f12b1c9af2504630e458ba6c47343520215b8a8fb2b5f6ce71d",
+        "qc": {
+          "pass": 16,
+          "warn": 2,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_BPQ",
+            "md5": "f9156c9f4057206c457234b5f4c089f5"
+          },
+          {
+            "file": "P_BPXO",
+            "md5": "9657b265b31db86449afc737ac50afb7"
+          },
+          {
+            "file": "P_DIQ",
+            "md5": "f9cb20f47d64483b8583f47075be21e8"
+          },
+          {
+            "file": "P_GHB",
+            "md5": "7bf5b54573fc5e2fe63b99486fb847ea"
+          },
+          {
+            "file": "P_BIOPRO",
+            "md5": "c8751a52982cafc58235438866d3dff6"
+          },
+          {
+            "file": "P_MCQ",
+            "md5": "7e80e861d82b2c363bd16da08a6a4248"
+          },
+          {
+            "file": "P_SMQ",
+            "md5": "04ff912a72ff16dca1520c16718dfa64"
+          },
+          {
+            "file": "P_ALB_CR",
+            "md5": "ca66fa7762e0d682e1e58d39e8c5222e"
+          }
+        ]
+      },
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "prev": "11114c9868907bcdc804dad3cb1cc88a9c61e8c56ba11ae4387f052d09b7b53b",
+      "hash": "c69053ffbe9e5b7ab06e664f28b0dc9bdb4ab072b105ee95a98df3c557931b94"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "at": "2026-10-10T23:11:20+00:00",
+      "by": "Investigator",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "c69053ffbe9e5b7ab06e664f28b0dc9bdb4ab072b105ee95a98df3c557931b94"
+  },
+  "signoff": null
+}

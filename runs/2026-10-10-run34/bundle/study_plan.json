@@ -1,0 +1,835 @@
+{
+  "plan_id": "plan_2a990e38e2",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T23:11:20+00:00",
+  "question": "Is hypertension associated with chronic kidney disease in US adults?",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is hypertension - ACC/AHA 2017 (BP >=130/80 mm hg or antihypertensive use) associated with a higher prevalence of CKD - eGFR <60 or UACR >=30 mg/g (single measurement), after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, diabetes (self-report, medication, or HbA1c >=6.5%), educational attainment, smoking status, and body mass index?",
+  "title": "Association of Hypertension With Chronic Kidney Disease Among US Adults: NHANES 2017-March 2020 pre-pandemic",
+  "hypothesis": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use) is associated with a higher prevalence of CKD - eGFR <60 or UACR >=30 mg/g (single measurement).",
+  "study_type": "association",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination)",
+    "exposure": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+    "comparator": "Participants without the exposure",
+    "outcome": "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)",
+    "covariates": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Diabetes (self-report, medication, or HbA1c >=6.5%), Educational attainment, Smoking status, and Body mass index",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "ckd",
+    "concept_label": "Chronic kidney disease",
+    "variable": "ckd_kdigo",
+    "kind": "definition",
+    "type": "binary",
+    "label": "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)",
+    "definition_id": "ckd_kdigo",
+    "alternatives": [],
+    "companions": [],
+    "domain": "kidney"
+  },
+  "exposure": {
+    "concept": "hypertension",
+    "concept_label": "Hypertension",
+    "variable": "htn_accaha2017",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+    "definition_id": "htn_accaha2017",
+    "alternatives": [
+      "htn_jnc7"
+    ],
+    "companions": [],
+    "domain": "cardio"
+  },
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    },
+    {
+      "label": "Pregnant at examination",
+      "expr": "pregnant == 1",
+      "kind": "exclusion",
+      "source": "domain default",
+      "optional": false,
+      "enabled": true,
+      "id": "c2"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "diabetes",
+    "educ",
+    "smoking",
+    "bmi"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "interactions": [
+    "sex",
+    "agecat"
+  ],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "covariates": []
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth"
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth",
+        "pir_cat",
+        "diabetes",
+        "educ",
+        "smoking",
+        "bmi"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "ckd_kdigo"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "sensitivity": [
+    {
+      "type": "exclude",
+      "label": "Exclude self-reported cardiovascular disease",
+      "expr": "coalesce(cvd, 0) == 1",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "alt_family",
+      "label": "Logistic regression (odds ratio)",
+      "family": "quasibinomial",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "mi",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "m": 10,
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "alt_exposure",
+      "label": "Alternative exposure: Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)",
+      "exposure": "htn_jnc7",
+      "id": "s4",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s5",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "diabetes",
+    "smoking",
+    "bmi",
+    "egfr",
+    "uacr",
+    "sbp",
+    "dbp",
+    "htn_accaha2017"
+  ],
+  "table1_by": "ckd_kdigo",
+  "benchmarks": [],
+  "custom_variables": [],
+  "arms": null,
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis.",
+    "epidemiologist": "Covariates were selected as plausible common causes of hypertension - ACC/AHA 2017 (BP >=130/80 mm hg or antihypertensive use) and CKD - eGFR <60 or UACR >=30 mg/g (single measurement) (minimal confounder set from the domain library): Age, Sex, Race and ethnicity, Income-to-poverty ratio, Diabetes (self-report, medication, or HbA1c >=6.5%), Educational attainment, Smoking status, and Body mass index. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations.",
+    "Operational definition (KDIGO CKD): Chronicity (>3 months) cannot be confirmed from one NHANES visit.",
+    "Operational definition (ACC/AHA 2017): BP is the mean of up to 3 readings at a single visit (oscillometric in 2017-2020/2021-2023; auscultatory in earlier cycles - mode differs across cycles)."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Investigator",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "message": "Removed covariate 'Self-reported hypertension': it measures the exposure itself (hypertension)."
+    }
+  ],
+  "acknowledgements": {
+    "opnotes_htn_accaha2017": {
+      "at": "2026-10-10T23:11:23+00:00",
+      "by": "Investigator"
+    },
+    "opnotes_ckd_kdigo": {
+      "at": "2026-10-10T23:11:23+00:00",
+      "by": "Investigator"
+    }
+  },
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Investigator",
+      "at": "2026-10-10T23:11:23.830486+00:00",
+      "plan_hash": "f3021200b0f1d8ada3c078c21d2d683f21a609e317ad0925c324ce03d1ca26ab",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "association",
+    "arms": null,
+    "outcome_concept": "ckd",
+    "exposure_concept": "hypertension",
+    "extra_concepts": [],
+    "populations": [
+      "adults"
+    ],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": false,
+    "out_of_scope": [],
+    "notes": [
+      "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    ],
+    "matched_phrases": [
+      {
+        "concept": "hypertension",
+        "phrase": "hypertension"
+      },
+      {
+        "concept": "ckd",
+        "phrase": "chronic kidney disease"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [],
+    "association_cue": true,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "ckd_kdigo",
+      "label": "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "any_of(egfr < 60, uacr >= 30)",
+      "raw_variables": [
+        "LBXSCR",
+        "RIAGENDR",
+        "RIDAGEYR",
+        "URDACT"
+      ],
+      "files": {
+        "P": [
+          "P_ALB_CR",
+          "P_BIOPRO",
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of CKD. Kidney Int. 2024;105(4S):S117-S314.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "htn_accaha2017",
+      "label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "role": "Exposure",
+      "kind": "definition",
+      "direct": false,
+      "expr": "any_of(sbp >= 130, dbp >= 80, bp_meds)",
+      "raw_variables": [
+        "BPQ050A",
+        "BPXDI1",
+        "BPXDI2",
+        "BPXDI3",
+        "BPXODI1",
+        "BPXODI2",
+        "BPXODI3",
+        "BPXOSY1",
+        "BPXOSY2",
+        "BPXOSY3",
+        "BPXSY1",
+        "BPXSY2",
+        "BPXSY3"
+      ],
+      "files": {
+        "P": [
+          "P_BPQ",
+          "P_BPX",
+          "P_BPXO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Whelton PK, et al. 2017 ACC/AHA Guideline for High Blood Pressure in Adults. Hypertension. 2018;71:e13-e115.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "diabetes",
+      "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "raw_variables": [
+        "DIQ010",
+        "DIQ050",
+        "DIQ070",
+        "LBXGH"
+      ],
+      "files": {
+        "P": [
+          "P_DIQ",
+          "P_GHB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "ADA Standards of Care (HbA1c criterion); fasting glucose excluded so MEC weights apply",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "educ",
+      "label": "Educational attainment",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "raw_variables": [
+        "DMDEDUC2"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "smoking",
+      "label": "Smoking status",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "raw_variables": [
+        "SMQ020",
+        "SMQ040"
+      ],
+      "files": {
+        "P": [
+          "P_SMQ"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "htn_jnc7",
+      "label": "Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "any_of(sbp >= 140, dbp >= 90, bp_meds)",
+      "raw_variables": [
+        "BPQ050A",
+        "BPXDI1",
+        "BPXDI2",
+        "BPXDI3",
+        "BPXODI1",
+        "BPXODI2",
+        "BPXODI3",
+        "BPXOSY1",
+        "BPXOSY2",
+        "BPXOSY3",
+        "BPXSY1",
+        "BPXSY2",
+        "BPXSY3"
+      ],
+      "files": {
+        "P": [
+          "P_BPQ",
+          "P_BPX",
+          "P_BPXO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Chobanian AV, et al. JNC 7 report. JAMA. 2003;289:2560-2572.",
+      "status": "verified",
+      "confidence": 1.0
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 5,
+      "caution": 3,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "temporality",
+        "area": "Temporality",
+        "status": "caution",
+        "title": "Cross-sectional: temporality cannot be established",
+        "detail": "Results are reported as associations; causal language is blocked in the manuscript.",
+        "critique": "Causal over-interpretation",
+        "fix": null
+      },
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 5 prespecified sensitivity analyses are reported regardless of result; 5 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "pass",
+        "title": "Explicit, same-population comparator",
+        "detail": "Contrast: participants in the same eligible population without hypertension - acc/aha 2017 (bp >=130/80 mm hg or antihypertensive use). Both groups come from the same probability sample and eligibility criteria (no convenience controls).",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "confounding",
+        "area": "Confounding",
+        "status": "pass",
+        "title": "Prespecified adjustment set",
+        "detail": "Adjusted for 8 covariates. Mediators and definitional overlaps are removed automatically, and an E-value quantifies how strong unmeasured confounding would need to be.",
+        "critique": "Residual confounding (only platform-captured variables)",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 225 PubMed NHANES paper(s) on the full question in 10 years (158 in the last 3). By element - Hypertension x Chronic kidney disease: 225 NHANES / 7,616 any data.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [
+    {
+      "id": "multiplicity",
+      "severity": "minor",
+      "agent": "Reviewer",
+      "title": "Multiplicity",
+      "detail": "Many subgroup/interaction tests - interpret as exploratory or adjust for multiple comparisons.",
+      "fix": null
+    }
+  ],
+  "feasibility": {
+    "score": 100,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable with caveats",
+    "status": "caution",
+    "n_fail": 0,
+    "n_caution": 1,
+    "suggestions": [
+      "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+    ],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in F, G, H, I, J, L, P; selected P.",
+        "suggestion": "Pooling F, G, H, I, L could increase precision."
+      },
+      {
+        "dimension": "Eligibility",
+        "status": "caution",
+        "title": "Some measures are collected only at older ages",
+        "message": "DMDEDUC2: typically age >=20 (population starts at 18 y).",
+        "suggestion": "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as an association question. Outcome: CKD - eGFR <60 or UACR >=30 mg/g (single measurement). Exposure: Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use). Population: Age >=18 years."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 12 analysis variables (2 direct NHANES measures, 10 derived/guideline definitions) onto 28 raw variables in 10 files: P_ALB_CR, P_BIOPRO, P_BMX, P_BPQ, P_BPX, P_BPXO, P_DEMO, P_DIQ...."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Removed covariate 'Self-reported hypertension': it measures the exposure itself (hypertension)."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional data because ORs exaggerate associations when the outcome is common (>10%); the quasi-Poisson variance is robust under the design-based (Taylor linearization) estimator. Logistic regression is run as a sensitivity analysis."
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 2 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable with caveats (0 blocking, 1 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "idea_gaps": [],
+  "novelty": {
+    "score": 5,
+    "label": "Low",
+    "summary": "225 PubMed NHANES paper(s) on the full question in 10 years (158 in the last 3). By element - Hypertension x Chronic kidney disease: 225 NHANES / 7,616 any data.",
+    "checked": "2026-10-10"
+  }
+}
