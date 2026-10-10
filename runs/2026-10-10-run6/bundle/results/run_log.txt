@@ -1,0 +1,20 @@
+16:08:31  Plan plan_d253a4603a (hash 5a458b4208e1) loaded
+16:08:32  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FETIB.xpt
+16:08:32  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_FERTIN.xpt
+16:08:32  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HSCRP.xpt
+16:08:32  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BIOPRO.xpt
+16:08:33  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_MCQ.xpt
+16:08:34  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALB_CR.xpt
+16:08:34  Loaded 15,560 records from 8 file(s)
+16:08:34  Derived 25 analysis variables
+16:08:34  Analytic population: 8,212
+16:08:36  Computed 33 prevalence estimates
+16:08:37  Fitted 1 models (family quasipoisson)
+16:08:37  Ran 5 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+16:08:40  QC: 21 checks, 0 fail, 2 warn
+16:08:40  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_76d74c7956/runs/run_e6e8f88a/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

@@ -1,0 +1,659 @@
+{
+  "plan_id": "plan_d253a4603a",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-10T16:08:29+00:00",
+  "question": "What is the prevalence of functional iron deficiency among US adults?",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; Measured serum ferritin, transferrin saturation), what is the survey-weighted prevalence of functional iron deficiency (serum ferritin >=30 ng/mL with transferrin saturation <20%), overall and by sex, age group, and race and ethnicity?",
+  "title": "Prevalence of Functional Iron Deficiency Among US Adults: A Cross-Sectional Analysis of NHANES 2017-March 2020 pre-pandemic",
+  "hypothesis": "Functional iron deficiency is common in this population and varies by sex, age group, and race and ethnicity.",
+  "study_type": "prevalence",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; Measured serum ferritin, transferrin saturation)",
+    "exposure": "Not applicable (descriptive prevalence); subgroups: Sex, Age group, and Race and ethnicity",
+    "comparator": "Subgroup contrasts (prevalence ratios)",
+    "outcome": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+    "covariates": "Sex, Age group, Race and ethnicity, Income-to-poverty ratio, Body mass index, Systemic inflammation (hsCRP >5 mg/L), and Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "functional_iron_deficiency",
+    "concept_label": "Functional iron deficiency",
+    "variable": "fid_tawfik2024",
+    "kind": "definition",
+    "type": "binary",
+    "label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+    "definition_id": "fid_tawfik2024",
+    "alternatives": [
+      "fid_esc_hf"
+    ],
+    "companions": [
+      "aid_tawfik2024"
+    ],
+    "domain": "iron"
+  },
+  "exposure": null,
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    },
+    {
+      "label": "Measured serum ferritin, transferrin saturation",
+      "expr": "!is.na(ferritin) & !is.na(tsat)",
+      "kind": "inclusion",
+      "source": "iron domain requirement",
+      "enabled": true,
+      "id": "c2"
+    },
+    {
+      "label": "Pregnant at examination",
+      "expr": "pregnant == 1",
+      "kind": "exclusion",
+      "source": "domain default",
+      "optional": true,
+      "enabled": false,
+      "id": "c3"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "inflammation",
+    "ckd"
+  ],
+  "covariate_notes": {},
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "interactions": [],
+  "model": {
+    "family": "quasipoisson",
+    "rationale": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). ",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "full",
+      "label": "Mutually adjusted correlates",
+      "covariates": [
+        "sex",
+        "agecat",
+        "race_eth",
+        "pir_cat",
+        "bmi",
+        "inflammation",
+        "ckd"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "fid_tawfik2024",
+    "aid_tawfik2024",
+    "fid_esc_hf"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "sensitivity": [
+    {
+      "type": "alt_outcome",
+      "label": "Alternative outcome definition: ESC HF",
+      "outcome": "fid_esc_hf",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude hsCRP >5 mg/L (inflammation raises ferritin)",
+      "expr": "coalesce(inflammation, 0) == 1",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude participants treated for anemia",
+      "expr": "coalesce(anemia_tx, 0) == 1",
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude pregnant participants",
+      "expr": "pregnant == 1",
+      "id": "s4",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s5",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "bmi",
+    "inflammation",
+    "ckd",
+    "ferritin",
+    "tsat"
+  ],
+  "table1_by": "fid_tawfik2024",
+  "benchmarks": [
+    {
+      "label": "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020",
+      "cycles": [
+        "P"
+      ],
+      "population": "Adults >=18 y with ferritin, iron and UIBC measured",
+      "n": 8021,
+      "estimate": 0.15,
+      "lcl": 0.14,
+      "ucl": 0.17,
+      "outcome": "fid_tawfik2024"
+    },
+    {
+      "label": "Tawfik et al. 2024, US adults >=18 y, NHANES 2017-March 2020",
+      "cycles": [
+        "P"
+      ],
+      "population": "Adults >=18 y with ferritin, iron and UIBC measured",
+      "n": 8021,
+      "estimate": 0.14,
+      "lcl": 0.13,
+      "ucl": 0.15,
+      "outcome": "aid_tawfik2024"
+    }
+  ],
+  "custom_variables": [],
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). ",
+    "epidemiologist": "Correlates model includes Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Systemic inflammation (hsCRP >5 mg/L), and Chronic kidney disease (eGFR <60 or UACR >=30 mg/g) to describe independent associations with functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%; these are descriptive, not causal, contrasts. Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations.",
+    "Operational definition (Ferritin >=30 & TSAT <20%): TSAT uses the NHANES-reported value (LBDPCT); if absent it is computed as 100 x serum iron / TIBC."
+  ],
+  "agent_notes": [],
+  "acknowledgements": {
+    "verify_fid_tawfik2024": {
+      "at": "2026-10-10T16:08:29+00:00",
+      "by": "Karan (investigator)"
+    },
+    "opnotes_fid_tawfik2024": {
+      "at": "2026-10-10T16:08:29+00:00",
+      "by": "Karan (investigator)"
+    }
+  },
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Karan (investigator)",
+      "at": "2026-10-10T16:08:29.942291+00:00",
+      "plan_hash": "5a458b4208e11b29b04076aabe513b3f94216cd0a231412f0f7800592af46fc9",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "prevalence",
+    "outcome_concept": "functional_iron_deficiency",
+    "exposure_concept": null,
+    "extra_concepts": [],
+    "populations": [
+      "adults"
+    ],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": false,
+    "direction_continuous": false,
+    "out_of_scope": [],
+    "notes": [],
+    "matched_phrases": [
+      {
+        "concept": "functional_iron_deficiency",
+        "phrase": "functional iron deficiency"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [],
+    "unmapped_terms": [],
+    "association_cue": false,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "fid_tawfik2024",
+      "label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "role": "Outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "ferritin >= 30 & tsat < 20",
+      "raw_variables": [
+        "LBDPCT",
+        "LBDTIB",
+        "LBXFER",
+        "LBXIRN"
+      ],
+      "files": {
+        "P": [
+          "P_FERTIN",
+          "P_FETIB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and Functional Iron Deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126.",
+      "status": "secondary-source",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\")",
+      "raw_variables": [
+        "RIDRETH3"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "inflammation",
+      "label": "Systemic inflammation (hsCRP >5 mg/L)",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "crp > 5",
+      "raw_variables": [
+        "LBXHSCRP"
+      ],
+      "files": {
+        "P": [
+          "P_HSCRP"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "ckd",
+      "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "any_of(egfr < 60, uacr >= 30)",
+      "raw_variables": [
+        "LBXSCR",
+        "RIAGENDR",
+        "RIDAGEYR",
+        "URDACT"
+      ],
+      "files": {
+        "P": [
+          "P_ALB_CR",
+          "P_BIOPRO",
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "KDIGO 2024 CKD definition (single-measurement approximation)",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "fid_esc_hf",
+      "label": "Iron deficiency (heart-failure definition) - ferritin <100, or 100-299 with TSAT <20%",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "ferritin < 100 | (ferritin >= 100 & ferritin < 300 & tsat < 20)",
+      "raw_variables": [
+        "LBDPCT",
+        "LBDTIB",
+        "LBXFER",
+        "LBXIRN"
+      ],
+      "files": {
+        "P": [
+          "P_FERTIN",
+          "P_FETIB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "McDonagh TA, et al. 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure. Eur Heart J. 2021;42:3599-3726.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "aid_tawfik2024",
+      "label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "role": "Secondary outcome",
+      "kind": "definition",
+      "direct": false,
+      "expr": "ferritin < 30",
+      "raw_variables": [
+        "LBXFER"
+      ],
+      "files": {
+        "P": [
+          "P_FERTIN"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and Functional Iron Deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126.",
+      "status": "secondary-source",
+      "confidence": 1.0
+    }
+  ],
+  "review": [
+    {
+      "id": "verify_fid_tawfik2024",
+      "severity": "minor",
+      "agent": "Reviewer",
+      "title": "Definition 'Ferritin >=30 & TSAT <20%' verified from secondary sources",
+      "detail": "Thresholds were taken from Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and Functional Iron Deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126.; confirm against the full guideline before submission.",
+      "fix": null
+    }
+  ],
+  "feasibility": {
+    "score": 97,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 7,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable",
+    "status": "ok",
+    "n_fail": 0,
+    "n_caution": 0,
+    "suggestions": [],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in I, J, P; selected P.",
+        "suggestion": "Pooling I could increase precision."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as a prevalence question. Outcome: Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%. Population: Age >=18 years, Measured serum ferritin, transferrin saturation."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 11 analysis variables (2 direct NHANES measures, 9 derived/guideline definitions) onto 12 raw variables in 7 files: P_ALB_CR, P_BIOPRO, P_BMX, P_DEMO, P_FERTIN, P_FETIB, P_HSCRP."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Prevalence estimand: survey-weighted proportions with Korn-Graubard (beta) 95% CIs, overall and by subgroup, assessed against NCHS presentation standards; population counts from weighted totals. Adjusted correlates are estimated with survey-weighted quasi-Poisson regression (prevalence ratios). "
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 1 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable (0 blocking, 0 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  }
+}
