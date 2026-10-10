@@ -1,0 +1,127 @@
+{
+  "options": [
+    {
+      "id": "pr",
+      "title": "Survey Poisson regression - prevalence ratio",
+      "estimand": "Adjusted prevalence ratio (PR)",
+      "when": "Cross-sectional studies, especially when the outcome is common (outcome in about 19% of participants)",
+      "pros": [
+        "Directly interpretable as 'x times as common'",
+        "Collapsible: unadjusted and adjusted estimates are comparable",
+        "Robust (sandwich) variance from the survey design"
+      ],
+      "cons": [
+        "Less familiar to some readers than odds ratios",
+        "Fitted probabilities can exceed 1 (rarely matters for PRs)"
+      ],
+      "score": 84,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "Used in 0 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.0,
+      "recommended": true
+    },
+    {
+      "id": "pr_plus_or",
+      "title": "Prevalence ratio primary, odds ratio as a sensitivity analysis",
+      "estimand": "PR, with OR reported alongside",
+      "when": "You want the better estimand and comparability with the literature",
+      "pros": [
+        "Reports both numbers reviewers expect",
+        "Shows how much the OR exaggerates the PR"
+      ],
+      "cons": [
+        "One more table row"
+      ],
+      "score": 70,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "mi",
+      "title": "Multiple imputation (chained equations) for missing covariates",
+      "estimand": "Same estimand, all eligible participants",
+      "when": "Complete-case loss is 18% in this run",
+      "pros": [
+        "Less bias if data are missing at random",
+        "Uses everyone eligible"
+      ],
+      "cons": [
+        "Assumes missing at random given the imputation model"
+      ],
+      "score": 56,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "Used in 1 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.08333333333333333,
+      "recommended": false
+    },
+    {
+      "id": "or",
+      "title": "Survey logistic regression - odds ratio",
+      "estimand": "Adjusted odds ratio (OR)",
+      "when": "Rare outcomes (<10%), or when matching the published NHANES literature matters most (outcome in about 19% of participants)",
+      "pros": [
+        "Most widely used model in NHANES papers - easy to compare with prior work",
+        "Never predicts probabilities outside 0-1"
+      ],
+      "cons": [
+        "Overstates the prevalence ratio when the outcome is common - here roughly 19%",
+        "Non-collapsible: ORs shift with adjustment even without confounding"
+      ],
+      "score": 55,
+      "fix": {
+        "op": "set",
+        "path": "model.family",
+        "value": "quasibinomial"
+      },
+      "current": false,
+      "runnable": true,
+      "literature": "Used in 4 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.3333333333333333,
+      "recommended": false
+    },
+    {
+      "id": "logbin",
+      "title": "Log-binomial regression - risk ratio",
+      "estimand": "Adjusted risk (prevalence) ratio",
+      "when": "When a reviewer insists on a binomial model",
+      "pros": [
+        "Same estimand as Poisson PR with binomial variance"
+      ],
+      "cons": [
+        "Often fails to converge with several covariates",
+        "Not run by the engine - Poisson PR estimates the same quantity"
+      ],
+      "score": 35,
+      "fix": null,
+      "current": false,
+      "runnable": false,
+      "literature": "Used in 0 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.0,
+      "recommended": false
+    }
+  ],
+  "recommended": "pr",
+  "rationale": "Survey Poisson regression - prevalence ratio scores highest (84/100) for this outcome. The plan already uses it.",
+  "ai": null,
+  "landscape": {
+    "papers": 12,
+    "counts": {
+      "logistic": 4,
+      "mortality_linkage": 3,
+      "survey_weighted": 2,
+      "cox": 1,
+      "mediation": 1,
+      "linear": 1,
+      "multiple_imputation": 1
+    }
+  },
+  "basis": "rule-based scoring with methods learned from published papers"
+}
