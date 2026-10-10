@@ -1,0 +1,46 @@
+19:56:28  Plan plan_8579a58782 (hash 1d7295cd064a) loaded
+19:56:29  Loaded 9,756 records from 10 file(s)
+19:56:30  Derived 37 analysis variables
+19:56:30  Analytic population: 3,029
+19:56:31  Computed 34 prevalence estimates
+19:56:31  Fitted 3 models (family quasipoisson)
+Multiple imputation results:
+      MIcombine.default(coefs, vcovs)
+                                 results         se      (lower      upper)
+(Intercept)                  -3.72334896 0.43320073 -4.57243323 -2.87426470
+armsToxoplasma gondii only    0.67347663 0.23188382  0.21899270  1.12796056
+armsToxocara only             0.99378586 0.36489839  0.27859815  1.70897358
+armsBoth positive             1.34724620 0.30016053  0.75894230  1.93555011
+age                          -0.00199043 0.00629258 -0.01432366  0.01034280
+sexFemale                    -0.63102763 0.16300782 -0.95051709 -0.31153817
+race_ethNon-Hispanic Asian    0.87874603 0.27543300  0.33890720  1.41858486
+race_ethNon-Hispanic Black   -0.41045528 0.31781440 -1.03336006  0.21244950
+race_ethNon-Hispanic White   -0.12334032 0.35900248 -0.82697226  0.58029162
+race_ethOther or multiracial  1.09536918 0.45552145  0.20256353  1.98817483
+pir_cat1.30-3.49              0.17329744 0.24162755 -0.30034318  0.64693806
+pir_cat3.50+                 -0.36065398 0.26165538 -0.87349802  0.15219006
+bmi                           0.01508856 0.01288956 -0.01017531  0.04035244
+us_born                       0.28598014 0.31165948 -0.32486123  0.89682151
+                             missInfo
+(Intercept)                       2 %
+armsToxoplasma gondii only        0 %
+armsToxocara only                 0 %
+armsBoth positive                 0 %
+age                               0 %
+sexFemale                         0 %
+race_ethNon-Hispanic Asian        0 %
+race_ethNon-Hispanic Black        0 %
+race_ethNon-Hispanic White        0 %
+race_ethOther or multiracial      0 %
+pir_cat1.30-3.49                  3 %
+pir_cat3.50+                      1 %
+bmi                               2 %
+us_born                           0 %
+19:56:36  Ran 5 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+19:56:37  QC: 20 checks, 0 fail, 2 warn
+19:56:37  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_dd236f1fa2/runs/run_dbada404/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

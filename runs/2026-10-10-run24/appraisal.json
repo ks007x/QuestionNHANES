@@ -1,0 +1,165 @@
+{
+  "methods": "Design: cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2011-2012. Population: Age >=18 years (analytic n = 2,783). Outcome: Eosinophilia - absolute eosinophil count >=0.5 x10^9/L. Exposure: mutually exclusive groups (Healthy controls, Toxoplasma gondii only, Toxocara only, Both positive), reference 'Healthy controls'. Analysis: prevalence ratios (survey-weighted Poisson regression), adjusted for Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Born in the United States. Variance: Taylor linearisation with strata and PSUs; weight WTSSTT2Y; design df = 17. Sensitivity analyses (5): Alternative outcome definition: AEC >=1.5; Logistic regression (odds ratio); Multiple imputation of missing covariates (m = 10); Alternative control group: everyone negative for all groups, no health screening (healthy-control bias check); Unweighted analysis (design ignored). Missing data: complete-case primary analysis; multiple imputation as sensitivity. Reporting: STROBE; plan pre-registered by hash before data access.",
+  "limitations": [
+    {
+      "area": "Temporality",
+      "text": "Cross-sectional: exposure and outcome are measured at the same visit, so the direction of association cannot be established.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Confounding",
+      "text": "Residual and unmeasured confounding cannot be excluded in an observational analysis.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Measurement",
+      "text": "Laboratory values come from a single blood or urine sample; transient abnormalities may be misclassified as persistent.",
+      "impact": "moderate",
+      "source": "Design"
+    },
+    {
+      "area": "Comparator",
+      "text": "Healthy controls were screened for other diseases while exposure arms were not, which can exaggerate contrasts (healthy-control bias); an all-seronegative control group was run as a sensitivity analysis.",
+      "impact": "moderate",
+      "source": "Design"
+    },
+    {
+      "area": "Precision",
+      "text": "Sample size: underpowered for the target effect (from the run's design-based standard errors) (target PR 1.5); a null result is not evidence of no association.",
+      "impact": "moderate",
+      "source": "Power check"
+    },
+    {
+      "area": "Multiplicity",
+      "text": "3 comparisons against the reference group; nominal P values are not multiplicity-adjusted unless stated.",
+      "impact": "minor",
+      "source": "Design"
+    },
+    {
+      "area": "Data",
+      "text": "Raw values within plausible ranges: Out-of-range values: LBXSCR (1 low, 0 high); URDACT (0 low, 3 high)",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Reporting",
+      "text": "NCHS presentation standards for proportions: 20 of 34 estimates meet the standard; 3 should be suppressed, 11 flagged for review.",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Generalisability",
+      "text": "Analyses use a laboratory subsample with its own weights; sample size and precision are lower than for the full MEC sample.",
+      "impact": "minor",
+      "source": "Design"
+    }
+  ],
+  "certainty": {
+    "framework": "GRADE-informed, single cross-sectional study",
+    "start": "Low (observational)",
+    "level": "Low",
+    "symbol": "\u2295\u2295\u25ef\u25ef",
+    "meaning": "The true association may be substantially different from the estimate.",
+    "domains": [
+      {
+        "domain": "Risk of bias",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Cross-sectional design already reflected in the Low starting level; adjusted, pre-specified analysis with design audit passed."
+      },
+      {
+        "domain": "Inconsistency",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Direction and inference stable across 2 sensitivity analyses."
+      },
+      {
+        "domain": "Indirectness",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "US civilian non-institutionalised population; outcome measured directly."
+      },
+      {
+        "domain": "Imprecision",
+        "rating": "Serious",
+        "change": -1,
+        "reason": "95% CI 1.16-3.47 is wide (underpowered for the target effect)."
+      },
+      {
+        "domain": "Publication bias",
+        "rating": "Not assessable",
+        "change": 0,
+        "reason": "Cannot be judged from a single study; pre-registration by plan hash reduces selective reporting."
+      }
+    ],
+    "rating_up": [
+      {
+        "domain": "Large effect",
+        "change": 1,
+        "reason": "Large effect (PR 2.00)."
+      }
+    ],
+    "net_down": 1,
+    "net_up": 1,
+    "caveat": "GRADE rates bodies of evidence; this single-study rating summarises how much this analysis can contribute and should be re-rated in any systematic review.",
+    "assessed": true
+  },
+  "power": {
+    "settings": {
+      "alpha": 0.05,
+      "power": 0.8,
+      "target_ratio": 1.5,
+      "target_sd": 0.2,
+      "target_halfwidth": 0.02,
+      "deff": 1.8,
+      "multiplicity": "bonferroni",
+      "p0_assumed": 0.1
+    },
+    "assumptions": [
+      "Outcome prevalence assumed 10% (run the blinded probe for the real rate band).",
+      "Design effect 1.8 (typical for NHANES; the post-run check uses the actual design-based SE).",
+      "Alpha 0.05 split across 3 comparisons with the control group (Bonferroni: 0.0167).",
+      "Group sizes unknown before the probe - showing the total sample needed for equal groups."
+    ],
+    "comparisons": [
+      {
+        "label": "Two equal groups, PR 1.5",
+        "required_n_total": 3363,
+        "status": "unknown"
+      }
+    ],
+    "basis": "assumed",
+    "verdict": "Underpowered for the target effect (from the run's design-based standard errors)",
+    "post_run": [
+      {
+        "label": "Toxoplasma gondii only vs Healthy controls",
+        "estimate": 2.005,
+        "se_log": 0.2798,
+        "mde": 2.19,
+        "power_at_target": 0.305,
+        "target": 1.5,
+        "ci_excludes_null": true
+      },
+      {
+        "label": "Toxocara only vs Healthy controls",
+        "estimate": 2.855,
+        "se_log": 0.3855,
+        "mde": 2.944,
+        "power_at_target": 0.182,
+        "target": 1.5,
+        "ci_excludes_null": true
+      },
+      {
+        "label": "Both positive vs Healthy controls",
+        "estimate": 4.115,
+        "se_log": 0.3307,
+        "mde": 2.525,
+        "power_at_target": 0.232,
+        "target": 1.5,
+        "ci_excludes_null": true
+      }
+    ]
+  }
+}

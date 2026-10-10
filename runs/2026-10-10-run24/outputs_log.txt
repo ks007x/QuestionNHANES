@@ -1,0 +1,24 @@
+
+== Association of Toxoplasma Gondii vs Toxocara vs Healthy Controls With Eosinophilia Among US Adults: NHANES 2011-2012
+   Among noninstitutionalized US participants in NHANES 2011-2012 (Age >=18 years), is toxoplasma gondii vs toxocara vs healthy controls associated with a higher prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, body mass index, and born in the united states?
+   feasibility 100/100 (High)
+   novelty 85/100 (High) - 0 PubMed NHANES paper(s) on the full question in 10 years (0 in the last 3). By element - Toxoplasma gondii seropositivity x Eosinophilia: 0 NHANES / 26 any data; Toxocara seropositivity x Eosinophilia: 0 NHANES / 134 any data.
+   [Investigator] I read this as an association question. Outcome: Eosinophilia - absolute eosinophil count >=0.5 x10^9/L. Exposure: Toxoplasma gondii vs Toxocara vs healthy cont
+   [Data Steward] Mapped 11 analysis variables (2 direct NHANES measures, 9 derived/guideline definitions) onto 27 raw variables in 11 files: ALB_CR_G, BIOPRO_G, BMX_G, CBC_G, DE
+   [Data Steward] Eosinophilia, Toxoplasma gondii vs Toxocara vs healthy controls are measured with usable weights only in NHANES 2011-2012; using NHANES 2011-2012.
+   [Investigator] First clinical concept treated as exposure, second as outcome (swap in the UI if needed).
+   [Investigator] Comparison of 2 group(s) against healthy controls for eosinophilia.
+   [Investigator] No age group specified - defaulted to adults aged >=18 years.
+   [Statistician] Binary outcome: survey-weighted quasi-Poisson regression with log link estimates prevalence ratios (PRs). PRs are preferred to odds ratios for cross-sectional d
+   [Reviewer] Critique: 0 blocker, 0 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval.
+   [Design auditor] Design audit vs common EHR-network study criticisms: Defensible with caveats (3 pass, 5 caution, 0 fail).
+   [Epidemiologist] Can NHANES answer this? Answerable with caveats (0 blocking, 2 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving.
+   Alpha 0.05 (two-sided), power 80%, target PR 1.5, DEFF 1.8: Underpowered for the target effect (from the run's design-based standard errors). After the run: Toxoplasma gondii only vs Healthy controls: minimum detectable PR 2.19; Toxocara only vs Healthy controls: minimum detectable PR 2.94; Both positive vs Healthy controls: minimum detectable PR 2.52.
+   Certainty of evidence (GRADE-informed, single study): Low ⊕⊕◯◯. Started Low (observational); rated down for imprecision (serious); rated up for large effect. The true association may be substantially different from the estimate.
+
+   Primary: Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls): 2.0050 (1.1585-3.4699) [PR]
+   QC WARN  Raw values within plausible ranges: Out-of-range values: LBXSCR (1 low, 0 high); URDACT (0 low, 3 high)
+   QC WARN  NCHS presentation standards for proportions: 20 of 34 estimates meet the standard; 3 should be suppressed, 11 flagged for review.
+   QC INFO  Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+   QC INFO  Building blocks not in this dataset: Not provided by the dataset (treated as missing): toxo_igg_9904
+   Outputs: outputs/real/manuscript.html, manuscript.md, bundle.zip  (project prj_dd236f1fa2)

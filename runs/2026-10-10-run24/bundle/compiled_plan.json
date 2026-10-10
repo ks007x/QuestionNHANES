@@ -1,0 +1,1476 @@
+{
+  "plan_id": "plan_8579a58782",
+  "plan_version": 1,
+  "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+  "title": "Association of Toxoplasma Gondii vs Toxocara vs Healthy Controls With Eosinophilia Among US Adults: NHANES 2011-2012",
+  "study_type": "association",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "G"
+    ],
+    "source": "cdc",
+    "local_dir": "data",
+    "synthetic_dir": null,
+    "cache_dir": "data/cache",
+    "allow_download": true
+  },
+  "cycles_meta": {
+    "G": {
+      "label": "NHANES 2011-2012",
+      "file_pattern": "{stem}_G",
+      "url_folder": "2011",
+      "years": 2.0,
+      "weights": {
+        "interview": "WTINT2YR",
+        "mec": "WTMEC2YR",
+        "diet": "WTDRD1",
+        "fasting": "WTSAF2YR",
+        "subsample": "WTSSTT2Y"
+      },
+      "weight_files": {
+        "diet": "DR1TOT",
+        "fasting": "GLU",
+        "subsample": "SSTOCA"
+      },
+      "psu": "SDMVPSU",
+      "strata": "SDMVSTRA",
+      "overlaps": []
+    }
+  },
+  "subsample_weights": {
+    "G": {
+      "weight": "WTSSTT2Y",
+      "file": "SSTOCA",
+      "because": "SSTCAR"
+    }
+  },
+  "weight_level": "subsample",
+  "raw_variables": [
+    {
+      "variable": "BMXBMI",
+      "file": "BMX",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 10.0,
+      "max": 90.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Body mass index",
+      "stems": {
+        "G": "BMX"
+      }
+    },
+    {
+      "variable": "DIQ010",
+      "file": "DIQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 3.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Doctor told you have diabetes (1=yes; 2=no; 3=borderline)",
+      "stems": {
+        "G": "DIQ"
+      }
+    },
+    {
+      "variable": "DIQ050",
+      "file": "DIQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking insulin now (1=yes; 2=no)",
+      "stems": {
+        "G": "DIQ"
+      }
+    },
+    {
+      "variable": "DIQ070",
+      "file": "DIQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Taking diabetic pills (1=yes; 2=no)",
+      "stems": {
+        "G": "DIQ"
+      }
+    },
+    {
+      "variable": "DMDBORN",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "type": "categorical",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "In what country {were you/was SP} born?",
+      "stems": {}
+    },
+    {
+      "variable": "DMDBORN2",
+      "file": "DEMO",
+      "cycles": [
+        "E",
+        "F"
+      ],
+      "type": "categorical",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "In what country {were you/was SP} born?",
+      "stems": {}
+    },
+    {
+      "variable": "DMDBORN4",
+      "file": "DEMO",
+      "cycles": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        77.0,
+        99.0
+      ],
+      "weight_level": "interview",
+      "label": "Country of birth (1=born in US; 2=other)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "DMDEDUC2",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "INDFMPIR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Ratio of family income to poverty",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "LBDEONO",
+      "file": "CBC",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 20.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Eosinophils number",
+      "stems": {
+        "G": "CBC"
+      }
+    },
+    {
+      "variable": "LBDTO1",
+      "file": "L17",
+      "cycles": [
+        "B"
+      ],
+      "type": "continuous",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Toxoplasma (IgG)",
+      "stems": {}
+    },
+    {
+      "variable": "LBXGH",
+      "file": "GHB",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 3.0,
+      "max": 18.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Glycohemoglobin (HbA1c)",
+      "stems": {
+        "G": "GHB"
+      }
+    },
+    {
+      "variable": "LBXSCR",
+      "file": "BIOPRO",
+      "cycles": [
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.2,
+      "max": 15.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Serum creatinine",
+      "stems": {
+        "G": "BIOPRO"
+      }
+    },
+    {
+      "variable": "LBXTO1",
+      "file": "L17",
+      "cycles": [
+        "A",
+        "C"
+      ],
+      "type": "continuous",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Toxoplasma (IgG)",
+      "stems": {}
+    },
+    {
+      "variable": "MCQ010",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told you have asthma (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ160B",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told had congestive heart failure (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ160C",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told had coronary heart disease (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ160E",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told you had a heart attack (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ160F",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told had a stroke (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ160L",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told had any liver condition (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "MCQ220",
+      "file": "MCQ",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [
+        7.0,
+        9.0
+      ],
+      "weight_level": "interview",
+      "label": "Ever told had cancer or malignancy (1=yes; 2=no)",
+      "stems": {
+        "G": "MCQ"
+      }
+    },
+    {
+      "variable": "RIAGENDR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 2.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Gender (1=Male; 2=Female)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "RIDAGEYR",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 80.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Age in years at screening (top-coded at 80)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "RIDRETH1",
+      "file": "DEMO",
+      "cycles": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 5.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "stems": {}
+    },
+    {
+      "variable": "RIDRETH3",
+      "file": "DEMO",
+      "cycles": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "categorical",
+      "min": 1.0,
+      "max": 7.0,
+      "missing_codes": [],
+      "weight_level": "interview",
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "stems": {
+        "G": "DEMO"
+      }
+    },
+    {
+      "variable": "SSTCAR",
+      "file": "SSTOCA",
+      "cycles": [
+        "G",
+        "H"
+      ],
+      "type": "continuous",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "subsample",
+      "label": "Toxocara antibody result",
+      "stems": {}
+    },
+    {
+      "variable": "SSTOXG",
+      "file": "SSTOXO",
+      "cycles": [
+        "G",
+        "H"
+      ],
+      "type": "continuous",
+      "min": null,
+      "max": null,
+      "missing_codes": [],
+      "weight_level": "subsample",
+      "label": "Toxoplasmosis IgG antibodies (IU/ml)",
+      "stems": {}
+    },
+    {
+      "variable": "URDACT",
+      "file": "ALB_CR",
+      "cycles": [
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "P",
+        "L"
+      ],
+      "type": "continuous",
+      "min": 0.0,
+      "max": 10000.0,
+      "missing_codes": [],
+      "weight_level": "mec",
+      "label": "Urine albumin-to-creatinine ratio",
+      "stems": {
+        "G": "ALB_CR"
+      }
+    }
+  ],
+  "derived": [
+    {
+      "name": "aec",
+      "expr": "LBDEONO",
+      "type": "continuous",
+      "label": "Absolute eosinophil count",
+      "levels": null
+    },
+    {
+      "name": "eosinophilia_05",
+      "expr": "aec >= 0.5",
+      "type": "binary",
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "levels": null
+    },
+    {
+      "name": "toxo_igg_2011",
+      "expr": "SSTOXG",
+      "type": "continuous",
+      "label": "Toxoplasma IgG, 2011-2012 surplus sera (IU/mL)",
+      "levels": null
+    },
+    {
+      "name": "toxo_igg_9904",
+      "expr": "coalesce(LBXTO1, LBDTO1)",
+      "type": "continuous",
+      "label": "Toxoplasma IgG, 1999-2004 (IU/mL)",
+      "levels": null
+    },
+    {
+      "name": "toxoplasma_seropos",
+      "expr": "coalesce(toxo_igg_2011 >= 33, toxo_igg_9904 >= 10)",
+      "type": "binary",
+      "label": "Toxoplasma gondii seropositivity - IgG antibody positive",
+      "levels": null
+    },
+    {
+      "name": "toxocara_ab",
+      "expr": "SSTCAR",
+      "type": "categorical",
+      "label": "Toxocara antibody result (1=positive, 2=negative)",
+      "levels": null
+    },
+    {
+      "name": "toxocara_seropos",
+      "expr": "toxocara_ab == 1",
+      "type": "binary",
+      "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+      "levels": null
+    },
+    {
+      "name": "asthma",
+      "expr": "MCQ010 == 1",
+      "type": "binary",
+      "label": "Asthma (ever told)",
+      "levels": null
+    },
+    {
+      "name": "dm_selfreport",
+      "expr": "DIQ010 == 1",
+      "type": "binary",
+      "label": "Self-reported diabetes diagnosis",
+      "levels": null
+    },
+    {
+      "name": "insulin_use",
+      "expr": "DIQ050 == 1",
+      "type": "binary",
+      "label": "Current insulin use",
+      "levels": null
+    },
+    {
+      "name": "dm_pills",
+      "expr": "DIQ070 == 1",
+      "type": "binary",
+      "label": "Current oral diabetes medication",
+      "levels": null
+    },
+    {
+      "name": "hba1c",
+      "expr": "LBXGH",
+      "type": "continuous",
+      "label": "HbA1c",
+      "levels": null
+    },
+    {
+      "name": "diabetes",
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "type": "binary",
+      "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+      "levels": null
+    },
+    {
+      "name": "chd",
+      "expr": "MCQ160C == 1",
+      "type": "binary",
+      "label": "Coronary heart disease (self-report)",
+      "levels": null
+    },
+    {
+      "name": "mi",
+      "expr": "MCQ160E == 1",
+      "type": "binary",
+      "label": "Heart attack (self-report)",
+      "levels": null
+    },
+    {
+      "name": "stroke",
+      "expr": "MCQ160F == 1",
+      "type": "binary",
+      "label": "Stroke (self-report)",
+      "levels": null
+    },
+    {
+      "name": "hf",
+      "expr": "MCQ160B == 1",
+      "type": "binary",
+      "label": "Heart failure (self-report)",
+      "levels": null
+    },
+    {
+      "name": "cvd",
+      "expr": "any_of(chd, mi, stroke, hf)",
+      "type": "binary",
+      "label": "Cardiovascular disease (CHD, MI, stroke or HF)",
+      "levels": null
+    },
+    {
+      "name": "creatinine",
+      "expr": "LBXSCR",
+      "type": "continuous",
+      "label": "Serum creatinine",
+      "levels": null
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "label": "Female sex",
+      "levels": null
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "label": "Age",
+      "levels": null
+    },
+    {
+      "name": "egfr",
+      "expr": "142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+      "type": "continuous",
+      "label": "eGFR (CKD-EPI 2021, race-free)",
+      "levels": null
+    },
+    {
+      "name": "uacr",
+      "expr": "URDACT",
+      "type": "continuous",
+      "label": "Urine albumin-to-creatinine ratio",
+      "levels": null
+    },
+    {
+      "name": "ckd",
+      "expr": "any_of(egfr < 60, uacr >= 30)",
+      "type": "binary",
+      "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+      "levels": null
+    },
+    {
+      "name": "cancer_hx",
+      "expr": "MCQ220 == 1",
+      "type": "binary",
+      "label": "History of cancer (self-report)",
+      "levels": null
+    },
+    {
+      "name": "liver_hx",
+      "expr": "MCQ160L == 1",
+      "type": "binary",
+      "label": "Self-reported liver condition",
+      "levels": null
+    },
+    {
+      "name": "arms",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+      "type": "categorical",
+      "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "levels": [
+        "Healthy controls",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ]
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "label": "Sex",
+      "levels": null
+    },
+    {
+      "name": "race_eth",
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "type": "categorical",
+      "label": "Race and ethnicity",
+      "levels": null
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "label": "Family income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "label": "Income-to-poverty ratio",
+      "levels": null
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "label": "Body mass index",
+      "levels": null
+    },
+    {
+      "name": "us_born",
+      "expr": "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+      "type": "binary",
+      "label": "Born in the United States",
+      "levels": null
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "label": "Age group",
+      "levels": null
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "label": "Educational attainment",
+      "levels": null
+    },
+    {
+      "name": "hypereosinophilia_15",
+      "expr": "aec >= 1.5",
+      "type": "binary",
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "levels": null
+    },
+    {
+      "name": "arms_seroneg",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+      "type": "categorical",
+      "label": "Comparison groups (all seronegative controls)",
+      "levels": [
+        "Controls (negative for all)",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ]
+    }
+  ],
+  "variables_meta": {
+    "aec": {
+      "label": "Absolute eosinophil count",
+      "units": "x10^9/L"
+    },
+    "eosinophilia_05": {
+      "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "units": ""
+    },
+    "toxo_igg_2011": {
+      "label": "Toxoplasma IgG, 2011-2012 surplus sera (IU/mL)",
+      "units": "IU/mL"
+    },
+    "toxo_igg_9904": {
+      "label": "Toxoplasma IgG, 1999-2004 (IU/mL)",
+      "units": "IU/mL"
+    },
+    "toxoplasma_seropos": {
+      "label": "Toxoplasma gondii seropositivity - IgG antibody positive",
+      "units": ""
+    },
+    "toxocara_ab": {
+      "label": "Toxocara antibody result (1=positive, 2=negative)",
+      "units": ""
+    },
+    "toxocara_seropos": {
+      "label": "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)",
+      "units": ""
+    },
+    "asthma": {
+      "label": "Asthma (ever told)",
+      "units": ""
+    },
+    "dm_selfreport": {
+      "label": "Self-reported diabetes diagnosis",
+      "units": ""
+    },
+    "insulin_use": {
+      "label": "Current insulin use",
+      "units": ""
+    },
+    "dm_pills": {
+      "label": "Current oral diabetes medication",
+      "units": ""
+    },
+    "hba1c": {
+      "label": "HbA1c",
+      "units": "%"
+    },
+    "diabetes": {
+      "label": "Diabetes (self-report, medication, or HbA1c >=6.5%)",
+      "units": ""
+    },
+    "chd": {
+      "label": "Coronary heart disease (self-report)",
+      "units": ""
+    },
+    "mi": {
+      "label": "Heart attack (self-report)",
+      "units": ""
+    },
+    "stroke": {
+      "label": "Stroke (self-report)",
+      "units": ""
+    },
+    "hf": {
+      "label": "Heart failure (self-report)",
+      "units": ""
+    },
+    "cvd": {
+      "label": "Cardiovascular disease (CHD, MI, stroke or HF)",
+      "units": ""
+    },
+    "creatinine": {
+      "label": "Serum creatinine",
+      "units": "mg/dL"
+    },
+    "female": {
+      "label": "Female sex",
+      "units": ""
+    },
+    "age": {
+      "label": "Age",
+      "units": "years"
+    },
+    "egfr": {
+      "label": "eGFR (CKD-EPI 2021, race-free)",
+      "units": "mL/min/1.73m2"
+    },
+    "uacr": {
+      "label": "Urine albumin-to-creatinine ratio",
+      "units": "mg/g"
+    },
+    "ckd": {
+      "label": "Chronic kidney disease (eGFR <60 or UACR >=30 mg/g)",
+      "units": ""
+    },
+    "cancer_hx": {
+      "label": "History of cancer (self-report)",
+      "units": ""
+    },
+    "liver_hx": {
+      "label": "Self-reported liver condition",
+      "units": ""
+    },
+    "arms": {
+      "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "units": ""
+    },
+    "sex": {
+      "label": "Sex",
+      "units": ""
+    },
+    "race_eth": {
+      "label": "Race and ethnicity",
+      "units": ""
+    },
+    "pir": {
+      "label": "Family income-to-poverty ratio",
+      "units": "ratio"
+    },
+    "pir_cat": {
+      "label": "Income-to-poverty ratio",
+      "units": ""
+    },
+    "bmi": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "us_born": {
+      "label": "Born in the United States",
+      "units": ""
+    },
+    "agecat": {
+      "label": "Age group",
+      "units": "y"
+    },
+    "educ": {
+      "label": "Educational attainment",
+      "units": ""
+    },
+    "hypereosinophilia_15": {
+      "label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "units": ""
+    },
+    "arms_seroneg": {
+      "label": "Comparison groups (all seronegative controls)",
+      "units": ""
+    },
+    "BMXBMI": {
+      "label": "Body mass index",
+      "units": "kg/m2"
+    },
+    "DIQ010": {
+      "label": "Doctor told you have diabetes (1=yes; 2=no; 3=borderline)",
+      "units": ""
+    },
+    "DIQ050": {
+      "label": "Taking insulin now (1=yes; 2=no)",
+      "units": ""
+    },
+    "DIQ070": {
+      "label": "Taking diabetic pills (1=yes; 2=no)",
+      "units": ""
+    },
+    "DMDBORN": {
+      "label": "In what country {were you/was SP} born?",
+      "units": ""
+    },
+    "DMDBORN2": {
+      "label": "In what country {were you/was SP} born?",
+      "units": ""
+    },
+    "DMDBORN4": {
+      "label": "Country of birth (1=born in US; 2=other)",
+      "units": ""
+    },
+    "DMDEDUC2": {
+      "label": "Education level - adults 20+ (1=<9th grade ... 5=college graduate)",
+      "units": ""
+    },
+    "INDFMPIR": {
+      "label": "Ratio of family income to poverty",
+      "units": "ratio"
+    },
+    "LBDEONO": {
+      "label": "Eosinophils number",
+      "units": "1000 cells/uL"
+    },
+    "LBDTO1": {
+      "label": "Toxoplasma (IgG)",
+      "units": ""
+    },
+    "LBXGH": {
+      "label": "Glycohemoglobin (HbA1c)",
+      "units": "%"
+    },
+    "LBXSCR": {
+      "label": "Serum creatinine",
+      "units": "mg/dL"
+    },
+    "LBXTO1": {
+      "label": "Toxoplasma (IgG)",
+      "units": ""
+    },
+    "MCQ010": {
+      "label": "Ever told you have asthma (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ160B": {
+      "label": "Ever told had congestive heart failure (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ160C": {
+      "label": "Ever told had coronary heart disease (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ160E": {
+      "label": "Ever told you had a heart attack (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ160F": {
+      "label": "Ever told had a stroke (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ160L": {
+      "label": "Ever told had any liver condition (1=yes; 2=no)",
+      "units": ""
+    },
+    "MCQ220": {
+      "label": "Ever told had cancer or malignancy (1=yes; 2=no)",
+      "units": ""
+    },
+    "RIAGENDR": {
+      "label": "Gender (1=Male; 2=Female)",
+      "units": ""
+    },
+    "RIDAGEYR": {
+      "label": "Age in years at screening (top-coded at 80)",
+      "units": "years"
+    },
+    "RIDRETH1": {
+      "label": "Race/Hispanic origin (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 5=Other incl. multiracial)",
+      "units": ""
+    },
+    "RIDRETH3": {
+      "label": "Race/Hispanic origin with NH Asian (1=Mexican American; 2=Other Hispanic; 3=NH White; 4=NH Black; 6=NH Asian; 7=Other/multiracial)",
+      "units": ""
+    },
+    "SSTCAR": {
+      "label": "Toxocara antibody result",
+      "units": ""
+    },
+    "SSTOXG": {
+      "label": "Toxoplasmosis IgG antibodies (IU/ml)",
+      "units": ""
+    },
+    "URDACT": {
+      "label": "Urine albumin-to-creatinine ratio",
+      "units": "mg/g"
+    }
+  },
+  "population": [
+    {
+      "id": "c1",
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion"
+    }
+  ],
+  "outcome": {
+    "name": "eosinophilia_05",
+    "type": "binary",
+    "label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L"
+  },
+  "exposure": {
+    "name": "arms",
+    "type": "categorical",
+    "label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+    "arms": {
+      "arms": [
+        {
+          "concept": "toxoplasma",
+          "variable": "toxoplasma_seropos",
+          "label": "Toxoplasma gondii seropositivity"
+        },
+        {
+          "concept": "toxocara",
+          "variable": "toxocara_seropos",
+          "label": "Toxocara seropositivity"
+        }
+      ],
+      "control_mode": "healthy",
+      "control_label": "Healthy controls",
+      "control_criteria": [
+        {
+          "variable": "asthma",
+          "label": "Asthma"
+        },
+        {
+          "variable": "diabetes",
+          "label": "Diabetes"
+        },
+        {
+          "variable": "cvd",
+          "label": "Cardiovascular disease"
+        },
+        {
+          "variable": "ckd",
+          "label": "Chronic kidney disease"
+        },
+        {
+          "variable": "cancer_hx",
+          "label": "Cancer history"
+        },
+        {
+          "variable": "liver_hx",
+          "label": "Liver disease"
+        }
+      ],
+      "control_criteria_unavailable": [
+        "COPD"
+      ],
+      "both": "separate",
+      "levels": [
+        "Healthy controls",
+        "Toxoplasma gondii only",
+        "Toxocara only",
+        "Both positive"
+      ],
+      "reference": "Healthy controls"
+    }
+  },
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "bmi",
+    "us_born"
+  ],
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth",
+    "us_born"
+  ],
+  "analysis": {
+    "estimand": "association",
+    "table1_vars": [
+      "agecat",
+      "sex",
+      "race_eth",
+      "pir_cat",
+      "educ",
+      "bmi",
+      "us_born",
+      "aec",
+      "arms"
+    ],
+    "table1_by": "arms",
+    "prevalence": {
+      "outcomes": [
+        "eosinophilia_05",
+        "hypereosinophilia_15"
+      ],
+      "by": [
+        "arms",
+        "sex",
+        "agecat",
+        "race_eth",
+        "us_born"
+      ]
+    },
+    "model": {
+      "family": "quasipoisson",
+      "primary_set": "full"
+    },
+    "adjustment_sets": [
+      {
+        "id": "crude",
+        "label": "Unadjusted",
+        "covariates": []
+      },
+      {
+        "id": "demographic",
+        "label": "Adjusted for age, sex, and race and ethnicity",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth"
+        ]
+      },
+      {
+        "id": "full",
+        "label": "Fully adjusted (primary)",
+        "covariates": [
+          "age",
+          "sex",
+          "race_eth",
+          "pir_cat",
+          "bmi",
+          "us_born"
+        ]
+      }
+    ],
+    "interactions": [
+      "sex",
+      "agecat"
+    ],
+    "missing": {
+      "method": "complete_case",
+      "m": 10
+    },
+    "sensitivity": [
+      {
+        "type": "alt_outcome",
+        "label": "Alternative outcome definition: AEC >=1.5",
+        "outcome": "hypereosinophilia_15",
+        "id": "s1"
+      },
+      {
+        "type": "alt_family",
+        "label": "Logistic regression (odds ratio)",
+        "family": "quasibinomial",
+        "id": "s2"
+      },
+      {
+        "type": "mi",
+        "label": "Multiple imputation of missing covariates (m = 10)",
+        "m": 10,
+        "id": "s3"
+      },
+      {
+        "type": "alt_exposure",
+        "label": "Alternative control group: everyone negative for all groups, no health screening (healthy-control bias check)",
+        "exposure": "arms_seroneg",
+        "id": "s4"
+      },
+      {
+        "type": "unweighted",
+        "label": "Unweighted analysis (design ignored)",
+        "id": "s5"
+      }
+    ],
+    "benchmarks": [],
+    "distribution_var": null
+  },
+  "options": {
+    "seed": 2026,
+    "alpha": 0.05
+  },
+  "unavailable_measures": [
+    "toxo_igg_9904"
+  ]
+}

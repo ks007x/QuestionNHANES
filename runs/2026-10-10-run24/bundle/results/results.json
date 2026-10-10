@@ -1,0 +1,3385 @@
+{
+  "design": {
+    "weight_variable": "WTSSTT2Y",
+    "weight_level": "subsample",
+    "cycles": [
+      "G"
+    ],
+    "n_strata": 14,
+    "n_psu": 31,
+    "design_df": 17,
+    "analytic_strata": 14,
+    "analytic_psu": 31,
+    "analytic_df": 17,
+    "sum_weights_millions": 155.11,
+    "lonely_psu": "adjust"
+  },
+  "flow": [
+    {
+      "step": "source",
+      "label": "Participants in source files (G)",
+      "n": 9756,
+      "excluded": 0
+    },
+    {
+      "step": "weight",
+      "label": "Positive analysis weight",
+      "n": 6099,
+      "excluded": 3657
+    },
+    {
+      "step": "c1",
+      "label": "Age >=18 years",
+      "kind": "inclusion",
+      "n": 4588,
+      "excluded": 1511
+    },
+    {
+      "step": "outcome",
+      "label": "Non-missing outcome (Eosinophilia - absolute eosinophil count >=0.5 x10^9/L)",
+      "n": 4580,
+      "excluded": 8
+    },
+    {
+      "step": "exposure",
+      "label": "Non-missing exposure (Toxoplasma gondii vs Toxocara vs healthy controls)",
+      "n": 3029,
+      "excluded": 1551
+    },
+    {
+      "step": "complete_case",
+      "label": "Complete covariate data (complete-case model sample)",
+      "n": 2783,
+      "excluded": 246
+    }
+  ],
+  "table1": {
+    "by": "arms",
+    "by_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+    "columns": [
+      {
+        "key": "g1",
+        "label": "Healthy controls",
+        "n": 2036,
+        "weighted_pct": 74.7
+      },
+      {
+        "key": "g2",
+        "label": "Toxoplasma gondii only",
+        "n": 641,
+        "weighted_pct": 16.5
+      },
+      {
+        "key": "g3",
+        "label": "Toxocara only",
+        "n": 224,
+        "weighted_pct": 6.1
+      },
+      {
+        "key": "g4",
+        "label": "Both positive",
+        "n": 128,
+        "weighted_pct": 2.7
+      },
+      {
+        "key": "overall",
+        "label": "Overall",
+        "n": 3029,
+        "weighted_pct": 100
+      }
+    ],
+    "rows": [
+      {
+        "variable": "agecat",
+        "label": "Age group, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 1.2017723475e-15,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "agecat",
+        "label": "18-39",
+        "level": "18-39",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,100 (49.1)",
+            "n": 1100,
+            "pct": 49.1095565227,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "126 (21.9)",
+            "n": 126,
+            "pct": 21.8657125311,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "64 (34.1)",
+            "n": 64,
+            "pct": 34.1455976256,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "36 (39.9)",
+            "n": 36,
+            "pct": 39.891173736,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,326 (43.4)",
+            "n": 1326,
+            "pct": 43.4489399504,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "40-64",
+        "level": "40-64",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "766 (43.8)",
+            "n": 766,
+            "pct": 43.782332931,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "287 (44.9)",
+            "n": 287,
+            "pct": 44.8925835395,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "98 (46.3)",
+            "n": 98,
+            "pct": 46.347675399,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "61 (43.2)",
+            "n": 61,
+            "pct": 43.2040317686,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,212 (44.1)",
+            "n": 1212,
+            "pct": 44.1058548333,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "agecat",
+        "label": "65+",
+        "level": "65+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "170 (7.1)",
+            "n": 170,
+            "pct": 7.1081105463,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "228 (33.2)",
+            "n": 228,
+            "pct": 33.2417039294,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "62 (19.5)",
+            "n": 62,
+            "pct": 19.5067269754,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "31 (16.9)",
+            "n": 31,
+            "pct": 16.9047944954,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "491 (12.4)",
+            "n": 491,
+            "pct": 12.4452052163,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Sex, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 0.00063754647596,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "sex",
+        "label": "Male",
+        "level": "Male",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "982 (48.0)",
+            "n": 982,
+            "pct": 47.994009768,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "335 (49.0)",
+            "n": 335,
+            "pct": 48.9509820864,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "140 (67.5)",
+            "n": 140,
+            "pct": 67.544116204,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "78 (56.0)",
+            "n": 78,
+            "pct": 55.9550462198,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,535 (49.6)",
+            "n": 1535,
+            "pct": 49.5605663894,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "sex",
+        "label": "Female",
+        "level": "Female",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "1,054 (52.0)",
+            "n": 1054,
+            "pct": 52.005990232,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "306 (51.0)",
+            "n": 306,
+            "pct": 51.0490179136,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "84 (32.5)",
+            "n": 84,
+            "pct": 32.455883796,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "50 (44.0)",
+            "n": 50,
+            "pct": 44.0449537802,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,494 (50.4)",
+            "n": 1494,
+            "pct": 50.4394336106,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Race and ethnicity, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 4.2413145614e-09,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "race_eth",
+        "label": "Hispanic",
+        "level": "Hispanic",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "381 (13.2)",
+            "n": 381,
+            "pct": 13.1549144208,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "207 (24.1)",
+            "n": 207,
+            "pct": 24.0573386906,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "57 (22.3)",
+            "n": 57,
+            "pct": 22.3300856168,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "63 (49.0)",
+            "n": 63,
+            "pct": 48.9706679252,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "708 (16.5)",
+            "n": 708,
+            "pct": 16.496298608,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Asian",
+        "level": "Non-Hispanic Asian",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "353 (6.1)",
+            "n": 353,
+            "pct": 6.1023611366,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "49 (3.8)",
+            "n": 49,
+            "pct": 3.7884902815,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "44 (8.7)",
+            "n": 44,
+            "pct": 8.6552229512,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "10 (4.9)",
+            "n": 10,
+            "pct": 4.9171104512,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "456 (5.8)",
+            "n": 456,
+            "pct": 5.8433005132,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic Black",
+        "level": "Non-Hispanic Black",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "432 (10.3)",
+            "n": 432,
+            "pct": 10.287351509,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "163 (14.2)",
+            "n": 163,
+            "pct": 14.1850413804,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "46 (10.9)",
+            "n": 46,
+            "pct": 10.9251223471,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "30 (14.1)",
+            "n": 30,
+            "pct": 14.0726627724,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "671 (11.1)",
+            "n": 671,
+            "pct": 11.0734300788,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Non-Hispanic White",
+        "level": "Non-Hispanic White",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "805 (68.0)",
+            "n": 805,
+            "pct": 68.0111127153,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "210 (56.6)",
+            "n": 210,
+            "pct": 56.5735406789,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "71 (55.3)",
+            "n": 71,
+            "pct": 55.3239370138,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "22 (29.8)",
+            "n": 22,
+            "pct": 29.8113004395,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,108 (64.3)",
+            "n": 1108,
+            "pct": 64.3021647083,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "race_eth",
+        "label": "Other or multiracial",
+        "level": "Other or multiracial",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "65 (2.4)",
+            "n": 65,
+            "pct": 2.4442602183,
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "12 (1.4)",
+            "n": 12,
+            "pct": 1.3955889686,
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "6 (2.8)",
+            "n": 6,
+            "pct": 2.7656320711,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "3 (2.2)",
+            "n": 3,
+            "pct": 2.2282584117,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "86 (2.3)",
+            "n": 86,
+            "pct": 2.2848060916,
+            "n_missing": 0
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "Income-to-poverty ratio, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 4.6902340042e-05,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "pir_cat",
+        "label": "<1.30",
+        "level": "<1.30",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "608 (21.5)",
+            "n": 608,
+            "pct": 21.4578597268,
+            "n_missing": 131
+          },
+          "g2": {
+            "text": "234 (30.9)",
+            "n": 234,
+            "pct": 30.9199930019,
+            "n_missing": 56
+          },
+          "g3": {
+            "text": "102 (41.4)",
+            "n": 102,
+            "pct": 41.4177847058,
+            "n_missing": 16
+          },
+          "g4": {
+            "text": "55 (48.3)",
+            "n": 55,
+            "pct": 48.3450417026,
+            "n_missing": 11
+          },
+          "overall": {
+            "text": "999 (24.9)",
+            "n": 999,
+            "pct": 24.9136166003,
+            "n_missing": 214
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "1.30-3.49",
+        "level": "1.30-3.49",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "620 (33.0)",
+            "n": 620,
+            "pct": 33.0294534558,
+            "n_missing": 131
+          },
+          "g2": {
+            "text": "216 (35.5)",
+            "n": 216,
+            "pct": 35.4744048408,
+            "n_missing": 56
+          },
+          "g3": {
+            "text": "58 (31.3)",
+            "n": 58,
+            "pct": 31.3444836214,
+            "n_missing": 16
+          },
+          "g4": {
+            "text": "38 (28.1)",
+            "n": 38,
+            "pct": 28.1133858869,
+            "n_missing": 11
+          },
+          "overall": {
+            "text": "932 (33.2)",
+            "n": 932,
+            "pct": 33.1915298894,
+            "n_missing": 214
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "pir_cat",
+        "label": "3.50+",
+        "level": "3.50+",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "677 (45.5)",
+            "n": 677,
+            "pct": 45.5126868174,
+            "n_missing": 131
+          },
+          "g2": {
+            "text": "135 (33.6)",
+            "n": 135,
+            "pct": 33.6056021573,
+            "n_missing": 56
+          },
+          "g3": {
+            "text": "48 (27.2)",
+            "n": 48,
+            "pct": 27.2377316728,
+            "n_missing": 16
+          },
+          "g4": {
+            "text": "24 (23.5)",
+            "n": 24,
+            "pct": 23.5415724105,
+            "n_missing": 11
+          },
+          "overall": {
+            "text": "884 (41.9)",
+            "n": 884,
+            "pct": 41.8948535103,
+            "n_missing": 214
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Educational attainment, No. (weighted %)",
+        "level": null,
+        "type": "categorical",
+        "values": [],
+        "p": 6.1666572648e-10,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "educ",
+        "label": "Less than high school",
+        "level": "Less than high school",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "296 (11.8)",
+            "n": 296,
+            "pct": 11.8428141418,
+            "n_missing": 151
+          },
+          "g2": {
+            "text": "223 (26.6)",
+            "n": 223,
+            "pct": 26.6375695688,
+            "n_missing": 15
+          },
+          "g3": {
+            "text": "78 (27.3)",
+            "n": 78,
+            "pct": 27.2675887991,
+            "n_missing": 10
+          },
+          "g4": {
+            "text": "60 (42.8)",
+            "n": 60,
+            "pct": 42.8410774715,
+            "n_missing": 1
+          },
+          "overall": {
+            "text": "657 (16.2)",
+            "n": 657,
+            "pct": 16.1638545364,
+            "n_missing": 177
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "High school or GED",
+        "level": "High school or GED",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "362 (18.3)",
+            "n": 362,
+            "pct": 18.2953289334,
+            "n_missing": 151
+          },
+          "g2": {
+            "text": "143 (24.1)",
+            "n": 143,
+            "pct": 24.0863803481,
+            "n_missing": 15
+          },
+          "g3": {
+            "text": "43 (23.8)",
+            "n": 43,
+            "pct": 23.8464271211,
+            "n_missing": 10
+          },
+          "g4": {
+            "text": "26 (18.2)",
+            "n": 26,
+            "pct": 18.2338892467,
+            "n_missing": 1
+          },
+          "overall": {
+            "text": "574 (19.6)",
+            "n": 574,
+            "pct": 19.6106997073,
+            "n_missing": 177
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "Some college",
+        "level": "Some college",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "614 (33.1)",
+            "n": 614,
+            "pct": 33.0762099507,
+            "n_missing": 151
+          },
+          "g2": {
+            "text": "166 (31.6)",
+            "n": 166,
+            "pct": 31.5842546181,
+            "n_missing": 15
+          },
+          "g3": {
+            "text": "55 (27.3)",
+            "n": 55,
+            "pct": 27.3202475247,
+            "n_missing": 10
+          },
+          "g4": {
+            "text": "28 (24.3)",
+            "n": 28,
+            "pct": 24.2884582831,
+            "n_missing": 1
+          },
+          "overall": {
+            "text": "863 (32.2)",
+            "n": 863,
+            "pct": 32.2219917284,
+            "n_missing": 177
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "educ",
+        "label": "College graduate or above",
+        "level": "College graduate or above",
+        "type": "categorical",
+        "values": {
+          "g1": {
+            "text": "613 (36.8)",
+            "n": 613,
+            "pct": 36.7856469741,
+            "n_missing": 151
+          },
+          "g2": {
+            "text": "94 (17.7)",
+            "n": 94,
+            "pct": 17.691795465,
+            "n_missing": 15
+          },
+          "g3": {
+            "text": "38 (21.6)",
+            "n": 38,
+            "pct": 21.5657365551,
+            "n_missing": 10
+          },
+          "g4": {
+            "text": "13 (14.6)",
+            "n": 13,
+            "pct": 14.6365749986,
+            "n_missing": 1
+          },
+          "overall": {
+            "text": "758 (32.0)",
+            "n": 758,
+            "pct": 32.003454028,
+            "n_missing": 177
+          }
+        },
+        "p": null,
+        "p_text": "",
+        "header": false
+      },
+      {
+        "variable": "bmi",
+        "label": "Body mass index, kg/m2, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "27.8 (0.25)",
+            "median_iqr": "26.8 (23.4-30.9)",
+            "n_missing": 24
+          },
+          "g2": {
+            "text": "29.6 (0.35)",
+            "median_iqr": "28.2 (24.9-33.1)",
+            "n_missing": 7
+          },
+          "g3": {
+            "text": "29.1 (0.78)",
+            "median_iqr": "28.3 (23.8-32.8)",
+            "n_missing": 2
+          },
+          "g4": {
+            "text": "28.6 (0.46)",
+            "median_iqr": "27.3 (24.4-31.9)",
+            "n_missing": 1
+          },
+          "overall": {
+            "text": "28.2 (0.23)",
+            "median_iqr": "27.1 (23.8-31.3)",
+            "n_missing": 34
+          }
+        },
+        "p": 0.0054830734675,
+        "p_text": ".005",
+        "header": true
+      },
+      {
+        "variable": "us_born",
+        "label": "Born in the United States, No. (weighted %)",
+        "level": null,
+        "type": "binary",
+        "values": {
+          "g1": {
+            "text": "1,479 (85.1)",
+            "n": 1479,
+            "pct": 85.1254360402,
+            "n_missing": 1
+          },
+          "g2": {
+            "text": "344 (67.4)",
+            "n": 344,
+            "pct": 67.4039475057,
+            "n_missing": 2
+          },
+          "g3": {
+            "text": "117 (64.5)",
+            "n": 117,
+            "pct": 64.5240412468,
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "42 (36.7)",
+            "n": 42,
+            "pct": 36.712669259,
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "1,982 (79.6)",
+            "n": 1982,
+            "pct": 79.6208124842,
+            "n_missing": 3
+          }
+        },
+        "p": 4.8659777818e-13,
+        "p_text": "<.001",
+        "header": true
+      },
+      {
+        "variable": "aec",
+        "label": "Absolute eosinophil count, x10^9/L, mean (SE)",
+        "level": null,
+        "type": "continuous",
+        "values": {
+          "g1": {
+            "text": "0.2 (0.00)",
+            "median_iqr": "0.1 (0.1-0.2)",
+            "n_missing": 0
+          },
+          "g2": {
+            "text": "0.2 (0.01)",
+            "median_iqr": "0.2 (0.1-0.3)",
+            "n_missing": 0
+          },
+          "g3": {
+            "text": "0.2 (0.03)",
+            "median_iqr": "0.2 (0.1-0.3)",
+            "n_missing": 0
+          },
+          "g4": {
+            "text": "0.2 (0.02)",
+            "median_iqr": "0.2 (0.1-0.3)",
+            "n_missing": 0
+          },
+          "overall": {
+            "text": "0.2 (0.00)",
+            "median_iqr": "0.1 (0.1-0.2)",
+            "n_missing": 0
+          }
+        },
+        "p": 0.00029949825843,
+        "p_text": "<.001",
+        "header": true
+      }
+    ],
+    "note": "Counts are unweighted; percentages, means and SEs are survey weighted. P values: design-based Wald F test (continuous) or Rao-Scott F test (categorical)."
+  },
+  "prevalence": [
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.041190766841,
+      "lcl": 0.030259399111,
+      "ucl": 0.054642013632,
+      "se": 0.0055555012444,
+      "n": 3029,
+      "events": 150,
+      "n_eff": 1279.6334565017,
+      "df": 17,
+      "pop_millions": 6.39,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Healthy controls",
+      "est": 0.03069974966,
+      "lcl": 0.021767964275,
+      "ucl": 0.041969904272,
+      "se": 0.0045837594028,
+      "n": 2036,
+      "events": 80,
+      "n_eff": 1416.2813336617,
+      "df": 17,
+      "pop_millions": 3.56,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Toxoplasma gondii only",
+      "est": 0.056642685758,
+      "lcl": 0.033045990565,
+      "ucl": 0.089713576753,
+      "se": 0.012599134938,
+      "n": 641,
+      "events": 37,
+      "n_eff": 336.6189834108,
+      "df": 17,
+      "pop_millions": 1.45,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Toxocara only",
+      "est": 0.095128447389,
+      "lcl": 0.039495518885,
+      "ucl": 0.18520361449,
+      "se": 0.031662548783,
+      "n": 224,
+      "events": 21,
+      "n_eff": 85.8629093332,
+      "df": 17,
+      "pop_millions": 0.9,
+      "nchs": "suppress: relative CI width > 130%"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Both positive",
+      "est": 0.11400240608,
+      "lcl": 0.048392327995,
+      "ucl": 0.21756354522,
+      "se": 0.036717250563,
+      "n": 128,
+      "events": 12,
+      "n_eff": 74.9214637304,
+      "df": 15,
+      "pop_millions": 0.49,
+      "nchs": "suppress: relative CI width > 130%"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.054639046475,
+      "lcl": 0.040002262696,
+      "ucl": 0.072622665591,
+      "se": 0.0074326359225,
+      "n": 1535,
+      "events": 103,
+      "n_eff": 935.0074090806,
+      "df": 17,
+      "pop_millions": 4.2,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0.027976812839,
+      "lcl": 0.017299959722,
+      "ucl": 0.042635216646,
+      "se": 0.0056561877419,
+      "n": 1494,
+      "events": 47,
+      "n_eff": 850.0162531167,
+      "df": 17,
+      "pop_millions": 2.19,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0.039135606104,
+      "lcl": 0.025040210404,
+      "ucl": 0.058015899832,
+      "se": 0.0073947640641,
+      "n": 1326,
+      "events": 62,
+      "n_eff": 687.6786171453,
+      "df": 17,
+      "pop_millions": 2.64,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.0369104282,
+      "lcl": 0.023147368658,
+      "ucl": 0.055581678921,
+      "se": 0.0072566215651,
+      "n": 1212,
+      "events": 59,
+      "n_eff": 675.066899412,
+      "df": 17,
+      "pop_millions": 2.53,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0.063535320056,
+      "lcl": 0.034701245759,
+      "ucl": 0.10527063637,
+      "se": 0.015598859434,
+      "n": 491,
+      "events": 29,
+      "n_eff": 244.5236866499,
+      "df": 17,
+      "pop_millions": 1.23,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Hispanic",
+      "est": 0.047637139221,
+      "lcl": 0.034274402571,
+      "ucl": 0.064264584479,
+      "se": 0.0068251899479,
+      "n": 708,
+      "events": 36,
+      "n_eff": 708,
+      "df": 17,
+      "pop_millions": 1.22,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Asian",
+      "est": 0.076274617297,
+      "lcl": 0.050302777368,
+      "ucl": 0.10997342632,
+      "se": 0.013463218975,
+      "n": 456,
+      "events": 33,
+      "n_eff": 388.7094471914,
+      "df": 17,
+      "pop_millions": 0.69,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Black",
+      "est": 0.030770112553,
+      "lcl": 0.016437033022,
+      "ucl": 0.052145739852,
+      "se": 0.0078121213328,
+      "n": 671,
+      "events": 24,
+      "n_eff": 488.6725258881,
+      "df": 16,
+      "pop_millions": 0.53,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic White",
+      "est": 0.035369242497,
+      "lcl": 0.020273203773,
+      "ucl": 0.056957413889,
+      "se": 0.0081241648176,
+      "n": 1108,
+      "events": 50,
+      "n_eff": 516.9272336663,
+      "df": 17,
+      "pop_millions": 3.53,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Other or multiracial",
+      "est": 0.11926401755,
+      "lcl": 0.023284474338,
+      "ucl": 0.31988993608,
+      "se": 0.06214408531,
+      "n": 86,
+      "events": 7,
+      "n_eff": 27.1991651877,
+      "df": 14,
+      "pop_millions": 0.42,
+      "nchs": "suppress: effective n < 30"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "us_born",
+      "group_label": "Born in the United States",
+      "group": "No",
+      "est": 0.053783179423,
+      "lcl": 0.038244296568,
+      "ucl": 0.073222725585,
+      "se": 0.0079452647756,
+      "n": 1044,
+      "events": 60,
+      "n_eff": 806.1584063814,
+      "df": 17,
+      "pop_millions": 1.7,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "eosinophilia_05",
+      "outcome_label": "Eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "us_born",
+      "group_label": "Born in the United States",
+      "group": "Yes",
+      "est": 0.038000613493,
+      "lcl": 0.02505662386,
+      "ucl": 0.055037493635,
+      "se": 0.0067445592641,
+      "n": 1982,
+      "events": 90,
+      "n_eff": 803.6339080677,
+      "df": 17,
+      "pop_millions": 4.69,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "Overall",
+      "group_label": "Overall",
+      "group": "Overall",
+      "est": 0.00013105132762,
+      "lcl": 1.9294992231e-06,
+      "ucl": 0.00081541421263,
+      "se": 0.00013177309089,
+      "n": 3029,
+      "events": 1,
+      "n_eff": 3029,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Healthy controls",
+      "est": 0.00017552604975,
+      "lcl": 2.5420106488e-06,
+      "ucl": 0.0010954645554,
+      "se": 0.00017691258474,
+      "n": 2036,
+      "events": 1,
+      "n_eff": 2036,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Toxoplasma gondii only",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0057383545295,
+      "se": 0,
+      "n": 641,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Toxocara only",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.016333352162,
+      "se": 0,
+      "n": 224,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "arms",
+      "group_label": "Toxoplasma gondii vs Toxocara vs healthy controls",
+      "group": "Both positive",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.028408053444,
+      "se": 0,
+      "n": 128,
+      "events": 0,
+      "n_eff": null,
+      "df": 15,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Male",
+      "est": 0.00026442661408,
+      "lcl": 4.0862175068e-06,
+      "ucl": 0.0016294574175,
+      "se": 0.00026423963859,
+      "n": 1535,
+      "events": 1,
+      "n_eff": 1535,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "sex",
+      "group_label": "Sex",
+      "group": "Female",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0024660836945,
+      "se": 0,
+      "n": 1494,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "18-39",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0027780943068,
+      "se": 0,
+      "n": 1326,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "40-64",
+      "est": 0.00029712909571,
+      "lcl": 4.1615133076e-06,
+      "ucl": 0.001865626542,
+      "se": 0.0003009105003,
+      "n": 1212,
+      "events": 1,
+      "n_eff": 1212,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "agecat",
+      "group_label": "Age group",
+      "group": "65+",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.007484840794,
+      "se": 0,
+      "n": 491,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Hispanic",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0051967317404,
+      "se": 0,
+      "n": 708,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Asian",
+      "est": 0.0022427620713,
+      "lcl": 6.0198550326e-05,
+      "ucl": 0.012274359566,
+      "se": 0.0020672707837,
+      "n": 456,
+      "events": 1,
+      "n_eff": 456,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic Black",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0054825008143,
+      "se": 0,
+      "n": 671,
+      "events": 0,
+      "n_eff": null,
+      "df": 16,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Non-Hispanic White",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0033237775677,
+      "se": 0,
+      "n": 1108,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "race_eth",
+      "group_label": "Race and ethnicity",
+      "group": "Other or multiracial",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.041987015304,
+      "se": 0,
+      "n": 86,
+      "events": 0,
+      "n_eff": null,
+      "df": 14,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "us_born",
+      "group_label": "Born in the United States",
+      "group": "No",
+      "est": 0.00064347365031,
+      "lcl": 1.1534493787e-05,
+      "ucl": 0.0038473573818,
+      "se": 0.00063002783931,
+      "n": 1044,
+      "events": 1,
+      "n_eff": 1044,
+      "df": 17,
+      "pop_millions": 0.02,
+      "nchs": "meets standard"
+    },
+    {
+      "outcome": "hypereosinophilia_15",
+      "outcome_label": "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L",
+      "outcome_level": null,
+      "group_var": "us_born",
+      "group_label": "Born in the United States",
+      "group": "Yes",
+      "est": 0,
+      "lcl": 0,
+      "ucl": 0.0018594595001,
+      "se": 0,
+      "n": 1982,
+      "events": 0,
+      "n_eff": null,
+      "df": 17,
+      "pop_millions": 0,
+      "nchs": "review: estimate of 0% or 100% (report with upper/lower bound)"
+    }
+  ],
+  "primary_model": {
+    "id": "full",
+    "label": "Fully adjusted (primary)",
+    "family": "quasipoisson",
+    "effect": "PR",
+    "effect_label": "Prevalence ratio",
+    "formula": "eosinophilia_05 ~ arms + age + sex + race_eth + pir_cat + bmi + us_born",
+    "call": "svyglm(eosinophilia_05 ~ arms + age + sex + race_eth + pir_cat + bmi + us_born, design = <full>, family = quasipoisson)",
+    "n": 2783,
+    "events": 134,
+    "df_residual": 4,
+    "df_design": 17,
+    "n_params": 14,
+    "converged": true,
+    "warnings": [],
+    "dispersion": 0.91541874302,
+    "terms": [
+      {
+        "term": "(Intercept)",
+        "variable": "(Intercept)",
+        "level": "",
+        "label": "Intercept",
+        "beta": -3.8241495181,
+        "se": 0.4508842311,
+        "est": 0.021836999609,
+        "lcl": 0.0084344388409,
+        "ucl": 0.056536606752,
+        "p": 1.6324538973e-07
+      },
+      {
+        "term": "armsToxoplasma gondii only",
+        "variable": "arms",
+        "level": "Toxoplasma gondii only",
+        "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls)",
+        "beta": 0.69562793022,
+        "se": 0.25997046424,
+        "est": 2.0049676585,
+        "lcl": 1.1585140528,
+        "ucl": 3.4698718604,
+        "p": 0.015960606376
+      },
+      {
+        "term": "armsToxocara only",
+        "variable": "arms",
+        "level": "Toxocara only",
+        "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxocara only (vs Healthy controls)",
+        "beta": 1.0490936313,
+        "se": 0.35808352489,
+        "est": 2.8550622059,
+        "lcl": 1.341251901,
+        "ucl": 6.0774416747,
+        "p": 0.0093533702295
+      },
+      {
+        "term": "armsBoth positive",
+        "variable": "arms",
+        "level": "Both positive",
+        "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Both positive (vs Healthy controls)",
+        "beta": 1.414713148,
+        "se": 0.30719374061,
+        "est": 4.1153058131,
+        "lcl": 2.1524161647,
+        "ucl": 7.8682469556,
+        "p": 0.00025220655511
+      },
+      {
+        "term": "age",
+        "variable": "age",
+        "level": "",
+        "label": "Age",
+        "beta": -0.0020896950305,
+        "se": 0.0065939379815,
+        "est": 0.99791248686,
+        "lcl": 0.98412565875,
+        "ucl": 1.0118924576,
+        "p": 0.75516944776
+      },
+      {
+        "term": "sexFemale",
+        "variable": "sex",
+        "level": "Female",
+        "label": "Sex: Female (vs Male)",
+        "beta": -0.68173509292,
+        "se": 0.17442768541,
+        "est": 0.50573872697,
+        "lcl": 0.35002687533,
+        "ucl": 0.73072006175,
+        "p": 0.0011308714006
+      },
+      {
+        "term": "race_ethNon-Hispanic Asian",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Asian",
+        "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+        "beta": 0.83912199614,
+        "se": 0.27531761142,
+        "est": 2.3143340902,
+        "lcl": 1.2946658238,
+        "ucl": 4.1370847849,
+        "p": 0.0072728285233
+      },
+      {
+        "term": "race_ethNon-Hispanic Black",
+        "variable": "race_eth",
+        "level": "Non-Hispanic Black",
+        "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+        "beta": -0.41800762904,
+        "se": 0.35225933507,
+        "est": 0.65835720577,
+        "lcl": 0.31310713533,
+        "ucl": 1.3843000094,
+        "p": 0.25168586572
+      },
+      {
+        "term": "race_ethNon-Hispanic White",
+        "variable": "race_eth",
+        "level": "Non-Hispanic White",
+        "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+        "beta": -0.017938582753,
+        "se": 0.33319010025,
+        "est": 0.98222135584,
+        "lcl": 0.48631036557,
+        "ucl": 1.9838334944,
+        "p": 0.95769117241
+      },
+      {
+        "term": "race_ethOther or multiracial",
+        "variable": "race_eth",
+        "level": "Other or multiracial",
+        "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+        "beta": 1.2238744317,
+        "se": 0.44618530621,
+        "est": 3.4003366169,
+        "lcl": 1.3264493651,
+        "ucl": 8.7167210543,
+        "p": 0.013870750921
+      },
+      {
+        "term": "pir_cat1.30-3.49",
+        "variable": "pir_cat",
+        "level": "1.30-3.49",
+        "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+        "beta": 0.18862668424,
+        "se": 0.2621361596,
+        "est": 1.2075900559,
+        "lcl": 0.69459087987,
+        "ucl": 2.0994714809,
+        "p": 0.48156278202
+      },
+      {
+        "term": "pir_cat3.50+",
+        "variable": "pir_cat",
+        "level": "3.50+",
+        "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+        "beta": -0.40052192819,
+        "se": 0.2679419609,
+        "est": 0.66997027839,
+        "lcl": 0.38066709537,
+        "ucl": 1.1791409854,
+        "p": 0.15329546743
+      },
+      {
+        "term": "bmi",
+        "variable": "bmi",
+        "level": "",
+        "label": "Body mass index",
+        "beta": 0.017571303967,
+        "se": 0.012947569883,
+        "est": 1.0177265875,
+        "lcl": 0.99030165458,
+        "ucl": 1.0459110132,
+        "p": 0.19249207282
+      },
+      {
+        "term": "us_born",
+        "variable": "us_born",
+        "level": "",
+        "label": "Born in the United States",
+        "beta": 0.2592343286,
+        "se": 0.34319806186,
+        "est": 1.2959374445,
+        "lcl": 0.62822915122,
+        "ucl": 2.673314119,
+        "p": 0.4603777325
+      }
+    ]
+  },
+  "arms": {
+    "reference": "Healthy controls",
+    "levels": ["Healthy controls", "Toxoplasma gondii only", "Toxocara only", "Both positive"],
+    "effect": "PR",
+    "vs_reference": [
+      {
+        "comparison": "Toxoplasma gondii only",
+        "versus": "Healthy controls",
+        "est": 2.0049676585,
+        "lcl": 1.1585140528,
+        "ucl": 3.4698718604,
+        "p": 0.015960606376
+      },
+      {
+        "comparison": "Toxocara only",
+        "versus": "Healthy controls",
+        "est": 2.8550622059,
+        "lcl": 1.341251901,
+        "ucl": 6.0774416747,
+        "p": 0.0093533702295
+      },
+      {
+        "comparison": "Both positive",
+        "versus": "Healthy controls",
+        "est": 4.1153058131,
+        "lcl": 2.1524161647,
+        "ucl": 7.8682469556,
+        "p": 0.00025220655511
+      }
+    ],
+    "pairwise": [
+      {
+        "comparison": "Toxoplasma gondii only",
+        "versus": "Toxocara only",
+        "est": 0.70225007862,
+        "lcl": 0.32137356624,
+        "ucl": 1.5345231367,
+        "p": 0.35344075763
+      },
+      {
+        "comparison": "Toxoplasma gondii only",
+        "versus": "Both positive",
+        "est": 0.48719773198,
+        "lcl": 0.19954056231,
+        "ucl": 1.1895407495,
+        "p": 0.10743200306
+      },
+      {
+        "comparison": "Toxocara only",
+        "versus": "Both positive",
+        "est": 0.6937667176,
+        "lcl": 0.28868602563,
+        "ucl": 1.6672516704,
+        "p": 0.39124455467
+      }
+    ],
+    "p_overall": 0.00034481097113,
+    "df": 17,
+    "n_by_group": {
+      "Healthy controls": 1883,
+      "Toxoplasma gondii only": 578,
+      "Toxocara only": 206,
+      "Both positive": 116
+    }
+  },
+  "models": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "eosinophilia_05 ~ arms",
+      "call": "svyglm(eosinophilia_05 ~ arms, design = <crude>, family = quasipoisson)",
+      "n": 2783,
+      "events": 134,
+      "df_residual": 14,
+      "df_design": 17,
+      "n_params": 4,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.9591111627,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -3.4973235457,
+          "se": 0.16571227292,
+          "est": 0.030278313593,
+          "lcl": 0.021344826641,
+          "ucl": 0.042950748181,
+          "p": 1.24068968e-13
+        },
+        {
+          "term": "armsToxoplasma gondii only",
+          "variable": "arms",
+          "level": "Toxoplasma gondii only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls)",
+          "beta": 0.63579393924,
+          "se": 0.23111666127,
+          "est": 1.8885209173,
+          "lcl": 1.1597220995,
+          "ucl": 3.0753154196,
+          "p": 0.013640365248
+        },
+        {
+          "term": "armsToxocara only",
+          "variable": "arms",
+          "level": "Toxocara only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxocara only (vs Healthy controls)",
+          "beta": 1.201427226,
+          "se": 0.37442228168,
+          "est": 3.3248588631,
+          "lcl": 1.5090272885,
+          "ucl": 7.3257034806,
+          "p": 0.0051496768113
+        },
+        {
+          "term": "armsBoth positive",
+          "variable": "arms",
+          "level": "Both positive",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Both positive (vs Healthy controls)",
+          "beta": 1.3602820049,
+          "se": 0.30407785811,
+          "est": 3.8972922023,
+          "lcl": 2.0518335396,
+          "ucl": 7.4025919826,
+          "p": 0.00033419468605
+        }
+      ]
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "eosinophilia_05 ~ arms + age + sex + race_eth",
+      "call": "svyglm(eosinophilia_05 ~ arms + age + sex + race_eth, design = <demographic>, family = quasipoisson)",
+      "n": 2783,
+      "events": 134,
+      "df_residual": 8,
+      "df_design": 17,
+      "n_params": 10,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.90334537525,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -3.2341703139,
+          "se": 0.21610258904,
+          "est": 0.039392875106,
+          "lcl": 0.024969332112,
+          "ucl": 0.062148182506,
+          "p": 3.2099853185e-11
+        },
+        {
+          "term": "armsToxoplasma gondii only",
+          "variable": "arms",
+          "level": "Toxoplasma gondii only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls)",
+          "beta": 0.71196496942,
+          "se": 0.25714466903,
+          "est": 2.0379919186,
+          "lcl": 1.1846378795,
+          "ucl": 3.5060596425,
+          "p": 0.01314128307
+        },
+        {
+          "term": "armsToxocara only",
+          "variable": "arms",
+          "level": "Toxocara only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxocara only (vs Healthy controls)",
+          "beta": 1.0716517538,
+          "se": 0.3803647943,
+          "est": 2.9201989684,
+          "lcl": 1.3088543146,
+          "ucl": 6.5152873928,
+          "p": 0.011861887123
+        },
+        {
+          "term": "armsBoth positive",
+          "variable": "arms",
+          "level": "Both positive",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Both positive (vs Healthy controls)",
+          "beta": 1.3696044949,
+          "se": 0.30625463973,
+          "est": 3.933794552,
+          "lcl": 2.0615614585,
+          "ucl": 7.5063197916,
+          "p": 0.00033516611814
+        },
+        {
+          "term": "age",
+          "variable": "age",
+          "level": "",
+          "label": "Age",
+          "beta": -0.0020111661313,
+          "se": 0.0071222679692,
+          "est": 0.99799085491,
+          "lcl": 0.98310648511,
+          "ucl": 1.0131005762,
+          "p": 0.78106339554
+        },
+        {
+          "term": "sexFemale",
+          "variable": "sex",
+          "level": "Female",
+          "label": "Sex: Female (vs Male)",
+          "beta": -0.66558353352,
+          "se": 0.16280779128,
+          "est": 0.51397351941,
+          "lcl": 0.36455496337,
+          "ucl": 0.72463360863,
+          "p": 0.00076609822878
+        },
+        {
+          "term": "race_ethNon-Hispanic Asian",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Asian",
+          "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+          "beta": 0.63151908033,
+          "se": 0.24311947184,
+          "est": 1.8804649881,
+          "lcl": 1.1258990042,
+          "ucl": 3.1407333679,
+          "p": 0.018774289476
+        },
+        {
+          "term": "race_ethNon-Hispanic Black",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Black",
+          "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+          "beta": -0.28634134065,
+          "se": 0.35302457381,
+          "est": 0.75100622323,
+          "lcl": 0.35659375517,
+          "ucl": 1.581660753,
+          "p": 0.42851364741
+        },
+        {
+          "term": "race_ethNon-Hispanic White",
+          "variable": "race_eth",
+          "level": "Non-Hispanic White",
+          "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+          "beta": 0.035035655024,
+          "se": 0.29607149118,
+          "est": 1.0356566345,
+          "lcl": 0.55453764239,
+          "ucl": 1.9341963153,
+          "p": 0.90718913657
+        },
+        {
+          "term": "race_ethOther or multiracial",
+          "variable": "race_eth",
+          "level": "Other or multiracial",
+          "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+          "beta": 1.3284887022,
+          "se": 0.51911102503,
+          "est": 3.775333421,
+          "lcl": 1.2627099622,
+          "ucl": 11.2877405474,
+          "p": 0.020322910332
+        }
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "family": "quasipoisson",
+      "effect": "PR",
+      "effect_label": "Prevalence ratio",
+      "formula": "eosinophilia_05 ~ arms + age + sex + race_eth + pir_cat + bmi + us_born",
+      "call": "svyglm(eosinophilia_05 ~ arms + age + sex + race_eth + pir_cat + bmi + us_born, design = <full>, family = quasipoisson)",
+      "n": 2783,
+      "events": 134,
+      "df_residual": 4,
+      "df_design": 17,
+      "n_params": 14,
+      "converged": true,
+      "warnings": [],
+      "dispersion": 0.91541874302,
+      "terms": [
+        {
+          "term": "(Intercept)",
+          "variable": "(Intercept)",
+          "level": "",
+          "label": "Intercept",
+          "beta": -3.8241495181,
+          "se": 0.4508842311,
+          "est": 0.021836999609,
+          "lcl": 0.0084344388409,
+          "ucl": 0.056536606752,
+          "p": 1.6324538973e-07
+        },
+        {
+          "term": "armsToxoplasma gondii only",
+          "variable": "arms",
+          "level": "Toxoplasma gondii only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls)",
+          "beta": 0.69562793022,
+          "se": 0.25997046424,
+          "est": 2.0049676585,
+          "lcl": 1.1585140528,
+          "ucl": 3.4698718604,
+          "p": 0.015960606376
+        },
+        {
+          "term": "armsToxocara only",
+          "variable": "arms",
+          "level": "Toxocara only",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxocara only (vs Healthy controls)",
+          "beta": 1.0490936313,
+          "se": 0.35808352489,
+          "est": 2.8550622059,
+          "lcl": 1.341251901,
+          "ucl": 6.0774416747,
+          "p": 0.0093533702295
+        },
+        {
+          "term": "armsBoth positive",
+          "variable": "arms",
+          "level": "Both positive",
+          "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Both positive (vs Healthy controls)",
+          "beta": 1.414713148,
+          "se": 0.30719374061,
+          "est": 4.1153058131,
+          "lcl": 2.1524161647,
+          "ucl": 7.8682469556,
+          "p": 0.00025220655511
+        },
+        {
+          "term": "age",
+          "variable": "age",
+          "level": "",
+          "label": "Age",
+          "beta": -0.0020896950305,
+          "se": 0.0065939379815,
+          "est": 0.99791248686,
+          "lcl": 0.98412565875,
+          "ucl": 1.0118924576,
+          "p": 0.75516944776
+        },
+        {
+          "term": "sexFemale",
+          "variable": "sex",
+          "level": "Female",
+          "label": "Sex: Female (vs Male)",
+          "beta": -0.68173509292,
+          "se": 0.17442768541,
+          "est": 0.50573872697,
+          "lcl": 0.35002687533,
+          "ucl": 0.73072006175,
+          "p": 0.0011308714006
+        },
+        {
+          "term": "race_ethNon-Hispanic Asian",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Asian",
+          "label": "Race and ethnicity: Non-Hispanic Asian (vs Hispanic)",
+          "beta": 0.83912199614,
+          "se": 0.27531761142,
+          "est": 2.3143340902,
+          "lcl": 1.2946658238,
+          "ucl": 4.1370847849,
+          "p": 0.0072728285233
+        },
+        {
+          "term": "race_ethNon-Hispanic Black",
+          "variable": "race_eth",
+          "level": "Non-Hispanic Black",
+          "label": "Race and ethnicity: Non-Hispanic Black (vs Hispanic)",
+          "beta": -0.41800762904,
+          "se": 0.35225933507,
+          "est": 0.65835720577,
+          "lcl": 0.31310713533,
+          "ucl": 1.3843000094,
+          "p": 0.25168586572
+        },
+        {
+          "term": "race_ethNon-Hispanic White",
+          "variable": "race_eth",
+          "level": "Non-Hispanic White",
+          "label": "Race and ethnicity: Non-Hispanic White (vs Hispanic)",
+          "beta": -0.017938582753,
+          "se": 0.33319010025,
+          "est": 0.98222135584,
+          "lcl": 0.48631036557,
+          "ucl": 1.9838334944,
+          "p": 0.95769117241
+        },
+        {
+          "term": "race_ethOther or multiracial",
+          "variable": "race_eth",
+          "level": "Other or multiracial",
+          "label": "Race and ethnicity: Other or multiracial (vs Hispanic)",
+          "beta": 1.2238744317,
+          "se": 0.44618530621,
+          "est": 3.4003366169,
+          "lcl": 1.3264493651,
+          "ucl": 8.7167210543,
+          "p": 0.013870750921
+        },
+        {
+          "term": "pir_cat1.30-3.49",
+          "variable": "pir_cat",
+          "level": "1.30-3.49",
+          "label": "Income-to-poverty ratio: 1.30-3.49 (vs <1.30)",
+          "beta": 0.18862668424,
+          "se": 0.2621361596,
+          "est": 1.2075900559,
+          "lcl": 0.69459087987,
+          "ucl": 2.0994714809,
+          "p": 0.48156278202
+        },
+        {
+          "term": "pir_cat3.50+",
+          "variable": "pir_cat",
+          "level": "3.50+",
+          "label": "Income-to-poverty ratio: 3.50+ (vs <1.30)",
+          "beta": -0.40052192819,
+          "se": 0.2679419609,
+          "est": 0.66997027839,
+          "lcl": 0.38066709537,
+          "ucl": 1.1791409854,
+          "p": 0.15329546743
+        },
+        {
+          "term": "bmi",
+          "variable": "bmi",
+          "level": "",
+          "label": "Body mass index",
+          "beta": 0.017571303967,
+          "se": 0.012947569883,
+          "est": 1.0177265875,
+          "lcl": 0.99030165458,
+          "ucl": 1.0459110132,
+          "p": 0.19249207282
+        },
+        {
+          "term": "us_born",
+          "variable": "us_born",
+          "level": "",
+          "label": "Born in the United States",
+          "beta": 0.2592343286,
+          "se": 0.34319806186,
+          "est": 1.2959374445,
+          "lcl": 0.62822915122,
+          "ucl": 2.673314119,
+          "p": 0.4603777325
+        }
+      ]
+    }
+  ],
+  "primary_estimate": {
+    "effect": "PR",
+    "effect_label": "Prevalence ratio",
+    "term": "armsToxoplasma gondii only",
+    "label": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls)",
+    "est": 2.0049676585,
+    "lcl": 1.1585140528,
+    "ucl": 3.4698718604,
+    "p": 0.015960606376,
+    "n": 2783
+  },
+  "interactions": [
+    {
+      "modifier": "sex",
+      "label": "Sex",
+      "p_interaction": 0.50787976449,
+      "strata": [
+        {
+          "level": "Male",
+          "n": 1407,
+          "est": 1.3319260684,
+          "lcl": 0.75088514868,
+          "ucl": 2.3625810881,
+          "p": 0.30612910391
+        },
+        {
+          "level": "Female",
+          "n": 1376,
+          "est": 4.1908827584,
+          "lcl": 1.7100453638,
+          "ucl": 10.2707791651,
+          "p": 0.003615829401
+        }
+      ]
+    },
+    {
+      "modifier": "agecat",
+      "label": "Age group",
+      "p_interaction": 0.028051420475,
+      "strata": [
+        {
+          "level": "18-39",
+          "n": 1236,
+          "est": 1.7088916596,
+          "lcl": 0.45885951357,
+          "ucl": 6.3642806085,
+          "p": 0.40185350749
+        },
+        {
+          "level": "40-64",
+          "n": 1111,
+          "est": 1.5166225262,
+          "lcl": 0.36957193806,
+          "ucl": 6.2238055713,
+          "p": 0.54196322537
+        },
+        {
+          "level": "65+",
+          "n": 436,
+          "est": 2.581048087,
+          "lcl": 0.44091688776,
+          "ucl": 15.1089908609,
+          "p": 0.27331126514
+        }
+      ]
+    }
+  ],
+  "sensitivity": [
+    {
+      "id": "s1",
+      "label": "Alternative outcome definition: AEC >=1.5",
+      "type": "alt_outcome",
+      "est": null,
+      "lcl": null,
+      "ucl": null,
+      "n": 2783,
+      "effect": "PR",
+      "note": "Not estimable: no (or almost no) outcome events in a comparison group."
+    },
+    {
+      "id": "s2",
+      "label": "Logistic regression (odds ratio)",
+      "type": "alt_family",
+      "est": 2.0878982766,
+      "lcl": 1.1608748225,
+      "ucl": 3.7552017916,
+      "n": 2783,
+      "effect": "OR"
+    },
+    {
+      "id": "s3",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "type": "mi",
+      "est": 3.8468175788,
+      "lcl": 2.136015763,
+      "ucl": 6.9278540639,
+      "n": 3029,
+      "effect": "PR",
+      "note": "Multiple imputation by chained equations (m = 10; 246 rows imputed), Rubin's rules"
+    },
+    {
+      "id": "s4",
+      "label": "Alternative control group: everyone negative for all groups, no health screening (healthy-control bias check)",
+      "type": "alt_exposure",
+      "est": 2.8091870122,
+      "lcl": 1.6247313731,
+      "ucl": 4.8571301079,
+      "n": 4191,
+      "effect": "PR",
+      "note": "Comparison groups (all seronegative controls): Both positive (vs Controls (negative for all))"
+    },
+    {
+      "id": "s5",
+      "label": "Unweighted analysis (design ignored)",
+      "type": "unweighted",
+      "est": 2.2305515805,
+      "lcl": 1.1299422499,
+      "ucl": 4.4031987953,
+      "n": 2783,
+      "effect": "PR",
+      "note": "Unweighted GLM (ignores design)"
+    }
+  ],
+  "evalue": {
+    "point": 3.4244491319,
+    "ci": 1.5870473161,
+    "rr_scale": 2.0049676585,
+    "note": "Prevalence ratio used directly"
+  },
+  "vif": [
+    {
+      "term": "armsToxoplasma gondii only",
+      "vif": 1.3
+    },
+    {
+      "term": "armsToxocara only",
+      "vif": 1.1
+    },
+    {
+      "term": "armsBoth positive",
+      "vif": 1.1
+    },
+    {
+      "term": "age",
+      "vif": 1.23
+    },
+    {
+      "term": "sexFemale",
+      "vif": 1.02
+    },
+    {
+      "term": "race_ethNon-Hispanic Asian",
+      "vif": 1.58
+    },
+    {
+      "term": "race_ethNon-Hispanic Black",
+      "vif": 1.93
+    },
+    {
+      "term": "race_ethNon-Hispanic White",
+      "vif": 2.54
+    },
+    {
+      "term": "race_ethOther or multiracial",
+      "vif": 1.14
+    },
+    {
+      "term": "pir_cat1.30-3.49",
+      "vif": 1.33
+    },
+    {
+      "term": "pir_cat3.50+",
+      "vif": 1.39
+    },
+    {
+      "term": "bmi",
+      "vif": 1.09
+    },
+    {
+      "term": "us_born",
+      "vif": 1.95
+    }
+  ],
+  "benchmarks": [],
+  "figures": [
+    {
+      "id": "prevalence",
+      "title": "Weighted prevalence of eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "file": "fig_prevalence.png"
+    },
+    {
+      "id": "forest",
+      "title": "Toxoplasma gondii vs Toxocara vs healthy controls: Toxoplasma gondii only (vs Healthy controls) and eosinophilia - absolute eosinophil count >=0.5 x10^9/L",
+      "file": "fig_forest.png"
+    }
+  ],
+  "derivation_audit": [
+    {
+      "name": "aec",
+      "expr": "LBDEONO",
+      "type": "continuous",
+      "n_nonmissing": 7944,
+      "quantiles": [0, 0.1, 0.2, 0.3, 3.7]
+    },
+    {
+      "name": "eosinophilia_05",
+      "expr": "aec >= 0.5",
+      "type": "binary",
+      "n_nonmissing": 7944,
+      "n_positive": 650
+    },
+    {
+      "name": "toxo_igg_2011",
+      "expr": "SSTOXG",
+      "type": "continuous",
+      "n_nonmissing": 6097,
+      "quantiles": [0, 0, 0, 0, 234]
+    },
+    {
+      "name": "toxo_igg_9904",
+      "expr": "coalesce(LBXTO1, LBDTO1)",
+      "type": "continuous",
+      "n_nonmissing": 0
+    },
+    {
+      "name": "toxoplasma_seropos",
+      "expr": "coalesce(toxo_igg_2011 >= 33, toxo_igg_9904 >= 10)",
+      "type": "binary",
+      "n_nonmissing": 6097,
+      "n_positive": 794
+    },
+    {
+      "name": "toxocara_ab",
+      "expr": "SSTCAR",
+      "type": "categorical",
+      "n_nonmissing": 6098,
+      "levels": {
+        "1": 438,
+        "2": 5660
+      }
+    },
+    {
+      "name": "toxocara_seropos",
+      "expr": "toxocara_ab == 1",
+      "type": "binary",
+      "n_nonmissing": 6098,
+      "n_positive": 438
+    },
+    {
+      "name": "asthma",
+      "expr": "MCQ010 == 1",
+      "type": "binary",
+      "n_nonmissing": 9354,
+      "n_positive": 1448
+    },
+    {
+      "name": "dm_selfreport",
+      "expr": "DIQ010 == 1",
+      "type": "binary",
+      "n_nonmissing": 9357,
+      "n_positive": 708
+    },
+    {
+      "name": "insulin_use",
+      "expr": "DIQ050 == 1",
+      "type": "binary",
+      "n_nonmissing": 9362,
+      "n_positive": 213
+    },
+    {
+      "name": "dm_pills",
+      "expr": "DIQ070 == 1",
+      "type": "binary",
+      "n_nonmissing": 1075,
+      "n_positive": 546
+    },
+    {
+      "name": "hba1c",
+      "expr": "LBXGH",
+      "type": "continuous",
+      "n_nonmissing": 6145,
+      "quantiles": [3.6, 5.2, 5.5, 5.8, 17.8]
+    },
+    {
+      "name": "diabetes",
+      "expr": "any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+      "type": "binary",
+      "n_nonmissing": 9362,
+      "n_positive": 904
+    },
+    {
+      "name": "chd",
+      "expr": "MCQ160C == 1",
+      "type": "binary",
+      "n_nonmissing": 5538,
+      "n_positive": 196
+    },
+    {
+      "name": "mi",
+      "expr": "MCQ160E == 1",
+      "type": "binary",
+      "n_nonmissing": 5552,
+      "n_positive": 203
+    },
+    {
+      "name": "stroke",
+      "expr": "MCQ160F == 1",
+      "type": "binary",
+      "n_nonmissing": 5555,
+      "n_positive": 229
+    },
+    {
+      "name": "hf",
+      "expr": "MCQ160B == 1",
+      "type": "binary",
+      "n_nonmissing": 5544,
+      "n_positive": 187
+    },
+    {
+      "name": "cvd",
+      "expr": "any_of(chd, mi, stroke, hf)",
+      "type": "binary",
+      "n_nonmissing": 5557,
+      "n_positive": 539
+    },
+    {
+      "name": "creatinine",
+      "expr": "LBXSCR",
+      "type": "continuous",
+      "n_nonmissing": 5976,
+      "quantiles": [0.16, 0.69, 0.82, 0.98, 9.51]
+    },
+    {
+      "name": "female",
+      "expr": "RIAGENDR == 2",
+      "type": "binary",
+      "n_nonmissing": 9756,
+      "n_positive": 4900
+    },
+    {
+      "name": "age",
+      "expr": "RIDAGEYR",
+      "type": "continuous",
+      "n_nonmissing": 9756,
+      "quantiles": [0, 9, 26, 52, 80]
+    },
+    {
+      "name": "egfr",
+      "expr": "142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+      "type": "continuous",
+      "n_nonmissing": 5976,
+      "quantiles": [5.397, 85.943, 102.719, 119.777, 179.713]
+    },
+    {
+      "name": "uacr",
+      "expr": "URDACT",
+      "type": "continuous",
+      "n_nonmissing": 7636,
+      "quantiles": [0.43, 4.74, 7.545, 14.89, 92500]
+    },
+    {
+      "name": "ckd",
+      "expr": "any_of(egfr < 60, uacr >= 30)",
+      "type": "binary",
+      "n_nonmissing": 7701,
+      "n_positive": 1254
+    },
+    {
+      "name": "cancer_hx",
+      "expr": "MCQ220 == 1",
+      "type": "binary",
+      "n_nonmissing": 5554,
+      "n_positive": 488
+    },
+    {
+      "name": "liver_hx",
+      "expr": "MCQ160L == 1",
+      "type": "binary",
+      "n_nonmissing": 5553,
+      "n_positive": 219
+    },
+    {
+      "name": "arms",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+      "type": "categorical",
+      "n_nonmissing": 4077,
+      "levels": {
+        "Healthy controls": 2976,
+        "Toxoplasma gondii only": 663,
+        "Toxocara only": 307,
+        "Both positive": 131
+      }
+    },
+    {
+      "name": "sex",
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "type": "categorical",
+      "n_nonmissing": 9756,
+      "levels": {
+        "Male": 4856,
+        "Female": 4900
+      }
+    },
+    {
+      "name": "race_eth",
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "type": "categorical",
+      "n_nonmissing": 9756,
+      "levels": {
+        "Hispanic": 2431,
+        "Non-Hispanic Asian": 1282,
+        "Non-Hispanic Black": 2683,
+        "Non-Hispanic White": 2973,
+        "Other or multiracial": 387
+      }
+    },
+    {
+      "name": "pir",
+      "expr": "INDFMPIR",
+      "type": "continuous",
+      "n_nonmissing": 8916,
+      "quantiles": [0, 0.86, 1.63, 3.58, 5]
+    },
+    {
+      "name": "pir_cat",
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "type": "categorical",
+      "n_nonmissing": 8916,
+      "levels": {
+        "<1.30": 3677,
+        "1.30-3.49": 2954,
+        "3.50+": 2285
+      }
+    },
+    {
+      "name": "bmi",
+      "expr": "BMXBMI",
+      "type": "continuous",
+      "n_nonmissing": 8602,
+      "quantiles": [12.4, 19.3, 24.5, 29.8, 82.1]
+    },
+    {
+      "name": "us_born",
+      "expr": "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+      "type": "binary",
+      "n_nonmissing": 9751,
+      "n_positive": 7668
+    },
+    {
+      "name": "agecat",
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "type": "categorical",
+      "n_nonmissing": 9756,
+      "levels": {
+        "<18": 3892,
+        "18-39": 2261,
+        "40-64": 2353,
+        "65+": 1250
+      }
+    },
+    {
+      "name": "educ",
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "type": "categorical",
+      "n_nonmissing": 5555,
+      "levels": {
+        "Less than high school": 1332,
+        "High school or GED": 1169,
+        "Some college": 1657,
+        "College graduate or above": 1397
+      }
+    },
+    {
+      "name": "hypereosinophilia_15",
+      "expr": "aec >= 1.5",
+      "type": "binary",
+      "n_nonmissing": 7944,
+      "n_positive": 14
+    },
+    {
+      "name": "arms_seroneg",
+      "expr": "cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+      "type": "categorical",
+      "n_nonmissing": 6096,
+      "levels": {
+        "Controls (negative for all)": 4995,
+        "Toxoplasma gondii only": 663,
+        "Toxocara only": 307,
+        "Both positive": 131
+      }
+    }
+  ],
+  "ranges": [
+    {
+      "variable": "BMXBMI",
+      "n_nonmissing": 8602,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 10,
+      "max_allowed": 90,
+      "observed_min": 12.4,
+      "observed_max": 82.1
+    },
+    {
+      "variable": "DIQ010",
+      "n_nonmissing": 9357,
+      "n_nonresponse_codes": 6,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 3,
+      "observed_min": 1,
+      "observed_max": 3
+    },
+    {
+      "variable": "DIQ050",
+      "n_nonmissing": 9362,
+      "n_nonresponse_codes": 1,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "DIQ070",
+      "n_nonmissing": 1075,
+      "n_nonresponse_codes": 3,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "DMDBORN",
+      "n_nonmissing": 0,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": null,
+      "observed_max": null
+    },
+    {
+      "variable": "DMDBORN2",
+      "n_nonmissing": 0,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": null,
+      "observed_max": null
+    },
+    {
+      "variable": "DMDBORN4",
+      "n_nonmissing": 9751,
+      "n_nonresponse_codes": 5,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "DMDEDUC2",
+      "n_nonmissing": 5555,
+      "n_nonresponse_codes": 5,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 5,
+      "observed_min": 1,
+      "observed_max": 5
+    },
+    {
+      "variable": "INDFMPIR",
+      "n_nonmissing": 8916,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 5,
+      "observed_min": 0,
+      "observed_max": 5
+    },
+    {
+      "variable": "LBDEONO",
+      "n_nonmissing": 7944,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 20,
+      "observed_min": 0,
+      "observed_max": 3.7
+    },
+    {
+      "variable": "LBDTO1",
+      "n_nonmissing": 0,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": null,
+      "observed_max": null
+    },
+    {
+      "variable": "LBXGH",
+      "n_nonmissing": 6145,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 3,
+      "max_allowed": 18,
+      "observed_min": 3.6,
+      "observed_max": 17.8
+    },
+    {
+      "variable": "LBXSCR",
+      "n_nonmissing": 5976,
+      "n_nonresponse_codes": 0,
+      "n_below": 1,
+      "n_above": 0,
+      "min_allowed": 0.2,
+      "max_allowed": 15,
+      "observed_min": 0.16,
+      "observed_max": 9.51
+    },
+    {
+      "variable": "LBXTO1",
+      "n_nonmissing": 0,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": null,
+      "observed_max": null
+    },
+    {
+      "variable": "MCQ010",
+      "n_nonmissing": 9354,
+      "n_nonresponse_codes": 9,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ160B",
+      "n_nonmissing": 5544,
+      "n_nonresponse_codes": 15,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ160C",
+      "n_nonmissing": 5538,
+      "n_nonresponse_codes": 21,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ160E",
+      "n_nonmissing": 5552,
+      "n_nonresponse_codes": 7,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ160F",
+      "n_nonmissing": 5555,
+      "n_nonresponse_codes": 4,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ160L",
+      "n_nonmissing": 5553,
+      "n_nonresponse_codes": 6,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "MCQ220",
+      "n_nonmissing": 5554,
+      "n_nonresponse_codes": 5,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIAGENDR",
+      "n_nonmissing": 9756,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 2,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "RIDAGEYR",
+      "n_nonmissing": 9756,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 0,
+      "max_allowed": 80,
+      "observed_min": 0,
+      "observed_max": 80
+    },
+    {
+      "variable": "RIDRETH1",
+      "n_nonmissing": 9756,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 5,
+      "observed_min": 1,
+      "observed_max": 5
+    },
+    {
+      "variable": "RIDRETH3",
+      "n_nonmissing": 9756,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": 1,
+      "max_allowed": 7,
+      "observed_min": 1,
+      "observed_max": 7
+    },
+    {
+      "variable": "SSTCAR",
+      "n_nonmissing": 6098,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": 1,
+      "observed_max": 2
+    },
+    {
+      "variable": "SSTOXG",
+      "n_nonmissing": 6097,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 0,
+      "min_allowed": null,
+      "max_allowed": null,
+      "observed_min": 0,
+      "observed_max": 234
+    },
+    {
+      "variable": "URDACT",
+      "n_nonmissing": 7636,
+      "n_nonresponse_codes": 0,
+      "n_below": 0,
+      "n_above": 3,
+      "min_allowed": 0,
+      "max_allowed": 10000,
+      "observed_min": 0.43,
+      "observed_max": 92500
+    }
+  ],
+  "checks": [
+    {
+      "id": "variable_availability",
+      "category": "Data",
+      "title": "Requested variables present in source files",
+      "status": "pass",
+      "message": "All 28 raw variables found in 10 file(s).",
+      "detail": null
+    },
+    {
+      "id": "synthetic_data",
+      "category": "Data",
+      "title": "Real vs synthetic data",
+      "status": "pass",
+      "message": "Official source files were used (MD5 recorded in provenance).",
+      "detail": null
+    },
+    {
+      "id": "cycle_overlap",
+      "category": "Design",
+      "title": "Survey cycles do not overlap",
+      "status": "pass",
+      "message": "Cycles: G",
+      "detail": null
+    },
+    {
+      "id": "weight_choice",
+      "category": "Design",
+      "title": "Appropriate sample weight",
+      "status": "pass",
+      "message": "subsample weight (WTSSTT2Y) matches the most restrictive component used; weights rescaled by cycle length when combining cycles.",
+      "detail": null
+    },
+    {
+      "id": "weight_values",
+      "category": "Design",
+      "title": "Analytic weights positive and non-missing",
+      "status": "pass",
+      "message": "0 analytic records with missing/zero weight. Weighted population represented: 155.1 million.",
+      "detail": null
+    },
+    {
+      "id": "design_df",
+      "category": "Design",
+      "title": "Design degrees of freedom",
+      "status": "pass",
+      "message": "Analytic population spans 31 PSUs in 14 strata (df = 17). NCHS flags estimates with df < 8.",
+      "detail": null
+    },
+    {
+      "id": "sample_size",
+      "category": "Sample",
+      "title": "Analytic sample size",
+      "status": "pass",
+      "message": "Analytic n = 3,029.",
+      "detail": null
+    },
+    {
+      "id": "events_per_parameter",
+      "category": "Model",
+      "title": "Events per model parameter",
+      "status": "pass",
+      "message": "134 events, 2649 non-events, 13 parameters -> 10.3 per parameter (rule of thumb >= 10).",
+      "detail": null
+    },
+    {
+      "id": "missing_outcome",
+      "category": "Missing data",
+      "title": "Outcome missingness",
+      "status": "pass",
+      "message": "0.2% of the eligible population lacks the outcome (8 of 4588). Missing outcome is assumed missing at random within the design.",
+      "detail": null
+    },
+    {
+      "id": "missing_covariates",
+      "category": "Missing data",
+      "title": "Complete-case loss",
+      "status": "pass",
+      "message": "8.1% of the analytic sample (246) lack >=1 covariate.",
+      "detail": null
+    },
+    {
+      "id": "value_ranges",
+      "category": "Data",
+      "title": "Raw values within plausible ranges",
+      "status": "warn",
+      "message": "Out-of-range values: LBXSCR (1 low, 0 high); URDACT (0 low, 3 high)",
+      "detail": [
+        {
+          "variable": "LBXSCR",
+          "n_nonmissing": 5976,
+          "n_nonresponse_codes": 0,
+          "n_below": 1,
+          "n_above": 0,
+          "min_allowed": 0.2,
+          "max_allowed": 15,
+          "observed_min": 0.16,
+          "observed_max": 9.51
+        },
+        {
+          "variable": "URDACT",
+          "n_nonmissing": 7636,
+          "n_nonresponse_codes": 0,
+          "n_below": 0,
+          "n_above": 3,
+          "min_allowed": 0,
+          "max_allowed": 10000,
+          "observed_min": 0.43,
+          "observed_max": 92500
+        }
+      ]
+    },
+    {
+      "id": "nchs_standards",
+      "category": "Reporting",
+      "title": "NCHS presentation standards for proportions",
+      "status": "warn",
+      "message": "20 of 34 estimates meet the standard; 3 should be suppressed, 11 flagged for review.",
+      "detail": null
+    },
+    {
+      "id": "model_convergence",
+      "category": "Model",
+      "title": "Models converged without warnings",
+      "status": "pass",
+      "message": "3 models converged cleanly.",
+      "detail": null
+    },
+    {
+      "id": "implausible_estimates",
+      "category": "Model",
+      "title": "No implausible effect sizes",
+      "status": "pass",
+      "message": "All ratio estimates within 0.1-10 with SE(log) < 2.5.",
+      "detail": null
+    },
+    {
+      "id": "design_df_params",
+      "category": "Model",
+      "title": "Model size vs design degrees of freedom",
+      "status": "pass",
+      "message": "Primary model has 14 parameters; design df = 17. Wald tests and CIs use the design df (t distribution).",
+      "detail": null
+    },
+    {
+      "id": "collinearity",
+      "category": "Model",
+      "title": "Collinearity (generalized VIF)",
+      "status": "pass",
+      "message": "Maximum VIF 2.54 (race_ethNon-Hispanic White).",
+      "detail": null
+    },
+    {
+      "id": "robustness",
+      "category": "Robustness",
+      "title": "Sensitivity analyses agree with primary result",
+      "status": "pass",
+      "message": "4 of 4 sensitivity analyses agree in direction (associations) or magnitude (prevalence).",
+      "detail": null
+    },
+    {
+      "id": "age_topcode",
+      "category": "Data",
+      "title": "Age top-coding",
+      "status": "info",
+      "message": "NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.",
+      "detail": null
+    },
+    {
+      "id": "unavailable_measures",
+      "category": "Data",
+      "title": "Building blocks not in this dataset",
+      "status": "info",
+      "message": "Not provided by the dataset (treated as missing): toxo_igg_9904",
+      "detail": null
+    },
+    {
+      "id": "derivations",
+      "category": "Data",
+      "title": "Derived variables computable",
+      "status": "pass",
+      "message": "37 derived variables computed; see derivation audit.",
+      "detail": null
+    }
+  ],
+  "meta": {
+    "engine_version": "1.0.0",
+    "plan_id": "plan_8579a58782",
+    "plan_hash": "1d7295cd064aee2583d24e9426ec0767fe71492f88339cfa9bcb16d056fc3f6d",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "packages": {
+      "survey": "4.5",
+      "jsonlite": "2.0.0",
+      "ggplot2": "4.0.3",
+      "haven": "2.5.5",
+      "mice": "3.19.0",
+      "mitools": "2.7"
+    },
+    "started": "2026-10-10T19:56:28+0000",
+    "finished": "2026-10-10T19:56:37+0000",
+    "seconds": 8.8,
+    "synthetic": false,
+    "files": [
+      {
+        "cycle": "G",
+        "file": "DEMO_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/DEMO_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/DEMO_G.xpt",
+        "md5": "f4b048688d73dd5ef8d167526e888b56",
+        "nrow": 9756,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "BMX_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BMX_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/BMX_G.xpt",
+        "md5": "b00e503455cf22a080b1de168673c74e",
+        "nrow": 9338,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "DIQ_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/DIQ_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/DIQ_G.xpt",
+        "md5": "ffba08e08a59907aa7405b2d6e2a3e3a",
+        "nrow": 9364,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "CBC_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/CBC_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/CBC_G.xpt",
+        "md5": "7048e5e63d747481ffeb1c6505323c15",
+        "nrow": 8956,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "GHB_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/GHB_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/GHB_G.xpt",
+        "md5": "b14501f6d1357b2a3272db3b471be485",
+        "nrow": 6549,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "BIOPRO_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BIOPRO_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/BIOPRO_G.xpt",
+        "md5": "d2973177b945bbb0306fc5692b528801",
+        "nrow": 6549,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "MCQ_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/MCQ_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/MCQ_G.xpt",
+        "md5": "1d12338ae6df629d5171918e24c90679",
+        "nrow": 9364,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "SSTOCA_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/SSTOCA_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/SSTOCA_G.xpt",
+        "md5": "a31583c82e422971a9e1496681074905",
+        "nrow": 6099,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "SSTOXO_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/SSTOXO_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/SSTOXO_G.xpt",
+        "md5": "ba2612a962eabfd15df26aa7a65a6b1c",
+        "nrow": 6099,
+        "synthetic": false
+      },
+      {
+        "cycle": "G",
+        "file": "ALB_CR_G",
+        "origin": "cdc (cached download)",
+        "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/ALB_CR_G.xpt",
+        "path": "/home/runner/work/QuestionNHANES/QuestionNHANES/data/cache/ALB_CR_G.xpt",
+        "md5": "d456924fffb6c84dc3b72eeff9e1a97b",
+        "nrow": 7821,
+        "synthetic": false
+      }
+    ],
+    "seed": 2026
+  },
+  "trace": [
+    "# data: DEMO_G, BMX_G, DIQ_G, CBC_G, GHB_G, BIOPRO_G, MCQ_G, SSTOCA_G, SSTOXO_G, ALB_CR_G",
+    "aec <- LBDEONO",
+    "eosinophilia_05 <- aec >= 0.5",
+    "toxo_igg_2011 <- SSTOXG",
+    "toxo_igg_9904 <- coalesce(LBXTO1, LBDTO1)",
+    "toxoplasma_seropos <- coalesce(toxo_igg_2011 >= 33, toxo_igg_9904 >= 10)",
+    "toxocara_ab <- SSTCAR",
+    "toxocara_seropos <- toxocara_ab == 1",
+    "asthma <- MCQ010 == 1",
+    "dm_selfreport <- DIQ010 == 1",
+    "insulin_use <- DIQ050 == 1",
+    "dm_pills <- DIQ070 == 1",
+    "hba1c <- LBXGH",
+    "diabetes <- any_of(dm_selfreport, insulin_use, dm_pills, hba1c >= 6.5)",
+    "chd <- MCQ160C == 1",
+    "mi <- MCQ160E == 1",
+    "stroke <- MCQ160F == 1",
+    "hf <- MCQ160B == 1",
+    "cvd <- any_of(chd, mi, stroke, hf)",
+    "creatinine <- LBXSCR",
+    "female <- RIAGENDR == 2",
+    "age <- RIDAGEYR",
+    "egfr <- 142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
+    "uacr <- URDACT",
+    "ckd <- any_of(egfr < 60, uacr >= 30)",
+    "cancer_hx <- MCQ220 == 1",
+    "liver_hx <- MCQ160L == 1",
+    "arms <- cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0 & coalesce(asthma, 0) == 0 & coalesce(diabetes, 0) == 0 & coalesce(cvd, 0) == 0 & coalesce(ckd, 0) == 0 & coalesce(cancer_hx, 0) == 0 & coalesce(liver_hx, 0) == 0, \"Healthy controls\")",
+    "sex <- cases(female == 0, \"Male\", female == 1, \"Female\")",
+    "race_eth <- coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+    "pir <- INDFMPIR",
+    "pir_cat <- cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+    "bmi <- BMXBMI",
+    "us_born <- coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)",
+    "agecat <- cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+    "educ <- cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+    "hypereosinophilia_15 <- aec >= 1.5",
+    "arms_seroneg <- cases(is.na(toxoplasma_seropos) | is.na(toxocara_seropos), NA, coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 1, \"Both positive\", coalesce(toxoplasma_seropos, 0) == 1 & coalesce(toxocara_seropos, 0) == 0, \"Toxoplasma gondii only\", coalesce(toxocara_seropos, 0) == 1 & coalesce(toxoplasma_seropos, 0) == 0, \"Toxocara only\", toxoplasma_seropos == 0 & toxocara_seropos == 0, \"Controls (negative for all)\")",
+    "# inclusion: age >= 18",
+    "des <- svydesign(ids = ~SDMVPSU, strata = ~SDMVSTRA, weights = ~WT, nest = TRUE, data = <positive-weight records>)",
+    "options(survey.lonely.psu = 'adjust'); subpopulations via subset(des, ...)",
+    "svyciprop(~I(eosinophilia_05 == 1), subset(des, analytic), method = 'beta')  # by arms, sex, agecat, race_eth, us_born",
+    "svyglm(eosinophilia_05 ~ arms, design = <crude>, family = quasipoisson)",
+    "svyglm(eosinophilia_05 ~ arms + age + sex + race_eth, design = <demographic>, family = quasipoisson)",
+    "svyglm(eosinophilia_05 ~ arms + age + sex + race_eth + pir_cat + bmi + us_born, design = <full>, family = quasipoisson)",
+    "svycontrast-style arm comparisons on arms (reference: Healthy controls); regTermTest(~arms) for the global test",
+    "regTermTest(svyglm(eosinophilia_05 ~ ... + arms:sex), ~arms:sex)",
+    "regTermTest(svyglm(eosinophilia_05 ~ ... + arms:agecat), ~arms:agecat)"
+  ],
+  "log": [
+    "19:56:28  Plan plan_8579a58782 (hash 1d7295cd064a) loaded",
+    "19:56:29  Loaded 9,756 records from 10 file(s)",
+    "19:56:30  Derived 37 analysis variables",
+    "19:56:30  Analytic population: 3,029",
+    "19:56:31  Computed 34 prevalence estimates",
+    "19:56:31  Fitted 3 models (family quasipoisson)",
+    "19:56:36  Ran 5 sensitivity analyses",
+    "19:56:37  QC: 20 checks, 0 fail, 2 warn"
+  ]
+}
