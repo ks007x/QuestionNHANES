@@ -139,10 +139,13 @@ def create_project(body: NewProject):
         except (ValueError, KeyError, expressions.ExpressionError) as e:
             _bad(f"Could not apply your answers: {e}", 422)
         ex = clar["expertise"]
-        plan["clarification"] = {k2: clar[k2] for k2 in ("record", "expertise", "level_used", "original_question", "answers")}
+        plan["clarification"] = {k2: clar[k2] for k2 in ("record", "expertise", "level_used", "original_question", "answers", "understood")}
+        read = "; ".join(f"{u['label']}: {u['value']}" for u in clar["understood"])
+        asked = ("; ".join(f"{r['question']} → {r['answer']}" for r in clar["record"])
+                 if clar["record"] else "none were needed")
         plan["agent_dialogue"].insert(0, {"agent": "Interviewer", "source": "rules", "message":
-                                          f"From the wording I estimated your experience as {clar['level_used']} (score {ex['score']}/100) and asked "
-                                          f"{len(clar['record'])} follow-up question(s): " + ("; ".join(f"{r['question']} → {r['answer']}" for r in clar["record"]) or "none answered") + "."})
+                                          f"From the wording I estimated your experience as {clar['level_used']} (score {ex['score']}/100). "
+                                          f"Read from your idea: {read or 'nothing specific'}. Follow-up questions: {asked}."})
     proj = store.create(body.question, plan, body.actor)
     if clar:
         store.event(proj, body.actor, "clarification_answered", plan["clarification"])

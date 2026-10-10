@@ -17,7 +17,7 @@ def test_levels_detected_from_wording():
 
 def test_precise_question_gets_fewer_follow_ups():
     novice, expert = expertise.clarify(NOVICE_Q), expertise.clarify(EXPERT_Q)
-    assert len(expert["questions"]) < len(novice["questions"])
+    assert len(expert["questions"]) <= len(novice["questions"])
     assert all(q["why"] for q in novice["questions"])          # everyone is told why we ask
 
 
@@ -70,8 +70,31 @@ def test_answers_refine_question_and_fixes():
     r = expertise.apply_answers(q, {"direction": {"option": "swap"}, "estimand": {"option": "or"}}, level="expert")
     ops = [f["op"] for f in r["fixes"]]
     assert "swap_roles" in ops and "set" in ops
-    r = expertise.apply_answers("anemia", {"aim": {"option": "prev"}, "population": {"option": "older"}}, level="novice")
+    r = expertise.apply_answers("anemia", {"aim": {"option": "prev"}, "population": {"option": "older"}}, level="intermediate")
     assert "prevalence" in r["question"] and "older adults" in r["question"]
+
+
+def test_only_needed_questions_are_asked():
+    # a beginner's misspelt topic is read (not asked again); NHANES has no stress/work measure, so proxies are offered honestly
+    c = expertise.clarify("I have high cholestrol, how does it relate to the amount of work and stress I have everyday")
+    assert "cholesterol" in c["question_used"] and c["level_used"] == "novice"
+    assert [q["id"] for q in c["questions"]] == ["term0", "term1"]
+    assert all("did not measure" in q["text"] for q in c["questions"])
+    assert any(u["label"] == "Health topic" for u in c["understood"])
+    # a precise expert question and a short business question need few or no follow-ups
+    assert len(expertise.clarify("Among adults 20-59 in NHANES 2015-2018, is HbA1c >= 6.5% associated with ferritin "
+                                 "< 30 ng/mL, survey-weighted, adjusted for age, sex, BMI, prevalence ratio")["questions"]) <= 1
+    assert expertise.clarify("How common is chronic kidney disease in older adults?")["questions"] == []
+
+
+def test_extra_topic_the_parser_dropped_is_asked_about():
+    q = "My smoker friends drink a lot of coffee, is that bad for their kidneys?"
+    focus = next(x for x in expertise.clarify(q)["questions"] if x["id"] == "focus")
+    assert any(o["id"] == "o_ckd" for o in focus["options"])
+    from q2e import agents
+    r = expertise.apply_answers(q, {"focus": {"option": "o_ckd"}})
+    p = expertise.apply_fixes(agents.design_study(r["question"]), r["fixes"])
+    assert p["outcome"]["concept"] == "ckd"
 
 
 def test_free_text_only_used_with_matching_option():

@@ -31,7 +31,8 @@ from .knowledge import Knowledge, get_knowledge
 from .language_guard import scan_causal
 
 LEVELS = ("novice", "intermediate", "expert")
-MAX_QUESTIONS = {"novice": 4, "intermediate": 3, "expert": 2}
+# Only a safety ceiling: questions are asked only for real gaps, so most ideas get fewer (often none).
+MAX_QUESTIONS = 5
 
 # Words a researcher / clinician would use; each one found nudges the score up.
 TECH_TERMS = [
@@ -57,7 +58,11 @@ weighted weighting survey surveys ratio ratios odds ci confidence interval inter
 methods estimate estimates using bad good healthy unhealthy really very learn learning know knowing more understand find out
 want wanting help curious wondering info information stop stopping prevent preventing fix fixing treat treating treatment cure
 curing get getting rid reduce reducing improve improving avoid avoiding manage managing beat overcome reverse lower lowering
-handle deal better worse can could should would me myself mine""".split())
+handle deal better worse can could should would me myself mine
+relate relates related relation relationship relationships link links linked connect connected connection affect affects
+affected effect effects impact impacts amount amounts level levels high higher low lower everyday daily day days every much
+many lot lots have has had does do how what why when which feel feeling give gives make makes cause causes being
+age ages sex gender race ethnicity""".split())
 # "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
 GOAL_PATTERN = re.compile(r"\b(?:stop|prevent|fix|treat|cure|get rid of|reduce|lower|improve|avoid|manage|reverse|beat|overcome)\b")
 # "I have ...", "my ..." - the user is describing themselves, not a population.
@@ -125,12 +130,39 @@ LAY_TERMS = {
     "weight": ["bmi_concept", "obesity"], "belly": ["abdominal_obesity"], "chubby": ["obesity"], "big": ["obesity"],
     "sugar": ["glycemic_control", "diabetes", "sugar_intake"], "salt": ["sodium_intake", "hypertension"],
     "pressure": ["hypertension", "systolic_bp"], "heart": ["cvd", "coronary_disease"], "tired": ["daytime_sleepiness", "anemia"],
-    "sleepy": ["daytime_sleepiness"], "sad": ["depression"], "stress": ["depression"], "kidneys": ["ckd"],
+    "sleepy": ["daytime_sleepiness"], "sad": ["depression"], "kidneys": ["ckd"],
+    # NHANES (as loaded in Q2E) has no stress or work/job measure; these are the closest things it does measure
+    "stress": ["depression", "short_sleep"], "stressed": ["depression", "short_sleep"], "anxiety": ["depression"],
+    "work": ["sedentary", "physical_activity", "short_sleep"], "job": ["sedentary", "physical_activity", "short_sleep"],
+    "working": ["sedentary", "physical_activity", "short_sleep"],
     "exercise": ["physical_activity"], "workout": ["physical_activity"], "sitting": ["sedentary"], "drinking": ["alcohol"],
     "cigarettes": ["smoking"], "vaping": ["smoking", "cotinine"], "diet": ["energy_intake", "sugar_intake", "dietary_iron"],
     "food": ["energy_intake", "food_insecurity"], "poor": ["income", "food_insecurity"], "money": ["income"],
     "cholesterol": ["total_cholesterol", "ldl"], "blood": ["hemoglobin", "anemia"],
 }
+# Words with no direct NHANES measure: said plainly so the suggestions are never passed off as the same thing.
+NOT_MEASURED = {"stress": "stress", "stressed": "stress", "anxiety": "anxiety", "work": "work hours or job type",
+                "job": "work hours or job type", "working": "work hours or job type"}
+
+
+def fix_spelling(question: str, k: Knowledge) -> tuple[str, list[dict]]:
+    """Correct misspelled health words, but only towards words in Q2E's NHANES vocabulary (never invents terms)."""
+    vocab = {w for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]
+             for w in re.findall(r"[a-z]+", s.lower()) if len(w) >= 5} | {w for w in LAY_TERMS if len(w) >= 5}
+    fixes = []
+
+    def sub(m: re.Match) -> str:
+        w = m.group(0)
+        lw = w.lower()
+        if len(lw) < 5 or lw in vocab or lw in FILLER_WORDS:
+            return w
+        best = difflib.get_close_matches(lw, vocab, n=1, cutoff=0.86)
+        if not best or best[0].startswith(lw) or lw.startswith(best[0]):
+            return w      # no close word, or just a plural/other form ("smoker" vs "smokers")
+        fixes.append({"from": w, "to": best[0]})
+        return best[0]
+
+    return re.sub(r"[A-Za-z]+", sub, question), fixes
 
 
 def unclear_terms(parsed: dict) -> list[str]:
@@ -253,6 +285,22 @@ def term_suggestions(term: str, k: Knowledge, limit: int = 3) -> list[dict]:
     return out[:limit]
 
 
+def missed_topics(question: str, parsed: dict, k: Knowledge) -> list[str]:
+    """Known health topics named in the idea that the parser did not keep (it holds at most two)."""
+    kept = [c for c in (parsed.get("outcome_concept"), parsed.get("exposure_concept")) if c]
+    kept_text = " ".join(_label(c, k).lower() + " " + " ".join(k.concepts.get(c, {}).get("synonyms", [])) for c in kept)
+    unclear = {w for t in unclear_terms(parsed) for w in t.split()}    # these get their own "did you mean" question
+    out = []
+    for w in re.findall(r"[a-z]+", question.lower()):
+        if w in NOT_MEASURED or w not in LAY_TERMS or w in kept_text or w in unclear:
+            continue
+        cid = LAY_TERMS[w][0]
+        if cid in k.concepts and cid not in kept and cid not in out \
+                and not any(s in kept_text for s in k.concepts[cid]["synonyms"] + [k.concepts[cid]["label"].lower()]):
+            out.append(cid)
+    return out
+
+
 def _draft_plan(question: str, parsed: dict, cycles: list[str] | None, k: Knowledge) -> dict | None:
     """Try a throw-away rule-based plan so we can see the outcome type, covariates, model..."""
     try:
@@ -285,6 +333,21 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
              for c in ("diabetes", "hypertension", "obesity", "anemia") if c in k.concepts],
             {"placeholder": "Or type a different condition or measurement", "template": " Outcome: {text}."}))
 
+    # (a2) more health topics than the parser could keep -> which one is the main thing to measure?
+    missed = missed_topics(question, parsed, k) if out_c else []
+    if missed:
+        cands = [c for c in (out_c, exp_c) if c] + missed
+        qs.append(_question("focus", level, {
+            "novice": "Your idea mentions several health topics. Which one is the main thing you want to measure?",
+            "intermediate": "Several topics were mentioned. Which is the primary outcome?",
+            "expert": "Multiple candidate outcomes. Primary outcome?"}, {
+            "novice": "A study measures one main thing and compares it across the others, so we need to know which one matters most to you.",
+            "intermediate": "The other topics can be studied as exposures or covariates.",
+            "expert": "Remaining concepts are available as exposure/covariates."},
+            [{"id": f"o_{c}", "label": _label(c, k), "hint": "" if c.startswith("dict:") else _concept_hint(c, k),
+              "fixes": [] if c == out_c else [{"op": "set_outcome", "concept": c}]}
+             for c in cands[:5]]))
+
     # (b) a personal goal ("how can I stop it?") -> offer factors NHANES can link to the condition
     goal = bool(out_c and not exp_c and GOAL_PATTERN.search(q))
     if goal:
@@ -305,24 +368,37 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             "expert": "Prevention/treatment questions are reframed as cross-sectional associations."},
             opts, {"placeholder": "Or type another factor (e.g. vegetarian diet)", "template": " Is it more common in people with {text}?"}))
 
-    # (c) words we could not map to NHANES -> suggest the closest known terms
-    for i, ph in enumerate(unclear_terms(parsed)[:2]):
+    # (c) words we could not map to NHANES -> suggest the closest known terms (no suggestions = nothing to ask)
+    i = 0
+    for ph in unclear_terms(parsed):
         sugg = term_suggestions(ph, k)
-        qs.append(_question(f"term{i}", level, {
-            "novice": f"We couldn't find \"{ph}\" in the health survey. Did you mean one of these?" if sugg else
-                      f"We couldn't find \"{ph}\" in the health survey.",
-            "intermediate": f"\"{ph}\" is not an NHANES term. Closest matches:" if sugg else f"\"{ph}\" is not an NHANES term.",
-            "expert": f"Unmapped term \"{ph}\". Candidate mappings:" if sugg else f"Unmapped term \"{ph}\"."}, {
-            "novice": "Q2E only understands words that match what NHANES actually measured. Pick the closest one, or leave it out.",
-            "intermediate": "Only terms that map to NHANES variables can be used in the analysis.",
-            "expert": "Pick a mapping or drop the term."},
-            sugg + [{"id": "skip", "label": "Leave it out", "hint": "The study is designed without this word."}],
-            {"placeholder": "Or type a different word", "replace": True}))
+        if not sugg or i == 2:
+            continue
+        missing = next((NOT_MEASURED[w] for w in ph.split() if w in NOT_MEASURED), None)
+        if missing:
+            text = {"novice": f"The survey did not measure {missing}. Which of these, which it did measure, is closest to what you mean by \"{ph}\"?",
+                    "intermediate": f"NHANES has no {missing} measure. Closest measured proxy for \"{ph}\"?",
+                    "expert": f"No {missing} variable in NHANES. Proxy for \"{ph}\"?"}
+            why = {"novice": "Q2E only uses things NHANES actually measured, so it will not pretend these are the same as "
+                             f"{missing}. Pick the closest one, or leave it out.",
+                   "intermediate": f"These are proxies, not measures of {missing}; results must be read that way.",
+                   "expert": "Proxy choice affects construct validity; state it as a limitation."}
+        else:
+            text = {"novice": f"We couldn't find \"{ph}\" in the health survey. Did you mean one of these?",
+                    "intermediate": f"\"{ph}\" is not an NHANES term. Closest matches:",
+                    "expert": f"Unmapped term \"{ph}\". Candidate mappings:"}
+            why = {"novice": "Q2E only understands words that match what NHANES actually measured. Pick the closest one, or leave it out.",
+                   "intermediate": "Only terms that map to NHANES variables can be used in the analysis.",
+                   "expert": "Pick a mapping or drop the term."}
+        qs.append(_question(f"term{i}", level, text, why,
+                            sugg + [{"id": "skip", "label": "Leave it out", "hint": "The study is designed without this word."}],
+                            {"placeholder": "Or type a different word", "replace": True}))
         qs[-1]["term"] = ph
+        i += 1
 
     # (d) only one topic, no clear aim -> "how common" or "linked to something"?
     has_prev_cue = any(c in q for c in planner.PREVALENCE_CUES)
-    if out_c and not exp_c and not has_prev_cue and not goal and not unclear_terms(parsed):
+    if out_c and not exp_c and not has_prev_cue and not goal and i == 0:
         lbl = _label(out_c, k).lower()
         qs.append(_question("aim", level, {
             "novice": f"What would you like to find out about {lbl}?",
@@ -338,8 +414,9 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             {"placeholder": "The other factor (e.g. sleep, smoking, waist size)", "template": " Is it associated with {text}?",
              "requires_option": "assoc"}))
 
-    # (e) who is being studied?
-    if not parsed.get("populations") and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
+    # (e) who is being studied? Beginners get Q2E's usual group (shown in "What we understood") instead of a question.
+    if level != "novice" and not parsed.get("populations") \
+            and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
         qs.append(_question("population", level, {
             "novice": "Which group of people do you want to learn about?",
             "intermediate": "Which population should be included?",
@@ -356,7 +433,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     # (f) the rules guessed which concept is exposure vs outcome -> confirm direction
     x, o = _label(exp_c, k), _label(out_c, k)
     same_thing = x.lower() in o.lower() or o.lower() in x.lower()   # e.g. "waist circumference (BMXWAIST)" matched twice
-    if out_c and exp_c and not same_thing and any("treated as exposure" in n for n in parsed.get("notes", [])):
+    if out_c and exp_c and not same_thing and not missed and any("treated as exposure" in n for n in parsed.get("notes", [])):
         qs.append(_question("direction", level, {
             "novice": "Which one do you think might affect the other?",
             "intermediate": "Confirm the roles: which is the exposure and which is the outcome?",
@@ -382,8 +459,8 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                 "intermediate": "Different guidelines use different cut-offs, which changes who counts as a case.",
                 "expert": "Affects case ascertainment and comparability with published estimates."}, opts))
 
-    # (h) association: compare people at similar body weight?
-    if plan and plan.get("exposure") and not parsed.get("adjust_bmi") and "bmi" not in plan.get("covariates", []) \
+    # (h) association: compare people at similar body weight? (a modelling choice, so beginners get the standard set)
+    if level != "novice" and plan and plan.get("exposure") and not parsed.get("adjust_bmi") and "bmi" not in plan.get("covariates", []) \
             and "bmi" not in (plan["exposure"]["variable"], plan["outcome"]["variable"]):
         qs.append(_question("bmi", level, {
             "novice": "Should we compare people who weigh about the same?",
@@ -404,7 +481,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                              {"id": "or", "label": "Odds ratio", "hint": "Quasi-binomial, logit link.",
                               "fixes": [{"op": "set", "path": "model.family", "value": "quasibinomial"}]}]))
 
-    return qs[:MAX_QUESTIONS[level]]
+    return qs[:MAX_QUESTIONS]
 
 
 def personal_notice(question: str) -> str:
@@ -420,11 +497,40 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
     """Main entry point for the API: detect the level (unless overridden) and build questions."""
     k = get_knowledge()
     clean, _ = privacy.scrub(question)
+    clean, spelling = fix_spelling(clean, k)
     parsed = planner.parse_question(clean, k)
     ex = assess_expertise(clean, parsed, k)
     used = level if level in LEVELS else ex["level"]
-    return {"expertise": ex, "level_used": used, "notice": personal_notice(clean),
-            "questions": build_questions(clean, used, parsed, cycles, k)}
+    qs = build_questions(clean, used, parsed, cycles, k)
+    return {"expertise": ex, "level_used": used, "notice": personal_notice(clean), "question_used": clean,
+            "understood": understood(clean, parsed, spelling, qs, k), "questions": qs}
+
+
+def understood(question: str, parsed: dict, spelling: list[dict], qs: list[dict], k: Knowledge) -> list[dict]:
+    """What Q2E already read from the idea, so it is visible why some things are not asked again.
+    Built only from the parser's matches against the NHANES knowledge base."""
+    out = []
+    for s in spelling:
+        out.append({"label": "Spelling", "value": f"read \"{s['from']}\" as \"{s['to']}\""})
+    for key, name in (("outcome_concept", "Health topic"), ("exposure_concept", "Factor to compare")):
+        cid = parsed.get(key)
+        if cid:
+            hint = "" if cid.startswith("dict:") else _concept_hint(cid, k)
+            out.append({"label": name, "value": _label(cid, k), "hint": hint})
+    asked_pop = any(q["id"] == "population" for q in qs)
+    if parsed.get("populations") or any(a is not None for a in (parsed.get("age_range") or (None, None))):
+        lo, hi = parsed.get("age_range") or (None, None)
+        ages = f"ages {lo if lo is not None else '?'}-{hi if hi is not None else '?'}" if (lo is not None or hi is not None) else ""
+        names = {p["id"]: p.get("label", p["id"]) for p in k.populations}
+        pops = [names.get(p, p).replace("_", " ") for p in parsed.get("populations") or []]
+        out.append({"label": "People", "value": ", ".join(x for x in [*pops, ages] if x)})
+    elif not asked_pop:
+        out.append({"label": "People", "value": "Q2E's usual group for this topic (most often adults), listed on the Protocol page"})
+    asked = {q.get("term") for q in qs}
+    dropped = [t for t in unclear_terms(parsed) if t not in asked and not term_suggestions(t, k)]
+    if dropped:
+        out.append({"label": "Not in NHANES (left out)", "value": ", ".join(f"\"{t}\"" for t in dropped)})
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -444,8 +550,7 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
 
     Returns {question: refined text, fixes: [planner.apply_fix ops], record: what was asked and answered}."""
     info = clarify(question, cycles, level)
-    clean, _ = privacy.scrub(question)
-    refined, fixes, record = clean.rstrip(), [], []
+    refined, fixes, record = info["question_used"].rstrip(), [], []
     if refined and refined[-1] not in ".?!":
         refined += "."      # so each answer is added as its own sentence
     for q in info["questions"]:
@@ -465,7 +570,24 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
         if opt or text:
             record.append({"id": q["id"], "question": q["text"], "answer": (opt or {}).get("label", "") + (f" {text}" if text else "")})
     return {"question": refined.strip(), "fixes": fixes, "record": record,
-            "expertise": info["expertise"], "level_used": info["level_used"]}
+            "expertise": info["expertise"], "level_used": info["level_used"], "understood": info["understood"]}
+
+
+def _set_outcome(plan: dict, cid: str | None, k: Knowledge) -> dict:
+    """Make another topic from the idea the outcome; the remaining one stays as the exposure."""
+    parsed = dict(plan.get("parsed") or {})
+    if not cid or not (cid in k.concepts or cid.startswith("dict:")) or not parsed:
+        return plan
+    old_out, old_exp = parsed.get("outcome_concept"), parsed.get("exposure_concept")
+    if cid == old_out:
+        return plan
+    parsed["outcome_concept"] = cid
+    parsed["exposure_concept"] = old_exp if old_exp and old_exp != cid else old_out
+    parsed["hints"] = parsed.get("hints") or {"prefer": [], "upgrade": {}}
+    rebuilt = planner.build_plan(plan["question"], parsed, plan["dataset"].get("cycles"), plan["dataset"], k)
+    rebuilt["plan_id"] = plan.get("plan_id", rebuilt.get("plan_id"))
+    rebuilt["version"] = plan.get("version", 1)
+    return rebuilt
 
 
 def apply_fixes(plan: dict, fixes: list[dict]) -> dict:
@@ -473,7 +595,11 @@ def apply_fixes(plan: dict, fixes: list[dict]) -> dict:
     k = get_knowledge()
     # a role swap rebuilds the plan from scratch, so keep the agents' conversation and AI/privacy info
     keep = {key: plan[key] for key in ("agent_dialogue", "llm", "privacy") if key in plan}
-    for f in sorted(fixes, key=lambda f: f.get("op") != "swap_roles"):
+    order = {"set_outcome": 0, "swap_roles": 1}
+    for f in sorted(fixes, key=lambda f: order.get(f.get("op"), 2)):
+        if f.get("op") == "set_outcome":
+            plan = _set_outcome(plan, f.get("concept"), k)
+            continue
         if f.get("op") == "set_definition" and plan.get("outcome", {}).get("concept") != f.get("concept"):
             continue   # the outcome changed (e.g. after a swap); this definition no longer applies
         plan = planner.apply_fix(plan, {key: v for key, v in f.items() if key != "concept"}, k)

@@ -193,6 +193,9 @@ function clarifyCard(c) {
       <button class="btn sm" data-act="backToStudy">Return to my study →</button></div>` : ""}
     <div style="margin-top:6px">${dots}</div>
     ${step === 0 && c.notice ? `<div class="banner info" style="margin:10px 0 0">${esc(c.notice)}</div>` : ""}
+    ${step === 0 && (c.understood || []).length ? `<div class="tiny" style="margin-top:10px;padding:8px 10px;border:1px solid var(--line, #444);border-radius:8px">
+      <b>What we understood from your idea</b> <span class="muted">(so we won't ask about these again; if something is wrong, use "Edit my idea")</span>
+      <ul style="margin:4px 0 0 16px">${c.understood.map((u) => `<li><b>${esc(u.label)}:</b> ${esc(u.value)}${u.hint ? ` <span class="muted">- ${esc(u.hint)}</span>` : ""}</li>`).join("")}</ul></div>` : ""}
     <div style="margin-top:14px"><b>${esc(q.text)}</b>${q.why ? `<div class="tiny muted" style="margin-top:2px">Why we ask: ${esc(q.why)}</div>` : ""}</div>
     <div style="display:grid;gap:8px;margin-top:10px">${opts}</div>
     ${q.free_text ? `<input type="text" id="cqt_${q.id}" value="${esc(a.text || "")}" placeholder="${esc(q.free_text.placeholder)}" style="margin-top:10px;width:100%">` : ""}
@@ -604,7 +607,8 @@ const A = {
       S.clarify = { ...c, question: q, step: 0, answers: {} };
       return rerender();
     }
-    await createProject(q, null, el);
+    // nothing to ask: still send (empty) answers so the server applies spelling fixes and records what it understood
+    await createProject(q, c ? { answers: {}, level: c.level_used } : null, el);
   },
   level: async (el) => {
     try {
