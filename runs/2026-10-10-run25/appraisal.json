@@ -1,0 +1,178 @@
+{
+  "methods": "Design: cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic. Population: Age >=18 years; excluding pregnant at examination (analytic n = 6,610). Outcome: HbA1c. Exposure: Waist circumference. Comparator: per-unit contrast along the exposure (lower vs higher values); quartiles as sensitivity. Covariates: Age, Sex, Race and ethnicity, Income-to-poverty ratio, Educational attainment, Smoking status, Body mass index. Descriptive: survey-weighted Table 1 by abdominal obesity - waist >102 cm (men) / >88 cm (women); weighted prevalence with 95% CIs. Model: mean differences (survey-weighted linear regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary). Effect modification: interaction tests and stratified estimates by sex, age group. Survey design: Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25. Sensitivity analyses (8): Binary outcome: Elevated HbA1c (>=6.5%) (PR); Exclude participants on glucose-lowering therapy; Exclude anemia (HbA1c unreliable); Multiple imputation of missing covariates (m = 10); Exposure in weighted quartiles (Q4 vs Q1, P for trend); Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women); Alternative exposure: Central adiposity - waist-to-height ratio >=0.5; Unweighted analysis (design ignored). Missing data: complete-case primary analysis; multiple imputation as sensitivity. Reporting: STROBE; plan pre-registered by hash before data access.",
+  "methods_bullets": [
+    {
+      "label": "Design",
+      "text": "cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic."
+    },
+    {
+      "label": "Population",
+      "text": "Age >=18 years; excluding pregnant at examination (analytic n = 6,610)."
+    },
+    {
+      "label": "Outcome",
+      "text": "HbA1c."
+    },
+    {
+      "label": "Exposure",
+      "text": "Waist circumference."
+    },
+    {
+      "label": "Comparator",
+      "text": "per-unit contrast along the exposure (lower vs higher values); quartiles as sensitivity."
+    },
+    {
+      "label": "Covariates",
+      "text": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Educational attainment, Smoking status, Body mass index."
+    },
+    {
+      "label": "Descriptive",
+      "text": "survey-weighted Table 1 by abdominal obesity - waist >102 cm (men) / >88 cm (women); weighted prevalence with 95% CIs."
+    },
+    {
+      "label": "Model",
+      "text": "mean differences (survey-weighted linear regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary)."
+    },
+    {
+      "label": "Effect modification",
+      "text": "interaction tests and stratified estimates by sex, age group."
+    },
+    {
+      "label": "Survey design",
+      "text": "Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25."
+    },
+    {
+      "label": "Sensitivity analyses (8)",
+      "text": "Binary outcome: Elevated HbA1c (>=6.5%) (PR); Exclude participants on glucose-lowering therapy; Exclude anemia (HbA1c unreliable); Multiple imputation of missing covariates (m = 10); Exposure in weighted quartiles (Q4 vs Q1, P for trend); Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women); Alternative exposure: Central adiposity - waist-to-height ratio >=0.5; Unweighted analysis (design ignored)."
+    },
+    {
+      "label": "Missing data",
+      "text": "complete-case primary analysis; multiple imputation as sensitivity."
+    },
+    {
+      "label": "Reporting",
+      "text": "STROBE; plan pre-registered by hash before data access."
+    }
+  ],
+  "limitations": [
+    {
+      "area": "Temporality",
+      "text": "Cross-sectional: exposure and outcome are measured at the same visit, so the direction of association cannot be established.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Confounding",
+      "text": "Residual and unmeasured confounding cannot be excluded in an observational analysis.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Measurement",
+      "text": "Laboratory values come from a single blood or urine sample; transient abnormalities may be misclassified as persistent.",
+      "impact": "moderate",
+      "source": "Design"
+    },
+    {
+      "area": "Missing data",
+      "text": "Complete-case loss: 17.3% of the analytic sample (1378) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Data",
+      "text": "Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high)",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Model",
+      "text": "Collinearity (generalized VIF): Maximum VIF 8.46 (waist_per10). Consider removing/combining collinear covariates or interpreting with care.",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Robustness",
+      "text": "Sensitivity analyses agree with primary result: 7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity - waist-to-height ratio >=0.5",
+      "impact": "minor",
+      "source": "Quality control"
+    }
+  ],
+  "certainty": {
+    "framework": "GRADE-informed, single cross-sectional study",
+    "start": "Low (observational)",
+    "level": "Moderate",
+    "symbol": "\u2295\u2295\u2295\u25ef",
+    "meaning": "The true association is probably close to the estimate, but may be substantially different.",
+    "domains": [
+      {
+        "domain": "Risk of bias",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Cross-sectional design already reflected in the Low starting level; adjusted, pre-specified analysis with design audit passed."
+      },
+      {
+        "domain": "Inconsistency",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Direction and inference stable across 6 sensitivity analyses."
+      },
+      {
+        "domain": "Indirectness",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "US civilian non-institutionalised population; outcome measured directly."
+      },
+      {
+        "domain": "Imprecision",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "95% CI excludes no difference."
+      },
+      {
+        "domain": "Publication bias",
+        "rating": "Not assessable",
+        "change": 0,
+        "reason": "Cannot be judged from a single study; pre-registration by plan hash reduces selective reporting."
+      }
+    ],
+    "rating_up": [
+      {
+        "domain": "Dose-response",
+        "change": 1,
+        "reason": "Gradient across exposure quartiles (P for trend <.001)."
+      }
+    ],
+    "net_down": 0,
+    "net_up": 1,
+    "caveat": "GRADE rates bodies of evidence; this single-study rating summarises how much this analysis can contribute and should be re-rated in any systematic review.",
+    "assessed": true
+  },
+  "power": {
+    "settings": {
+      "alpha": 0.05,
+      "power": 0.8,
+      "target_ratio": 1.5,
+      "target_sd": 0.2,
+      "target_halfwidth": 0.02,
+      "deff": 1.8,
+      "multiplicity": "bonferroni",
+      "p0_assumed": 0.1
+    },
+    "assumptions": [
+      "Design effect 1.8 (typical for NHANES; the post-run check uses the actual design-based SE)."
+    ],
+    "comparisons": [],
+    "basis": "assumed",
+    "verdict": "Run the blinded probe to estimate power",
+    "post_run": [
+      {
+        "label": "Waist circumference (per 10 cm)",
+        "estimate": 0.1506,
+        "se": 0.0281,
+        "mde": 0.0786,
+        "ci_excludes_null": true
+      }
+    ]
+  }
+}
