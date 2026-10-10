@@ -87,6 +87,20 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
         (out / "appraisal.json").write_text(json.dumps({**ap, "power": pw}, indent=2, default=str), encoding="utf-8")
     except Exception as e:  # noqa: BLE001
         print("   (appraisal skipped:", e, ")")
+    try:
+        from . import evidence, model_advisor
+        ev = evidence.check(proj["plan"], results, live=settings.allow_download)
+        proj["evidence"] = ev
+        store.save(proj)
+        (out / "evidence_check.md").write_text(evidence.to_markdown(ev))
+        s = ev["summary"]
+        print(f"   Published evidence: {s['label']} ({s['papers']} papers, {s['comparable']} comparable, {s['same_direction']} same direction)"
+              + (f" - {ev['error']}" if ev.get("error") else ""))
+        adv = model_advisor.advise(proj["plan"], proj["plan"].get("probe"), results, ev.get("landscape"))
+        (out / "model_options.json").write_text(json.dumps(adv, indent=2, default=str))
+        print(f"   Model advisor: {adv['rationale']}")
+    except Exception as e:  # noqa: BLE001
+        print("   (literature check skipped:", e, ")")
     pe = results.get("primary_estimate") or {}
     print(f"\n   Primary: {pe.get('label')}: {pe.get('est'):.4f} ({pe.get('lcl'):.4f}-{pe.get('ucl'):.4f}) [{pe.get('effect')}]")
     for c in results["checks"]:

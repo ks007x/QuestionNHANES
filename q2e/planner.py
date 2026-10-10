@@ -1424,6 +1424,10 @@ def apply_fix(plan: dict, fix: dict, k: Knowledge | None = None) -> dict:
     k = k or get_knowledge()
     p = copy.deepcopy(plan)
     op = fix.get("op")
+    if op == "batch":                      # several edits applied in order, all or nothing
+        for f in fix.get("fixes") or []:
+            p = apply_fix(p, f, k)
+        return p
     if op == "set":
         obj = p
         parts = fix["path"].split(".")

@@ -662,6 +662,43 @@ def project_appraisal(pid: str):
     return out
 
 
+@app.get("/api/projects/{pid}/model-options")
+def project_model_options(pid: str, learn: bool = True):
+    """AI statistician: model choices for this study, scored with what similar published NHANES papers used."""
+    from . import evidence, model_advisor
+    proj = _project(pid)
+    land = (proj.get("evidence") or {}).get("landscape")
+    learn_err = None
+    if learn and not (land and land.get("papers")):
+        ev = evidence.check(proj["plan"], None, live=settings.allow_download, use_llm=False)
+        land, learn_err = ev.get("landscape"), ev.get("error")
+        if not (land and land.get("papers")):
+            mem = evidence.recall(proj["plan"])
+            if mem:
+                land, learn_err = mem["landscape"], None
+    out = model_advisor.advise(proj["plan"], proj["plan"].get("probe"), _latest_results(proj), land)
+    out["learn_error"] = learn_err
+    return out
+
+
+@app.post("/api/projects/{pid}/evidence")
+def project_evidence(pid: str):
+    """Check this study against NHANES publications in high-impact journals."""
+    from . import evidence
+    proj = _project(pid)
+    ev = evidence.check(proj["plan"], _latest_results(proj), live=settings.allow_download)
+    ev["plan_version"] = proj["plan"].get("version")
+    proj["evidence"] = ev
+    store.event(proj, "agent:Librarian", "literature_checked", {"papers": ev["summary"]["papers"], "label": ev["summary"]["label"], "error": ev.get("error")})
+    store.save(proj)
+    return ev
+
+
+@app.get("/api/projects/{pid}/evidence")
+def project_evidence_get(pid: str):
+    return _project(pid).get("evidence") or {}
+
+
 @app.get("/api/projects/{pid}/where-next")
 def project_where_next(pid: str, live: bool = True):
     proj = _project(pid)

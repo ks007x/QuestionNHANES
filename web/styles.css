@@ -334,3 +334,15 @@ details.calm > summary { font-size: 14px; color: var(--ink-2); padding: 6px 0; }
 table.t a { text-decoration: none; } table.t a:hover { text-decoration: underline; }
 h2.sec::first-letter { text-transform: uppercase; }
 table.t td details > summary { white-space: nowrap; }
+
+/* statistician agent: model options */
+.mopt { border-top: 1px solid var(--line-2); padding: 10px 0; }
+.mopt.rec { border-left: 3px solid var(--accent); padding-left: 12px; margin-left: -15px; }
+.mopt-head { display: flex; gap: 12px; align-items: flex-start; }
+.mscore { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 600 15px var(--serif); border: 1.5px solid var(--line); background: var(--panel); font-variant-numeric: tabular-nums; }
+.mopt.rec .mscore { border-color: var(--accent); color: var(--accent-ink); }
+.mopt-more { margin: 4px 0 0 50px; }
+.mopt-more summary { font-size: 12.5px; color: var(--ink-3); }
+.mopt-more ul { margin: 0; padding-left: 16px; }
+.mopt-more ul.pros li::marker { content: "+  "; color: var(--ok); }
+.mopt-more ul.cons li::marker { content: "–  "; color: var(--bad); }

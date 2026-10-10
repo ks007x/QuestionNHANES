@@ -119,6 +119,24 @@ sensitivity analysis and the design audit flags it. Both choices are one click o
 - **Sponsor AI tools**: one governed tool set over REST (`/api/tools`) and MCP (`python -m q2e mcp`), with manifests for
   Azure OpenAI / AI Foundry, AWS Bedrock, ElevenLabs and MCP clients. AI cannot approve - see `docs/INTEGRATIONS.md`.
 
+## AI statistician and published-evidence check
+
+- **Model options** (Analysis plan, "How the result is measured"): the statistician agent lists the defensible models for
+  this study - survey Poisson PR vs logistic OR vs log-binomial for binary outcomes; linear vs log-transformed vs
+  threshold vs quantile for continuous outcomes; quartiles, multiple imputation and effect modification - with what each
+  estimates, when to use it, pros and cons, and a 0-100 fit score. The score combines design rules, the data (odds ratios
+  are penalised when the outcome is common, log models favoured for skewed biomarkers, MI when complete-case loss is high)
+  and **what similar NHANES papers in high-impact journals used**, learned from their abstracts. One click applies an option.
+  With an approved LLM configured, the model re-ranks the options and writes the rationale; it can only pick listed options.
+- **Checked against published NHANES studies** (Results): the Librarian agent searches PubMed for NHANES papers on the same
+  outcome and exposure in JAMA Network, Lancet group, NEJM, BMJ, Annals and society journals (JACC, Circulation, Stroke,
+  Diabetes Care, Blood, Am J Gastroenterol, Gastroenterology, J Hepatol, Hepatology, JASN, AJKD, CHEST and more -
+  `knowledge/high_impact_journals.yaml`), reads each abstract, extracts the reported estimates with 95% CIs and the
+  methods, and grades agreement with this study (same direction, overlapping CIs, different measure). LLM extraction is
+  optional and every number it returns must appear in the abstract text, or it is discarded. What is learned is kept per
+  topic (`workspace/learned_evidence.json`) and reused. The CLI writes `evidence_check.md` and `model_options.json`;
+  REST/MCP tools: `suggest_models`, `apply_model_option`, `check_literature`.
+
 ## Sample size, covariates, limitations and certainty of evidence
 
 - **Novelty reflects the whole PICO**: every outcome x exposure/arm pair is searched separately (NHANES and any data),

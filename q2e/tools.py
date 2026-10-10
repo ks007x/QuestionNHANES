@@ -150,6 +150,56 @@ def where_next(project_id: str, client: str = "ai") -> dict:
             "errors": w["errors"]}
 
 
+def suggest_models(project_id: str, client: str = "ai") -> dict:
+    from . import model_advisor
+    proj = store.get(project_id)
+    _log(proj, client, "suggest_models", {})
+    land = ((proj.get("evidence") or {}).get("landscape"))
+    a = model_advisor.advise(proj["plan"], proj["plan"].get("probe"), _latest(project_id), land)
+    return {"recommended": a["recommended"], "rationale": a["rationale"], "basis": a["basis"],
+            "options": [{k: o[k] for k in ("id", "title", "estimand", "score", "current", "runnable", "literature")} for o in a["options"]],
+            "note": "Apply an option with apply_model_option; the human still approves the plan."}
+
+
+def apply_model_option(project_id: str, option_id: str, client: str = "ai") -> dict:
+    from . import agents, model_advisor
+    from .planner import apply_fix
+    proj = store.get(project_id)
+    if proj.get("signoff"):
+        raise ToolError("Project is signed off.")
+    opt = next((o for o in model_advisor.options(proj["plan"], proj["plan"].get("probe"), _latest(project_id)) if o["id"] == option_id), None)
+    if not opt or not opt.get("fix"):
+        raise ToolError(f"Option '{option_id}' has no automatic change (it is current, advice only, or unknown).")
+    proj["plan"] = agents.refresh_plan(apply_fix(proj["plan"], opt["fix"]))
+    proj["plan"]["status"] = "draft"
+    store.snapshot(proj, f"ai-tool:{client}", f"model option: {opt['title']}")
+    _log(proj, client, "apply_model_option", {"option": option_id})
+    store.save(proj)
+    return {"applied": opt["title"], "plan_version": proj["plan"].get("version"), "approved": False}
+
+
+def check_literature(project_id: str, client: str = "ai") -> dict:
+    from . import evidence
+    proj = store.get(project_id)
+    ev = evidence.check(proj["plan"], _latest(project_id))
+    proj["evidence"] = ev
+    _log(proj, client, "check_literature", {"papers": ev["summary"]["papers"]})
+    store.save(proj)
+    return {"summary": ev["summary"], "ours": ev.get("ours"), "error": ev.get("error"),
+            "papers": [{"title": r["title"], "journal": r["journal"], "year": r["year"], "url": r["url"],
+                        "verdict": r["comparison"]["verdict"], "published": r["comparison"].get("published")} for r in ev["papers"][:10]],
+            "methods_landscape": ev["landscape"]}
+
+
+def _latest(project_id: str):
+    proj = store.get(project_id)
+    runs = [r for r in proj.get("runs", []) if r.get("status") == "completed"]
+    try:
+        return load_results(project_id, runs[-1]["id"]) if runs else None
+    except KeyError:
+        return None
+
+
 # ------------------------------------------------------------------ registry
 S = {"type": "string"}
 PID = {"project_id": {**S, "description": "Project id returned by design_study"}}
@@ -180,6 +230,13 @@ TOOLS: list[dict[str, Any]] = [
     {"name": "get_results", "fn": get_results, "required": ["project_id"],
      "properties": {**PID, "run_id": {**S, "description": "Optional run id; latest completed run by default"}},
      "description": "Headline estimate, analytic n, QC warnings and links to the manuscript and reproducibility bundle."},
+    {"name": "suggest_models", "fn": suggest_models, "required": ["project_id"], "properties": PID,
+     "description": "AI statistician: candidate statistical models for this study with pros, cons, a score and how often similar high-impact NHANES papers used each one; returns a recommendation."},
+    {"name": "apply_model_option", "fn": apply_model_option, "required": ["project_id", "option_id"],
+     "properties": {**PID, "option_id": {**S, "description": "id from suggest_models"}},
+     "description": "Apply a model option to the draft plan (voids approval; a human re-approves)."},
+    {"name": "check_literature", "fn": check_literature, "required": ["project_id"], "properties": PID,
+     "description": "Find NHANES studies in high-impact journals (JAMA Network, Lancet group, NEJM, BMJ, Annals, society journals), extract their estimates and methods, and check this study's result against them."},
     {"name": "where_next", "fn": where_next, "required": ["project_id"], "properties": PID,
      "description": "Journal match scores, upcoming conference abstract windows and NIH funding leads for the study."},
 ]

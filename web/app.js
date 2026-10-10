@@ -801,7 +801,7 @@ function viewPlan() {
       ${p.rationale.statistician_llm ? `<p class="small" style="margin:8px 0 0"><span class="chip accent">LLM</span> ${nice(p.rationale.statistician_llm)}</p>` : ""}
       <h3 class="sub">Adjustment sets</h3><ol class="small" style="margin:0;padding-left:18px">${p.adjustment_sets.map((a) => `<li><b>${esc(a.label)}</b>: ${a.covariates.length ? esc(a.covariates.join(", ")) : "none"}</li>`).join("") || "<li>Descriptive only</li>"}</ol>
       <h3 class="sub">Missing data</h3><p class="small" style="margin:0">${esc(p.missing_data.rationale)}</p>
-    </div>` },
+    </div>${modelAdvisorCard()}` },
       { id: "adjust", title: "What the analysis takes into account", help: "<b>Covariates</b> are other factors the analysis adjusts for so the comparison is fair. Use × to remove one or <b>+ add</b> to add one.",
         html: `<div class="card"><h3 class="sub" style="margin-top:0">Variables</h3>
       <p class="small" style="margin:0 0 6px"><b>Covariates</b> <span class="muted">${esc(p.rationale.epidemiologist).slice(0, 220)}…</span></p>${pills("covariates", p.covariates, blockOpts)}
@@ -934,6 +934,8 @@ function viewResults() {
       html: `${synth}<div class="card">${headline()}</div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3><p style="margin:0 0 10px">${nice(sm.plain_language || "")}</p>
     <div class="row"><button class="btn sm" data-act="listen">Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
+    { id: "evidence", title: "Checked against published NHANES studies", help: "The Librarian agent finds NHANES papers on the same question in high-impact journals (JAMA Network, Lancet group, NEJM, BMJ, Annals and society journals such as JACC, Stroke, Blood, ACG and J Hepatol), reads their abstracts, and checks whether your estimate agrees with theirs.",
+      html: evidenceCard() },
     benchCards() && { id: "bench", title: "Does it match published studies?", help: "Q2E's numbers next to numbers already published, as a sanity check.",
       html: `<div class="grid g2">${benchCards()}</div>` },
     R.figures.length && { id: "figures", title: "Figures", help: "Charts of the results.",
@@ -963,6 +965,51 @@ function viewResults() {
     <a class="btn" href="/api/projects/${S.project.id}/protocol.html" target="_blank">Protocol &amp; analysis plan</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
   ] };
+}
+
+/* AI statistician: model options, scored with what similar published NHANES papers used */
+function modelAdvisorCard() {
+  const M = lazy("models", `/api/projects/${S.project.id}/model-options`);
+  if (!M) return `<div class="card advisor" style="margin-top:12px"><p class="small muted" style="margin:0"><span class="spinner"></span> The statistician agent is weighing the model options and reading how similar NHANES papers were analysed…</p></div>`;
+  if (M.error) return `<div class="card" style="margin-top:12px"><p class="small" style="color:var(--bad)">${esc(M.error)}</p></div>`;
+  const L = M.landscape || {}; const cnt = L.counts || {};
+  const learned = L.papers ? `<p class="tiny muted" style="margin:6px 0 0">Learned from ${L.papers} similar NHANES papers in high-impact journals: ${Object.entries(cnt).filter(([k2]) => k2 !== "survey_weighted").slice(0, 6).map(([k2, v]) => `${esc(k2.replace(/_/g, " "))} ${v}`).join(", ")}.</p>`
+    : `<p class="tiny muted" style="margin:6px 0 0">${M.learn_error ? `Could not read the literature (${esc(M.learn_error)}); scores use design rules only.` : "No similar high-impact papers found; scores use design rules only."}</p>`;
+  const row = (o, i) => `<div class="mopt ${o.recommended ? "rec" : ""}">
+      <div class="mopt-head"><span class="mscore" title="Fit for this study, out of 100">${o.score}</span><div style="flex:1"><b>${esc(o.title)}</b>${o.recommended ? ` <span class="chip accent">Recommended</span>` : ""}${o.current ? ` <span class="chip">In the plan</span>` : ""}
+        <div class="tiny muted">${esc(o.estimand)}. Best when: ${esc(o.when)}.</div></div>
+        <div>${o.fix && !o.current ? `<button class="btn sm ${o.recommended ? "primary" : ""}" data-act="modelapply" data-i="${i}">${o.fix.op === "set" ? "Use this model" : "Add to the plan"}</button>` : !o.runnable ? `<span class="tiny muted">Advice only</span>` : ""}</div></div>
+      ${o.ai_note ? `<p class="small" style="margin:6px 0 0">${esc(o.ai_note)}</p>` : ""}
+      <details class="mopt-more"><summary>Pros and cons${o.literature ? ` · ${esc(o.literature)}` : ""}</summary>
+        <div class="grid g2" style="margin-top:6px"><ul class="small pros">${o.pros.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><ul class="small cons">${o.cons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></details></div>`;
+  return `<div class="card advisor" style="margin-top:12px"><div class="row" style="justify-content:space-between"><h3 class="sub" style="margin:0">Model options from the statistician agent</h3>
+      <span class="tiny muted">${M.ai ? `${esc(M.ai.provider)} · ${esc(M.ai.model)}` : "rule-based scoring"}${L.papers ? " + published methods" : ""}</span></div>
+    <p class="small" style="margin:6px 0 10px">${esc(M.rationale)}</p>
+    ${M.options.map(row).join("")}${learned}</div>`;
+}
+
+/* Librarian: check the result against published NHANES studies in high-impact journals */
+function evidenceCard() {
+  const E = S.project.evidence;
+  const btn = (lab, cls = "primary") => `<button class="btn ${cls}" data-act="evidence">${lab}</button>`;
+  if (!E || !E.summary) return `<div class="card"><p class="small" style="margin:0 0 10px">Search PubMed for NHANES studies of the same outcome and exposure in high-impact journals, read their abstracts, and see whether your estimate agrees.</p>${btn("Check against published studies")}</div>`;
+  const sm = E.summary; const o = E.ours;
+  const vc = { "Consistent": "ok", "Same direction, different size": "info", "Opposite direction": "bad", "One estimate is null": "warn", "Different measure": "", "No numbers in abstract": "", "Not compared": "" };
+  const pub = (e) => e ? `${esc(e.measure)} ${e.value} (${e.lcl}-${e.ucl})` : "-";
+  const rows = E.papers.map((r) => `<tr><td><span class="chip ${vc[r.comparison.verdict] ?? ""}">${esc(r.comparison.verdict)}</span></td>
+      <td class="num">${pub(r.comparison.published)}</td>
+      <td><a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)}</a><div class="tiny muted">${esc(r.journal)} ${esc(r.year)} · ${esc(r.group)}${r.n ? ` · n=${r.n.toLocaleString()}` : ""}${r.years?.length ? ` · ${esc(r.years.join(", "))}` : ""}</div>
+        ${(r.estimates.length + r.prevalence.length) ? `<details><summary class="tiny">${r.estimates.length + r.prevalence.length} number(s) read from the abstract${r.llm ? ` (AI extraction: ${r.llm.kept} kept, ${r.llm.rejected} rejected as not in the text)` : ""}</summary>
+          <ul class="tiny" style="padding-left:16px;margin:4px 0">${[...r.estimates, ...r.prevalence].map((e) => `<li><b>${pub(e)}</b> ${esc(e.context)}</li>`).join("")}</ul></details>` : ""}
+        <div class="tiny muted">${esc(r.comparison.why || "")}</div></td></tr>`).join("");
+  return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div><b>${esc(sm.label)}</b><div class="small muted">${sm.papers} paper(s) in ${esc(E.scope || "high-impact journals")}; ${sm.comparable} report a comparable estimate; ${sm.same_direction} agree in direction, ${sm.consistent} with overlapping 95% CIs.</div>
+      ${o ? `<div class="small" style="margin-top:4px">This study: <b>${esc(o.measure)} ${fx(o.value)} (${fx(o.lcl)} to ${fx(o.ucl)})</b></div>` : ""}</div>
+      ${sm.score != null ? `<div class="gauge"><div class="ring" style="--p:${sm.score}"><div>${sm.score}</div></div><div class="tiny muted">% of comparable<br>studies agreeing<br>in direction</div></div>` : ""}</div>
+    ${E.error ? `<p class="small" style="color:var(--bad)">${esc(E.error)}</p>` : ""}
+    ${rows ? `<div class="tablewrap" style="margin-top:12px"><table class="t"><thead><tr><th>Verdict</th><th>Published</th><th>Study</th></tr></thead><tbody>${rows}</tbody></table></div>` : ""}
+    <p class="tiny muted" style="margin:8px 0 0">${esc(E.method)} ${esc(E.caveat)}${E.llm ? ` AI extraction by ${esc(E.llm.provider)} (${esc(E.llm.model)}).` : ""}</p>
+    <div style="margin-top:8px">${btn("Check again", "sm")}</div></div>`;
 }
 
 /* lazily fetched per plan version: power, covariate suggestions, appraisal */
@@ -1368,6 +1415,16 @@ const A = {
     const x = S.lazy?.covs?.data?.suggestions?.[+el.dataset.i]; if (!x?.fix) return;
     S.lazy && delete S.lazy.covs;
     edit(x.fix, `covariate suggestion: ${x.label}`, "covsuggest", "Suggested covariates");
+  },
+  modelapply: (el) => {
+    const o = S.lazy?.models?.data?.options?.[+el.dataset.i]; if (!o?.fix) return;
+    S.lazy && delete S.lazy.models;
+    edit(o.fix, `model option: ${o.title}`, "model", "How the result is measured");
+  },
+  evidence: async (el) => {
+    el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading published NHANES studies…`;
+    try { S.project.evidence = await api(`/api/projects/${S.project.id}/evidence`, { method: "POST" }); } catch (e) { toast(e.message, true); }
+    rerender();
   },
   where: async () => { toast("Searching PubMed, NIH RePORTER and Grants.gov..."); S.where = await api(`/api/projects/${S.project.id}/where-next`); rerender(); },
   sign: async () => {
