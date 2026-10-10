@@ -1,0 +1,67 @@
+# Infectious-disease serology and parasite definitions. Coding verified against the CDC NHANES codebooks
+# (SSTOCA_G, SSTOXO_G, L17_B, L17_C) on 2026-10-10.
+definitions:
+  - id: toxocara_seropos
+    concept: toxocara
+    label: "Toxocara seropositivity - IgG antibody positive (Luminex rTc-CTL-1, MFI >23.1)"
+    short: "Toxocara IgG+"
+    type: binary
+    expr: "toxocara_ab == 1"
+    criteria_text: "SSTCAR = 1 (positive). Luminex assay, recombinant rTc-CTL-1 antigen, cut-off 23.1 MFI (sensitivity 90%, specificity 99%)."
+    operational_notes:
+      - "Surplus-specimen subsample (participants aged 6+ with stored sera): analysed with the surplus-specimen weights (WTSSTT2Y), not the full exam weights."
+      - "Seropositivity reflects past or current exposure, not active larval infection."
+      - "2013-2014 results exist but the current CDC release does not include their subsample weights; 2011-2012 is used."
+    source: {citation: "CDC NHANES 2011-2012 Surplus Specimen Toxocara (SSTOCA_G) documentation; Luminex rTc-CTL-1 assay.", year: 2022}
+    status: verified
+  - id: toxoplasma_seropos
+    concept: toxoplasma
+    label: "Toxoplasma gondii seropositivity - IgG antibody positive"
+    short: "T. gondii IgG+"
+    type: binary
+    expr: "coalesce(toxo_igg_2011 >= 33, toxo_igg_9904 >= 10)"
+    criteria_text: "2011-2012: Bio-Rad IgG EIA >=33 IU/mL positive (27-<33 equivocal, coded negative after repeat). 1999-2004: IgG >=10 IU/mL positive."
+    operational_notes:
+      - "Assay and cut-off differ by cycle; do not pool 1999-2004 with 2011-2012 without a sensitivity analysis by period."
+      - "1999-2004 testing was limited to ages 6-49 years."
+      - "2011-2012 is a surplus-specimen subsample analysed with WTSSTT2Y weights."
+      - "1999-2000 codebook does not state the cut-off; >=10 IU/mL is assumed from the 2001-2004 documentation."
+      - "Seropositivity indicates infection at an undetermined time, not active toxoplasmosis."
+    source: {citation: "CDC NHANES SSTOXO_G (2011-2012), L17_B and L17_C (2001-2004) documentation.", year: 2022}
+    status: verified
+  - id: parasite_any_2011
+    concept: parasitic_infection
+    label: "Any measured parasite seropositivity - Toxocara or Toxoplasma IgG (2011-2012)"
+    short: "Toxocara or T. gondii IgG+"
+    type: binary
+    expr: "any_of(toxocara_ab == 1, toxo_igg_2011 >= 33)"
+    criteria_text: "Positive for Toxocara (SSTCAR = 1) or Toxoplasma IgG (>=33 IU/mL) in the 2011-2012 surplus-specimen subsample."
+    operational_notes:
+      - "NHANES measures only selected parasites by serology (Toxocara, Toxoplasma; Trichomonas and Cryptosporidium in limited cycles). Intestinal helminths, stool ova and parasites, malaria and Strongyloides are not measured."
+      - "Composite is defined only where both tests were run on the same specimens (2011-2012)."
+    source: {citation: "Q2E composite from CDC SSTOCA_G and SSTOXO_G.", year: 2026}
+    status: secondary-source
+  - id: trichomonas_urine
+    concept: trichomonas
+    label: "Trichomonas vaginalis - urine test positive"
+    short: "Trichomonas+"
+    type: binary
+    expr: "trich_urine == 1"
+    criteria_text: "Urine Trichomonas vaginalis test positive."
+    operational_notes:
+      - "Tested in a restricted age range (adults 18-59 in most cycles); check the cycle documentation before interpreting."
+      - "Files ending in _R may be restricted (Research Data Center) - if the download fails, the data are not public."
+    source: {citation: "CDC NHANES TRIC documentation.", year: 2020}
+    status: proposed
+  - id: hypereosinophilia_15
+    concept: hypereosinophilia
+    label: "Hypereosinophilia - absolute eosinophil count >=1.5 x10^9/L"
+    short: "AEC >=1.5"
+    type: binary
+    expr: "aec >= 1.5"
+    criteria_text: "Absolute eosinophil count >=1.5 x10^9/L (ICOG-EO / WHO threshold)."
+    operational_notes:
+      - "ICOG-EO requires >1.5 x10^9/L on two examinations at least 1 month apart (or tissue hypereosinophilia); NHANES has one CBC, so this is single-measurement hypereosinophilia."
+      - "Very rare in the general population - expect wide confidence intervals and possible NCHS suppression; consider eosinophilia (>=0.5) as the primary outcome."
+    source: {citation: "Valent P, et al. Contemporary consensus proposal on criteria and classification of eosinophilic disorders and related syndromes (ICOG-EO). J Allergy Clin Immunol. 2012;130:607-612.", year: 2012}
+    status: verified

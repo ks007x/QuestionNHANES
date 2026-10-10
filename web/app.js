@@ -2,7 +2,7 @@
 "use strict";
 
 const S = { meta: null, project: null, run: null, results: null, summary: null, poll: null, lit: null, watch: null, proposal: null,
-            ask: { cycles: ["P"], source: "auto", provider: "", dataset: "" }, dict: null };
+            ask: { cycles: [], source: "auto", provider: "", dataset: "" }, dict: null };
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const nice = (s) => esc(s).replace(/&gt;=/g, "≥").replace(/&lt;=/g, "≤");
@@ -127,7 +127,8 @@ function rerender() { const y = window.scrollY; return render().then(() => windo
 /* ------------------------------------------------------------------ ASK */
 async function viewAsk() {
   const k = S.meta.knowledge; const a = S.ask;
-  const cyc = Object.entries(k.cycles).map(([id, c]) => `<button class="${a.cycles.includes(id) ? "on" : ""}" data-act="cycle" data-id="${id}" title="${esc(c.note || "")}">${esc(c.label.replace("NHANES ", ""))}</button>`).join("");
+  const cyc = `<button class="${a.cycles.length ? "" : "on"}" data-act="cycleauto" title="Use the most recent cycle that measured your variables">Auto</button>` +
+    Object.entries(k.cycles).map(([id, c]) => `<button class="${a.cycles.includes(id) ? "on" : ""}" data-act="cycle" data-id="${id}" title="${esc(c.note || "")}">${esc(c.label.replace("NHANES ", ""))}</button>`).join("");
   const src = [["auto", "CDC download / local"], ["local", "Local XPT folder"], ["synthetic", "Synthetic demo"]].map(([v, l]) => `<button class="${a.source === v ? "on" : ""}" data-act="source" data-v="${v}">${l}</button>`).join("");
   const provs = ["", "offline", "anthropic", "azure_openai", "bedrock", "openai", "ollama"];
   const ds = S.meta.datasets || [];
@@ -380,7 +381,7 @@ function viewMap() {
   ${custom.length ? `<div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">AI-proposed variables awaiting approval</h3>${custom.map((c) => `<div class="crit"><div class="lbl"><b>${esc(c.label)}</b> <code>${esc(c.name)} = ${esc(c.expr)}</code></div><button class="btn sm" data-act="fix" data-id="custom_${c.name}">Approve</button></div>`).join("")}</div>` : ""}
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Data dictionary explorer</h3>
     <div class="row"><input type="text" id="dictQ" placeholder="Search the ${p.dataset.type === "nhanes" ? "NHANES" : "dataset"} dictionary (e.g. transferrin, liver stiffness, insulin)" style="flex:1"><button class="btn" data-act="dict">Search</button></div>
-    ${S.dict ? `<table class="t" style="margin-top:10px"><thead><tr><th>Variable</th><th>Label</th><th>File</th><th>Cycles</th><th>Match</th></tr></thead><tbody>${S.dict.map((h) => `<tr><td><code>${esc(h.variable)}</code></td><td>${esc(h.label)}</td><td>${esc(h.table)}</td><td>${esc((h.cycles || []).join(", "))}</td><td><div style="width:80px;height:6px;background:var(--line-2);border-radius:3px"><div style="width:${h.confidence * 100}%;height:6px;background:var(--accent);border-radius:3px"></div></div><span class="tiny muted">${h.confidence}</span></td></tr>`).join("")}</tbody></table>` : ""}
+    ${S.dict ? `<table class="t" style="margin-top:10px"><thead><tr><th>Variable</th><th>Label</th><th>File</th><th>Cycles</th><th>Match</th><th></th></tr></thead><tbody>${S.dict.map((h) => `<tr><td><code>${esc(h.variable)}</code></td><td>${esc(h.label)}</td><td>${esc(h.table)}</td><td>${esc((h.cycles || []).join(", "))}</td><td><div style="width:80px;height:6px;background:var(--line-2);border-radius:3px"><div style="width:${h.confidence * 100}%;height:6px;background:var(--accent);border-radius:3px"></div></div><span class="tiny muted">${h.confidence}</span></td><td>${p.dataset.type === "nhanes" ? `<button class="btn sm" data-act="teach" data-var="${esc(h.variable)}" title="Remember a phrase for this variable in future questions">Teach</button>` : ""}</td></tr>`).join("")}</tbody></table>` : ""}
   </div>
   <div class="row" style="margin-top:20px"><button class="btn" data-act="go" data-stage="protocol">← Protocol</button><button class="btn primary" data-act="go" data-stage="plan">Analysis plan →</button></div>`;
 }
@@ -613,7 +614,8 @@ const A = {
   home: () => (location.hash = "#/"),
   go: (el) => el.dataset.stage && go(el.dataset.stage),
   example: (el) => { $("#q").value = el.dataset.q; store.set("q2e.q", el.dataset.q); },
-  cycle: (el) => { const c = S.ask.cycles; const id = el.dataset.id; S.ask.cycles = c.includes(id) ? c.filter((x) => x !== id) : [...c, id]; if (!S.ask.cycles.length) S.ask.cycles = [id]; rerender(); },
+  cycle: (el) => { const c = S.ask.cycles; const id = el.dataset.id; S.ask.cycles = c.includes(id) ? c.filter((x) => x !== id) : [...c, id]; rerender(); },
+  cycleauto: () => { S.ask.cycles = []; rerender(); },
   source: (el) => { S.ask.source = el.dataset.v; rerender(); },
   assess: async (el) => {
     const q = $("#q").value.trim(); if (q.length < 4) return toast("Describe your research idea first", true);
@@ -723,6 +725,13 @@ const A = {
   plancycle: (el) => { const c = S.project.plan.dataset.cycles || []; const id = el.dataset.id; let n = c.includes(id) ? c.filter((x) => x !== id) : [...c, id]; if (!n.length) n = [id]; edit({ op: "set_cycles", value: n }); },
   plansource: (el) => edit({ op: "set_source", value: el.dataset.v }),
   gmap: (el) => edit({ op: "set_generic_mapping", block: el.dataset.block, expr: $(`#gm_${el.dataset.block}`).value.trim() }),
+  teach: async (el) => {
+    const v = el.dataset.var; const term = prompt(`Which words should Q2E read as ${v} in future questions?`, ($("#dictQ").value || "").trim());
+    if (!term) return;
+    const by = store.get("q2e.name", "") || prompt("Your name (recorded with the mapping)") || "";
+    if (!by) return toast("A name is required", true);
+    try { const r = await api("/api/learn", { method: "POST", body: { term, target: "var:" + v, by } }); toast(`Learned: "${r.saved.term}" -> ${v}. Ask the question again to use it.`); } catch (e) { toast(e.message, true); }
+  },
   dict: async () => { const q = $("#dictQ").value.trim(); if (!q) return; S.dict = await api("/api/dictionary/match", { method: "POST", body: { query: q, dataset_id: S.project.plan.dataset.dataset_id || null } }); rerender(); },
   approve: async () => {
     const by = $("#approver").value.trim(); if (!by) return toast("Enter your name", true); if (!$("#attest").checked) return toast("Confirm you reviewed the plan", true);

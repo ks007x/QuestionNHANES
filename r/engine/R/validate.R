@@ -40,7 +40,7 @@ run_checks <- function(ctx) {
 
   # 4. weights ------------------------------------------------------------------
   levels_needed <- unique(vapply(spec$raw_variables, function(r) r$weight_level %||% "interview", ""))
-  rank <- c(interview = 1, mec = 2, diet = 3, fasting = 4)
+  rank <- c(interview = 1, mec = 2, diet = 3, fasting = 4, subsample = 5)
   needed <- names(rank)[max(rank[levels_needed[levels_needed %in% names(rank)]], 1)]
   wl <- spec$weight_level
   an <- dat[dat$.in_analytic & dat$.design_ok, , drop = FALSE]

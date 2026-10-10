@@ -21,7 +21,7 @@ import uuid
 from typing import Any
 
 from . import expressions
-from .knowledge import Knowledge, RAW_VAR_RANK, get_knowledge
+from .knowledge import CYCLE_ORDER, Knowledge, RAW_VAR_RANK, get_knowledge
 from .language_guard import scan_causal
 
 PREVALENCE_CUES = ["prevalence", "to estimate", "estimate the", "describe", "characterize", "cascade", "how common", "how many", "proportion", "burden", "frequency", "how frequent",
@@ -78,7 +78,9 @@ affect affects predict predicts worsen worsens improve improves explain explains
 _GENERIC = set("""treatment treatments treated medication medications medicine medicines therapy use user users status aware awareness
 control controlled uncontrolled history problem problems condition conditions disease diseases test tests testing care health risk
 factor factors cell cells count counts level levels value values score scores total infection infections outcome outcomes exposure
-recommendation recommendations visit visits change changes""".split())
+recommendation recommendations visit visits change changes seropositivity seroprevalence seropositive seronegative serostatus
+antibody antibodies positivity positive negative prevalence deficiency deficiencies deficient insufficiency
+insufficient excess dietary intake intakes consumption serum plasma blood urinary urine level levels concentration concentrations""".split())
 
 
 class HardStop(ValueError):
@@ -125,6 +127,9 @@ def _is_yesno(row: dict) -> bool:
     return row.get("type_guess") == "yesno" or "1=yes" in lab.replace(" ", "")
 
 
+_LETTER_HEADS = {"hepatitis", "vitamin", "type", "stage", "class", "grade", "factor", "simplex", "hpv", "hsv"}
+
+
 def residual_phrases(q: str, taken: list[tuple[int, int]]) -> list[str]:
     """Content-word chunks of the question not explained by any matched concept/population."""
     chars = list(q)
@@ -135,6 +140,9 @@ def residual_phrases(q: str, taken: list[tuple[int, int]]) -> list[str]:
     chunks, cur = [], []
     for tok in re.findall(r"[a-z0-9][a-z0-9\-']*|[^a-z0-9\s]", text):
         word = tok.strip("'")
+        if cur and cur[-1] in _LETTER_HEADS and re.fullmatch(r"[a-z0-9]{1,2}", word):
+            cur.append(word)          # keep "hepatitis e", "vitamin d", "herpes simplex 2", "type 2"
+            continue
         if (not re.match(r"[a-z]", word)) or word in _STOP or word in _RESEARCH_WORDS or len(word) < 3:
             if cur:
                 chunks.append(" ".join(cur)); cur = []
@@ -145,25 +153,54 @@ def residual_phrases(q: str, taken: list[tuple[int, int]]) -> list[str]:
     return [c for c in dict.fromkeys(chunks)]
 
 
-def dictionary_lookup(phrase: str, k: Knowledge) -> dict | None:
+_BIOMARKER_CUES = re.compile(r"deficien|insufficien|serum|plasma|blood level|levels?\b|status|concentration|biomarker|toxicity")
+
+
+def dictionary_lookup(phrase: str, k: Knowledge, context: str = "") -> dict | None:
     """Best dataset variable for a free-text phrase; requires every content token to appear in the entry."""
     from .matcher import tokens as _tok
+    if all(w in _GENERIC for w in phrase.lower().split()):
+        return None     # "antibodies", "seroprevalence", "treatment" alone are qualifiers, not variables
+    original = phrase
+    phrase = " ".join(w for w in phrase.lower().split() if w not in _GENERIC)   # "vitamin b12 deficiency" -> "vitamin b12"
     want = set(_tok(phrase))
     if not want:
         return None
     if len(want) == 1:
         w = next(iter(want))
-        idx0 = k.curated_index()
-        df = sum(1 for d in idx0.docs if w in d)
-        if w in _GENERIC or df > 3 or len(w) < 5:
+        idx0 = k.var_index()
+        # document frequency over the CURATED dictionary (the 13k-variable catalog would make every word look common)
+        df = sum(1 for e, d in zip(idx0.entries, idx0.docs) if w in d and k.dictionary.get(e.variable, {}).get("curated"))
+        if w in _GENERIC or w in set(_tok(" ".join(_GENERIC))) or df > 3 or len(w) < 5:
             return None     # a lone generic word ("treatment", "cell") is not a variable
-    # a lone word only auto-matches hand-checked variables; specific multi-word phrases may use the full CDC catalog
-    idx = k.curated_index() if len(phrase.split()) == 1 else k.var_index()
-    for h in idx.search([phrase], top_k=5):
+    idx = k.var_index()
+    hits = idx.search([phrase], top_k=40)
+    # equal-confidence ties: prefer curated, then more cycles, then the day-1 dietary recall over supplements
+    lab_first = bool(_BIOMARKER_CUES.search(context or phrase))
+    pref = lambda v: ((k.dictionary[v].get("weight_level") in ("mec", "fasting")) if lab_first else False,
+                      k.dictionary[v].get("curated", False), len(k.dictionary[v].get("cycles", [])),
+                      not str(k.dictionary[v].get("file", "")).startswith(("DS", "DR2", "DRX")))
+    if lab_first:   # "B12 deficiency", "serum folate": the biomarker outranks dietary intake
+        hits = sorted(hits, key=lambda h: (-int(pref(h["variable"])[0]), -round(h["confidence"], 1),
+                                           *[-int(x) if isinstance(x, bool) else -x for x in pref(h["variable"])[1:]]))
+    else:
+        hits = sorted(hits, key=lambda h: (-round(h["confidence"], 2), *[-int(x) if isinstance(x, bool) else -x for x in pref(h["variable"])]))
+    lettered = re.findall(r"\b(hepatitis|vitamin|type|stage|class|grade|factor|hpv|hsv|simplex)\s+([a-z0-9]{1,2})\b", phrase.lower())
+    for h in hits:
+        if lettered:
+            lab = k.dictionary[h["variable"]]["label"].lower()
+            if not all(re.search(rf"\b{w}\b[^,;=]{{0,20}}?\b{x}\b", lab) for w, x in lettered):
+                continue    # "hepatitis E" must not match a hepatitis C variable
         doc = set(idx.docs[[e.variable for e in idx.entries].index(h["variable"])])
         if want <= doc and h["confidence"] >= 0.5:
             row = k.dictionary[h["variable"]]
-            return {"phrase": phrase, "variable": h["variable"], "label": row["label"], "file": row["file"],
+            if not row.get("curated"):
+                # uncurated catalog labels are long questionnaire items: the phrase must BE the label's topic,
+                # not an incidental word ("cold weather" in a protective-gloves question)
+                label_toks = set(_tok(row["label"])) - _STOP
+                if not label_toks or len(want & label_toks) / len(label_toks) < 0.33 or "?" in row["label"] or row["label"].startswith("["):
+                    continue
+            return {"phrase": original, "variable": h["variable"], "label": row["label"], "file": row["file"],
                     "cycles": row["cycles"], "curated": row.get("curated", False), "confidence": h["confidence"],
                     "binary": _is_yesno(row), "type": row["type"]}
     return None
@@ -204,15 +241,42 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
                                "hard_stop": bool(item.get("hard_stop"))})
                 taken.extend(sp for sp in sps if not _overlaps(sp, taken))
                 break
+    resolved: list[tuple[int, str, str]] = []
+    dict_pre: list[dict] = []
     for item in k.component_synonyms:
         for ph in sorted(item["phrases"], key=len, reverse=True):
             sps = [sp for sp in _spans(q, ph) if not _overlaps(sp, taken)]
             if sps:
+                # the full CDC catalog may hold the exact variable ("urinary arsenic" -> URXUAS): use it when it does
+                hit = None
+                if k.catalog_size:
+                    a, b = sps[0]
+                    before = q[:a].split()[-1:] if q[:a].split() else []
+                    after = q[b:].split()[:1]
+                    for cand in [" ".join(before + [ph]), " ".join([ph] + after), ph]:
+                        cand = re.sub(r"[^a-z0-9 \-]", "", cand).strip()
+                        hit = dictionary_lookup(cand, k, q) if cand else None
+                        if hit:
+                            break
+                if hit:
+                    resolved.append((sps[0][0], "dict:" + hit["variable"], hit["phrase"]))
+                    dict_pre.append(hit)
+                    taken.extend(sps)
+                    break
                 components.append({"phrase": ph, "tables": item["tables"], "note": item["note"],
                                    "descriptions": {t: k.table_description(t) for t in item["tables"]}})
                 taken.extend(sps)
                 break
-    concepts: list[tuple[int, str, str]] = []
+    concepts: list[tuple[int, str, str]] = list(resolved)
+    for term, var in sorted(k.learned_vars.items(), key=lambda x: -len(x[0])):     # human-taught mappings first
+        for sp in _spans(q, term):
+            if not _overlaps(sp, taken):
+                taken.append(sp)
+                row = k.dictionary[var]
+                concepts.append((sp[0], "dict:" + var, term))
+                dict_pre.append({"phrase": term, "variable": var, "label": row["label"], "file": row["file"], "cycles": row["cycles"],
+                                 "curated": row.get("curated", False), "confidence": 1.0, "binary": _is_yesno(row), "type": row["type"],
+                                 "learned": True})
     syns = sorted(((s, c["id"]) for c in k.concepts.values() for s in c["synonyms"]), key=lambda x: -len(x[0]))
     for phrase, cid in syns:
         for sp in _spans(q, phrase):
@@ -220,16 +284,19 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
                 taken.append(sp)
                 concepts.append((sp[0], cid, phrase))
     # residual phrases -> full data dictionary (curated + catalog)
-    unmapped, dict_matches = [], []
+    unmapped, dict_matches = [], list(dict_pre)
     for ph in residual_phrases(q, taken):
-        m = dictionary_lookup(ph, k)
+        m = dictionary_lookup(ph, k, q)
         if not m and " " in ph:          # try the longest sub-phrases
             words = ph.split()
             for n in range(len(words) - 1, 0, -1):
                 for i in range(0, len(words) - n + 1):
                     sub = " ".join(words[i:i + n])
+                    units = [" ".join(u) for u in re.findall(r"\b(hepatitis|vitamin|type|simplex|hpv|hsv)\s+([a-z0-9]{1,2})\b", ph)]
+                    if any(u.split()[0] in sub.split() and u not in sub for u in units):
+                        continue      # never drop the letter from "hepatitis e" / "herpes simplex 2"
                     if len(sub) >= 4:
-                        m = dictionary_lookup(sub, k)
+                        m = dictionary_lookup(sub, k, q)
                     if m:
                         break
                 if m:
@@ -239,7 +306,8 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
             dict_matches.append(m)
             concepts.append((pos if pos >= 0 else len(q), "dict:" + m["variable"], m["phrase"]))
         else:
-            unmapped.append(ph)
+            if not all(w in _GENERIC for w in ph.split()):
+                unmapped.append(ph)
     concepts.sort()
     pops.sort()
     hints: dict[str, Any] = {"prefer": [], "upgrade": {}, "matched": []}
@@ -583,9 +651,44 @@ def _criteria_from_population(pid: str, k: Knowledge) -> list[dict]:
     return [{"label": c["label"], "expr": c["expr"], "kind": "inclusion", "source": f"question ('{pid}')"} for c in pop["criteria"]]
 
 
+def _subsample_gap(raw: str, c: str, k: Knowledge) -> bool:
+    """True when `raw` comes from a weighted laboratory subsample in other cycles but no usable weight exists in cycle c."""
+    row = k.dictionary.get(raw, {})
+    if row.get("weight_level") not in ("mec", "fasting"):
+        return False
+    if k.subsample_weight(raw, c):
+        return False
+    for o in row.get("cycles", []):
+        hit = k.subsample_weight(raw, o) if o != c else None
+        if hit:
+            lab = (k.dictionary.get(hit[0], {}).get("label") or "").lower()
+            stem = (row.get("stems") or {}).get(c, row.get("file", ""))
+            if stem.startswith("SS") or "subsample" in lab or "surplus" in lab:
+                return True
+    return False
+
+
+def usable_cycles(names: list[str], k: Knowledge, custom: dict | None = None) -> set[str]:
+    out = set(k.cycles)
+    for n in names:
+        av = available_cycles(n, k, custom)
+        raws = _raw_dependencies(n, k, custom)
+        out &= {c for c in av if not any(_subsample_gap(r, c, k) for r in raws if c in k.dictionary.get(r, {}).get("cycles", []))}
+    return out
+
+
+def best_cycles(usable: set[str], k: Knowledge) -> list[str]:
+    """Most recent usable cycle; the 2017-March 2020 file is preferred over its 2017-2018 subset."""
+    order = [c for c in CYCLE_ORDER if c in usable]
+    if "P" in order and "J" in order:
+        order.remove("J")
+    return [order[-1]] if order else list(k.default_cycles)
+
+
 def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dataset: dict | None = None,
                k: Knowledge | None = None) -> dict[str, Any]:
     k = k or get_knowledge()
+    user_cycles = cycles if cycles else ((dataset or {}).get("cycles") if (dataset or {}).get("cycles_explicit") else None)
     cycles = cycles or list(k.default_cycles)
     if parsed.get("hard_stop"):
         raise HardStop(parsed["hard_stop"])
@@ -599,7 +702,21 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     exposure = None
     if parsed["study_type"] == "association" and parsed.get("exposure_concept"):
         exposure = choose_variable(parsed["exposure_concept"], "exposure", hints, k, prefer_continuous=parsed.get("direction_continuous", False))
+    cycle_note = None
+    if user_cycles is None and (dataset or {}).get("type", "nhanes") == "nhanes":
+        core = [v for v in (outcome, exposure) if v]
+        custom = {v["custom"]["name"]: v["custom"] for v in core if v.get("custom")}
+        usable = usable_cycles([v["variable"] for v in core], k, custom)
+        if usable and not set(cycles) <= usable:
+            new = best_cycles(usable, k)
+            cycle_note = (f"{', '.join(v['concept_label'] for v in core)} {'is' if len(core) == 1 else 'are'} measured with usable weights only in "
+                          f"{', '.join(k.cycles[c]['label'] for c in sorted(usable, key=CYCLE_ORDER.index))}; using {', '.join(k.cycles[c]['label'] for c in new)}.")
+            cycles = new
+            if dataset:
+                dataset = {**dataset, "cycles": cycles}
     agent_notes: list[dict] = []
+    if cycle_note:
+        agent_notes.append({"agent": "Data Steward", "message": cycle_note})
     for n in parsed.get("notes", []):
         agent_notes.append({"agent": "Investigator", "message": n})
 
@@ -1079,11 +1196,18 @@ def review_plan(plan: dict, k: Knowledge | None = None) -> list[dict]:
         for row in variable_map(plan, k):
             missing = [cy for cy, ok in row["available"].items() if not ok]
             if missing and row["role"] in ("Outcome", "Exposure", "Covariate"):
+                fix = {"op": "remove_covariate", "name": row["variable"]} if row["role"] == "Covariate" else None
+                detail = f"Requires {', '.join(row['raw_variables'])}, not released in cycle(s) {', '.join(missing)}."
+                if row["role"] in ("Outcome", "Exposure"):
+                    core = [v["variable"] for v in (plan["outcome"], plan.get("exposure")) if v]
+                    custom = {c["name"]: c for c in plan.get("custom_variables", [])}
+                    ok = usable_cycles(core, k, custom)
+                    if ok:
+                        best = best_cycles(ok, k)
+                        fix = {"op": "set_cycles", "value": best}
+                        detail += f" Measured (with usable weights) in: {', '.join(sorted(ok, key=CYCLE_ORDER.index))}."
                 add("blocker" if row["role"] in ("Outcome", "Exposure") else "major",
-                    f"{row['label']} unavailable in {', '.join(missing)}",
-                    f"Requires {', '.join(row['raw_variables'])}, not released in cycle(s) {', '.join(missing)}.",
-                    {"op": "remove_covariate", "name": row["variable"]} if row["role"] == "Covariate" else None,
-                    f"avail_{row['variable']}")
+                    f"{row['label']} unavailable in {', '.join(missing)}", detail, fix, f"avail_{row['variable']}")
     texts = {"question": plan.get("question", ""), "hypothesis": plan.get("hypothesis", ""), "refined_question": plan.get("refined_question", "")}
     for field, txt in texts.items():
         hits = scan_causal(txt)

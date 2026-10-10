@@ -16,7 +16,8 @@ blocks:
   - {name: female, tier: measure, type: binary, label: "Female sex", nhanes: "RIAGENDR == 2", match_terms: [sex, gender, female]}
   - {name: pregnant, tier: measure, type: binary, label: "Pregnant at examination", nhanes: "coalesce(RIDEXPRG, 2) == 1", match_terms: [pregnant, pregnancy status]}
   - {name: race_eth, tier: measure, type: categorical, label: "Race and ethnicity",
-     nhanes: 'cases(RIDRETH3 == 3, "Non-Hispanic White", RIDRETH3 == 4, "Non-Hispanic Black", RIDRETH3 %in% c(1, 2), "Hispanic", RIDRETH3 == 6, "Non-Hispanic Asian", RIDRETH3 == 7, "Other or multiracial")',
+     nhanes: 'coalesce(cases(RIDRETH3 == 3, "Non-Hispanic White", RIDRETH3 == 4, "Non-Hispanic Black", RIDRETH3 %in% c(1, 2), "Hispanic", RIDRETH3 == 6, "Non-Hispanic Asian", RIDRETH3 == 7, "Other or multiracial"), cases(RIDRETH1 == 3, "Non-Hispanic White", RIDRETH1 == 4, "Non-Hispanic Black", RIDRETH1 %in% c(1, 2), "Hispanic", RIDRETH1 == 5, "Other or multiracial"))',
+     note: "Before 2011-2012 NHANES did not oversample or separately code non-Hispanic Asian adults (RIDRETH1); they fall in 'Other or multiracial'.",
      match_terms: [race, ethnicity, hispanic origin]}
   - {name: pir, tier: measure, type: continuous, units: ratio, label: "Family income-to-poverty ratio", nhanes: "INDFMPIR", match_terms: [income to poverty ratio, poverty, income]}
   - {name: educ, tier: measure, type: categorical, label: "Educational attainment",
@@ -133,7 +134,7 @@ blocks:
   - {name: sedentary_min, tier: measure, type: continuous, units: min/day, label: "Sedentary time", nhanes: "PAD680", match_terms: [sedentary time, sitting]}
   - {name: food_security, tier: measure, type: categorical, label: "Adult food security",
      nhanes: 'cases(FSDAD == 1, "Full", FSDAD == 2, "Marginal", FSDAD == 3, "Low", FSDAD == 4, "Very low")', match_terms: [food security, food insecurity]}
-  - {name: us_born, tier: measure, type: binary, label: "Born in the United States", nhanes: "DMDBORN4 == 1", match_terms: [country of birth, born in us]}
+  - {name: us_born, tier: measure, type: binary, label: "Born in the United States", nhanes: "coalesce(DMDBORN4 == 1, DMDBORN2 == 1, DMDBORN == 1)", match_terms: [country of birth, born in us]}
   - {name: veteran, tier: measure, type: binary, label: "Military veteran", nhanes: "DMQMILIZ == 1", match_terms: [veteran, military service]}
   # ================= expansion: other conditions =================
   - {name: asthma, tier: measure, type: binary, label: "Asthma (ever told)", nhanes: "MCQ010 == 1", match_terms: [asthma]}
@@ -170,3 +171,7 @@ blocks:
   - {name: adl_limitation, tier: measure, type: binary, label: "ADL limitation (any difficulty dressing)", nhanes: "PFQ061L %in% c(2, 3, 4)", match_terms: [difficulty dressing]}
   - {name: disability_any, tier: measure, type: binary, label: "Any functional disability (mobility, self-care, cognition, independent living)",
      nhanes: "any_of(DLQ050 == 1, DLQ060 == 1, DLQ040 == 1, DLQ080 == 1)", match_terms: [disability]}
+  - {name: toxocara_ab, tier: measure, type: categorical, label: "Toxocara antibody result (1=positive, 2=negative)", nhanes: "SSTCAR", match_terms: [toxocara antibody]}
+  - {name: toxo_igg_2011, tier: measure, type: continuous, units: IU/mL, label: "Toxoplasma IgG, 2011-2012 surplus sera (IU/mL)", nhanes: "SSTOXG", match_terms: [toxoplasma igg]}
+  - {name: toxo_igg_9904, tier: measure, type: continuous, units: IU/mL, label: "Toxoplasma IgG, 1999-2004 (IU/mL)", nhanes: "coalesce(LBXTO1, LBDTO1)", match_terms: [toxoplasma igg]}
+  - {name: trich_urine, tier: measure, type: categorical, label: "Trichomonas vaginalis urine test (1=positive)", nhanes: "URXUTRI", match_terms: [trichomonas]}

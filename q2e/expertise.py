@@ -62,7 +62,8 @@ handle deal better worse can could should would me myself mine
 relate relates related relation relationship relationships link links linked connect connected connection affect affects
 affected effect effects impact impacts amount amounts level levels high higher low lower everyday daily day days every much
 many lot lots have has had does do how what why when which feel feeling give gives make makes cause causes being
-age ages sex gender race ethnicity""".split())
+age ages sex gender race ethnicity tell telling show something anything interesting interested today tomorrow
+yesterday please thanks thank wonder question questions idea ideas thing things stuff""".split())
 # "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
 GOAL_PATTERN = re.compile(r"\b(?:stop|prevent|fix|treat|cure|get rid of|reduce|lower|improve|avoid|manage|reverse|beat|overcome)\b")
 # "I have ...", "my ..." - the user is describing themselves, not a population.

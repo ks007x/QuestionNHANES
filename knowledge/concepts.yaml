@@ -235,7 +235,12 @@ concepts:
   - {id: neutrophils, label: "Neutrophil count", synonyms: ["neutrophil count", "neutrophils", "anc"], block: anc, domain: hematology, default_scale: 1}
   - {id: lymphopenia, label: "Lymphopenia", synonyms: ["lymphopenia", "low lymphocyte count"], definitions: [lymphopenia_10], domain: hematology}
   - {id: lymphocytes, label: "Lymphocyte count", synonyms: ["lymphocyte count", "lymphocytes"], block: alc, domain: hematology}
-  - {id: eosinophilia, label: "Eosinophilia", synonyms: ["eosinophilia"], definitions: [eosinophilia_05], domain: hematology}
+  - {id: eosinophilia, label: "Eosinophilia", synonyms: ["eosinophilia", "eosinophilic", "high eosinophils", "elevated eosinophils", "raised eosinophil count"], definitions: [eosinophilia_05], alt_definitions: [hypereosinophilia_15], domain: hematology}
+  - {id: hypereosinophilia, label: "Hypereosinophilia", synonyms: ["hypereosinophilia", "hypereosinophilic", "hypereosinophilic syndrome", "hes", "marked eosinophilia", "severe eosinophilia"], definitions: [hypereosinophilia_15], alt_definitions: [eosinophilia_05], domain: hematology}
+  - {id: toxoplasma, label: "Toxoplasma gondii seropositivity", synonyms: ["toxoplasma", "toxoplasmosis", "toxoplasma gondii", "t. gondii", "t gondii", "toxoplasma infection"], definitions: [toxoplasma_seropos], domain: infection}
+  - {id: toxocara, label: "Toxocara seropositivity", synonyms: ["toxocara", "toxocariasis", "toxocara canis", "toxocara cati", "visceral larva migrans", "ocular larva migrans", "roundworm"], definitions: [toxocara_seropos], domain: infection}
+  - {id: trichomonas, label: "Trichomonas vaginalis", synonyms: ["trichomonas", "trichomoniasis", "trichomonas vaginalis"], definitions: [trichomonas_urine], domain: infection}
+  - {id: parasitic_infection, label: "Parasitic infection (measured serologies)", synonyms: ["parasite", "parasites", "parasitic", "parasitic infection", "parasitic infections", "parasitic disease", "parasitic diseases", "parasite infection", "parasite infections", "helminth", "helminths", "helminthic infection", "worm infection", "worms", "zoonotic parasites", "protozoa", "protozoan infection"], definitions: [parasite_any_2011], companion_definitions: [toxocara_seropos, toxoplasma_seropos], domain: infection}
   - {id: eosinophils, label: "Eosinophil count", synonyms: ["eosinophil count", "eosinophils"], block: aec, domain: hematology}
   - {id: wbc, label: "White blood cell count", synonyms: ["white blood cell count", "leukocytes", "wbc", "leukocytosis"], block: wbc, domain: hematology}
   - {id: mcv, label: "Mean corpuscular volume", synonyms: ["mcv", "mean corpuscular volume", "microcytosis", "macrocytosis"], block: mcv, domain: hematology}
@@ -342,6 +347,11 @@ domains:
     covariates: [age, sex, race_eth, pir_cat, smoking, bmi]
     exclusions: []
     subgroups: [sex, agecat]
+    sensitivity: []
+  infection:
+    covariates: [age, sex, race_eth, pir_cat, us_born]
+    exclusions: []
+    subgroups: [sex, agecat, race_eth, us_born]
     sensitivity: []
   default:
     covariates: [age, sex, race_eth, pir_cat]

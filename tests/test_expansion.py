@@ -39,7 +39,7 @@ def test_not_in_nhanes_and_components():
 def test_cycle_availability_with_alternatives():
     k = get_knowledge()
     assert planner.available_cycles("sbp", k) >= {"I", "J", "P", "L"}       # coalesce(oscillometric, auscultatory)
-    assert planner.available_cycles("lsm", k) == {"J", "P"}
+    assert planner.available_cycles("lsm", k) >= {"J", "P"}               # (CDC catalog adds 2021-2023)
     a = answerability.assess_question("Is vitamin D deficiency associated with depression?", ["P"])
     assert any(c["dimension"] == "Co-measurement" and c["status"] == "fail" for c in a["checks"])
     a = answerability.assess_question("Is vitamin D deficiency associated with depression?", ["J"])

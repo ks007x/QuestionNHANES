@@ -3,6 +3,7 @@ versioned guideline definitions, the clinical concept ontology and example quest
 from __future__ import annotations
 
 import csv
+import re
 import functools
 from pathlib import Path
 from typing import Any
@@ -11,7 +12,41 @@ import yaml
 
 from .config import settings
 
-RAW_VAR_RANK = {"interview": 1, "mec": 2, "diet": 3, "fasting": 4}
+RAW_VAR_RANK = {"interview": 1, "mec": 2, "diet": 3, "fasting": 4, "subsample": 5}
+
+
+CYCLE_ORDER = list("ABCDEFGHIJ") + ["P", "L"]
+
+
+def _stem_of(f: str, c: str) -> str:
+    f = f.strip().upper()
+    if f.startswith("P_"):
+        return f[2:]
+    if len(f) > 2 and f[-2] == "_" and f[-1] == c:
+        return f[:-2]
+    m = re.match(rf"^(.*)_{c}_R$", f)          # restricted/revised variants e.g. TRIC_H_R
+    if m:
+        return m.group(1) + "_R"
+    return f
+
+
+def _files(files: str) -> dict:
+    """'G:SSHOLO_G|SSTOCA_G;P:P_CBC' -> {'G': ['SSHOLO_G', 'SSTOCA_G'], 'P': ['P_CBC']}"""
+    out = {}
+    for part in (files or "").split(";"):
+        if ":" in part:
+            c, fs = part.split(":", 1)
+            out[c] = [f.strip().upper() for f in fs.split("|") if f.strip()]
+    return out
+
+
+def _stems(files: str) -> dict:
+    """'A:LAB25;B:L25_B;P:P_CBC' -> {'A': 'LAB25', 'B': 'L25', 'P': 'CBC'} (first file's stem per cycle)."""
+    return {c: _stem_of(fs[0], c) for c, fs in _files(files).items() if fs}
+
+
+WEIGHT_SKIP = re.compile(r"jack ?knife|\brep(licate)?\b|brr|\b4[- ]?y(ea)?r|99-02|4 year", re.I)
+STANDARD_WEIGHTS = re.compile(r"^WT(INT|MEC|SAF|DRD|DR2|DRX|DR4)")
 
 
 class Knowledge:
@@ -31,12 +66,24 @@ class Knowledge:
                 self.dictionary[row["variable"]] = row
         # Full NHANES catalog (optional; built by scripts/build_nhanes_catalog.py) - uncurated fallback
         self.catalog_size = 0
+        self.subsample_weights: dict[tuple[str, str], list[str]] = {}   # (cycle, FILE) -> weight variables in/for that file
         cat = root / "nhanes" / "catalog.csv"
         if cat.exists():
-            with open(cat, newline="", encoding="utf-8") as fh:
+            with open(cat, newline="") as fh:
                 for r in csv.DictReader(fh):
                     v = r["variable"]
-                    if v in self.dictionary or not r.get("cycles"):
+                    if not r.get("cycles"):
+                        continue
+                    stems = _stems(r.get("files", ""))
+                    self._index_weight(v, r)
+                    if v in self.dictionary:
+                        # curated row: keep its metadata, but learn the older cycles and their file names from CDC
+                        cur = self.dictionary[v]
+                        extra = [c for c in r["cycles"].split(";") if c and c not in cur["cycles"]]
+                        if extra and stems:
+                            cur["cycles"] = sorted(set(cur["cycles"]) | set(extra), key=CYCLE_ORDER.index)
+                            cur["stems"] = {c: st for c, st in stems.items() if c in extra or st != cur["file"]}
+                        cur["files"] = _files(r.get("files", ""))
                         continue
                     tg = r.get("type_guess", "continuous")
                     wl = r.get("weight_level", "interview")
@@ -46,7 +93,9 @@ class Knowledge:
                                           "type": "categorical" if tg in ("yesno", "categorical") else "continuous",
                                           "units": "", "min": None, "max": None, "weight_level": wl,
                                           "cycles": [c for c in r["cycles"].split(";") if c], "missing_codes": codes,
-                                          "tags": r.get("component", ""), "curated": False, "type_guess": tg}
+                                          "tags": r.get("component", ""), "curated": False, "type_guess": tg,
+                                          "stems": {c: st for c, st in stems.items() if st != r["file"]},
+                                          "files": _files(r.get("files", ""))}
                     self.catalog_size += 1
         # NHANES table (component) catalog, all cycles 1999-2023 - from the nhanesdata package (MIT)
         self.tables: list[dict] = []
@@ -69,10 +118,57 @@ class Knowledge:
         self.component_synonyms: list[dict] = c.get("component_synonyms", [])
         self.not_in_nhanes: list[dict] = c.get("not_in_nhanes", [])
         self._var_index = None
-        self._curated_index = None
+        # human-taught mappings ("learned synonyms"): term -> concept or dataset variable, confirmed by a named person
+        self.learned: list[dict] = load_learned()
+        self.learned_vars: dict[str, str] = {}
+        for e in self.learned:
+            kind, _, target = str(e.get("target", "")).partition(":")
+            term = str(e.get("term", "")).lower().strip()
+            if not term:
+                continue
+            if kind == "concept" and target in self.concepts:
+                syns = self.concepts[target].setdefault("synonyms", [])
+                if term not in syns:
+                    syns.append(term)
+            elif kind == "var" and target in self.dictionary:
+                self.learned_vars[term] = target
         self.examples: list[dict] = yaml.safe_load((root / "examples.yaml").read_text())["examples"]
 
     # ------------------------------------------------------------------
+    def _index_weight(self, v: str, r: dict) -> None:
+        lab = r.get("label") or ""
+        if not v.startswith("WT") or STANDARD_WEIGHTS.match(v) or WEIGHT_SKIP.search(lab) or WEIGHT_SKIP.search(v):
+            return
+        for c, fs in _files(r.get("files", "")).items():
+            targets = set(fs)
+            # "Surplus specimen SSTOCA and SSTOXO 2 year weights" -> also applies to SSTOCA_<c> and SSTOXO_<c>
+            for tok in re.findall(r"\b([A-Z][A-Z0-9]{2,})\b", lab):
+                targets.add(f"{tok}_{c}" if c not in ("A", "P") else (tok if c == "A" else f"P_{tok}"))
+            for f in targets:
+                lst = self.subsample_weights.setdefault((c, f), [])
+                if v not in lst:
+                    lst.append(v)
+
+    def files_for(self, var: str, cycle: str) -> list[str]:
+        r = self.dictionary.get(var, {})
+        if r.get("files") and cycle in r["files"]:
+            return r["files"][cycle]
+        cm = self.cycles.get(cycle, {})
+        stem = (r.get("stems") or {}).get(cycle, r.get("file", ""))
+        return [cm.get("file_pattern", "{stem}").replace("{stem}", stem)] if stem else []
+
+    def subsample_weight(self, var: str, cycle: str) -> tuple[str, str] | None:
+        """(weight variable, file stem holding it) when `var` comes from a subsample with its own weights."""
+        for f in self.files_for(var, cycle):
+            ws = self.subsample_weights.get((cycle, f))
+            if ws:
+                w = ws[0]
+                wr = self.dictionary.get(w, {})
+                wfiles = (wr.get("files") or {}).get(cycle) or [f]
+                holder = f if f in wfiles else wfiles[0]
+                return w, _stem_of(holder, cycle)
+        return None
+
     def label(self, name: str) -> str:
         if name in self.blocks:
             return self.blocks[name].get("label", name)
@@ -127,14 +223,6 @@ class Knowledge:
             self._var_index = BM25Index(entries_from_nhanes(self.dictionary))
         return self._var_index
 
-    def curated_index(self):
-        """BM25 index over hand-checked variables only. The question parser auto-picks from this one, because
-        with the full CDC catalog a lone word ("weather", "learn") would match some unrelated survey item."""
-        if self._curated_index is None:
-            from .matcher import BM25Index, entries_from_nhanes
-            self._curated_index = BM25Index(entries_from_nhanes({v: r for v, r in self.dictionary.items() if r.get("curated")}))
-        return self._curated_index
-
     def table_description(self, table: str) -> str:
         for t in self.tables:
             if t["table"] == table:
@@ -149,6 +237,28 @@ class Knowledge:
             "status": d.get("status"), "source": d.get("source", {}), "operational_notes": d.get("operational_notes", []),
             "benchmark": d.get("benchmark"), "population_hint": d.get("population_hint"),
         }
+
+
+def learned_path() -> Path:
+    return Path(settings.workspace) / "learned_synonyms.yaml"
+
+
+def load_learned() -> list[dict]:
+    p = learned_path()
+    try:
+        return (yaml.safe_load(p.read_text()) or {}).get("learned", []) if p.exists() else []
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def save_learned(entry: dict) -> list[dict]:
+    items = [e for e in load_learned() if e.get("term", "").lower() != entry["term"].lower()]
+    items.append(entry)
+    p = learned_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(yaml.safe_dump({"learned": items}, sort_keys=False, allow_unicode=True))
+    get_knowledge.cache_clear()
+    return items
 
 
 @functools.lru_cache(maxsize=1)

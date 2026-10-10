@@ -21,6 +21,13 @@ class CompileError(ValueError):
     pass
 
 
+def _with_subsample(cm: dict, sub: dict | None) -> dict:
+    if not sub:
+        return cm
+    cm = {**cm, "weights": {**cm["weights"], "subsample": sub["weight"]}, "weight_files": {**cm.get("weight_files", {}), "subsample": sub["file"]}}
+    return cm
+
+
 def plan_hash(plan: dict) -> str:
     core = {f: plan.get(f) for f in HASH_FIELDS}
     return hashlib.sha256(json.dumps(core, sort_keys=True, default=str).encode()).hexdigest()
@@ -127,10 +134,25 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         for v in sorted(raw):
             r = k.dictionary[v]
             raw_vars.append({"variable": v, "file": r["file"], "cycles": r["cycles"], "type": r["type"], "min": r["min"], "max": r["max"],
-                             "missing_codes": r["missing_codes"], "weight_level": r["weight_level"], "label": r["label"]})
+                             "missing_codes": r["missing_codes"], "weight_level": r["weight_level"], "label": r["label"],
+                             "stems": {c: st for c, st in (r.get("stems") or {}).items() if c in cycles}})
             meta.setdefault(v, {"label": r["label"], "units": r.get("units", "")})
+        # laboratory subsamples (surplus sera, environmental chemicals, special panels) carry their own weights
+        subsample: dict[str, dict] = {}
+        for c in cycles:
+            for r in raw_vars:
+                if r["weight_level"] not in ("mec", "fasting") or c not in (r["cycles"] or []):
+                    continue
+                hit = k.subsample_weight(r["variable"], c)
+                if hit:
+                    subsample.setdefault(c, {"weight": hit[0], "file": hit[1], "because": r["variable"]})
+                    r["weight_level"] = "subsample"
         levels = [r["weight_level"] for r in raw_vars if r["type"] not in ("weight", "design", "id")]
         weight_level = max(levels, key=lambda x: RAW_VAR_RANK.get(x, 0)) if levels else "interview"
+        if weight_level == "subsample":
+            missing_w = [c for c in cycles if c not in subsample]
+            if missing_w:
+                raise CompileError(f"Subsample variables need subsample weights, but none were found for cycle(s) {', '.join(missing_w)}.")
     else:
         cycles = []
         for v in sorted(raw):
@@ -166,7 +188,8 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         "plan_id": plan["plan_id"], "plan_version": plan.get("version", 1), "plan_hash": plan_hash(plan),
         "title": plan.get("title"), "study_type": plan["study_type"],
         "dataset": dataset_spec,
-        "cycles_meta": {c: k.cycles[c] for c in cycles} if is_nhanes else {},
+        "cycles_meta": ({c: _with_subsample(k.cycles[c], subsample.get(c)) for c in cycles} if is_nhanes else {}),
+        "subsample_weights": subsample if is_nhanes else {},
         "weight_level": weight_level,
         "raw_variables": raw_vars,
         "derived": derived,
