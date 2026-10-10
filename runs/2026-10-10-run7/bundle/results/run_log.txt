@@ -1,0 +1,49 @@
+16:12:21  Plan plan_666a8f675a (hash 780f3a793976) loaded
+16:12:22  Loaded 15,560 records from 6 file(s)
+16:12:22  Derived 22 analysis variables
+16:12:22  Analytic population: 7,988
+16:12:23  Computed 11 prevalence estimates
+16:12:23  Fitted 3 models (family gaussian)
+Multiple imputation results:
+      MIcombine.default(coefs, vcovs)
+                                   results           se      (lower
+(Intercept)                    3.771415469 0.0944440606  3.58630842
+waist_per10                    0.149057868 0.0241160973  0.10179119
+age                            0.015194453 0.0005849034  0.01404806
+sexFemale                     -0.009477463 0.0300382966 -0.06835145
+race_ethNon-Hispanic Black     0.310180287 0.0381386393  0.23542988
+race_ethHispanic               0.216789198 0.0375512156  0.14319012
+race_ethNon-Hispanic Asian     0.377603439 0.0491942218  0.28118453
+race_ethOther or multiracial   0.215701657 0.0566428217  0.10468375
+pir_cat1.30-3.49              -0.026975977 0.0323780631 -0.09046543
+pir_cat3.50+                  -0.070829581 0.0340802704 -0.13765399
+educHigh school or GED        -0.098575669 0.0425179969 -0.18190955
+educSome college              -0.157047876 0.0265388862 -0.20906716
+educCollege graduate or above -0.196259105 0.0409996076 -0.27661963
+smokingFormer                 -0.030103230 0.0319831763 -0.09278910
+smokingCurrent                 0.044216707 0.0354888123 -0.02534014
+bmi                           -0.008099795 0.0056653627 -0.01920370
+                                    upper) missInfo
+(Intercept)                    3.956522520      0 %
+waist_per10                    0.196324552      0 %
+age                            0.016340843      0 %
+sexFemale                      0.049396519      0 %
+race_ethNon-Hispanic Black     0.384930696      0 %
+race_ethHispanic               0.290388276      0 %
+race_ethNon-Hispanic Asian     0.474022345      0 %
+race_ethOther or multiracial   0.326719564      0 %
+pir_cat1.30-3.49               0.036513478      6 %
+pir_cat3.50+                  -0.004005168      6 %
+educHigh school or GED        -0.015241784      0 %
+educSome college              -0.105028594      2 %
+educCollege graduate or above -0.115898579      2 %
+smokingFormer                  0.032582644      0 %
+smokingCurrent                 0.113773558      0 %
+bmi                            0.003004112      0 %
+16:13:00  Ran 8 sensitivity analyses
+`height` was translated to `width`.
+16:13:02  QC: 18 checks, 0 fail, 4 warn
+16:13:02  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_7673e33b2c/runs/run_3d168d32/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.
