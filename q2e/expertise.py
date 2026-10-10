@@ -4,14 +4,16 @@ The user never tells Q2E how experienced they are. Instead we *infer* it from ho
 research idea is written (jargon, NHANES variable codes, thresholds, guideline names vs.
 everyday words like "I noticed" or "is it bad for"). Then we look at what the rule-based
 parser could NOT work out from the question (no outcome, no population, ambiguous
-exposure/outcome direction, unknown words, several guideline definitions...) and ask
-about those gaps only - worded for the detected level:
+exposure/outcome direction, unknown words, a "how do I stop it" goal...) and ask about
+those gaps only - worded for the detected level:
 
-  novice        plain language, few choices, a short "why we ask" for each question
+  novice        plain language and everyday examples
   intermediate  standard research vocabulary
   expert        terse, technical; only the decisions an expert would care about
 
-Precise questions produce few or no follow-ups; vague ones produce more.
+Nothing is left ambiguous at any level: every question says why it is asked and every
+choice has a one-line explanation. When a word is not understood we do not ask the user
+to "say it another way"; we suggest the closest terms Q2E knows, each explained.
 
 Safety: answers only ever (a) append text to the question, which the normal parser then
 reads, or (b) apply whitelisted plan edits (the same `planner.apply_fix` operations the UI
@@ -20,6 +22,7 @@ uses). The server re-creates the questions itself, so a client cannot inject oth
 from __future__ import annotations
 
 import copy
+import difflib
 import re
 from typing import Any
 
@@ -46,21 +49,95 @@ NOVICE_PATTERNS = [
     r"\bi (?:have )?(?:noticed|think|feel|wonder|heard|guess)\b", r"\bis it (?:bad|good|true|ok)\b",
     r"\b(?:bad|good) for (?:you|your|people)\b", r"\bmakes? (?:you|people|someone)\b", r"\b(?:stuff|things|kinda|sorta|a lot)\b",
     r"\b(?:fat|skinny|sugar levels?|junk food)\b", r"\bdoes .{0,40}\b(?:cause|make|give)\b", r"\bwhy do\b", r"\bpeople who\b",
+    r"\b(?:learn|know) more\b", r"\bhow (?:can|do|should) i\b",
 ]
-# Words about *how* to analyse (or plain filler) - never worth a "what did you mean?" question.
-METHOD_WORDS = set("""adjust adjusted adjusting adjustment regression regressions linear logistic poisson model models modeling
+# Words about *how* to analyse, everyday goals, or filler - never worth a "what did you mean?" question.
+FILLER_WORDS = set("""adjust adjusted adjusting adjustment regression regressions linear logistic poisson model models modeling
 weighted weighting survey surveys ratio ratios odds ci confidence interval intervals report reporting analysis analyses method
-methods estimate estimates using bad good healthy unhealthy really very""".split())
+methods estimate estimates using bad good healthy unhealthy really very learn learning know knowing more understand find out
+want wanting help curious wondering info information stop stopping prevent preventing fix fixing treat treating treatment cure
+curing get getting rid reduce reducing improve improving avoid avoiding manage managing beat overcome reverse lower lowering
+handle deal better worse can could should would me myself mine""".split())
+# "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
+GOAL_PATTERN = re.compile(r"\b(?:stop|prevent|fix|treat|cure|get rid of|reduce|lower|improve|avoid|manage|reverse|beat|overcome)\b")
+# "I have ...", "my ..." - the user is describing themselves, not a population.
+PERSONAL_PATTERN = re.compile(r"\b(?:i have|i've got|i got|i am|i'm|i suffer|my (?:doctor|blood|iron|sugar|weight|levels?|labs?))\b")
 NHANES_CODE = re.compile(r"\b(?!NHANES\b)(?:[A-Z]{3,5}[A-Z0-9]{2,6}|SEQN|SDMVPSU|SDMVSTRA|WTMEC\w*|WTINT\w*)\b")
 CYCLE_MENTION = re.compile(r"\b(?:19|20)\d\d\s*[-–]\s*(?:(?:19|20)?\d\d|march)|\bcycles?\b|\bnhanes\b", re.I)
 THRESHOLD = re.compile(r"[<>≤≥]=?\s*\d|\d+(?:\.\d+)?\s*(?:mg/dl|mg/l|ng/ml|mmol|kpa|kg/m|%|cm\b|mmhg|ml/min)", re.I)
 
+# Factors NHANES measures that are often studied alongside each kind of health topic (by concept domain).
+RELATED_FACTORS = {
+    "iron": ["dietary_iron", "pregnancy", "ckd", "obesity", "food_insecurity", "inflammation"],
+    "glycemia": ["obesity", "abdominal_obesity", "physical_activity", "sugar_intake", "short_sleep", "smoking"],
+    "cardio": ["sodium_intake", "obesity", "physical_activity", "smoking", "alcohol", "diabetes"],
+    "kidney": ["diabetes", "hypertension", "obesity", "protein_intake", "smoking"],
+    "liver": ["alcohol", "obesity", "diabetes", "hepatitis_c"],
+    "anthropometry": ["physical_activity", "energy_intake", "sugar_intake", "short_sleep", "sedentary"],
+    "mental_health": ["short_sleep", "physical_activity", "food_insecurity", "smoking", "alcohol"],
+    "behaviour": ["obesity", "depression", "physical_activity", "smoking"],
+    "hematology": ["smoking", "inflammation", "alcohol", "obesity"],
+    "respiratory": ["smoking", "cotinine", "obesity", "physical_activity"],
+    "_default": ["obesity", "smoking", "physical_activity", "diabetes"],
+}
+# One-line, plain-language explanations of common factors (shown under each choice).
+PLAIN = {
+    "dietary_iron": "How much iron people get from food, from a 24-hour diet interview.",
+    "pregnancy": "Whether the person is pregnant (pregnancy raises iron needs).",
+    "ckd": "Chronic kidney disease, measured with blood and urine tests.",
+    "obesity": "Body mass index (BMI) of 30 or more, from measured height and weight.",
+    "abdominal_obesity": "Waist size, measured with a tape (belly fat).",
+    "food_insecurity": "Not always having enough money for food.",
+    "inflammation": "Signs of inflammation in the blood (high CRP).",
+    "physical_activity": "How active people say they are each week.",
+    "sugar_intake": "How much sugar people eat, from a diet interview.",
+    "short_sleep": "Sleeping less than 7 hours a night.",
+    "smoking": "Whether the person smokes.",
+    "sodium_intake": "How much salt (sodium) people eat.",
+    "alcohol": "How much alcohol people drink.",
+    "diabetes": "Diabetes, from blood sugar tests or a doctor's diagnosis.",
+    "hypertension": "High blood pressure, measured at the exam.",
+    "protein_intake": "How much protein people eat.",
+    "hepatitis_c": "Hepatitis C infection, as reported by the person.",
+    "energy_intake": "Total calories eaten in a day.",
+    "sedentary": "Hours spent sitting each day.",
+    "depression": "Depression symptoms from a 9-question survey (PHQ-9).",
+    "cotinine": "Exposure to tobacco smoke, from a blood test.",
+    "anemia": "Low hemoglobin (the oxygen-carrying part of blood), from a blood test.",
+    "iron_deficiency": "Low iron stores (low ferritin), from a blood test.",
+    "hemoglobin": "The oxygen-carrying protein in red blood cells, from a blood test.",
+    "glycemic_control": "Average blood sugar over the past 3 months (HbA1c blood test).",
+    "fasting_glucose": "Blood sugar after not eating overnight.",
+    "bmi_concept": "Body mass index: weight compared with height.",
+    "total_cholesterol": "Total cholesterol in the blood.",
+    "ldl": "LDL, the 'bad' cholesterol.",
+    "systolic_bp": "The top number of a blood pressure reading.",
+    "cvd": "Heart disease or stroke, as reported by the person.",
+    "coronary_disease": "Narrowed heart arteries, as reported by the person.",
+    "daytime_sleepiness": "Feeling very sleepy during the day.",
+    "income": "Household income compared with the poverty line.",
+}
+
+
+# Everyday words -> the health topics (concept ids) people usually mean by them.
+LAY_TERMS = {
+    "fat": ["obesity", "abdominal_obesity"], "overweight": ["obesity", "bmi_concept"], "heavy": ["obesity", "bmi_concept"],
+    "weight": ["bmi_concept", "obesity"], "belly": ["abdominal_obesity"], "chubby": ["obesity"], "big": ["obesity"],
+    "sugar": ["glycemic_control", "diabetes", "sugar_intake"], "salt": ["sodium_intake", "hypertension"],
+    "pressure": ["hypertension", "systolic_bp"], "heart": ["cvd", "coronary_disease"], "tired": ["daytime_sleepiness", "anemia"],
+    "sleepy": ["daytime_sleepiness"], "sad": ["depression"], "stress": ["depression"], "kidneys": ["ckd"],
+    "exercise": ["physical_activity"], "workout": ["physical_activity"], "sitting": ["sedentary"], "drinking": ["alcohol"],
+    "cigarettes": ["smoking"], "vaping": ["smoking", "cotinine"], "diet": ["energy_intake", "sugar_intake", "dietary_iron"],
+    "food": ["energy_intake", "food_insecurity"], "poor": ["income", "food_insecurity"], "money": ["income"],
+    "cholesterol": ["total_cholesterol", "ldl"], "blood": ["hemoglobin", "anemia"],
+}
+
 
 def unclear_terms(parsed: dict) -> list[str]:
-    """Unmapped phrases minus analysis-method words ("adjusting", "regression"...) and filler ("bad")."""
+    """Unmapped phrases minus method words ("regression"), goals ("stop") and filler ("learn")."""
     out = []
     for ph in parsed.get("unmapped_terms") or []:
-        words = [w for w in re.split(r"[\s\-]+", ph.lower()) if w and w not in METHOD_WORDS]
+        words = [w for w in re.split(r"[\s\-]+", ph.lower()) if w and w not in FILLER_WORDS]
         if words:
             out.append(" ".join(words))
     return out
@@ -84,30 +161,30 @@ def assess_expertise(question: str, parsed: dict | None = None, k: Knowledge | N
 
     tech = sorted({t for t in TECH_TERMS if t in q})
     if tech:
-        add(min(6 * len(tech), 36), f"Technical terms: {', '.join(tech[:6])}")
+        add(min(6 * len(tech), 36), f"Uses research or medical terms ({', '.join(tech[:6])})")
     if NHANES_CODE.search(question):
-        add(10, "Uses NHANES variable or design codes")
+        add(10, "Uses NHANES variable codes")
     if CYCLE_MENTION.search(question):
-        add(6, "Names NHANES or a survey cycle")
+        add(6, "Names NHANES or specific survey years")
     if THRESHOLD.search(question):
-        add(8, "Gives explicit thresholds or units")
+        add(8, "Gives exact cut-off values or units")
     if parsed.get("age_range") and any(a is not None for a in parsed["age_range"]):
-        add(6, "Specifies an age range")
+        add(6, "Gives an age range")
     if parsed.get("populations"):
-        add(4, "Defines the study population")
+        add(4, "Says which group of people to study")
     if parsed.get("hints", {}).get("matched"):
         add(6, "Names a clinical guideline")
     if re.search(r"\bassociat\w* (?:with|between)\b|\brelationship between\b", q):
-        add(4, "Frames the idea as an association")
+        add(4, "Asks about a link between two things")
 
     informal = [p for p in NOVICE_PATTERNS if re.search(p, q)]
     if informal:
-        add(-min(8 * len(informal), 32), "Everyday or informal wording")
+        add(-min(8 * len(informal), 32), "Uses everyday wording")
     if scan_causal(question):
-        add(-6, "Causal wording (NHANES can only show associations)")
+        add(-6, "Asks what causes something (NHANES can only show links)")
     unclear = unclear_terms(parsed)
     if unclear:
-        add(-min(5 * len(unclear), 15), f"Terms we could not map: {', '.join(unclear[:3])}")
+        add(-min(5 * len(unclear), 15), f"Has words not found in NHANES ({', '.join(unclear[:3])})")
     if len(q.split()) < 8:
         add(-6, "Very short description")
 
@@ -127,10 +204,53 @@ def _label(cid: str | None, k: Knowledge) -> str:
     return k.concepts.get(cid, {}).get("label", cid)
 
 
-def _question(qid: str, level: str, text: dict, why: str, options: list[dict], free_text: dict | None = None) -> dict:
-    """One follow-up question. `text` has a wording per level; `why` is shown to novices only."""
-    return {"id": qid, "text": text.get(level) or text["intermediate"], "why": why if level == "novice" else "",
-            "options": options, "free_text": free_text}
+def _pick(level: str, texts: dict) -> str:
+    return texts.get(level) or texts.get("intermediate") or ""
+
+
+def _question(qid: str, level: str, text: dict, why: dict, options: list[dict], free_text: dict | None = None) -> dict:
+    """One follow-up question. `text` and `why` have a wording per level; every option has a `hint`."""
+    return {"id": qid, "text": _pick(level, text), "why": _pick(level, why), "options": options, "free_text": free_text}
+
+
+def _concept_hint(cid: str, k: Knowledge) -> str:
+    """One plain sentence saying what a topic means / how NHANES measures it."""
+    if cid in PLAIN:
+        return PLAIN[cid]
+    c = k.concepts.get(cid, {})
+    for d in c.get("definitions", []):
+        if k.definitions.get(d, {}).get("label"):
+            return f"Defined using: {k.definitions[d]['label']}."
+    block = k.blocks.get(c.get("block") or "", {})
+    if block:
+        units = f" ({block['units']})" if block.get("units") else ""
+        return f"Measured in NHANES as {block.get('label', c.get('label', cid)).lower()}{units}."
+    return f"A health topic measured in NHANES: {c.get('label', cid).lower()}."
+
+
+def term_suggestions(term: str, k: Knowledge, limit: int = 3) -> list[dict]:
+    """Closest things Q2E knows to an unknown word: everyday meanings, spelling-alike topics, then NHANES variables."""
+    syn_to_concept = {s: c["id"] for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]}
+    out, seen = [], set()
+
+    def add_concept(cid: str):
+        if cid in k.concepts and cid not in seen:
+            seen.add(cid)
+            syn = k.concepts[cid]["synonyms"][0]
+            out.append({"id": f"c_{cid}", "label": _label(cid, k), "hint": _concept_hint(cid, k), "replace": syn})
+
+    for w in term.lower().split():
+        for cid in LAY_TERMS.get(w, []):
+            add_concept(cid)
+    for s in difflib.get_close_matches(term.lower(), list(syn_to_concept), n=6, cutoff=0.72):
+        add_concept(syn_to_concept[s])
+    for hit in k.var_index().search(term, top_k=4):
+        if hit.get("confidence", 0) >= 0.6 and hit["variable"] not in seen and len(out) < limit:
+            seen.add(hit["variable"])
+            lab = hit["label"].split("(")[0].strip()
+            out.append({"id": f"v_{hit['variable']}", "label": lab,
+                        "hint": f"Survey question/measurement {hit['variable']}: {hit['label']}.", "replace": lab.lower()})
+    return out[:limit]
 
 
 def _draft_plan(question: str, parsed: dict, cycles: list[str] | None, k: Knowledge) -> dict | None:
@@ -155,92 +275,145 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     # (a) no health topic found at all -> nothing can run without this
     if not out_c:
         qs.append(_question("topic", level, {
-            "novice": "What health condition or body measurement are you most curious about?",
+            "novice": "Which health condition or body measurement are you most curious about?",
             "intermediate": "Which condition or measurement is the main outcome?",
-            "expert": "Primary outcome (condition or biomarker)?"},
-            "Every study needs one main thing to measure, like blood sugar, blood pressure or anemia.",
-            [], {"placeholder": "e.g. blood sugar, high blood pressure, anemia", "template": " Outcome: {text}."}))
+            "expert": "Primary outcome (condition or biomarker)?"}, {
+            "novice": "Every study needs one main thing to measure, like blood sugar, blood pressure or anemia.",
+            "intermediate": "We could not find a health condition or measurement in your idea.",
+            "expert": "No outcome concept was mapped."},
+            [{"id": c, "label": _label(c, k), "hint": _concept_hint(c, k), "append": f" Outcome: {k.concepts[c]['synonyms'][0]}."}
+             for c in ("diabetes", "hypertension", "obesity", "anemia") if c in k.concepts],
+            {"placeholder": "Or type a different condition or measurement", "template": " Outcome: {text}."}))
 
-    # (b) words we could not map to NHANES (method words like "regression" are ignored)
+    # (b) a personal goal ("how can I stop it?") -> offer factors NHANES can link to the condition
+    goal = bool(out_c and not exp_c and GOAL_PATTERN.search(q))
+    if goal:
+        lbl = _label(out_c, k).lower()
+        domain = k.concepts.get(out_c, {}).get("domain") or "_default"
+        factors = [c for c in RELATED_FACTORS.get(domain, RELATED_FACTORS["_default"]) if c in k.concepts and c != out_c][:4]
+        opts = [{"id": c, "label": _label(c, k), "hint": _concept_hint(c, k),
+                 "append": f" Is it more common in people with {k.concepts[c]['synonyms'][0]}?"} for c in factors]
+        opts.append({"id": "prev", "label": f"Just show how common {lbl} is", "hint": "Percent of people with it, overall and by age, sex and other groups.",
+                     "append": " Estimate the prevalence."})
+        qs.append(_question("goal", level, {
+            "novice": f"Which of these would you like to check for a link with {lbl}?",
+            "intermediate": f"NHANES cannot test treatments. Which factor should we examine alongside {lbl}?",
+            "expert": f"Treatment effects are out of scope (cross-sectional). Exposure to examine with {lbl}?"}, {
+            "novice": f"Finding out what stops {lbl} needs a clinical trial. NHANES is a one-time snapshot of thousands of "
+                      f"people, so it can show which things go together with {lbl} - a useful first step.",
+            "intermediate": "NHANES is cross-sectional: it shows associations, not the effect of an intervention.",
+            "expert": "Prevention/treatment questions are reframed as cross-sectional associations."},
+            opts, {"placeholder": "Or type another factor (e.g. vegetarian diet)", "template": " Is it more common in people with {text}?"}))
+
+    # (c) words we could not map to NHANES -> suggest the closest known terms
     for i, ph in enumerate(unclear_terms(parsed)[:2]):
+        sugg = term_suggestions(ph, k)
         qs.append(_question(f"term{i}", level, {
-            "novice": f"We didn't understand \"{ph}\". Could you say it another way?",
-            "intermediate": f"\"{ph}\" did not map to an NHANES variable. Rephrase or skip?",
-            "expert": f"Unmapped term \"{ph}\": synonym or NHANES variable name?"},
-            "The tool only knows the words that appear in the NHANES data dictionary.",
-            [{"id": "skip", "label": "Skip it, it is not important"}],
-            {"placeholder": "e.g. a simpler or more medical word", "template": " ({text})"}))
+            "novice": f"We couldn't find \"{ph}\" in the health survey. Did you mean one of these?" if sugg else
+                      f"We couldn't find \"{ph}\" in the health survey.",
+            "intermediate": f"\"{ph}\" is not an NHANES term. Closest matches:" if sugg else f"\"{ph}\" is not an NHANES term.",
+            "expert": f"Unmapped term \"{ph}\". Candidate mappings:" if sugg else f"Unmapped term \"{ph}\"."}, {
+            "novice": "Q2E only understands words that match what NHANES actually measured. Pick the closest one, or leave it out.",
+            "intermediate": "Only terms that map to NHANES variables can be used in the analysis.",
+            "expert": "Pick a mapping or drop the term."},
+            sugg + [{"id": "skip", "label": "Leave it out", "hint": "The study is designed without this word."}],
+            {"placeholder": "Or type a different word", "replace": True}))
+        qs[-1]["term"] = ph
 
-    # (c) only one topic, no clear aim -> "how common" or "linked to something"?
+    # (d) only one topic, no clear aim -> "how common" or "linked to something"?
     has_prev_cue = any(c in q for c in planner.PREVALENCE_CUES)
-    if out_c and not exp_c and not has_prev_cue:
-        lbl = _label(out_c, k)
+    if out_c and not exp_c and not has_prev_cue and not goal and not unclear_terms(parsed):
+        lbl = _label(out_c, k).lower()
         qs.append(_question("aim", level, {
-            "novice": f"What would you like to find out about {lbl.lower()}?",
-            "intermediate": f"Is this a prevalence question about {lbl.lower()}, or an association with an exposure?",
-            "expert": f"Estimand: prevalence of {lbl.lower()}, or association with an exposure?"},
-            "Counting how common something is and checking whether two things go together are different kinds of studies.",
-            [{"id": "prev", "label": "How common it is" if level == "novice" else "Prevalence (descriptive)", "append": " Estimate the prevalence."},
-             {"id": "assoc", "label": "Whether it is linked to something else" if level == "novice" else "Association with an exposure (type it below)"}],
-            {"placeholder": "e.g. sleep, smoking, waist size", "template": " Is it associated with {text}?", "requires_option": "assoc"}))
+            "novice": f"What would you like to find out about {lbl}?",
+            "intermediate": f"Prevalence of {lbl}, or its association with another factor?",
+            "expert": f"Estimand: prevalence of {lbl}, or association with an exposure?"}, {
+            "novice": "Counting how common something is and checking whether two things go together are different kinds of studies.",
+            "intermediate": "This decides between a descriptive and an association analysis.",
+            "expert": "Descriptive vs. association design."},
+            [{"id": "prev", "label": "How common it is" if level == "novice" else "Prevalence (descriptive)",
+              "hint": f"e.g. \"How common is {lbl} among US adults?\"", "append": " Estimate the prevalence."},
+             {"id": "assoc", "label": "Whether it is linked to something else" if level == "novice" else "Association with another factor",
+              "hint": f"e.g. is {lbl} linked to sleep, diet or another factor? Type that factor in the box below."}],
+            {"placeholder": "The other factor (e.g. sleep, smoking, waist size)", "template": " Is it associated with {text}?",
+             "requires_option": "assoc"}))
 
-    # (d) who is being studied?
+    # (e) who is being studied?
     if not parsed.get("populations") and not any(a is not None for a in (parsed.get("age_range") or (None, None))):
         qs.append(_question("population", level, {
             "novice": "Which group of people do you want to learn about?",
             "intermediate": "Which population should be included?",
-            "expert": "Target population / age restriction?"},
-            "Results can differ a lot between, for example, children and older adults.",
-            [{"id": "adults", "label": "Adults (18+)", "append": " in adults"},
-             {"id": "older", "label": "Older adults (65+)", "append": " in older adults"},
-             {"id": "children", "label": "Children and teens", "append": " in children"},
-             {"id": "women", "label": "Women of reproductive age", "append": " in women of reproductive age"},
-             {"id": "auto", "label": "Let Q2E choose a sensible default"}]))
+            "expert": "Target population / age restriction?"}, {
+            "novice": "Results can differ a lot between, for example, children and older adults.",
+            "intermediate": "Sets the inclusion criteria for the study.",
+            "expert": "Defines the analytic domain (subpopulation)."},
+            [{"id": "adults", "label": "Adults", "hint": "Age 18 and older.", "append": " Study adults."},
+             {"id": "older", "label": "Older adults", "hint": "Age 65 and older.", "append": " Study older adults."},
+             {"id": "children", "label": "Children and teens", "hint": "Age 1 to 17.", "append": " Study children."},
+             {"id": "women", "label": "Women of reproductive age", "hint": "Women aged 18 to 49.", "append": " Study women of reproductive age."},
+             {"id": "auto", "label": "Let Q2E choose", "hint": "Q2E picks the usual group for this topic (most often adults)."}]))
 
-    # (e) the rules guessed which concept is exposure vs outcome -> confirm direction
+    # (f) the rules guessed which concept is exposure vs outcome -> confirm direction
     x, o = _label(exp_c, k), _label(out_c, k)
     same_thing = x.lower() in o.lower() or o.lower() in x.lower()   # e.g. "waist circumference (BMXWAIST)" matched twice
     if out_c and exp_c and not same_thing and any("treated as exposure" in n for n in parsed.get("notes", [])):
         qs.append(_question("direction", level, {
             "novice": "Which one do you think might affect the other?",
-            "intermediate": "Confirm the roles: exposure and outcome?",
-            "expert": "Exposure → outcome direction?"},
-            "We look at how the outcome changes across levels of the exposure, so the order matters for the analysis.",
-            [{"id": "keep", "label": f"{x} → {o}" if level != "novice" else f"{x} might affect {o}"},
-             {"id": "swap", "label": f"{o} → {x}" if level != "novice" else f"{o} might affect {x}",
+            "intermediate": "Confirm the roles: which is the exposure and which is the outcome?",
+            "expert": "Exposure → outcome direction?"}, {
+            "novice": "We compare the second thing across different levels of the first, so the order changes the analysis.",
+            "intermediate": "The exposure is the explanatory variable; the outcome is modelled.",
+            "expert": "Determines the regression specification."},
+            [{"id": "keep", "label": f"{x} → {o}", "hint": f"Compare {o.lower()} across levels of {x.lower()}."},
+             {"id": "swap", "label": f"{o} → {x}", "hint": f"Compare {x.lower()} across levels of {o.lower()}.",
               "fixes": [{"op": "swap_roles"}]}]))
 
-    # (f) the outcome has several guideline definitions and none was named
+    # (g) the outcome has several guideline definitions and none was named
     if out_c and not out_c.startswith("dict:") and level != "novice" and not parsed.get("hints", {}).get("matched"):
         defs = [d for d in k.concepts.get(out_c, {}).get("definitions", []) if d in k.definitions]
         if len(defs) > 1:
             opts = [{"id": d, "label": k.definitions[d].get("label", d),
+                     "hint": str(k.definitions[d].get("short") or k.definitions[d].get("criteria_text") or "")[:160],
                      "fixes": [{"op": "set_definition", "role": "outcome", "value": d, "concept": out_c}]} for d in defs[:4]]
-            opts.append({"id": "auto", "label": "Use the default definition"})
+            opts.append({"id": "auto", "label": "Use the default definition", "hint": "Q2E's standard choice for this topic."})
             qs.append(_question("definition", level, {
                 "intermediate": f"Several guideline definitions exist for {_label(out_c, k).lower()}. Which one?",
-                "expert": f"Case definition for {_label(out_c, k).lower()}?"}, "", opts))
+                "expert": f"Case definition for {_label(out_c, k).lower()}?"}, {
+                "intermediate": "Different guidelines use different cut-offs, which changes who counts as a case.",
+                "expert": "Affects case ascertainment and comparability with published estimates."}, opts))
 
-    # (g) association: compare people at similar body weight?
+    # (h) association: compare people at similar body weight?
     if plan and plan.get("exposure") and not parsed.get("adjust_bmi") and "bmi" not in plan.get("covariates", []) \
             and "bmi" not in (plan["exposure"]["variable"], plan["outcome"]["variable"]):
         qs.append(_question("bmi", level, {
             "novice": "Should we compare people who weigh about the same?",
             "intermediate": "Adjust for BMI?",
-            "expert": "Include BMI in the adjustment set (confounder, not mediator)?"},
-            "Body weight is linked to many health measures; comparing people at similar weight separates its effect from your topic.",
-            [{"id": "yes", "label": "Yes" if level != "novice" else "Yes, compare at similar weight", "append": " independent of BMI"},
-             {"id": "no", "label": "No"}]))
+            "expert": "Include BMI in the adjustment set (confounder, not mediator)?"}, {
+            "novice": "Body weight is linked to many health measures; comparing people at similar weight keeps it from muddying the result.",
+            "intermediate": "BMI may confound the association.",
+            "expert": "Only appropriate if BMI is not on the causal pathway."},
+            [{"id": "yes", "label": "Yes", "hint": "Adjust for body mass index (BMI).", "append": " Compare people independent of BMI."},
+             {"id": "no", "label": "No", "hint": "Do not take body weight into account."}]))
 
-    # (h) experts only: effect measure for a binary outcome
+    # (i) experts only: effect measure for a binary outcome
     if level == "expert" and plan and plan.get("exposure") and plan["outcome"].get("type") == "binary" \
             and not re.search(r"\b(?:prevalence|odds|risk) ratios?\b", q):
-        qs.append(_question("estimand", level, {"expert": "Effect measure for the binary outcome?"}, "",
-                            [{"id": "pr", "label": "Prevalence ratio (quasi-Poisson, default)"},
-                             {"id": "or", "label": "Odds ratio (quasi-binomial)",
+        qs.append(_question("estimand", level, {"expert": "Effect measure for the binary outcome?"},
+                            {"expert": "PRs are preferred for common outcomes in cross-sectional data."},
+                            [{"id": "pr", "label": "Prevalence ratio", "hint": "Quasi-Poisson, log link (default)."},
+                             {"id": "or", "label": "Odds ratio", "hint": "Quasi-binomial, logit link.",
                               "fixes": [{"op": "set", "path": "model.family", "value": "quasibinomial"}]}]))
 
     return qs[:MAX_QUESTIONS[level]]
+
+
+def personal_notice(question: str) -> str:
+    """Plain note when someone describes their own health ("I have ...")."""
+    if PERSONAL_PATTERN.search(question.lower()):
+        return ("Q2E looks for patterns across thousands of people in a national US health survey (NHANES). "
+                "It cannot give personal medical advice - for your own health, please talk to a doctor. "
+                "Below, we turn your idea into a research question about people like you.")
+    return ""
 
 
 def clarify(question: str, cycles: list[str] | None = None, level: str | None = None) -> dict[str, Any]:
@@ -250,12 +423,21 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
     parsed = planner.parse_question(clean, k)
     ex = assess_expertise(clean, parsed, k)
     used = level if level in LEVELS else ex["level"]
-    return {"expertise": ex, "level_used": used, "questions": build_questions(clean, used, parsed, cycles, k)}
+    return {"expertise": ex, "level_used": used, "notice": personal_notice(clean),
+            "questions": build_questions(clean, used, parsed, cycles, k)}
 
 
 # ---------------------------------------------------------------------------
 # 3. Turn answers into a refined question + safe plan edits
 # ---------------------------------------------------------------------------
+def _swap_word(text: str, old: str, new: str) -> str:
+    """Put `new` where the unknown word `old` was (keeps word order); add it as a note if `old` is not found."""
+    pat = re.compile(r"\b" + r"\W+".join(map(re.escape, old.split())) + r"\b", re.I) if old else None
+    if pat and pat.search(text):
+        return pat.sub(new, text, count=1)
+    return f"{text} Meaning: {new}."
+
+
 def apply_answers(question: str, answers: dict[str, dict], level: str | None = None,
                   cycles: list[str] | None = None) -> dict[str, Any]:
     """answers = {question_id: {"option": option_id, "text": free text}}.
@@ -264,15 +446,21 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
     info = clarify(question, cycles, level)
     clean, _ = privacy.scrub(question)
     refined, fixes, record = clean.rstrip(), [], []
+    if refined and refined[-1] not in ".?!":
+        refined += "."      # so each answer is added as its own sentence
     for q in info["questions"]:
         a = answers.get(q["id"]) or {}
         opt = next((o for o in q["options"] if o["id"] == a.get("option")), None)
+        text = privacy.scrub(str(a.get("text") or ""))[0].strip()[:120]
+        ft = q.get("free_text") or {}
         if opt:
             refined += opt.get("append", "")
             fixes += opt.get("fixes", [])
-        text = privacy.scrub(str(a.get("text") or ""))[0].strip()[:120]
-        ft = q.get("free_text")
-        if text and ft and (not ft.get("requires_option") or ft["requires_option"] == a.get("option")):
+            if opt.get("replace"):
+                refined = _swap_word(refined, q.get("term", ""), opt["replace"])
+        if text and ft.get("replace") and not opt:
+            refined = _swap_word(refined, q.get("term", ""), text)
+        elif text and ft.get("template") and (not ft.get("requires_option") or ft["requires_option"] == a.get("option")):
             refined += ft["template"].format(text=text)
         if opt or text:
             record.append({"id": q["id"], "question": q["text"], "answer": (opt or {}).get("label", "") + (f" {text}" if text else "")})

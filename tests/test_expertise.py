@@ -18,13 +18,45 @@ def test_levels_detected_from_wording():
 def test_precise_question_gets_fewer_follow_ups():
     novice, expert = expertise.clarify(NOVICE_Q), expertise.clarify(EXPERT_Q)
     assert len(expert["questions"]) < len(novice["questions"])
-    assert all(q["why"] for q in novice["questions"])          # beginners are told why we ask
-    assert not any(q["why"] for q in expert["questions"])
+    assert all(q["why"] for q in novice["questions"])          # everyone is told why we ask
 
 
 def test_method_words_are_not_asked_about():
-    terms = expertise.unclear_terms({"unmapped_terms": ["survey-weighted linear regression", "fat bad", "ratios"]})
+    terms = expertise.unclear_terms({"unmapped_terms": ["survey-weighted linear regression", "fat bad", "ratios", "learn", "stop"]})
     assert terms == ["fat"]
+
+
+def test_every_question_and_choice_is_explained_at_every_level():
+    for lvl in expertise.LEVELS:
+        for q in expertise.clarify(NOVICE_Q, level=lvl)["questions"]:
+            assert q["why"]
+            assert all(o.get("hint") for o in q["options"])
+
+
+def test_unknown_word_gets_suggestions_and_keeps_word_order():
+    q = expertise.clarify(NOVICE_Q)["questions"][0]
+    assert q["id"] == "term0" and any(o["id"] == "c_obesity" for o in q["options"])
+    r = expertise.apply_answers(NOVICE_Q, {"term0": {"option": "c_obesity"}})
+    from q2e import agents
+    p = agents.design_study(r["question"])
+    assert p["exposure"]["concept"] == "obesity" and p["outcome"]["concept"] == "glycemic_control"
+
+
+def test_typo_suggests_the_right_topic():
+    q = expertise.clarify("is anemai linked to smoking in adults?")["questions"][0]
+    assert q["options"][0]["id"] == "c_anemia"
+
+
+def test_personal_goal_is_reframed_with_factors():
+    q = "I have iron deficiency and want to learn more about how I can stop it"
+    c = expertise.clarify(q)
+    assert c["notice"]                                   # not medical advice
+    goal = next(x for x in c["questions"] if x["id"] == "goal")
+    assert any(o["id"] == "dietary_iron" for o in goal["options"])
+    r = expertise.apply_answers(q, {"goal": {"option": "dietary_iron"}})
+    from q2e import agents
+    p = agents.design_study(r["question"])
+    assert p["outcome"]["concept"] == "iron_deficiency" and p["exposure"]["concept"] == "dietary_iron"
 
 
 def test_wording_changes_with_level():
