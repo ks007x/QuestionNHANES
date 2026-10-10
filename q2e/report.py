@@ -443,6 +443,17 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
                      + f"</tbody></table><p class='meta'>Start: {esc(c['start'])}. {esc(c['meaning'])} {esc(c['caveat'])}</p>")
     except Exception:  # noqa: BLE001
         pass
+    ev = project.get("evidence") or {}
+    if ev.get("papers"):
+        sm = ev["summary"]
+        def _pub(e):
+            return f"{e['measure']} {e['value']:g} ({e['lcl']:g}-{e['ucl']:g})" if e else "-"
+        rows = "".join(f"<tr><td>{esc(r['comparison']['verdict'])}</td><td>{esc(_pub(r['comparison'].get('published')))}</td>"
+                       f"<td>{esc(r['journal'])} ({esc(r['year'])})</td><td><a href='{esc(r['url'])}'>{esc(r['title'][:120])}</a></td></tr>" for r in ev["papers"][:12])
+        parts.append(f"<h3>eTable. Comparison with published NHANES studies in high-impact journals</h3><p>{esc(sm['label'])}: {sm['papers']} papers, "
+                     f"{sm['comparable']} with a comparable estimate, {sm['same_direction']} in the same direction, {sm['consistent']} with overlapping 95% CIs.</p>"
+                     f"<table><thead><tr><th>Verdict</th><th>Published estimate</th><th>Journal</th><th>Study</th></tr></thead><tbody>{rows}</tbody></table>"
+                     f"<p class='meta'>{esc(ev.get('method', ''))} {esc(ev.get('caveat', ''))}</p>")
     parts.append("<h3>eMethods. Derivation trace and provenance</h3><pre style='white-space:pre-wrap;font-size:11.5px;background:#f7f7f7;padding:10px'>"
                  + esc_code("\n".join(results.get("trace", []))) + "</pre>")
     files = "".join(f"<li>{esc(f['file'])} ({esc(f['origin'])}) md5 <code>{esc(f['md5'])}</code> n={f['nrow']:,}</li>" for f in meta.get("files", []))
@@ -529,6 +540,9 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
         lines.append(f"\n{c['meaning']} {c['caveat']}")
     except Exception:  # noqa: BLE001
         pass
+    if (project.get("evidence") or {}).get("papers"):
+        from . import evidence as _ev
+        lines.append("\n" + _ev.to_markdown(project["evidence"]).replace("# Checked against", "## Checked against"))
     lines.append(f"\n---\nPlan hash `{run['plan_hash']}` · run `{run['id']}` · {results.get('meta', {}).get('r_version', '')}")
     md = "\n".join(lines)
     return md

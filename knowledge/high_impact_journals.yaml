@@ -1,0 +1,79 @@
+# High-impact general and society journals used to learn from, and check results against, published NHANES studies.
+# `jour` is the NLM title abbreviation searched with PubMed's [jour] field. `group` drives the label in the app.
+journals:
+  # JAMA Network
+  - {jour: "JAMA", group: "JAMA Network", domains: [general]}
+  - {jour: "JAMA Netw Open", group: "JAMA Network", domains: [general]}
+  - {jour: "JAMA Intern Med", group: "JAMA Network", domains: [general]}
+  - {jour: "JAMA Cardiol", group: "JAMA Network", domains: [cardio]}
+  - {jour: "JAMA Pediatr", group: "JAMA Network", domains: [general]}
+  - {jour: "JAMA Oncol", group: "JAMA Network", domains: [oncology]}
+  - {jour: "JAMA Psychiatry", group: "JAMA Network", domains: [mental_health]}
+  - {jour: "JAMA Netw Open", group: "JAMA Network", domains: [general]}
+  - {jour: "JAMA Health Forum", group: "JAMA Network", domains: [social]}
+  # Lancet group
+  - {jour: "Lancet", group: "Lancet group", domains: [general]}
+  - {jour: "Lancet Diabetes Endocrinol", group: "Lancet group", domains: [glycemia, anthropometry]}
+  - {jour: "Lancet Public Health", group: "Lancet group", domains: [general, social]}
+  - {jour: "Lancet Gastroenterol Hepatol", group: "Lancet group", domains: [liver]}
+  - {jour: "Lancet Haematol", group: "Lancet group", domains: [hematology, iron]}
+  - {jour: "Lancet Reg Health Am", group: "Lancet group", domains: [general]}
+  - {jour: "EClinicalMedicine", group: "Lancet group", domains: [general]}
+  # Other general medicine
+  - {jour: "N Engl J Med", group: "General medicine", domains: [general]}
+  - {jour: "BMJ", group: "General medicine", domains: [general]}
+  - {jour: "Ann Intern Med", group: "General medicine", domains: [general]}
+  - {jour: "Am J Epidemiol", group: "General medicine", domains: [general]}
+  # Cardiology and vascular
+  - {jour: "J Am Coll Cardiol", group: "Society journal (ACC)", domains: [cardio]}
+  - {jour: "Circulation", group: "Society journal (AHA)", domains: [cardio]}
+  - {jour: "Stroke", group: "Society journal (AHA)", domains: [cardio]}
+  - {jour: "Hypertension", group: "Society journal (AHA)", domains: [cardio]}
+  - {jour: "J Am Heart Assoc", group: "Society journal (AHA)", domains: [cardio, anthropometry]}
+  # Diabetes, endocrine, nutrition
+  - {jour: "Diabetes Care", group: "Society journal (ADA)", domains: [glycemia]}
+  - {jour: "J Clin Endocrinol Metab", group: "Society journal (Endocrine Society)", domains: [glycemia, anthropometry]}
+  - {jour: "Am J Clin Nutr", group: "Society journal (ASN)", domains: [nutrition, iron]}
+  - {jour: "Obesity (Silver Spring)", group: "Society journal (TOS)", domains: [anthropometry]}
+  # Hematology
+  - {jour: "Blood", group: "Society journal (ASH)", domains: [hematology, iron]}
+  - {jour: "Blood Adv", group: "Society journal (ASH)", domains: [hematology, iron]}
+  # Gastroenterology and hepatology
+  - {jour: "Am J Gastroenterol", group: "Society journal (ACG)", domains: [liver]}
+  - {jour: "Gastroenterology", group: "Society journal (AGA)", domains: [liver]}
+  - {jour: "Clin Gastroenterol Hepatol", group: "Society journal (AGA)", domains: [liver]}
+  - {jour: "J Hepatol", group: "Society journal (EASL)", domains: [liver]}
+  - {jour: "Hepatology", group: "Society journal (AASLD)", domains: [liver]}
+  # Kidney
+  - {jour: "J Am Soc Nephrol", group: "Society journal (ASN)", domains: [kidney]}
+  - {jour: "Clin J Am Soc Nephrol", group: "Society journal (ASN)", domains: [kidney]}
+  - {jour: "Am J Kidney Dis", group: "Society journal (NKF)", domains: [kidney]}
+  # Respiratory, allergy, infection
+  - {jour: "Chest", group: "Society journal (CHEST)", domains: [respiratory]}
+  - {jour: "Am J Respir Crit Care Med", group: "Society journal (ATS)", domains: [respiratory]}
+  - {jour: "J Allergy Clin Immunol", group: "Society journal (AAAAI)", domains: [respiratory, infection]}
+  - {jour: "Clin Infect Dis", group: "Society journal (IDSA)", domains: [infection]}
+  - {jour: "J Infect Dis", group: "Society journal (IDSA)", domains: [infection]}
+  # Other specialties
+  - {jour: "Ann Rheum Dis", group: "Society journal (EULAR)", domains: [general]}
+  - {jour: "J Am Geriatr Soc", group: "Society journal (AGS)", domains: [function]}
+  - {jour: "Pediatrics", group: "Society journal (AAP)", domains: [general]}
+  - {jour: "Environ Health Perspect", group: "Environmental health", domains: [environment]}
+  - {jour: "Am J Psychiatry", group: "Society journal (APA)", domains: [mental_health]}
+
+# What counts as a method when learning from abstracts (regex, case-insensitive).
+methods:
+  logistic: "logistic regression|odds ratio|(?-i:\\ba?ORs?\\b)"
+  poisson_pr: "poisson|prevalence ratio|(?-i:\\ba?PRs?\\b)"
+  log_binomial: "log-binomial|log binomial|relative risk regression"
+  linear: "linear regression|\\bβ\\b|\\bbeta\\b|mean difference"
+  cox: "cox|hazard ratio|(?-i:\\ba?HRs?\\b)"
+  spline: "restricted cubic spline|spline"
+  quantile: "quantile regression|median regression"
+  multiple_imputation: "multiple imputation|multiply imputed"
+  mediation: "mediation|mediat"
+  interaction: "interaction|effect modification|stratified by|subgroup"
+  machine_learning: "machine learning|random forest|xgboost|lasso|neural network"
+  mixture: "weighted quantile sum|wqs|bkmr|mixture"
+  survey_weighted: "weighted|complex survey|sampling weight|survey design"
+  mortality_linkage: "mortality|national death index"
