@@ -327,18 +327,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     plan = _draft_plan(question, parsed, cycles, k)
     qs: list[dict] = []
 
-    # (a) no health topic found at all -> nothing can run without this
-    if not out_c:
-        qs.append(_question("topic", level, {
-            "novice": "Which health condition or body measurement are you most curious about?",
-            "intermediate": "Which condition or measurement is the main outcome?",
-            "expert": "Primary outcome (condition or biomarker)?"}, {
-            "novice": "Every study needs one main thing to measure, like blood sugar, blood pressure or anemia.",
-            "intermediate": "We could not find a health condition or measurement in your idea.",
-            "expert": "No outcome concept was mapped."},
-            [{"id": c, "label": _label(c, k), "hint": _concept_hint(c, k), "append": f" Outcome: {k.concepts[c]['synonyms'][0]}."}
-             for c in ("diabetes", "hypertension", "obesity", "anemia") if c in k.concepts],
-            {"placeholder": "Or type a different condition or measurement", "template": " Outcome: {text}."}))
+    # (no health topic at all is handled by rewrite_help(): the user is sent back to retype the idea)
 
     # (a2) more health topics than the parser could keep -> which one is the main thing to measure?
     missed = missed_topics(question, parsed, k) if out_c else []
@@ -534,8 +523,75 @@ def clarify(question: str, cycles: list[str] | None = None, level: str | None = 
     ex = assess_expertise(clean, parsed, k)
     used = level if level in LEVELS else ex["level"]
     qs = build_questions(clean, used, parsed, cycles, k)
+    rewrite = None
+    no_match = [t for t in unclear_terms(parsed) if not term_suggestions(t, k)]
+    if not parsed.get("outcome_concept") and not parsed.get("hard_stop") \
+            and (no_match or not any(q["id"].startswith("term") for q in qs)):
+        rewrite, qs = rewrite_help(clean, parsed, k), []
     return {"expertise": ex, "level_used": used, "notice": personal_notice(clean), "question_used": clean,
-            "understood": understood(clean, parsed, spelling, qs, k), "questions": qs}
+            "understood": understood(clean, parsed, spelling, qs, k), "questions": qs, "needs_rewrite": rewrite}
+
+
+DOMAIN_NAMES = {
+    "anthropometry": "Body size", "behaviour": "Habits (smoking, sleep, activity)", "cardio": "Heart, blood pressure & cholesterol",
+    "demographic": "Age, income & background", "environment": "Environment", "function": "Daily functioning",
+    "glycemia": "Blood sugar & diabetes", "hematology": "Blood counts", "inflammation": "Inflammation", "iron": "Iron",
+    "kidney": "Kidneys", "liver": "Liver", "mental_health": "Mood & mental health", "nutrition": "Diet & nutrition",
+    "respiratory": "Lungs & breathing", "social": "Social factors", "default": "Other",
+}
+DEFAULT_TOPICS = ["hypertension", "diabetes", "total_cholesterol", "short_sleep", "depression", "obesity"]
+
+
+def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
+    """No health topic NHANES measures was found: explain why and offer rewrites that are checked to work."""
+    missing = [t for t in unclear_terms(parsed) if not term_suggestions(t, k)]
+    words = re.findall(r"[a-z]+", question.lower())
+    related: list[str] = []
+    # closest measured topic for each word in the idea first (work -> sitting, stress -> depression), then the rest
+    for rank in range(3):
+        for w in words:
+            cands = [c for c in LAY_TERMS.get(w, []) if c in k.concepts]
+            if rank < len(cands) and cands[rank] not in related:
+                related.append(cands[rank])
+    for cid in DEFAULT_TOPICS:
+        if len(related) >= 6:
+            break
+        if cid in k.concepts and cid not in related:
+            related.append(cid)
+    syn = {c: k.concepts[c]["synonyms"][0] for c in related}
+
+    # example rewrites; each is kept only if Q2E's own parser finds a health topic in it
+    candidates = []
+    if len(related) >= 2:
+        candidates.append(f"Is {syn[related[0]]} linked to {syn[related[1]]} in US adults?")
+    if len(related) >= 3:
+        candidates.append(f"Is {syn[related[2]]} linked to {syn[related[1]]} in US adults?")
+    candidates += [f"How common is {syn[c]} among US adults?" for c in related[1:] + related[:1]]
+    examples = []
+    for text in candidates:
+        p = planner.parse_question(text, k)
+        if p.get("outcome_concept") and not p.get("hard_stop") and text not in examples:
+            examples.append(text)
+        if len(examples) == 3:
+            break
+
+    by_domain: dict[str, list[dict]] = {}
+    for c in sorted(k.concepts.values(), key=lambda c: c["label"].lower()):
+        by_domain.setdefault(DOMAIN_NAMES.get(c.get("domain") or "default", "Other"), []).append(
+            {"label": c["label"], "use": c["synonyms"][0], "hint": _concept_hint(c["id"], k)})
+
+    shown = ", ".join(f"\"{t}\"" for t in missing[:3])
+    return {
+        "missing": missing[:3],
+        "what_happened": (f"You asked about {shown}, but the national survey Q2E uses (NHANES) did not measure "
+                          f"{'it' if len(missing) == 1 else 'these'}, so there is nothing to study yet.") if missing else
+                         "We could not find a health condition or measurement in your idea, so there is nothing to study yet.",
+        "what_to_do": "Rewrite your idea around something NHANES did measure. Click an example below to use it, "
+                      "or swap in one of the closest topics.",
+        "examples": examples,
+        "related": [{"label": _label(c, k), "use": syn[c], "hint": _concept_hint(c, k)} for c in related],
+        "all_topics": [{"group": g, "topics": t} for g, t in sorted(by_domain.items())],
+    }
 
 
 def understood(question: str, parsed: dict, spelling: list[dict], qs: list[dict], k: Knowledge) -> list[dict]:

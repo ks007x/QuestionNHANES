@@ -101,6 +101,17 @@ def test_extra_topic_the_parser_dropped_is_asked_about():
     assert p["outcome"]["concept"] == "ckd"
 
 
+def test_topic_nhanes_does_not_measure_sends_user_back_to_rewrite():
+    c = expertise.clarify("I have high cortisol, how does it relate to the amount of work and stress I have everyday")
+    r = c["needs_rewrite"]
+    assert c["questions"] == [] and r["missing"] == ["cortisol"] and "did not measure" in r["what_happened"]
+    from q2e import planner
+    assert r["examples"] and all(planner.parse_question(e)["outcome_concept"] for e in r["examples"])   # every example works
+    assert r["related"][0]["label"] and r["all_topics"]
+    # a word with close matches still gets the normal follow-up question instead
+    assert expertise.clarify("is being fat bad for you")["needs_rewrite"] is None
+
+
 def test_uncertain_text_search_match_is_confirmed():
     c = expertise.clarify("is coffee bad for kidneys")
     chk = next(q for q in c["questions"] if q["id"] == "check_outcome")

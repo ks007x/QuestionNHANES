@@ -197,3 +197,9 @@ label.field select, label.field input { width: 100%; }
 .cq-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 3vh 4vw; background: var(--paper); }
 .cq-overlay .card { width: min(780px, 100%); max-height: 94vh; overflow: auto; margin: 0; }
 body:has(.cq-overlay) { overflow: hidden; }
+
+/* "Your idea needs a small change" help under the idea box */
+.ask.needs-fix { border: 2px solid var(--warn); box-shadow: 0 0 0 3px var(--warn-bg); }
+.rewrite { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--warn); border-left: 5px solid var(--warn); border-radius: 12px; background: var(--warn-bg); }
+.rewrite .examples button { border-style: solid; }
+.rw-miss { background: var(--bad-bg); color: var(--bad); padding: 0 4px; border-radius: 4px; font-weight: 600; }

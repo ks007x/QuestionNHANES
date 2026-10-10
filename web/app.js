@@ -137,7 +137,8 @@ async function viewAsk() {
   return `<h1 class="page">From clinical observation to reproducible evidence</h1>
   <p class="lede">Describe a research idea in plain language. Q2E's agents turn it into a protocol, map it to NHANES (or your own open dataset), and draft a statistical analysis plan for your approval. Nothing runs until you approve it, and nothing is final until you sign off.</p>
   <div class="card">
-    <textarea id="q" class="ask" placeholder="e.g. Do a research study on the prevalence of functional iron deficiency in US adults.">${esc(store.get("q2e.q", ""))}</textarea>
+    <textarea id="q" class="ask${S.rewrite ? " needs-fix" : ""}" placeholder="e.g. Do a research study on the prevalence of functional iron deficiency in US adults.">${esc(store.get("q2e.q", ""))}</textarea>
+    ${S.rewrite ? rewriteCard(S.rewrite) : ""}
     <div class="examples">${k.examples.map((e) => `<button data-act="example" data-q="${esc(e.question)}" title="${esc(e.title)}">${esc(e.title)}</button>`).join("")}</div>
     <div class="grid g3" style="margin-top:16px">
       <label class="field">Dataset<select id="dsSel"><option value="">NHANES (public)</option>${ds.map((d) => `<option value="${d.id}" ${a.dataset === d.id ? "selected" : ""}>${esc(d.name)} (uploaded)</option>`).join("")}</select></label>
@@ -209,6 +210,33 @@ function clarifyCard(c) {
   </div></div>`;
 }
 /* A question counts as answered when a choice is picked (plus any text that choice needs), or when text was typed. */
+/* Shown under the idea box when nothing in the idea is something NHANES measured: what happened, what to do, one-click fixes. */
+function rewriteCard(r) {
+  let happened = esc(r.what_happened);
+  for (const m of r.missing) happened = happened.split(esc(`"${m}"`)).join(`<mark class="rw-miss">${esc(m)}</mark>`);
+  const chip = (t) => `<button data-act="rwSwap" data-use="${esc(t.use)}" title="${esc(t.hint)}">${esc(t.label)}</button>`;
+  const swapTitle = r.missing.length ? `Or swap <mark class="rw-miss">${esc(r.missing[0])}</mark> for the closest thing NHANES measured`
+    : "Or start from one of these topics";
+  const total = r.all_topics.reduce((n, g) => n + g.topics.length, 0);
+  return `<div class="rewrite" id="rewriteCard">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <b>⚠ Your idea needs a small change before we can design a study</b>
+      <button class="btn sm" data-act="rwClose" title="Hide this help">✕</button>
+    </div>
+    <ol class="small" style="margin:8px 0 0 18px;padding:0;display:grid;gap:4px">
+      <li><b>What happened:</b> ${happened}</li>
+      <li><b>What to do:</b> ${esc(r.what_to_do)} Then press <b>Design my study →</b> again.</li>
+    </ol>
+    ${r.examples.length ? `<div class="small" style="margin-top:12px"><b>Try one of these</b> <span class="muted tiny">(click to put it in the box)</span></div>
+      <div class="examples" style="margin-top:6px">${r.examples.map((e) => `<button data-act="rwUse" data-q="${esc(e)}">${esc(e)}</button>`).join("")}</div>` : ""}
+    <div class="small" style="margin-top:12px"><b>${swapTitle}</b> <span class="muted tiny">(hover a topic to see what it means)</span></div>
+    <div class="examples" style="margin-top:6px">${r.related.map(chip).join("")}</div>
+    <details style="margin-top:10px"><summary class="small" style="cursor:pointer">See all ${total} health topics NHANES measures</summary>
+      ${r.all_topics.map((g) => `<div class="tiny muted" style="margin-top:8px">${esc(g.group)}</div><div class="examples" style="margin-top:4px">${g.topics.map(chip).join("")}</div>`).join("")}
+    </details>
+  </div>`;
+}
+
 function answered(q, a) {
   const text = (a.text || "").trim(); const ft = q.free_text;
   if (a.option && a.option === q.blocking_option) return false;   // e.g. "None of these": the idea needs rewording first
@@ -570,7 +598,7 @@ async function createProject(q, extra, el) {
   el.disabled = true; el.innerHTML = `<span class="spinner"></span> Agents designing your study…`;
   try {
     const pj = await api("/api/projects", { method: "POST", body: { question: q, cycles: S.ask.cycles, source: S.ask.source, provider: $("#provSel").value || null, dataset_id: $("#dsSel").value || null, actor: store.get("q2e.name", "") || "investigator", ...(extra || {}) } });
-    S.project = pj; S.clarify = null; location.hash = `#/p/${pj.id}/protocol`;
+    S.project = pj; S.clarify = null; S.rewrite = null; location.hash = `#/p/${pj.id}/protocol`;
   } catch (e) {
     toast(e.message, true); S.clarify = null;
     try { S.assess = await api("/api/assess", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
@@ -604,6 +632,13 @@ const A = {
     store.set("q2e.q", q); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Reading your idea…`;
     let c = null;
     try { c = await api("/api/clarify", { method: "POST", body: { question: q, cycles: S.ask.cycles } }); } catch {}
+    S.rewrite = null;
+    if (c && c.needs_rewrite) {
+      S.rewrite = c.needs_rewrite; S.clarify = null;
+      await rerender();
+      $("#rewriteCard")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     if (c && c.questions.length) {
       S.clarify = { ...c, question: q, step: 0, answers: {} };
       return rerender();
@@ -618,6 +653,22 @@ const A = {
     } catch (e) { toast(e.message, true); }
   },
   cqClose: () => { S.clarify = null; rerender(); },
+  rwClose: () => { S.rewrite = null; rerender(); },
+  rwUse: async (el) => {
+    store.set("q2e.q", el.dataset.q); S.rewrite = null; await rerender();
+    const box = $("#q"); box.focus(); box.setSelectionRange(box.value.length, box.value.length);
+    toast("Example added to the box. Edit it if you like, then press Design my study.");
+  },
+  rwSwap: async (el) => {
+    const box = $("#q"); const miss = ((S.rewrite && S.rewrite.missing) || [])[0]; const use = el.dataset.use;
+    const re = miss ? new RegExp(`\\b${miss.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i") : null;
+    const swapped = re && re.test(box.value);
+    const text = swapped ? box.value.replace(re, use) : `${box.value.trim()} ${use}`.trim();
+    store.set("q2e.q", text); S.rewrite = null; await rerender();
+    $("#q").focus();
+    toast(swapped ? `Swapped "${miss}" for "${use}". Check your idea reads well, then press Design my study.`
+                  : `Added "${use}" to your idea. Check it reads well, then press Design my study.`);
+  },
   backToStudy: () => { S.clarify = null; go("protocol"); },
   backToAsk: async () => {
     // Reopen the follow-up questions with this study's earlier answers, on the last question
