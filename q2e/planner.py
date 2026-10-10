@@ -858,10 +858,25 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     # remove covariates that are the outcome/exposure or overlap them definitionally
     key_vars = [v["variable"] for v in (outcome, exposure) if v]
     custom_map = {v["custom"]["name"]: v["custom"] for v in (outcome, exposure) if v and v.get("custom")}
+    if exposure:
+        custom_map.update({c["name"]: c for c in exposure.get("arm_custom") or []})   # arms: groups defined from these items
     key_raw = set().union(*[_raw_dependencies(v, k, custom_map) for v in key_vars]) if key_vars else set()
+    # the same condition measured another way (e.g. self-reported hypertension when hypertension is a comparison group)
+    exp_concepts = ([a["concept"] for a in exposure["arms"]["arms"]] if exposure and exposure.get("arms")
+                    else ([exposure["concept"]] if exposure and exposure.get("concept") in k.concepts else []))
+    exp_terms = set()
+    for cid in exp_concepts:
+        c = k.concepts.get(cid) or {}
+        exp_terms |= {t.lower() for t in [c.get("label", "")] + list(c.get("synonyms") or []) if t and len(t) >= 5 and " " not in t.strip()}
     for cv in list(covs):
         if cv in key_vars:
             covs.remove(cv)
+            continue
+        lab = k.label(cv).lower()
+        hit = next((t for t in exp_terms if re.search(rf"\b{re.escape(t)}\b", lab)), None)
+        if hit and cv not in ("age", "sex", "race_eth"):
+            covs.remove(cv)
+            agent_notes.append({"agent": "Epidemiologist", "message": f"Removed covariate '{k.label(cv)}': it measures the exposure itself ({hit})."})
             continue
         overlap = _raw_dependencies(cv, k) & key_raw
         demographic_raw = {"RIAGENDR", "RIDAGEYR", "RIDEXPRG"}

@@ -51,6 +51,11 @@ def _direction(r: dict, effect: str | None) -> int:
 
 # ------------------------------------------------------------------ methods summary
 def methods_summary(plan: dict, results: dict | None = None, k: Knowledge | None = None) -> str:
+    return " ".join(b["label"] + ": " + b["text"] for b in methods_bullets(plan, results, k))
+
+
+def methods_bullets(plan: dict, results: dict | None = None, k: Knowledge | None = None) -> list[dict]:
+    """The methods as labelled bullets: [{label, text}] (Design, Data, Population, Outcome, Exposure, ...)."""
     k = k or get_knowledge()
     y, x = plan["outcome"], plan.get("exposure")
     pop = [("excluding " + c["label"][0].lower() + c["label"][1:]) if c.get("kind") == "exclusion" else c["label"]
@@ -67,15 +72,32 @@ def methods_summary(plan: dict, results: dict | None = None, k: Knowledge | None
     elif x:
         s.append(f"Exposure: {x.get('label') or k.label(x['variable'])}.")
     covs = [k.label(c) for c in plan.get("covariates", [])]
+    if x and plan.get("arms"):
+        a = plan["arms"]
+        crit = [c["label"].lower() for c in a.get("control_criteria") or []] if a.get("control_mode") == "healthy" else []
+        s.append(f"Comparator: {a['reference']} - negative for every group" + (f" and free of {', '.join(crit)}" if crit else "")
+                 + ("; all-negative controls as a sensitivity analysis." if crit else "."))
+    elif x and x.get("type") == "continuous":
+        s.append("Comparator: per-unit contrast along the exposure (lower vs higher values); quartiles as sensitivity.")
+    elif x:
+        s.append("Comparator: participants without the exposure, from the same survey population.")
+    if covs and plan["study_type"] != "prevalence":
+        s.append("Covariates: " + ", ".join(covs) + ".")
+    s.append("Descriptive: survey-weighted Table 1" + (" by comparison group" if plan.get("table1_by") == "arms" else f" by {k.label(plan['table1_by']).lower()}" if plan.get("table1_by") else "")
+             + "; weighted prevalence with 95% CIs.")
     if plan["study_type"] == "prevalence":
-        s.append("Analysis: survey-weighted prevalence with Korn-Graubard 95% CIs, overall and by subgroup.")
+        s.append("Model: survey-weighted prevalence with Korn-Graubard 95% CIs, overall and by subgroup.")
     else:
         fam = plan.get("model", {}).get("family", "quasipoisson")
         what = {"quasipoisson": "prevalence ratios (survey-weighted Poisson regression)", "quasibinomial": "odds ratios (survey-weighted logistic regression)",
                 "gaussian": "mean differences (survey-weighted linear regression)"}.get(fam, f"survey-weighted {fam} regression")
-        s.append(f"Analysis: {what}" + (f", adjusted for {', '.join(covs)}." if covs else "."))
+        sets = [a["label"] for a in plan.get("adjustment_sets", [])]
+        s.append(f"Model: {what}" + (f"; sequential models: {', '.join(sets)}." if sets else "."))
+    mods = [k.label(m) for m in plan.get("interactions", [])]
+    if mods:
+        s.append("Effect modification: interaction tests and stratified estimates by " + ", ".join(m.lower() for m in mods) + ".")
     w = design.get("weight_variable")
-    s.append(f"Variance: Taylor linearisation with strata and PSUs{f'; weight {w}' if w else ''}"
+    s.append(f"Survey design: Taylor linearisation with strata and PSUs{f'; weight {w}' if w else ''}"
              + (f"; design df = {design['analytic_df']}." if design.get("analytic_df") is not None else "."))
     sens = [t["label"] for t in plan.get("sensitivity", []) if t.get("enabled", True)]
     if sens:
@@ -84,7 +106,11 @@ def methods_summary(plan: dict, results: dict | None = None, k: Knowledge | None
     s.append("Missing data: " + ("complete-case primary analysis" + ("; multiple imputation as sensitivity." if any(t.get("type") == "mi" for t in plan.get("sensitivity", [])) else ".")
                                  if miss == "complete_case" else f"{miss}."))
     s.append("Reporting: STROBE; plan pre-registered by hash before data access.")
-    return " ".join(s)
+    out = []
+    for line in s:
+        lab, _, txt = line.partition(": ")
+        out.append({"label": lab, "text": txt})
+    return out
 
 
 # ------------------------------------------------------------------ limitations
@@ -270,7 +296,8 @@ def certainty(plan: dict, results: dict | None = None, audit: dict | None = None
 
 
 def appraise(plan: dict, results: dict | None = None, audit: dict | None = None, power: dict | None = None) -> dict:
-    return {"methods": methods_summary(plan, results), "limitations": limitations(plan, results, audit, power),
+    mb = methods_bullets(plan, results)
+    return {"methods": " ".join(b["label"] + ": " + b["text"] for b in mb), "methods_bullets": mb, "limitations": limitations(plan, results, audit, power),
             "certainty": certainty(plan, results, audit, power)}
 
 

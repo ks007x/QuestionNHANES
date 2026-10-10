@@ -433,10 +433,11 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
         pw = _pw.assess(plan, plan.get("probe"), results)
         ap = _ap.appraise(plan, results, da2, pw)
         c = ap["certainty"]
-        parts.append("<h3>eMethods. Methods summary</h3><p>" + esc(ap["methods"]) + "</p><p class='meta'>" + esc(_pw.summary_text(pw)) + "</p>")
-        parts.append("<h3>eTable. Detected limitations</h3><table><thead><tr><th>Area</th><th>Impact</th><th>Limitation</th><th>Source</th></tr></thead><tbody>"
-                     + "".join(f"<tr><td>{esc(l['area'])}</td><td>{esc(l['impact'])}</td><td>{esc(l['text'])}</td><td>{esc(l['source'])}</td></tr>" for l in ap["limitations"])
-                     + "</tbody></table>")
+        parts.append("<h3>eMethods. Methods summary</h3><ul>" + "".join(f"<li><b>{esc(b['label'])}:</b> {esc(b['text'])}</li>" for b in ap["methods_bullets"])
+                     + f"<li><b>Sample size:</b> {esc(_pw.summary_text(pw))}</li></ul>")
+        parts.append("<h3>eMethods. Detected limitations</h3><ul>"
+                     + "".join(f"<li><b>{esc(l['area'])}</b> ({esc(l['impact'])}): {esc(l['text'])} <span class='meta'>[{esc(l['source'])}]</span></li>" for l in ap["limitations"])
+                     + "</ul>")
         parts.append(f"<h3>eTable. Certainty of evidence ({esc(c['framework'])}): {esc(c['level'])} {esc(c['symbol'])}</h3><table><thead><tr><th>Domain</th><th>Judgement</th><th>Change</th><th>Reason</th></tr></thead><tbody>"
                      + "".join(f"<tr><td>{esc(d['domain'])}</td><td>{esc(d.get('rating', ''))}</td><td>{d['change']:+d}</td><td>{esc(d['reason'])}</td></tr>" for d in c["domains"] + c["rating_up"])
                      + f"</tbody></table><p class='meta'>Start: {esc(c['start'])}. {esc(c['meaning'])} {esc(c['caveat'])}</p>")
@@ -515,8 +516,8 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
         ap = _ap.appraise(plan, results, _audit2(plan, results, novelty=plan.get("novelty")), pw)
         c = ap["certainty"]
         lines.append("\n## Methods summary\n")
-        lines.append(ap["methods"])
-        lines.append(f"\n_Sample size: {_pw.summary_text(pw)}_")
+        lines += [f"- **{b['label']}:** {b['text']}" for b in ap["methods_bullets"]]
+        lines.append(f"- **Sample size:** {_pw.summary_text(pw)}")
         lines.append("\n## Detected limitations\n")
         lines += [f"- **{l['area']}** ({l['impact']}): {l['text']}" for l in ap["limitations"]]
         lines.append(f"\n## Certainty of evidence: {c['level']} {c['symbol']}\n")
