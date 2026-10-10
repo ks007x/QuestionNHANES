@@ -51,7 +51,7 @@ def _direction(r: dict, effect: str | None) -> int:
 
 # ------------------------------------------------------------------ methods summary
 def methods_summary(plan: dict, results: dict | None = None, k: Knowledge | None = None) -> str:
-    return " ".join(b["label"] + ": " + b["text"] for b in methods_bullets(plan, results, k))
+    return " ".join(b["label"] + ": " + b["text"] + (" (" + "; ".join(b["items"]) + ")" if b.get("items") else "") for b in methods_bullets(plan, results, k))
 
 
 def methods_bullets(plan: dict, results: dict | None = None, k: Knowledge | None = None) -> list[dict]:
@@ -97,11 +97,19 @@ def methods_bullets(plan: dict, results: dict | None = None, k: Knowledge | None
     if mods:
         s.append("Effect modification: interaction tests and stratified estimates by " + ", ".join(m.lower() for m in mods) + ".")
     w = design.get("weight_variable")
+    if not w and plan.get("dataset", {}).get("type", "nhanes") == "nhanes":
+        try:
+            from .compiler import compile_plan
+            cp = compile_plan(plan, k)
+            ws = sorted({m["weights"].get(cp["weight_level"]) for m in cp["cycles_meta"].values() if m["weights"].get(cp["weight_level"])})
+            w = (", ".join(ws) + f" ({cp['weight_level']} weight)") if ws else None
+        except Exception:  # noqa: BLE001
+            w = None
     s.append(f"Survey design: Taylor linearisation with strata and PSUs{f'; weight {w}' if w else ''}"
              + (f"; design df = {design['analytic_df']}." if design.get("analytic_df") is not None else "."))
     sens = [t["label"] for t in plan.get("sensitivity", []) if t.get("enabled", True)]
     if sens:
-        s.append(f"Sensitivity analyses ({len(sens)}): " + "; ".join(sens) + ".")
+        s.append(f"Sensitivity analyses: {len(sens)} prespecified.")
     miss = plan.get("missing_data", {}).get("method", "complete_case")
     s.append("Missing data: " + ("complete-case primary analysis" + ("; multiple imputation as sensitivity." if any(t.get("type") == "mi" for t in plan.get("sensitivity", [])) else ".")
                                  if miss == "complete_case" else f"{miss}."))
@@ -110,6 +118,8 @@ def methods_bullets(plan: dict, results: dict | None = None, k: Knowledge | None
     for line in s:
         lab, _, txt = line.partition(": ")
         out.append({"label": lab, "text": txt})
+        if lab == "Sensitivity analyses":
+            out[-1]["items"] = sens
     return out
 
 

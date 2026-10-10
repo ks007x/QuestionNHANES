@@ -67,6 +67,9 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     proj = store.get(proj["id"])
     results = load_results(proj["id"], run["id"])
     out.mkdir(parents=True, exist_ok=True)
+    from . import protocol_doc
+    (out / "protocol_and_sap.md").write_text(protocol_doc.build_markdown(proj))
+    (out / "protocol_and_sap.html").write_text(protocol_doc.build_html(proj))
     (out / "manuscript.html").write_text(report.build_html(proj, run, results))
     (out / "manuscript.md").write_text(report.build_markdown(proj, run, results))
     (out / "bundle.zip").write_bytes(build_bundle(proj, run, None, None, store))

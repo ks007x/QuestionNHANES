@@ -4,5 +4,6 @@ pydantic>=2.6
 httpx>=0.27
 PyYAML>=6.0
 python-multipart>=0.0.9
+markdown>=3.5
 # AWS Bedrock AI provider
 boto3>=1.34

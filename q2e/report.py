@@ -433,7 +433,7 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
         pw = _pw.assess(plan, plan.get("probe"), results)
         ap = _ap.appraise(plan, results, da2, pw)
         c = ap["certainty"]
-        parts.append("<h3>eMethods. Methods summary</h3><ul>" + "".join(f"<li><b>{esc(b['label'])}:</b> {esc(b['text'])}</li>" for b in ap["methods_bullets"])
+        parts.append("<h3>eMethods. Methods summary</h3><ul>" + "".join(f"<li><b>{esc(b['label'])}:</b> {esc(b['text'])}" + ("<ul>" + "".join(f"<li>{esc(i)}</li>" for i in b["items"]) + "</ul>" if b.get("items") else "") + "</li>" for b in ap["methods_bullets"])
                      + f"<li><b>Sample size:</b> {esc(_pw.summary_text(pw))}</li></ul>")
         parts.append("<h3>eMethods. Detected limitations</h3><ul>"
                      + "".join(f"<li><b>{esc(l['area'])}</b> ({esc(l['impact'])}): {esc(l['text'])} <span class='meta'>[{esc(l['source'])}]</span></li>" for l in ap["limitations"])
@@ -516,7 +516,9 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
         ap = _ap.appraise(plan, results, _audit2(plan, results, novelty=plan.get("novelty")), pw)
         c = ap["certainty"]
         lines.append("\n## Methods summary\n")
-        lines += [f"- **{b['label']}:** {b['text']}" for b in ap["methods_bullets"]]
+        for b in ap["methods_bullets"]:
+            lines.append(f"- **{b['label']}:** {b['text']}")
+            lines += [f"  - {i}" for i in b.get("items") or []]
         lines.append(f"- **Sample size:** {_pw.summary_text(pw)}")
         lines.append("\n## Detected limitations\n")
         lines += [f"- **{l['area']}** ({l['impact']}): {l['text']}" for l in ap["limitations"]]

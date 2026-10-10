@@ -488,6 +488,19 @@ def _report(pid: str, rid: str, use_llm: bool) -> tuple[dict, dict, dict, dict |
     return proj, r, results, narr
 
 
+@app.get("/api/projects/{pid}/protocol.html", response_class=HTMLResponse)
+def protocol_html(pid: str):
+    """Study protocol + statistical analysis plan for the current plan version (no results needed)."""
+    from . import protocol_doc
+    return protocol_doc.build_html(_project(pid))
+
+
+@app.get("/api/projects/{pid}/protocol.md", response_class=PlainTextResponse)
+def protocol_md(pid: str):
+    from . import protocol_doc
+    return protocol_doc.build_markdown(_project(pid))
+
+
 @app.get("/api/projects/{pid}/runs/{rid}/report.html", response_class=HTMLResponse)
 def report_html(pid: str, rid: str, llm: bool = False):
     proj, r, results, narr = _report(pid, rid, llm)

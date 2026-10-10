@@ -780,7 +780,7 @@ function viewPlan() {
         noAttn: true,
         html: `<div class="card">${issues.length ? issues.map(issuePoint).join("") : `<p class="muted small">No issues - the reviewer found nothing to fix.</p>`}</div>` },
       { id: "approve", title: "Approve the plan", help: "Approving locks this exact version of the plan so it can be run. Any later change needs approval again.",
-        html: `<div class="card">${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
+        html: `<div class="card"><p class="small" style="margin:0 0 10px"><a class="btn sm" href="/api/projects/${S.project.id}/protocol.html" target="_blank">📄 Protocol &amp; statistical analysis plan</a> <span class="tiny muted">the document you are approving (Markdown: <a href="/api/projects/${S.project.id}/protocol.md" target="_blank">.md</a>)</span></p>${approved ? `<div class="banner ok" style="margin:0 0 12px">Approved: plan v${p.version} (sha256 ${esc(S.project.plan_hash.slice(0, 12))}) by ${esc((p.approvals.filter((a) => (a.stage || "protocol") === "protocol").pop() || {}).by || "")}.</div>
       ${S.project.stats_signed_current ? `<p class="small"><span class="chip ok">Statistical review signed</span> ${esc((p.approvals.filter((a) => a.stage === "statistics").pop() || {}).by || "")}</p>` : `<div class="row" style="margin-bottom:10px"><input type="text" id="statname" placeholder="Statistician / epidemiologist name"><button class="btn sm" data-act="statsign">Record statistical sign-off</button></div>`}
       ${rMissing("Running the analysis")}<button class="btn primary" data-act="run" ${rReady() ? "" : "disabled"}>Run analysis in R →</button>` :
     `${blockers.length || pendingAck.length ? `<div class="banner warn" style="margin-top:0"><b>Before you can approve:</b> deal with the ${blockers.length + pendingAck.length} item(s) below.
@@ -897,6 +897,7 @@ function viewResults() {
     ${S.meta.llm.enabled ? `<a class="btn" href="${base}/report.html?llm=true" target="_blank">Manuscript + AI narrative</a>` : ""}
     <a class="btn" href="${base}/report.md" target="_blank">Markdown</a>
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
+    <a class="btn" href="/api/projects/${S.project.id}/protocol.html" target="_blank">Protocol &amp; analysis plan</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
   ] };
 }
@@ -950,7 +951,7 @@ function appraisalCard() {
   if (A.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(A.error)}</p></div>`;
   const c = A.certainty; const lvl = { High: "ok", Moderate: "ok", Low: "warn", "Very low": "bad" }[c.level] || "";
   const imp = { major: "bad", moderate: "warn", minor: "info" };
-  return `<div class="card"><h3 class="sub" style="margin-top:0">Methods summary</h3><ul class="small" style="margin:0;padding-left:18px">${(A.methods_bullets || []).map((b) => `<li style="margin-bottom:3px"><b>${esc(b.label)}:</b> ${esc(b.text)}</li>`).join("")}</ul><p class="tiny muted" style="margin:6px 0 0">${esc(A.power_summary)}</p></div>
+  return `<div class="card"><h3 class="sub" style="margin-top:0">Methods summary</h3><ul class="small" style="margin:0;padding-left:18px">${(A.methods_bullets || []).map((b) => `<li style="margin-bottom:3px"><b>${esc(b.label)}:</b> ${esc(b.text)}${b.items ? `<ul style="margin:2px 0;padding-left:16px">${b.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}</li>`).join("")}</ul><p class="tiny muted" style="margin:6px 0 0">${esc(A.power_summary)}</p></div>
   <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Detected limitations</h3><ul class="small" style="margin:0;padding-left:18px">${A.limitations.map((l) => `<li style="margin-bottom:4px"><b>${esc(l.area)}</b> <span class="chip ${imp[l.impact]}" style="font-size:10px;padding:0 6px">${esc(l.impact)}</span> ${esc(l.text)} <span class="tiny muted">(${esc(l.source)})</span></li>`).join("")}</ul></div>
   <div class="card" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h3 class="sub" style="margin:0">Certainty of evidence</h3><span class="chip ${lvl}" style="font-size:13px">${esc(c.level)} ${c.symbol}</span></div>
     <p class="tiny muted" style="margin:4px 0 8px">${esc(c.framework)} · start ${esc(c.start)}</p>
