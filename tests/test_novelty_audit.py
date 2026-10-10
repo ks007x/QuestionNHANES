@@ -9,6 +9,7 @@ def test_novelty_scoring(monkeypatch):
     monkeypatch.setattr(novelty.literature, "pubmed_search", lambda *a, **k: [{"title": "t", "journal": "j", "url": "u", "pubdate": "2025"}])
     nv = novelty.novelty(plan)
     assert nv["exact"] == counts["exact"] and nv["label"] == "Low" and nv["suggestions"]
+    novelty._CACHE.clear()                                  # results are cached for 24 h per query set
     monkeypatch.setattr(novelty, "_count", lambda term, mindate=None: 0)
     assert novelty.novelty(plan)["label"] == "High"
 

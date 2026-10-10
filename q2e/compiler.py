@@ -124,6 +124,7 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         for key in ("outcome", "exposure"):
             if s.get(key):
                 names.append(s[key])
+        names += list(s.get("covariates") or [])
     for n in dict.fromkeys(names):
         resolve(n)
 

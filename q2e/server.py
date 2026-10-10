@@ -100,6 +100,39 @@ class ClarifyQ(BaseModel):
     level: str | None = None     # optional override of the detected expertise level
 
 
+class OptionNovelty(BaseModel):
+    question: str = Field(min_length=4, max_length=2000)
+    cycles: list[str] | None = None
+    level: str | None = None
+    qid: str
+    answers: dict[str, dict[str, str]] | None = None
+
+
+@app.post("/api/clarify/novelty")
+def clarify_novelty(body: OptionNovelty):
+    """Novelty score for the study each follow-up choice would produce (PubMed/MEDLINE, cached)."""
+    from . import novelty as _nov
+    info = expertise.clarify(body.question, body.cycles, body.level)
+    q = next((x for x in info["questions"] if x["id"] == body.qid), None)
+    if not q:
+        _bad("Unknown follow-up question", 404)
+    out: dict[str, Any] = {}
+    for o in q["options"][:7]:
+        if o["id"] in ("edit", "skip"):
+            continue
+        try:
+            ans = {**(body.answers or {}), body.qid: {"option": o["id"]}}
+            r = expertise.apply_answers(body.question, ans, body.level, body.cycles)
+            plan = planner.draft(r["question"], body.cycles or None)
+            if r.get("fixes"):
+                plan = expertise.apply_fixes(plan, r["fixes"])
+            n = _nov.novelty(plan, quick=True)
+            out[o["id"]] = {"score": n.get("score"), "label": n.get("label"), "summary": n.get("summary"), "error": n.get("error")}
+        except Exception as e:  # noqa: BLE001
+            out[o["id"]] = {"score": None, "label": "n/a", "error": str(e)[:160]}
+    return {"qid": body.qid, "options": out}
+
+
 @app.post("/api/clarify")
 def clarify(body: ClarifyQ):
     """Detect the user's expertise from their wording and return adaptive follow-up questions."""
@@ -559,6 +592,44 @@ def project_novelty(pid: str):
     store.event(proj, "agent:Librarian", "novelty_checked", {"score": nv.get("score"), "exact": nv.get("exact"), "error": nv.get("error")})
     store.save(proj)
     return proj["novelty"]
+
+
+def _latest_results(proj: dict):
+    runs = [r for r in proj.get("runs", []) if r.get("status") == "completed"]
+    if not runs:
+        return None
+    try:
+        return load_results(proj["id"], runs[-1]["id"])
+    except KeyError:
+        return None
+
+
+@app.get("/api/projects/{pid}/power")
+def project_power(pid: str):
+    from . import power
+    proj = _project(pid)
+    a = power.assess(proj["plan"], proj["plan"].get("probe"), _latest_results(proj))
+    a["summary"] = power.summary_text(a)
+    return a
+
+
+@app.get("/api/projects/{pid}/covariates")
+def project_covariates(pid: str):
+    from . import covariates
+    return covariates.suggest(_project(pid)["plan"])
+
+
+@app.get("/api/projects/{pid}/appraisal")
+def project_appraisal(pid: str):
+    """Methods summary, detected limitations and GRADE-informed certainty of evidence."""
+    from . import appraisal, design_audit, power
+    proj = _project(pid)
+    plan, results = proj["plan"], _latest_results(proj)
+    pw = power.assess(plan, plan.get("probe"), results)
+    out = appraisal.appraise(plan, results, design_audit.audit(plan, results, novelty=proj.get("novelty")), pw)
+    out["certainty_line"] = appraisal.certainty_line(out["certainty"])
+    out["power_summary"] = power.summary_text(pw)
+    return out
 
 
 @app.get("/api/projects/{pid}/where-next")

@@ -119,6 +119,23 @@ sensitivity analysis and the design audit flags it. Both choices are one click o
 - **Sponsor AI tools**: one governed tool set over REST (`/api/tools`) and MCP (`python -m q2e mcp`), with manifests for
   Azure OpenAI / AI Foundry, AWS Bedrock, ElevenLabs and MCP clients. AI cannot approve - see `docs/INTEGRATIONS.md`.
 
+## Sample size, covariates, limitations and certainty of evidence
+
+- **Novelty reflects the whole PICO**: every outcome x exposure/arm pair is searched separately (NHANES and any data),
+  so a known pair (e.g. Toxocara and eosinophilia) lowers the score even when the full 3-way question is new; the
+  summary shows the per-element breakdown. Each option in the follow-up chat shows its own novelty chip.
+- **Sample size and power** (Plan page): alpha, power, target prevalence ratio, design effect and Bonferroni across
+  arms are editable; group sizes come from the blinded probe; after the run the minimum detectable effect is
+  recomputed from the design-based SEs (`GET /api/projects/{id}/power`).
+- **Covariate suggestions**: confounders (add to the model) vs possible mediators (offered only as an
+  "additionally adjusted" sensitivity analysis); variables that share items with the outcome/exposure are never offered
+  (`GET /api/projects/{id}/covariates`, library in `knowledge/covariates.yaml`).
+- **Methods summary, detected limitations and GRADE-informed certainty** (Results page, manuscript supplement,
+  `appraisal.json` from the CLI): observational evidence starts Low and is rated down for risk of bias, inconsistency
+  across sensitivity analyses, indirectness and imprecision (CI and power), and up for a large effect or a
+  dose-response gradient. It is labelled as a single-study rating, because GRADE rates bodies of evidence
+  (`GET /api/projects/{id}/appraisal`).
+
 ## Where next? Journals, conferences and funding
 
 After a run, **Find journals, deadlines & funding** (Results page; also `where_next.md` in every CLI/GitHub run):

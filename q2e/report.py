@@ -427,6 +427,21 @@ def build_html(project: dict, run: dict, results: dict, narrative: dict | None =
                      + f"</tbody></table><p class='meta'>Overall: {esc(da['grade'])}.</p>")
     except Exception:  # noqa: BLE001
         pass
+    try:
+        from . import appraisal as _ap, power as _pw
+        da2 = _audit(plan, results, novelty=plan.get("novelty"))
+        pw = _pw.assess(plan, plan.get("probe"), results)
+        ap = _ap.appraise(plan, results, da2, pw)
+        c = ap["certainty"]
+        parts.append("<h3>eMethods. Methods summary</h3><p>" + esc(ap["methods"]) + "</p><p class='meta'>" + esc(_pw.summary_text(pw)) + "</p>")
+        parts.append("<h3>eTable. Detected limitations</h3><table><thead><tr><th>Area</th><th>Impact</th><th>Limitation</th><th>Source</th></tr></thead><tbody>"
+                     + "".join(f"<tr><td>{esc(l['area'])}</td><td>{esc(l['impact'])}</td><td>{esc(l['text'])}</td><td>{esc(l['source'])}</td></tr>" for l in ap["limitations"])
+                     + "</tbody></table>")
+        parts.append(f"<h3>eTable. Certainty of evidence ({esc(c['framework'])}): {esc(c['level'])} {esc(c['symbol'])}</h3><table><thead><tr><th>Domain</th><th>Judgement</th><th>Change</th><th>Reason</th></tr></thead><tbody>"
+                     + "".join(f"<tr><td>{esc(d['domain'])}</td><td>{esc(d.get('rating', ''))}</td><td>{d['change']:+d}</td><td>{esc(d['reason'])}</td></tr>" for d in c["domains"] + c["rating_up"])
+                     + f"</tbody></table><p class='meta'>Start: {esc(c['start'])}. {esc(c['meaning'])} {esc(c['caveat'])}</p>")
+    except Exception:  # noqa: BLE001
+        pass
     parts.append("<h3>eMethods. Derivation trace and provenance</h3><pre style='white-space:pre-wrap;font-size:11.5px;background:#f7f7f7;padding:10px'>"
                  + esc_code("\n".join(results.get("trace", []))) + "</pre>")
     files = "".join(f"<li>{esc(f['file'])} ({esc(f['origin'])}) md5 <code>{esc(f['md5'])}</code> n={f['nrow']:,}</li>" for f in meta.get("files", []))
@@ -491,6 +506,24 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
         da = _audit(plan, results, novelty=plan.get("novelty"))
         lines.append(f"\n## Design audit ({da['grade']})\n")
         lines += [f"- **{c['status'].upper()}** {c['area']}: {c['title']}. {c['detail']} _(addresses: {c['critique']})_" for c in da["checks"]]
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from . import appraisal as _ap, power as _pw
+        from .design_audit import audit as _audit2
+        pw = _pw.assess(plan, plan.get("probe"), results)
+        ap = _ap.appraise(plan, results, _audit2(plan, results, novelty=plan.get("novelty")), pw)
+        c = ap["certainty"]
+        lines.append("\n## Methods summary\n")
+        lines.append(ap["methods"])
+        lines.append(f"\n_Sample size: {_pw.summary_text(pw)}_")
+        lines.append("\n## Detected limitations\n")
+        lines += [f"- **{l['area']}** ({l['impact']}): {l['text']}" for l in ap["limitations"]]
+        lines.append(f"\n## Certainty of evidence: {c['level']} {c['symbol']}\n")
+        lines.append(f"_{c['framework']}; start {c['start']}._\n")
+        lines.append("| Domain | Judgement | Change | Reason |\n|---|---|---|---|")
+        lines += [f"| {d['domain']} | {d.get('rating', '')} | {d['change']:+d} | {d['reason']} |" for d in c["domains"] + c["rating_up"]]
+        lines.append(f"\n{c['meaning']} {c['caveat']}")
     except Exception:  # noqa: BLE001
         pass
     lines.append(f"\n---\nPlan hash `{run['plan_hash']}` · run `{run['id']}` · {results.get('meta', {}).get('r_version', '')}")

@@ -1435,6 +1435,24 @@ def apply_fix(plan: dict, fix: dict, k: Knowledge | None = None) -> dict:
     elif op == "soften_text":
         from .language_guard import soften
         p[fix["field"]] = soften(p[fix["field"]])
+    elif op == "set_power":
+        from .power import DEFAULTS
+        cur = dict(p.get("power_settings") or {})
+        for key, val in (fix.get("value") or {}).items():
+            if key not in DEFAULTS:
+                raise ValueError(f"Unknown power setting '{key}'")
+            if key == "multiplicity":
+                if val not in ("none", "bonferroni"):
+                    raise ValueError("multiplicity must be none or bonferroni")
+                cur[key] = val
+                continue
+            v = float(val)
+            ok = {"alpha": 0 < v < 0.5, "power": 0.5 <= v < 1, "target_ratio": v > 1, "target_sd": v > 0,
+                  "target_halfwidth": 0 < v < 0.5, "deff": v >= 1, "p0_assumed": 0 < v < 1}[key]
+            if not ok:
+                raise ValueError(f"Invalid value for {key}: {val}")
+            cur[key] = v
+        p["power_settings"] = cur
     elif op == "set_arms":
         # edit a multi-arm comparison: control definition, how multi-positive people are handled, which arms
         parsed = dict(p.get("parsed", {}))

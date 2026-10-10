@@ -75,6 +75,15 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
         (out / "where_next.md").write_text(venues.to_markdown(venues.where_next(proj["plan"], results, live=settings.allow_download)))
     except Exception as e:  # noqa: BLE001
         print("   (where-next suggestions skipped:", e, ")")
+    try:
+        from . import appraisal, design_audit, power
+        pw = power.assess(proj["plan"], proj["plan"].get("probe"), results)
+        ap = appraisal.appraise(proj["plan"], results, design_audit.audit(proj["plan"], results, novelty=proj["plan"].get("novelty")), pw)
+        print("   " + power.summary_text(pw))
+        print("   " + appraisal.certainty_line(ap["certainty"]))
+        (out / "appraisal.json").write_text(json.dumps({**ap, "power": pw}, indent=2, default=str))
+    except Exception as e:  # noqa: BLE001
+        print("   (appraisal skipped:", e, ")")
     pe = results.get("primary_estimate") or {}
     print(f"\n   Primary: {pe.get('label')}: {pe.get('est'):.4f} ({pe.get('lcl'):.4f}-{pe.get('ucl'):.4f}) [{pe.get('effect')}]")
     for c in results["checks"]:
