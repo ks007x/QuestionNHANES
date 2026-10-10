@@ -77,9 +77,40 @@ def _domain_fit(item: dict, prof: dict) -> float:
 
 
 # ---------------------------------------------------------------- journals
+DOMAIN_KEYWORDS = {
+    "glycemia": ["diabetes", "glycemic", "glucose", "insulin"], "anthropometry": ["obesity", "adiposity", "body weight"],
+    "kidney": ["kidney", "renal", "nephro"], "liver": ["liver", "hepat", "fatty liver"], "cardio": ["cardiovascular", "heart", "hypertension", "blood pressure"],
+    "hematology": ["anemia", "hematolog", "blood"], "iron": ["iron", "anemia", "ferritin"], "nutrition": ["nutrition", "diet"],
+    "behaviour": ["sleep", "physical activity", "behavior"], "mental_health": ["depression", "mental health", "mood"],
+    "function": ["aging", "older adults", "disability", "physical function"], "environment": ["environmental", "exposure", "toxic"],
+    "respiratory": ["lung", "pulmonary", "asthma", "copd"], "social": ["disparities", "minority health", "social determinants"],
+    "inflammation": ["inflammation", "inflammatory"]}
+
+
+def _synonyms(v: dict, n: int = 4) -> list[str]:
+    k = get_knowledge()
+    c = k.concepts.get(v.get("concept", ""), {})
+    out = []
+    for t in [_clean(v.get("concept_label") or ""), _clean(v.get("label") or "")] + list(c.get("synonyms", [])):
+        t = t.lower().strip()
+        if t and len(t) > 2 and t not in out:
+            out.append(t)
+    return out[:n]
+
+
+def precedent_query(plan: dict) -> str:
+    parts = []
+    for role in ("outcome", "exposure"):
+        v = plan.get(role)
+        if v:
+            parts.append("(" + " OR ".join(f'"{t}"[tiab]' for t in _synonyms(v)) + ")")
+    parts.append('(NHANES[tiab] OR "National Health and Nutrition Examination Survey"[tiab])')
+    return " AND ".join(parts)
+
+
 def journal_precedent(plan: dict, years: int = 5, retmax: int = 100) -> dict:
     """Count journals that published NHANES studies on the same topic (PubMed, last `years` years)."""
-    term = literature.query_for_plan(plan)
+    term = precedent_query(plan)
     mindate = f"{dt.date.today().year - years}/01/01"
     hits = literature.pubmed_search(term, retmax=retmax, sort="relevance", mindate=mindate)
     counts = collections.Counter(_norm_journal(h["journal"]) for h in hits if h.get("journal"))
@@ -109,7 +140,7 @@ def journal_matches(plan: dict, precedent: dict | None = None, top: int = 8) -> 
         key = _norm_journal(j["name"])
         seen.add(key)
         c = counts.get(key, 0)
-        out.append(_score(j["name"], fit, j.get("design_fit", 0.8), c, max_c, bool(counts), j))
+        out.append(_score(j["name"], fit, j.get("design_fit", 0.8), c, max_c, precedent is not None, j))
     # journals that publish this topic but are not in the curated list - still worth showing
     for key, c in sorted(counts.items(), key=lambda kv: -kv[1]):
         if key in seen or c < 2:
@@ -190,14 +221,23 @@ def reporter_projects(terms: list[str], years: int = 3, limit: int = 25) -> dict
             "search": "https://reporter.nih.gov/"}
 
 
-def open_opportunities(keyword: str, rows: int = 8) -> dict:
-    body = {"keyword": keyword, "oppStatuses": "forecasted|posted", "agencies": "HHS-NIH11", "rows": rows}
-    r = httpx.post(GRANTS_GOV, json=body, timeout=25)
-    r.raise_for_status()
-    hits = ((r.json().get("data") or {}).get("oppHits")) or []
-    return {"keyword": keyword, "opportunities": [
-        {"number": h.get("number"), "title": h.get("title"), "status": h.get("oppStatus"), "close_date": h.get("closeDate") or "see notice",
-         "url": f"https://www.grants.gov/search-results-detail/{h.get('id')}"} for h in hits]}
+def open_opportunities(keywords: list[str], rows: int = 25, keep: int = 8) -> dict:
+    """NIH opportunities on Grants.gov whose TITLE mentions one of the topic keywords (Grants.gov keyword search is loose)."""
+    seen, opps = set(), []
+    for kw in keywords[:3]:
+        body = {"keyword": kw, "oppStatuses": "forecasted|posted", "agencies": "HHS-NIH11", "rows": rows}
+        r = httpx.post(GRANTS_GOV, json=body, timeout=25)
+        r.raise_for_status()
+        for h in ((r.json().get("data") or {}).get("oppHits")) or []:
+            title = (h.get("title") or "")
+            if h.get("id") in seen or not any(k.lower() in title.lower() for k in keywords):
+                continue
+            seen.add(h.get("id"))
+            opps.append({"number": h.get("number"), "title": title, "status": h.get("oppStatus"),
+                         "close_date": h.get("closeDate") or "see notice",
+                         "url": f"https://www.grants.gov/search-results-detail/{h.get('id')}"})
+    return {"keyword": ", ".join(keywords[:3]), "opportunities": opps[:keep],
+            "search": "https://www.grants.gov/search-grants"}
 
 
 def funding_leads(plan: dict, live: bool = True) -> dict:
@@ -209,11 +249,17 @@ def funding_leads(plan: dict, live: bool = True) -> dict:
                            "reporter": None, "opportunities": None, "errors": []}
     if live and prof["terms"]:
         try:
-            out["reporter"] = reporter_projects(prof["terms"])
+            rep = reporter_projects(prof["terms"] + ["NHANES"])
+            rep["scope"] = "funded projects mentioning NHANES and this topic"
+            if rep["total"] < 3:
+                rep = reporter_projects(prof["terms"])
+                rep["scope"] = "funded projects on this topic (most recent 25 summarised)"
+            out["reporter"] = rep
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"NIH RePORTER unavailable: {e}")
         try:
-            out["opportunities"] = open_opportunities(prof["terms"][0])
+            kws = [t.lower() for t in prof["terms"]] + [w for d in prof["domains"] for w in DOMAIN_KEYWORDS.get(d, [])]
+            out["opportunities"] = open_opportunities(list(dict.fromkeys(kws)))
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"Grants.gov unavailable: {e}")
     return out
@@ -292,7 +338,7 @@ def to_markdown(w: dict) -> str:
         L.append(f"- [{fo['name']}]({fo['url']})")
     if f.get("reporter"):
         r = f["reporter"]
-        L += ["", f"NIH RePORTER: {r['total']} recently funded projects on this topic. By institute: "
+        L += ["", f"NIH RePORTER: {r['total']} {r.get('scope', 'recently funded projects on this topic')}. By institute: "
               + ", ".join(f"{k} {v}" for k, v in r["by_institute"].items()) + ". By mechanism: "
               + ", ".join(f"{k} {v}" for k, v in r["by_mechanism"].items()) + "."]
         for p in r["examples"]:
