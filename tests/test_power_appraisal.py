@@ -158,3 +158,14 @@ def test_no_estimable_effect_is_not_rated(arms_plan):
     r = _res(1, 1, 1); r["primary_estimate"] = None
     c = appraisal.certainty(arms_plan, r, {"checks": []}, None)
     assert c["level"] == "Not rated" and c["assessed"] is False
+
+
+def test_protocol_document_has_every_challenge_element():
+    from q2e import protocol_doc
+    p = planner.draft("I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.")
+    md = protocol_doc.build_markdown({"plan": p})
+    for s in ("Population", "Exposure", "Comparator", "Outcome", "Covariates", "Inclusion criteria", "Exclusion criteria",
+              "Primary hypothesis", "Direct", "Derived", "Statistical analysis plan", "Why this model", "Anticipated limitations",
+              "Human oversight", "LBXGH", "BMXWAIST"):
+        assert s in md, s
+    assert "<table>" in protocol_doc.build_html({"plan": p})

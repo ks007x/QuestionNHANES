@@ -78,7 +78,8 @@ def assess(plan: dict, probe: dict | None = None, results: dict | None = None) -
     x = plan.get("exposure")
     arms = plan.get("arms")
     probe = probe if probe and not probe.get("stale") else None
-    out: dict[str, Any] = {"settings": s, "assumptions": [], "comparisons": [], "basis": "probe" if probe else "assumed"}
+    out: dict[str, Any] = {"settings": s, "assumptions": [], "comparisons": [], "basis": "probe" if probe else "assumed",
+                           "outcome_type": y["type"]}
     n_cc = (probe or {}).get("n_complete_case")
     p0 = _band_mid(((probe or {}).get("outcome") or {}).get("rate_band"))
     if p0 is None and y["type"] == "binary":
@@ -202,6 +203,9 @@ def _post_run(out: dict, plan: dict, results: dict | None, s: dict) -> dict:
             rows.append({"label": lab, "estimate": round(est, 4), "se": round(se, 4), "mde": round((za + zb) * se, 4),
                          "ci_excludes_null": lcl > 0 or ucl < 0})
     out["post_run"] = rows
+    cont = [r for r in rows if r.get("se") is not None and r.get("target") is None]
+    if cont and out.get("verdict", "").startswith("Run the blinded probe"):
+        out["verdict"] = "Minimum detectable difference estimated from the run's design-based standard errors"
     if rows and out.get("verdict", "").startswith("Run the blinded probe"):
         st = ["ok" if r.get("mde") is not None and r.get("target") and r["mde"] <= r["target"] else "underpowered" for r in rows if r.get("target")]
         if st:
@@ -211,7 +215,8 @@ def _post_run(out: dict, plan: dict, results: dict | None, s: dict) -> dict:
 
 def summary_text(a: dict) -> str:
     s = a["settings"]
-    head = f"Alpha {s['alpha']} (two-sided), power {int(100 * s['power'])}%, target PR {s['target_ratio']}, DEFF {s['deff']}: {a['verdict']}."
+    tgt = f"target {s['target_sd']} SD" if a.get("outcome_type") == "continuous" else f"target PR {s['target_ratio']}"
+    head = f"Alpha {s['alpha']} (two-sided), power {int(100 * s['power'])}%, {tgt}, DEFF {s['deff']}: {a['verdict']}."
     bits = []
     for c in a["comparisons"][:6]:
         if c.get("mde"):
@@ -220,6 +225,7 @@ def summary_text(a: dict) -> str:
             bits.append(f"{c['label']}: 95% CI +/-{c['halfwidth_pts']:.1f} points")
         elif c.get("mde_sd"):
             bits.append(f"{c['label']}: detectable difference {c['mde_sd']:.2f} SD")
-    post = [f"{r['label']}: minimum detectable PR {r['mde']:.2f}" for r in a.get("post_run", []) if r.get("target") and r.get("mde")]
+    post = [f"{r['label']}: minimum detectable PR {r['mde']:.2f}" if r.get("target") else f"{r['label']}: minimum detectable difference {r['mde']:g} (outcome units)"
+            for r in a.get("post_run", []) if r.get("mde") is not None]
     txt = head + (" " + "; ".join(bits) + "." if bits else "")
     return txt + (" After the run: " + "; ".join(post[:6]) + "." if post else "")

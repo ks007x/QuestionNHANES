@@ -39,6 +39,11 @@ def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str 
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("compiled_plan.json", json.dumps(compiled, indent=2))
         z.writestr("study_plan.json", json.dumps(proj["plan"], indent=2, default=str))
+        try:
+            from . import protocol_doc
+            z.writestr("protocol_and_sap.md", protocol_doc.build_markdown(proj))
+        except Exception:  # noqa: BLE001
+            pass
         z.writestr("provenance.json", json.dumps({"events": proj["events"], "history": proj["history"],
                                                   "chain": store.verify_chain(proj), "signoff": proj.get("signoff")}, indent=2, default=str))
         z.writestr("reproduce.R", REPRODUCE_R.format(plan_id=compiled["plan_id"], plan_hash=compiled["plan_hash"]))
@@ -63,5 +68,6 @@ def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str 
                                 f"* Plan `{compiled['plan_id']}` v{compiled['plan_version']}, sha256 `{compiled['plan_hash']}`\n"
                                 f"* Run `{run['id']}` ({run.get('data_source')})\n"
                                 f"* `Rscript reproduce.R` re-executes the analysis and asserts the primary estimate matches.\n"
+                                f"* `protocol_and_sap.md` is the approved study protocol and statistical analysis plan.\n"
                                 f"* `provenance.json` is a hash-chained ledger of every human and AI action.\n")
     return buf.getvalue()
