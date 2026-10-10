@@ -20,7 +20,7 @@ on:
         default: "Investigator"
 
 permissions:
-  contents: read
+  contents: write   # lets the run save its outputs to the 'results' branch
 
 jobs:
   study:
@@ -78,3 +78,21 @@ jobs:
           path: |
             outputs/real
             outputs_log.txt
+      - name: Save outputs to the 'results' branch (browsable on github.com)
+        if: success()
+        env:
+          QUESTION: ${{ inputs.question }}
+        run: |
+          dest="runs/$(date -u +%Y-%m-%d)-run${{ github.run_number }}"
+          mkdir -p /tmp/pub && cp -r outputs/real/. /tmp/pub/ && cp outputs_log.txt /tmp/pub/
+          (cd /tmp/pub && unzip -q -o bundle.zip -d bundle || true)
+          printf '# %s\n\nRun %s, cycles %s, approved by %s.\n\n[Manuscript](manuscript.md) | [Run log](outputs_log.txt) | [Bundle](bundle/)\n' \
+            "$QUESTION" "${{ github.run_number }}" "${{ inputs.cycles }}" "${{ inputs.approver }}" > /tmp/pub/README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin results 2>/dev/null; then git checkout -q -B results FETCH_HEAD; else git checkout -q --orphan results && git rm -rqf . ; fi
+          mkdir -p "$dest" && cp -r /tmp/pub/. "$dest/"
+          echo "- [$dest]($dest/README.md): $QUESTION" >> INDEX.md
+          git add -f INDEX.md "$dest"
+          git commit -qm "Results: run ${{ github.run_number }}"
+          git push -q origin results
