@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import datetime as _dt
+import threading
+import time
 
 import httpx
 
@@ -9,6 +11,26 @@ from .config import settings
 from .knowledge import get_knowledge
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+_LOCK = threading.Lock()
+_LAST = [0.0]
+
+
+def eutils_get(endpoint: str, params: dict, timeout: float = 20) -> httpx.Response:
+    """NCBI allows 3 requests/s without an API key (10/s with one): space calls and retry 429s with backoff."""
+    gap = 0.12 if settings.ncbi_api_key else 0.4
+    for attempt in range(5):
+        with _LOCK:
+            wait = _LAST[0] + gap - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            _LAST[0] = time.monotonic()
+        r = httpx.get(f"{EUTILS}/{endpoint}", params=params, timeout=timeout)
+        if r.status_code != 429:
+            r.raise_for_status()
+            return r
+        time.sleep(1.0 * (attempt + 1))
+    r.raise_for_status()
+    return r
 
 
 def _params(extra: dict) -> dict:
@@ -25,13 +47,11 @@ def pubmed_search(term: str, retmax: int = 8, sort: str = "relevance", mindate: 
     q = {"term": term, "retmax": retmax, "sort": sort}
     if mindate:
         q.update({"mindate": mindate, "maxdate": "3000", "datetype": "pdat"})
-    r = httpx.get(f"{EUTILS}/esearch.fcgi", params=_params(q), timeout=20)
-    r.raise_for_status()
+    r = eutils_get("esearch.fcgi", _params(q))
     ids = r.json().get("esearchresult", {}).get("idlist", [])
     if not ids:
         return []
-    s = httpx.get(f"{EUTILS}/esummary.fcgi", params=_params({"id": ",".join(ids)}), timeout=20)
-    s.raise_for_status()
+    s = eutils_get("esummary.fcgi", _params({"id": ",".join(ids)}))
     res = s.json().get("result", {})
     out = []
     for pmid in ids:
