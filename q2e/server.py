@@ -255,6 +255,9 @@ def protocol_chat_send(pid: str, body: ChatMsg):
         am = protocol_chat.new_amendment(body.actor, msg, r["changes"], v_before, proj["plan"].get("version"),
                                          r["ops"], r["text_request"], _now(), step=body.step, step_title=body.step_title)
         proj.setdefault("amendments", []).append(am)
+        if r.get("new_question"):
+            am["question_before"], am["requests_before"] = proj.get("question"), list(proj.get("protocol_requests", []))
+            proj["question"], proj["protocol_requests"] = r["new_question"], []
         if r["text_request"]:
             proj.setdefault("protocol_requests", []).append(r["text_request"])
         chat.append({"at": _now(), "who": "Protocol agent", "text": r["reply"], "summary": am["summary"], "amendment": am["id"], "step": body.step})
@@ -297,6 +300,8 @@ def amendment_undo(pid: str, aid: str, body: AmendAction):
     am["undone"] = True
     if am.get("text_request") and am["text_request"] in proj.get("protocol_requests", []):
         proj["protocol_requests"].remove(am["text_request"])
+    if am.get("question_before"):
+        proj["question"], proj["protocol_requests"] = am["question_before"], am.get("requests_before", [])
     undo = protocol_chat.new_amendment(body.actor, f"Undid: {am['request']}",
                                        [{"what": c["what"], "before": c["after"], "after": c["before"]} for c in am["changes"]],
                                        v_from, proj["plan"].get("version"), [], None, _now(), source="undo")

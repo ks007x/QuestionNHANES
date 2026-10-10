@@ -95,6 +95,40 @@ def test_comments_are_timestamped_per_step_and_cannot_be_undone():
     assert client.post(f"/api/projects/{pid}/amendments/{change['id']}/undo", json={}).status_code == 200
 
 
+STUDY_HABITS = ("I have high blood sugar and am a student, how does that relate to my coursework. "
+                "Is it linked to certain study habits? Study older adults.")
+
+
+def test_unanswerable_question_gets_close_questions_nhanes_can_answer():
+    from q2e import expertise, planner
+    alts = expertise.close_questions(STUDY_HABITS)
+    assert alts, "should suggest close alternatives"
+    for a in alts:
+        p = planner.parse_question(a["question"])
+        assert p["outcome_concept"] and p["exposure_concept"]            # every suggestion is answerable
+        assert "older adults" in a["question"]                          # keeps the group the analyst asked about
+        assert "blood sugar" in a["question"]                           # keeps the topic NHANES understood
+    assert "sleep" in alts[0]["question"] and any(w in alts[0]["why"] for w in ("student", "coursework", "study", "habits"))
+    assert expertise.close_questions("Is short sleep associated with hypertension in US adults?") == []
+
+
+def test_asking_for_something_close_offers_questions_and_switching_can_be_undone():
+    pj = client.post("/api/projects", json={"question": STUDY_HABITS, "source": "synthetic"}).json()
+    pid = pj["id"]
+    issue = next(i for i in pj["plan"]["review"] if i["id"] == "answerability")
+    assert issue["alternatives"]
+    pj = _say(pid, "relate it to something that is extremely close to it that nhanes can change")
+    reply = pj["protocol_chat"][-1]
+    assert reply["options"] and all("blood sugar" in o["send"] for o in reply["options"])
+    pick = reply["options"][0]["send"]
+    pj = _say(pid, pick)
+    assert pj["question"] == pick and pj["plan"]["exposure"]
+    assert pj["amendments"][-1]["summary"][0].startswith("Study question:")
+    assert not any(i["id"] == "answerability" for i in pj["plan"]["review"])
+    pj = client.post(f"/api/projects/{pid}/amendments/{pj['amendments'][-1]['id']}/undo", json={}).json()
+    assert pj["question"] == STUDY_HABITS
+
+
 def test_diff_is_plain_language():
     old = {"model": {"family": "quasipoisson"}, "covariates": ["age"], "population": []}
     new = {"model": {"family": "quasibinomial"}, "covariates": ["age", "smoking"], "population": []}

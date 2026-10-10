@@ -188,11 +188,15 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
 def _answer_issue(plan: dict) -> None:
     av = plan.get("answerability") or {}
     if av.get("status") == "fail" and not plan.get("acknowledgements", {}).get("answerability"):
+        from . import expertise
         fails = [c["title"] for c in av.get("checks", []) if c["status"] == "fail"]
+        alts = expertise.close_questions(plan.get("question", ""))
         plan["review"].append({"id": "answerability", "severity": "major", "agent": "Epidemiologist",
                                "title": "NHANES cannot answer the question exactly as asked",
-                               "detail": "; ".join(fails) + ". Acknowledge to proceed with the reframed cross-sectional question shown in the protocol.",
-                               "fix": {"op": "acknowledge", "key": "answerability"}})
+                               "detail": "; ".join(fails) + ". " + ("Pick one of the close questions below that NHANES can answer, or accept "
+                                                                    "to continue with the reframed question shown in the protocol." if alts else
+                                                                    "Accept to continue with the reframed cross-sectional question shown in the protocol."),
+                               "fix": {"op": "acknowledge", "key": "answerability"}, "alternatives": alts})
 
 
 def refresh_plan(plan: dict, provider: str | None = None) -> dict:

@@ -361,7 +361,9 @@ function issuePoint(i) {
   return `<div class="pt sev-${esc(i.severity)}"><div class="pt-row"><span class="sev ${esc(i.severity)}">${esc(i.severity)}</span>
       <div style="flex:1"><b class="small">${nice(i.title)}</b><div class="small muted">${nice(i.detail)}</div></div></div>
     ${lbl ? `<div class="examples" style="margin:6px 0 0"><span class="tiny muted">Suggested fix:</span> <button data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">${esc(lbl)}</button></div>` : ""}
-    ${ack ? `<div style="margin-top:6px"><button class="btn sm" data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">✓ I accept this</button></div>` : ""}
+    ${(i.alternatives || []).length && canChangeHere() ? `<div class="alts"><div class="tiny muted">Close questions NHANES <b>can</b> answer - click one to switch the study to it (you can undo):</div>
+      ${i.alternatives.map((a) => `<button class="alt" data-act="pcSend" data-msg="${esc(a.question)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}"><b>${esc(a.question)}</b><span class="tiny muted">${esc(a.why)}</span></button>`).join("")}</div>` : ""}
+    ${ack ? `<div style="margin-top:6px"><button class="btn sm" data-act="ptFix" data-id="${esc(i.id)}" data-pt="${esc(key)}" data-ptitle="${esc(i.title)}">${(i.alternatives || []).length ? "Keep my question as it is (accept the reframing)" : "✓ I accept this"}</button></div>` : ""}
     ${ptTalk(key, i.title)}</div>`;
 }
 /* Any item that is not a Reviewer finding (e.g. an uncertain variable match or a failed QC check). */

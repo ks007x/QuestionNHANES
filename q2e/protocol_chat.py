@@ -224,6 +224,24 @@ def respond(proj: dict, message: str) -> dict:
         new_c = (new_plan.get("dataset") or {}).get("cycles") or []
         if old_c and new_c and old_c != new_c and new_plan.get("title"):
             new_plan["title"] = new_plan["title"].replace(planner._cycle_text(old_c, k), planner._cycle_text(new_c, k))
+    elif META_REQUEST.search(msg):
+        return {"reply": None, "new_plan": None, "changes": [], "ops": [], "text_request": None, "ask": _ask_close(proj, k)}
+    elif _is_new_question(msg, plan, k):
+        ds = plan.get("dataset") or {}
+        try:
+            new_plan = agents.design_study(msg, ds.get("cycles"), ds if ds.get("type") == "generic" else
+                                           {"type": "nhanes", "cycles": ds.get("cycles"), "source": ds.get("source", "auto")})
+        except (planner.HardStop, ValueError) as e:
+            return {"reply": f"I can't switch to that question: {e}", "new_plan": None, "changes": [], "ops": [], "text_request": None, "ask": None}
+        for key in KEEP_KEYS:
+            if key in plan:
+                new_plan[key] = copy.deepcopy(plan[key])
+        new_plan["plan_id"] = plan.get("plan_id", new_plan.get("plan_id"))
+        changes = [{"what": "Study question", "before": proj.get("question", ""), "after": msg}] + diff_plans(plan, new_plan, k)
+        new_plan = agents.refresh_plan(new_plan)
+        new_plan["status"] = "draft"
+        return {"reply": "Done. I switched the study to this question:", "new_plan": new_plan, "changes": changes, "ops": [],
+                "text_request": None, "ask": None, "new_question": msg}
     else:
         text_request = _normalise(msg if msg.endswith((".", "?", "!")) else msg + ".")
         try:
@@ -249,6 +267,37 @@ def respond(proj: dict, message: str) -> dict:
     if proj.get("approved_current") or any(a.get("stage", "protocol") == "protocol" for a in plan.get("approvals", [])):
         reply += " (the protocol was approved before, so it needs approval again before running)"
     return {"reply": reply, "new_plan": new_plan, "changes": changes, "ops": ops, "text_request": text_request, "ask": None}
+
+
+META_REQUEST = re.compile(r"\b(?:something (?:close|similar|related|else)|close to it|closest|nearest|similar|alternatives?|"
+                          r"what (?:can|does) nhanes|nhanes can (?:answer|do|measure|change)|that nhanes (?:has|can))\b", re.I)
+
+
+def _is_new_question(msg: str, plan: dict, k: Knowledge) -> bool:
+    """A whole research question (e.g. picked from the suggestions) rather than an edit to the current one."""
+    m = msg.strip().lower()
+    if not re.search(r"\?$|^(?:is|are|does|do|can|how|what)\b", m):
+        return False
+    p = planner.parse_question(msg, k)
+    if not p.get("outcome_concept") or not p.get("exposure_concept"):
+        return False
+    cur = {(plan.get("outcome") or {}).get("concept"), (plan.get("exposure") or {}).get("concept")}
+    return {p["outcome_concept"], p["exposure_concept"]} != cur
+
+
+def _ask_close(proj: dict, k: Knowledge) -> dict:
+    """'Relate it to something close that NHANES has': offer whole questions NHANES can answer."""
+    alts = expertise.close_questions(proj.get("question", ""), k)
+    if not alts:
+        plan = proj["plan"]
+        if plan.get("exposure") and plan.get("outcome"):
+            return {"text": "Your study already uses topics NHANES measures, so there is nothing to swap. "
+                            "Tell me what you'd like to change (for example a group of people or survey years).", "options": []}
+        return {"text": "I couldn't find a close topic in NHANES for this question. Try naming the health measures you're interested in.",
+                "options": []}
+    return {"text": "NHANES can't answer your question exactly, but it can answer these close versions. "
+                    "Click one to switch the study to it (you can undo).",
+            "options": [{"label": a["question"], "hint": a["why"], "send": a["question"]} for a in alts]}
 
 
 def _ask(msg: str, k: Knowledge) -> dict:

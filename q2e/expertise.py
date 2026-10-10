@@ -63,7 +63,8 @@ relate relates related relation relationship relationships link links linked con
 affected effect effects impact impacts amount amounts level levels high higher low lower everyday daily day days every much
 many lot lots have has had does do how what why when which feel feeling give gives make makes cause causes being
 age ages sex gender race ethnicity tell telling show something anything interesting interested today tomorrow
-yesterday please thanks thank wonder question questions idea ideas thing things stuff""".split())
+yesterday please thanks thank wonder question questions idea ideas thing things stuff
+extremely close closer closest similar near nearest change changes changing nhanes instead certain""".split())
 # "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
 GOAL_PATTERN = re.compile(r"\b(?:stop|prevent|fix|treat|cure|get rid of|reduce|lower|improve|avoid|manage|reverse|beat|overcome)\b")
 # "I have ...", "my ..." - the user is describing themselves, not a population.
@@ -140,9 +141,72 @@ LAY_TERMS = {
     "cigarettes": ["smoking"], "vaping": ["smoking", "cotinine"], "diet": ["energy_intake", "sugar_intake", "dietary_iron"],
     "food": ["energy_intake", "food_insecurity"], "poor": ["income", "food_insecurity"], "money": ["income"],
     "cholesterol": ["total_cholesterol", "ldl"], "blood": ["hemoglobin", "anemia"],
+    # school / study life: NHANES has no questions on it, so the nearest daily behaviours it does measure
+    "study": ["short_sleep", "sedentary", "physical_activity"], "studying": ["short_sleep", "sedentary", "physical_activity"],
+    "coursework": ["short_sleep", "sedentary", "physical_activity"], "homework": ["short_sleep", "sedentary"],
+    "school": ["short_sleep", "sedentary", "physical_activity"], "student": ["short_sleep", "sedentary", "physical_activity"],
+    "students": ["short_sleep", "sedentary", "physical_activity"], "college": ["short_sleep", "sedentary", "alcohol"],
+    "grades": ["short_sleep", "depression"], "habits": ["short_sleep", "physical_activity", "sedentary", "smoking", "alcohol"],
+    "lifestyle": ["physical_activity", "short_sleep", "smoking", "alcohol"], "screen": ["sedentary"], "phone": ["sedentary"],
+    "gaming": ["sedentary"], "tv": ["sedentary"],
 }
 # LAY_TERMS entries above that are stand-ins (not the same thing), so they are never treated as the topic itself
-PROXY_WORDS = {"stress", "stressed", "anxiety", "work", "job", "working"}
+PROXY_WORDS = {"stress", "stressed", "anxiety", "work", "job", "working", "study", "studying", "coursework", "homework",
+               "school", "student", "students", "college", "grades", "habits", "lifestyle", "screen", "phone", "gaming", "tv"}
+# Behaviours NHANES measures well, offered as close alternatives when a question's exposure is not in NHANES
+COMMON_EXPOSURES = ["short_sleep", "physical_activity", "sedentary", "smoking", "alcohol", "obesity"]
+POP_WORDS = re.compile(r"\b(older adults|young adults|adults|women|men|children|adolescents|teenagers|teens|elderly|seniors)\b", re.I)
+
+
+def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -> list[dict]:
+    """Full questions NHANES CAN answer that stay as close as possible to one it cannot: keep the topic that was
+    understood and swap the missing one for the nearest thing NHANES measures. Every suggestion is re-read by the
+    parser and kept only if it maps to exactly those two topics, so nothing is invented."""
+    k = k or get_knowledge()
+    parsed = planner.parse_question(question, k)
+    out_c, exp_c = parsed.get("outcome_concept"), parsed.get("exposure_concept")
+    if out_c and exp_c:
+        return []
+    anchor = out_c or exp_c
+    if not anchor or anchor.startswith("dict:"):
+        return []
+    pops = POP_WORDS.findall(question)
+    pop = pops[-1].lower() if pops else "US adults"
+    pop = {"teenagers": "adolescents", "teens": "adolescents", "elderly": "older adults", "seniors": "older adults"}.get(pop, pop)
+    anchor_words = {w for s in k.concepts[anchor]["synonyms"] + [k.concepts[anchor]["label"]] for w in re.findall(r"[a-z]+", s.lower())}
+    words = [w for w in re.findall(r"[a-z]+", question.lower()) if w not in anchor_words]   # "blood sugar" is the topic itself
+    words = [w for w in words if w in PROXY_WORDS] + [w for w in words if w not in PROXY_WORDS]
+    unclear = ", ".join(t for t in unclear_terms(parsed) if not POP_WORDS.search(t))
+    cands: list[tuple[str, str]] = []                       # (concept id, the user's word it stands in for)
+    for w in words:
+        for cid in LAY_TERMS.get(w, []):
+            if cid != anchor and cid in k.concepts and cid not in [c for c, _ in cands]:
+                cands.append((cid, w))
+    fallback = COMMON_EXPOSURES if out_c else DEFAULT_TOPICS
+    for cid in fallback:
+        if cid != anchor and cid in k.concepts and cid not in [c for c, _ in cands]:
+            cands.append((cid, ""))
+    a_lab = _label(anchor, k).lower()
+    a_syn = k.concepts[anchor]["synonyms"][0]
+    res = []
+    for cid, w in cands:
+        syn = k.concepts[cid]["synonyms"][0]
+        q = f"Is {syn} associated with {a_syn} in {pop}?" if out_c else f"Is {a_syn} associated with {syn} in {pop}?"
+        p = planner.parse_question(q, k)
+        if {p.get("outcome_concept"), p.get("exposure_concept")} != {anchor, cid}:
+            continue
+        lab = _label(cid, k)
+        if w and w in PROXY_WORDS:
+            why = f"NHANES has no questions on '{w}'; {lab.lower()} is the closest thing it measures."
+        elif w:
+            why = f"NHANES measures {lab.lower()}, which matches '{w}' in your idea."
+        else:
+            why = (f"NHANES has no data on '{unclear}'. " if unclear else "") + \
+                  f"{lab} is measured well in NHANES and often studied with {a_lab}."
+        res.append({"question": q, "label": lab, "why": why})
+        if len(res) >= limit:
+            break
+    return res
 
 
 def not_measured(word: str, k: Knowledge) -> bool:

@@ -243,6 +243,10 @@ body:has(.cq-overlay) { overflow: hidden; }
 .pt-input textarea { width: 100%; box-sizing: border-box; }
 .pt .pc-list, .check .pc-list, .issue .pc-list, .bench .pc-list { margin-top: 8px; max-height: 200px; }
 .other-talk { margin-top: 14px; }
+.alts { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.alt { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; cursor: pointer;
+  background: var(--accent-2); color: var(--ink); border: 1px solid var(--accent); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13.5px; }
+.alt:hover { filter: brightness(1.08); }
 .other-talk > .btn { opacity: .8; }
 .sp-nav { margin-top: 16px; position: sticky; bottom: 0; z-index: 2; }
 .steps li.active { flex-wrap: wrap; }
