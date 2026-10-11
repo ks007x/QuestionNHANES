@@ -42,6 +42,25 @@ def test_llm_merge(monkeypatch):
     assert all(c["payload_sha256"] for c in plan["llm"]["calls"]) and len(plan["llm"]["calls"]) == 3
 
 
+class DefinitionPickerProvider(FakeProvider):
+    def complete(self, system, user, max_tokens=2000):
+        out = super().complete(system, user, max_tokens)
+        if "RESEARCH IDEA" not in user:
+            return out
+        d = json.loads(out.strip("`\njson"))
+        d["preferred_definitions"] = ["whtr_05", "poor_glycemic_control"]
+        return json.dumps(d)
+
+
+def test_ai_definition_picks_are_suggested_not_applied(monkeypatch):
+    monkeypatch.setattr(llm, "get_provider", lambda name=None: DefinitionPickerProvider())
+    monkeypatch.setattr(llm.privacy, "provider_allowed", lambda p: (True, "ok"))
+    plan = agents.design_study("adults with greater abdominal obesity may have worse blood sugar control even at similar weight",
+                               ["P"], {"type": "nhanes", "cycles": ["P"], "source": "synthetic"}, provider="fake")
+    assert plan["exposure"]["variable"] == "waist" and plan["outcome"]["variable"] == "hba1c"
+    assert any(m["message"].startswith("Suggested definitions") for m in plan["agent_dialogue"])
+
+
 class InterviewerProvider(FakeProvider):
     calls = 0
 

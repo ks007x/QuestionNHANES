@@ -111,9 +111,13 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
             for pid in llm_out.get("populations", []) or []:
                 if any(p["id"] == pid for p in k.populations) and pid not in parsed["populations"]:
                     parsed["populations"].append(pid)
-            for d in llm_out.get("preferred_definitions", []) or []:
-                if d in k.definitions and d not in parsed["hints"]["prefer"]:
-                    parsed["hints"]["prefer"].append(d)
+            # the AI's definition picks are offered, not applied: the investigator chooses in the definition picker
+            ai_defs = [d for d in llm_out.get("preferred_definitions", []) or []
+                       if d in k.definitions and d not in parsed["hints"]["prefer"]]
+            if ai_defs:
+                dialogue.append({"agent": "Investigator (LLM)", "source": "llm",
+                                 "message": "Suggested definitions: " + "; ".join(k.label(d) for d in ai_defs)
+                                 + ". Keeping the standard measures; use the definition picker to switch."})
             if llm_out.get("adjust_bmi"):
                 parsed["adjust_bmi"] = True
             dialogue.append({"agent": "Investigator (LLM)", "source": "llm",
