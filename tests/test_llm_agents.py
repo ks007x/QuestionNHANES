@@ -43,6 +43,8 @@ def test_llm_merge(monkeypatch):
 
 
 class DefinitionPickerProvider(FakeProvider):
+    model = "fake-definitions"     # own cache entry: same question as test_llm_merge, different answer
+
     def complete(self, system, user, max_tokens=2000):
         out = super().complete(system, user, max_tokens)
         if "RESEARCH IDEA" not in user:
