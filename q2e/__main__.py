@@ -212,6 +212,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("bedrock-check", help="test the AWS Bedrock login and list the models it can use")
     at = sub.add_parser("ai-test", help="live test of the AI agents on Amazon Bedrock: shows what the AI did for a few questions")
     at.add_argument("questions", nargs="*")
+    rd = sub.add_parser("refresh-data", help="re-download cached CDC files and replace any that CDC has updated")
+    rd.add_argument("--check", action="store_true", help="only report which files changed")
     sub.add_parser("setup-code", help="show the code the browser asks for when connecting Bedrock from a Codespace or another computer")
     bc = sub.add_parser("bedrock-connect", help="enter a Bedrock API key (hidden), test it and save it to the local .env")
     bc.add_argument("--region", default=""); bc.add_argument("--model", default="")
@@ -232,6 +234,10 @@ def main(argv: list[str] | None = None) -> int:
         return bedrock_check()
     if a.cmd == "ai-test":
         return _ai_test(a.questions)
+    if a.cmd == "refresh-data":
+        from .data_refresh import refresh
+        out = refresh(check_only=a.check)
+        return 1 if out["failed"] and not out["checked"] else 0
     if a.cmd == "setup-code":
         from .access import setup_code
         print(f"BEDSIDE setup code: {setup_code()}")
