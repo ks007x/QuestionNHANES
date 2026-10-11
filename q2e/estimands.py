@@ -120,7 +120,7 @@ def age_adjust_config(criteria: list[dict], study_type: str, requested: bool, tr
 # ---------------------------------------------------------------------------
 # Group comparisons ("more common in women than men", "compare ... between Hispanic and non-Hispanic white")
 # ---------------------------------------------------------------------------
-COMPARE_CUES = re.compile(r"more common (in|among)|less common (in|among)|(higher|lower|greater|smaller) (rates?|prevalence|levels?|risk|proportion|"
+COMPARE_CUES = re.compile(r"more common (in|among)|less common (in|among)|(higher|lower|greater) (in|among)|more likely|less likely|(higher|lower|greater|smaller) (rates?|prevalence|levels?|risk|proportion|"
                           r"percentage|share|burden)|\bcompar\w+|\bdiffer\w*|disparit\w*|gap between|\bthan\b|\bvs\.?\b|\bversus\b|"
                           r"by (sex|gender|race|ethnicity|race and (hispanic|ethnic)\w*|income|poverty|education)|"
                           r"(sex|gender|racial|ethnic|income|educational|socioeconomic) (difference|gap|disparit)", re.I)
@@ -129,11 +129,13 @@ _LEVELS = {
     "race_eth": [(r"\bnon-?\s?hispanic white|\bwhite\b", "Non-Hispanic White"), (r"\bnon-?\s?hispanic black|\bblack\b|african american", "Non-Hispanic Black"),
                  (r"\bnon-?\s?hispanic asian|\basian\b", "Non-Hispanic Asian"), (r"(?<!non-)(?<!non )\bhispanic\b|\blatino|\bmexican", "Hispanic"),
                  (r"\brac(e|ial)\b|\bethnic", None)],
+    "agecat": [(r"\bolder (adults|people|americans|age groups?)|\belderly\b|\bseniors\b", "60+"), (r"\byounger (adults|people|americans)", "younger"),
+               (r"\bby age( group)?\b|\bage groups?\b|\bwith age\b", None)],
     "pir_cat": [(r"\b(low|lower)[- ]income\b|\bpoverty\b|\bpoor\b", "<1.30"), (r"\b(high|higher)[- ]income\b", "3.50+"), (r"\bincome\b", None)],
     "educ": [(r"\bcollege (graduates?|degree)", "College graduate or above"), (r"\b(less than high school|no high school)", "Less than high school"),
              (r"\beducation", None)],
 }
-GROUP_RAW = {"sex": {"RIAGENDR"}, "race_eth": {"RIDRETH1", "RIDRETH3"}, "pir_cat": {"INDFMPIR"}, "educ": {"DMDEDUC2", "DMDEDUC3"}}
+GROUP_RAW = {"agecat": {"RIDAGEYR"}, "sex": {"RIAGENDR"}, "race_eth": {"RIDRETH1", "RIDRETH3"}, "pir_cat": {"INDFMPIR"}, "educ": {"DMDEDUC2", "DMDEDUC3"}}
 
 
 def detect_comparison(question: str) -> dict | None:

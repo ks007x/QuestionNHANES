@@ -727,3 +727,36 @@ items:
     published_aa:
       Female: {est: 12.6, se: 1.0}
       Male: {est: 6.8, se: 0.7}
+  - id: cascade_awareness_L
+    set: estimands
+    source: db511
+    table: "Hypertension awareness, treatment and control among adults with hypertension (crude)"
+    cycles: [L]
+    question: "Among US adults with hypertension, what percentage are aware of their hypertension?"
+    expected_definition: htn_aware
+    published:
+      overall: {est: 59.2, lcl: 56.4, ucl: 61.9}
+      Male: {est: 55.2, lcl: 52.4, ucl: 57.9}
+      Female: {est: 63.6, lcl: 60.1, ucl: 67.0}
+  - id: cascade_treatment_L
+    set: estimands
+    source: db511
+    table: "Hypertension awareness, treatment and control among adults with hypertension (crude)"
+    cycles: [L]
+    question: "Among US adults with hypertension, what percentage are taking medication for it?"
+    expected_definition: htn_treated
+    published:
+      overall: {est: 51.2, lcl: 48.6, ucl: 53.7}
+      Male: {est: 46.7, lcl: 43.6, ucl: 49.9}
+      Female: {est: 56.1, lcl: 53.0, ucl: 59.2}
+  - id: cascade_control_L
+    set: estimands
+    source: db511
+    table: "Hypertension awareness, treatment and control among adults with hypertension (crude)"
+    cycles: [L]
+    question: "Among US adults with hypertension, what percentage have their blood pressure controlled?"
+    expected_definition: htn_controlled
+    published:
+      overall: {est: 20.7, lcl: 18.8, ucl: 22.8}
+      Male: {est: 18.9, lcl: 16.5, ucl: 21.5}
+      Female: {est: 22.8, lcl: 19.8, ucl: 26.0}

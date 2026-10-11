@@ -200,7 +200,9 @@ def summarize(items: list[dict]) -> dict:
             "by_estimand": {k: stats([c for it in items if it["status"] == "answered" and _kind(it) == k for c in it["comparisons"]
                                       if c.get("q2e") is not None and not c.get("units")])
                             for k in sorted({_kind(it) for it in items}) if k != "mean"},
-            "means": [{"id": it["id"], **c} for it in items if _kind(it) == "mean" for c in it["comparisons"]]}
+            "means": [{"id": it["id"], **c} for it in items if _kind(it) == "mean" for c in it["comparisons"]],
+            "significance": {"checked": sum(1 for it in items if it.get("significance")),
+                             "agree": sum(1 for it in items if (it.get("significance") or {}).get("agrees"))}}
 
 
 def _kind(it: dict) -> str:
@@ -227,6 +229,9 @@ def _estimand_lines(summ: dict) -> list[str]:
     for m in summ.get("means") or []:
         if m.get("q2e") is not None:
             L.append(f"| mean ({m['id']}, {m['group']}) | 1 | {'yes' if m['within_pub_ci'] else 'no'} | published {m['published']} vs Q2E {m['q2e']} | {abs(m['diff_pts'])} (units) |")
+    sig = summ.get("significance") or {}
+    if sig.get("checked"):
+        L += ["", f"Published significance conclusions reproduced: {_pct(sig['agree'], sig['checked'])}"]
     return L + [""]
 
 

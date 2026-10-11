@@ -117,6 +117,21 @@ concepts:
     synonyms: ["obesity", "obese"]
     definitions: [obesity_bmi30, obesity_cdc]
     domain: anthropometry
+  - id: htn_treatment
+    label: "Hypertension treatment"
+    synonyms: ["hypertension treatment", "treated hypertension", "taking blood pressure medication", "taking medication for hypertension", "taking medication for it", "taking medication", "on treatment"]
+    definitions: [htn_treated]
+    domain: cardio
+  - id: htn_control
+    label: "Hypertension control"
+    synonyms: ["hypertension control", "controlled hypertension", "blood pressure control", "controlled blood pressure", "bp control", "blood pressure controlled"]
+    definitions: [htn_controlled]
+    domain: cardio
+  - id: htn_untreated
+    label: "Untreated hypertension"
+    synonyms: ["untreated hypertension", "untreated high blood pressure"]
+    definitions: [htn_untreated]
+    domain: cardio
   - id: hcv_antibody
     label: "Hepatitis C antibody"
     synonyms: ["hepatitis c antibody", "anti-hcv", "hcv antibody", "hcv seropositivity", "hepatitis c seropositivity", "ever infected with hepatitis c"]
@@ -197,7 +212,7 @@ concepts:
 
   # ---------------- expansion ----------------
   - {id: hypertension, label: "Hypertension", synonyms: ["hypertension", "high blood pressure", "elevated blood pressure", "hypertensive"], definitions: [htn_accaha2017, htn_jnc7], domain: cardio}
-  - {id: htn_awareness, label: "Hypertension awareness", synonyms: ["awareness of hypertension status", "awareness of hypertension", "hypertension awareness", "aware of their hypertension", "unaware of hypertension", "awareness"], block: htn_selfreport, domain: cardio}
+  - {id: htn_awareness, label: "Hypertension awareness", synonyms: ["awareness of hypertension status", "awareness of hypertension", "hypertension awareness", "aware of their hypertension", "aware of hypertension", "aware they have hypertension", "unaware of hypertension", "awareness"], definitions: [htn_aware], block: htn_selfreport, domain: cardio}
   - {id: htn_treatment_rec, label: "Told to take antihypertensive medication", synonyms: ["treatment recommendations", "treatment recommendation", "advised to take medication", "told to take medication"], block: bp_meds_advised, domain: cardio}
   - {id: htn_medication, label: "Antihypertensive medication use", synonyms: ["antihypertensive medication use", "antihypertensive medication", "antihypertensive use", "blood pressure medication", "antihypertensives"], block: bp_meds, domain: cardio}
   - {id: uncontrolled_htn, label: "Uncontrolled blood pressure", synonyms: ["uncontrolled hypertension", "uncontrolled blood pressure", "hypertension control", "controlled hypertension"], definitions: [uncontrolled_bp_130], domain: cardio}
@@ -217,7 +232,8 @@ concepts:
   - {id: total_cholesterol, label: "Total cholesterol", synonyms: ["total cholesterol", "cholesterol"], block: tc, alt_definitions: [high_tc_240], domain: cardio, default_scale: 10}
   - {id: insulin_resistance, label: "Insulin resistance (HOMA-IR)", synonyms: ["insulin resistance", "homa-ir", "homa ir", "hyperinsulinemia"], block: homa_ir, alt_definitions: [insulin_resistance_homa], domain: glycemia}
   - {id: fasting_glucose, label: "Fasting glucose", synonyms: ["fasting glucose", "fasting plasma glucose", "fpg"], block: fpg, domain: glycemia, default_scale: 10}
-  - {id: prediabetes, label: "Prediabetes (self-reported)", synonyms: ["prediabetes", "pre-diabetes", "borderline diabetes"], block: prediabetes_selfreport, domain: glycemia}
+  - {id: prediabetes, label: "Prediabetes", synonyms: ["prediabetes", "pre-diabetes", "impaired fasting glucose", "elevated hba1c below diabetes range"], definitions: [prediabetes_ada_lab], domain: glycemia}
+  - {id: prediabetes_selfreported, label: "Self-reported prediabetes", synonyms: ["self-reported prediabetes", "told prediabetes", "borderline diabetes", "told borderline diabetes"], block: prediabetes_selfreport, domain: glycemia}
   - {id: hyperuricemia, label: "Hyperuricemia", synonyms: ["hyperuricemia", "high uric acid", "gout"], definitions: [hyperuricemia], domain: kidney}
   - {id: uric_acid, label: "Serum uric acid", synonyms: ["uric acid", "urate"], block: uric_acid, domain: kidney}
   - {id: albuminuria, label: "Albuminuria (UACR)", synonyms: ["albuminuria", "proteinuria", "uacr", "urine albumin", "urinary albumin-to-creatinine ratio", "albumin-to-creatinine ratio", "urine albumin-to-creatinine ratio", "albumin to creatinine ratio", "urinary albumin"], block: uacr, domain: kidney, default_scale: 30}
@@ -279,7 +295,12 @@ concepts:
 
 # Population phrases -> inclusion criteria (applied in order of appearance in the question).
 populations:
-  - {id: children, patterns: ["children", "adolescents", "kids", "youth", "pediatric"], criteria: [{label: "Age 1-17 years", expr: "age >= 1 & age < 18"}]}
+  - {id: adolescents, patterns: ["adolescents", "teenagers", "teens", "teen", "adolescent"], criteria: [{label: "Age 12-19 years", expr: "age >= 12 & age <= 19"}]}
+  - {id: children, patterns: ["children", "kids", "youth", "pediatric", "child"], criteria: [{label: "Age 1-17 years", expr: "age >= 1 & age < 18"}]}
+  - {id: race_nhwhite, patterns: ["non-hispanic white adults", "non-hispanic white people", "non-hispanic white americans", "white adults", "white americans"], criteria: [{label: "Non-Hispanic White", expr: "race_eth == \"Non-Hispanic White\""}]}
+  - {id: race_nhblack, patterns: ["non-hispanic black adults", "black adults", "black americans", "african american adults", "african americans", "black people"], criteria: [{label: "Non-Hispanic Black", expr: "race_eth == \"Non-Hispanic Black\""}]}
+  - {id: race_nhasian, patterns: ["non-hispanic asian adults", "asian american adults", "asian adults", "asian americans"], criteria: [{label: "Non-Hispanic Asian (2011 onward)", expr: "race_eth == \"Non-Hispanic Asian\""}]}
+  - {id: race_hispanic, patterns: ["hispanic adults", "hispanic americans", "latino adults", "latinos", "hispanic people"], criteria: [{label: "Hispanic", expr: "race_eth == \"Hispanic\""}]}
   - {id: adults, patterns: ["adults", "adult", "grown-ups"], criteria: [{label: "Age >=18 years", expr: "age >= 18"}]}
   - {id: older_adults, patterns: ["older adults", "elderly", "aged 65", "65 and older", "seniors"], criteria: [{label: "Age >=65 years", expr: "age >= 65"}]}
   - {id: women_repro, patterns: ["women of reproductive age", "reproductive-age women", "premenopausal"], criteria: [{label: "Female", expr: "female == 1"}, {label: "Age 18-49 years", expr: "age >= 18 & age <= 49"}]}

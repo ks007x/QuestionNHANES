@@ -93,3 +93,18 @@ def test_anticipated_question_problems():
     assert _plan("What is the 95th percentile of blood lead in adults?")["estimand"]["percentile"] == 0.95
     assert _plan("Prevalence of hepatitis C antibody among US adults")["outcome"]["variable"] == "hcv_antibody"
     assert _plan("median urinary albumin-to-creatinine ratio in adults with diabetes")["outcome"]["variable"] == "uacr"
+
+
+def test_second_stress_batch_fixes():
+    a = _plan("Are older adults more likely to have anemia than younger adults?")
+    assert a["estimand"]["comparison"]["group_var"].startswith("agecat_nchs") and "age >= 65" not in [c["expr"] for c in a["population"]]
+    assert _plan("Is the prevalence of depression higher among low-income adults?")["estimand"]["comparison"]["group_var"] == "pir_cat"
+    assert _plan("How many million US adults have prediabetes?")["outcome"]["variable"] == "prediabetes_ada_lab"
+    t = _plan("Is vigorous exercise linked to depression in teenagers?")
+    assert t["exposure"]["variable"] == "vigorous_pa" and "age >= 18" not in [c["expr"] for c in t["population"]]
+    assert 'race_eth == "Non-Hispanic Asian"' in [c["expr"] for c in _plan("What is the prevalence of diabetes among Asian American adults?")["population"]]
+    assert _plan("What fraction of US adults over 60 have CKD stage 3 or worse (eGFR below 60)?")["outcome"]["variable"] == "egfr_lt60"
+    for q, v in (("Among US adults with hypertension, what percentage are aware of their hypertension?", "htn_aware"),
+                 ("Among US adults with hypertension, what percentage are taking medication for it?", "htn_treated"),
+                 ("Prevalence of untreated hypertension", "htn_untreated")):
+        assert _plan(q, ["L"])["outcome"]["variable"] == v

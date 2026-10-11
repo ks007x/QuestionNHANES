@@ -85,7 +85,8 @@ antibody antibodies positivity positive negative prevalence deficiency deficienc
 insufficient excess dietary intake intakes consumption serum plasma blood urinary urine level levels concentration concentrations
 percentage percentages percent proportion proportions share fraction rate rates number numbers common many
 average averages mean means median medians typical percentile percentiles quartile quartiles distribution reference normal
-range trend trends changed change time adjusted standardized standardised crude""".split())
+range trend trends changed change time adjusted standardized standardised crude stage stages grade worse better million millions
+billion americans households household predictor predictors""".split())
 
 
 class HardStop(ValueError):
@@ -312,6 +313,8 @@ def find_thresholds(q: str) -> list[dict]:
 
 
 def _def_matches_threshold(expr: str, var: str, op: str, num: float) -> bool:
+    if "any_of(" in expr or "|" in expr:
+        return False      # 'eGFR below 60' is not 'eGFR <60 OR UACR >=30'
     for m in re.finditer(rf"\b{re.escape(var)}\s*(>=|<=|<|>)\s*(\d+(?:\.\d+)?)", expr):
         if m.group(1) == op and abs(float(m.group(2)) - num) < 1e-9:
             return True
@@ -343,7 +346,9 @@ def apply_thresholds(q: str, ordered: list[dict], hints: dict, k: Knowledge) -> 
                     cands.append(({"concept": dd["concept"], "phrase": anchor["phrase"], "pos": anchor["pos"]}, d))
                     break
         defined = next((c for c in reversed(prior) if c is not anchor and c["pos"] < anchor["pos"]
-                        and re.fullmatch(r"\s*\(?\s*", q[c["pos"] + len(c["phrase"]): anchor["pos"]] or "")), None)
+                        and (re.fullmatch(r"\s*\(?\s*", q[c["pos"] + len(c["phrase"]): anchor["pos"]] or "")
+                             or (len(q[c["pos"] + len(c["phrase"]): anchor["pos"]]) <= 40
+                                 and "(" in q[c["pos"] + len(c["phrase"]): anchor["pos"]] and ")" not in q[c["pos"] + len(c["phrase"]): anchor["pos"]]))), None)
         if cands:
             owner, d = next(((c, d) for c, d in cands if c is not anchor), cands[0])
             if d not in hints["prefer"]:
@@ -458,6 +463,10 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
                 unmapped.append(ph)
     concepts.sort()
     pops.sort()
+    curated_spans = [(pos, pos + len(ph)) for pos, cid, ph in concepts if not cid.startswith("dict:")]
+    concepts = [(pos, cid, ph) for pos, cid, ph in concepts
+                if not (cid.startswith("dict:") and len(ph.split()) == 1
+                        and any(abs(pos + len(ph) + 1 - a) <= 1 or abs(b + 1 - pos) <= 1 for a, b in curated_spans))]
     hints: dict[str, Any] = {"prefer": [], "upgrade": {}, "matched": []}
     for pat, h in GUIDELINE_HINTS:
         if re.search(pat, q):
@@ -512,6 +521,10 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         ordered = [c for c in ordered if not _is_group(c) and not any(re.search(pt, " " + c["phrase"] + " ") for pt in gpats)]
         if compare_by["group_var"] == "sex":
             pop_ids = [p for p in pop_ids if p not in ("women", "men")]
+        if compare_by["group_var"] == "agecat":
+            pop_ids = [p for p in pop_ids if p not in ("older_adults",)]
+        if compare_by["group_var"] == "race_eth":
+            pop_ids = [p for p in pop_ids if not p.startswith("race_")]
     clinical = [c for c in ordered if _concept(c["concept"], k).get("domain") not in DEMOGRAPHIC_DOMAINS]
     demographic = [c for c in ordered if _concept(c["concept"], k).get("domain") in DEMOGRAPHIC_DOMAINS]
     has_prev = any(cue in q for cue in PREVALENCE_CUES)
@@ -967,13 +980,13 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     pops = list(parsed["populations"])
     lo, hi = parsed.get("age_range") or (None, None)
     if lo is not None or hi is not None:
-        pops = [p for p in pops if p not in ("adults", "older_adults", "children")]
+        pops = [p for p in pops if p not in ("adults", "older_adults", "children", "adolescents")]
         expr = " & ".join(x for x in (f"age >= {lo}" if lo is not None else "", f"age <= {hi}" if hi is not None else "") if x)
         label = f"Age {lo}-{hi} years" if lo is not None and hi is not None else (f"Age >={lo} years" if lo is not None else f"Age <={hi} years")
         criteria.append({"label": label, "expr": expr, "kind": "inclusion", "source": "question (age range)"})
         if (lo or 0) < 18:
             agent_notes.append({"agent": "Epidemiologist", "message": "Population includes participants <18 y: some components (e.g. education, PHQ-9, alcohol) are adult-only; the probe will show real counts."})
-    elif not any(p in pops for p in ("adults", "older_adults", "women_repro", "children")):
+    elif not any(p in pops for p in ("adults", "older_adults", "women_repro", "children", "adolescents")):
         pops.insert(0, "adults")
         agent_notes.append({"agent": "Investigator", "message": "No age group specified - defaulted to adults aged >=18 years."})
     for pid in pops:
@@ -1384,6 +1397,13 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     if age_adjust.get("requested") and not age_adjust.get("enabled"):
         agent_notes.append({"agent": "Statistician", "message": age_adjust.get("reason", "")})
     cmp = parsed.get("compare_by") if study_type != "association" else None
+    if cmp and cmp["group_var"] == "agecat":
+        lo18 = bool(age_adjust.get("bands")) and age_adjust["bands"][0]["lo"] == 18 or not age_adjust.get("bands")
+        nm = "agecat_nchs18" if lo18 else "agecat_nchs20"
+        young = "18-39" if lo18 else "20-39"
+        cmp = {**cmp, "group_var": nm, "levels": [young if l == "younger" else l for l in cmp["levels"]],
+               "level": "60+" if cmp.get("level") in ("60+", None) else cmp["level"],
+               "reference": young if cmp.get("reference") in ("younger", None) else cmp["reference"]}
     if cmp:
         g = cmp["group_var"]
         subgroups = [g] + [x for x in subgroups if x != g]

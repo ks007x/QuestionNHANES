@@ -119,3 +119,60 @@ definitions:
       url: "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
       year: 2024
     status: verified
+
+  # Hypertension care cascade among adults with hypertension (NCHS Data Brief 511)
+  - id: htn_aware
+    concept: htn_awareness
+    label: "Aware of hypertension - ever told by a doctor (among adults with hypertension)"
+    short: "Hypertension awareness"
+    type: binary
+    expr: "coalesce(htn_selfreport, 0) == 1"
+    population_hint: "htn_accaha2017 == 1"
+    criteria_text: "Among adults with hypertension (ACC/AHA 2017), a yes to 'ever told you had hypertension'."
+    operational_notes: []
+    source: {citation: "NCHS Data Brief no. 511 (2024).", url: "https://www.cdc.gov/nchs/products/databriefs/db511.htm", year: 2024}
+    status: verified
+  - id: htn_treated
+    concept: htn_treatment
+    label: "Treated hypertension - taking prescribed BP medication (among adults with hypertension)"
+    short: "Hypertension treatment"
+    type: binary
+    expr: "coalesce(bp_meds, 0) == 1"
+    population_hint: "htn_accaha2017 == 1"
+    criteria_text: "Among adults with hypertension, now taking medication prescribed for high blood pressure (lifestyle changes not counted)."
+    operational_notes: []
+    source: {citation: "NCHS Data Brief no. 511 (2024).", url: "https://www.cdc.gov/nchs/products/databriefs/db511.htm", year: 2024}
+    status: verified
+  - id: htn_controlled
+    concept: htn_control
+    label: "Controlled blood pressure - SBP <130 and DBP <80 mm Hg (among adults with hypertension)"
+    short: "Hypertension control"
+    type: binary
+    expr: "all_of(sbp < 130, dbp < 80)"
+    population_hint: "htn_accaha2017 == 1"
+    criteria_text: "Among adults with hypertension (treated or not), mean SBP <130 and DBP <80 mm Hg."
+    operational_notes: []
+    source: {citation: "NCHS Data Brief no. 511 (2024).", url: "https://www.cdc.gov/nchs/products/databriefs/db511.htm", year: 2024}
+    status: verified
+  - id: htn_untreated
+    concept: htn_untreated
+    label: "Untreated hypertension - hypertension and not taking BP medication"
+    short: "Untreated hypertension"
+    type: binary
+    expr: "ifelse(htn_accaha2017 == 1, coalesce(bp_meds, 0) == 0, 0)"
+    criteria_text: "Hypertension by measured BP (>=130/80) without current antihypertensive medication, among all adults."
+    operational_notes: []
+    source: {citation: "Derived from NCHS Data Brief no. 511 definitions.", year: 2024}
+    status: verified
+  - id: prediabetes_ada_lab
+    concept: prediabetes
+    label: "Prediabetes (ADA, laboratory) - HbA1c 5.7-6.4% or fasting glucose 100-125 mg/dL, without diabetes"
+    short: "Prediabetes (lab)"
+    type: binary
+    expr: "ifelse(coalesce(diabetes_nchs, 0) == 1, 0, any_of(hba1c >= 5.7, fpg >= 100))"
+    criteria_text: "No diagnosed or undiagnosed diabetes, and HbA1c 5.7-6.4% or fasting plasma glucose 100-125 mg/dL (ADA). Fasting subsample weights."
+    operational_notes:
+      - "As in the CDC National Diabetes Statistics Report; self-reported prediabetes captures only the diagnosed minority."
+    source: {citation: "American Diabetes Association. Standards of Care in Diabetes - Classification and Diagnosis.", year: 2024}
+    status: verified
+    prevalence_default: true
