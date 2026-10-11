@@ -1,0 +1,2599 @@
+{
+  "meta": {
+    "date": "2026-10-11",
+    "sources": {
+      "nhsr158": {
+        "citation": "Stierman B, Afful J, Carroll MD, et al. National Health and Nutrition Examination Survey 2017-March 2020 prepandemic data files: development of files and prevalence estimates for selected health outcomes. National Health Statistics Reports no. 158. NCHS; 2021.",
+        "url": "https://stacks.cdc.gov/view/cdc/106273"
+      },
+      "db508": {
+        "citation": "NCHS. Obesity and severe obesity prevalence in adults: United States, August 2021-August 2023. NCHS Data Brief no. 508. 2024.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db508.htm"
+      },
+      "db511": {
+        "citation": "NCHS. Hypertension in adults: United States, August 2021-August 2023. NCHS Data Brief no. 511. 2024.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db511.htm"
+      },
+      "db515": {
+        "citation": "NCHS. Total and high-density lipoprotein cholesterol in adults: United States, August 2021-August 2023. NCHS Data Brief no. 515. 2024.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db515.htm"
+      },
+      "db516": {
+        "citation": "NCHS. Prevalence of total, diagnosed, and undiagnosed diabetes in adults: United States, August 2021-August 2023. NCHS Data Brief no. 516. 2024.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
+      },
+      "db519": {
+        "citation": "NCHS. Anemia prevalence: United States, August 2021-August 2023. NCHS Data Brief no. 519. 2024.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db519.htm"
+      },
+      "db527": {
+        "citation": "NCHS. Depression prevalence in adolescents and adults: United States, August 2021-August 2023. NCHS Data Brief no. 527. 2025.",
+        "url": "https://www.cdc.gov/nchs/products/databriefs/db527.htm"
+      },
+      "tawfik2024": {
+        "citation": "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and functional iron deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126.",
+        "url": "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
+      }
+    }
+  },
+  "summary": {
+    "core": {
+      "questions": 15,
+      "answered_as_prevalence": 14,
+      "right_definition": 14,
+      "no_matching_definition_in_q2e": 0,
+      "status": {
+        "answered": 14,
+        "flagged_limit": 1
+      },
+      "public_data_limits": {
+        "expected": 1,
+        "flagged": 1
+      },
+      "all_answered": {
+        "n": 38,
+        "within_published_ci": 38,
+        "ci_overlap": 38,
+        "mean_abs_diff_pts": 0.18,
+        "median_abs_diff_pts": 0.06,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 37,
+        "within_2pt": 38
+      },
+      "right_definition_only": {
+        "n": 38,
+        "within_published_ci": 38,
+        "ci_overlap": 38,
+        "mean_abs_diff_pts": 0.18,
+        "median_abs_diff_pts": 0.06,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 37,
+        "within_2pt": 38
+      }
+    },
+    "holdout": {
+      "questions": 13,
+      "answered_as_prevalence": 12,
+      "right_definition": 10,
+      "no_matching_definition_in_q2e": 2,
+      "status": {
+        "answered": 12,
+        "flagged_limit": 1
+      },
+      "public_data_limits": {
+        "expected": 1,
+        "flagged": 1
+      },
+      "all_answered": {
+        "n": 34,
+        "within_published_ci": 34,
+        "ci_overlap": 34,
+        "mean_abs_diff_pts": 0.22,
+        "median_abs_diff_pts": 0.07,
+        "max_abs_diff_pts": 1.11,
+        "within_1pt": 32,
+        "within_2pt": 34
+      },
+      "right_definition_only": {
+        "n": 28,
+        "within_published_ci": 28,
+        "ci_overlap": 28,
+        "mean_abs_diff_pts": 0.19,
+        "median_abs_diff_pts": 0.07,
+        "max_abs_diff_pts": 1.04,
+        "within_1pt": 27,
+        "within_2pt": 28
+      }
+    },
+    "holdout2": {
+      "questions": 8,
+      "answered_as_prevalence": 8,
+      "right_definition": 8,
+      "no_matching_definition_in_q2e": 0,
+      "status": {
+        "answered": 8
+      },
+      "public_data_limits": {
+        "expected": 0,
+        "flagged": 0
+      },
+      "all_answered": {
+        "n": 20,
+        "within_published_ci": 20,
+        "ci_overlap": 20,
+        "mean_abs_diff_pts": 0.21,
+        "median_abs_diff_pts": 0.17,
+        "max_abs_diff_pts": 0.78,
+        "within_1pt": 20,
+        "within_2pt": 20
+      },
+      "right_definition_only": {
+        "n": 20,
+        "within_published_ci": 20,
+        "ci_overlap": 20,
+        "mean_abs_diff_pts": 0.21,
+        "median_abs_diff_pts": 0.17,
+        "max_abs_diff_pts": 0.78,
+        "within_1pt": 20,
+        "within_2pt": 20
+      }
+    },
+    "all": {
+      "questions": 36,
+      "answered_as_prevalence": 34,
+      "right_definition": 32,
+      "no_matching_definition_in_q2e": 2,
+      "status": {
+        "answered": 34,
+        "flagged_limit": 2
+      },
+      "public_data_limits": {
+        "expected": 2,
+        "flagged": 2
+      },
+      "all_answered": {
+        "n": 92,
+        "within_published_ci": 92,
+        "ci_overlap": 92,
+        "mean_abs_diff_pts": 0.2,
+        "median_abs_diff_pts": 0.07,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 89,
+        "within_2pt": 92
+      },
+      "right_definition_only": {
+        "n": 86,
+        "within_published_ci": 86,
+        "ci_overlap": 86,
+        "mean_abs_diff_pts": 0.19,
+        "median_abs_diff_pts": 0.07,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 84,
+        "within_2pt": 86
+      }
+    }
+  },
+  "items": [
+    {
+      "id": "obesity_P",
+      "question": "What is the prevalence of obesity among US adults aged 20 and over?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "obesity_bmi30",
+      "q2e_label": "Obesity - BMI >=30 kg/m2",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_bmi30",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 41.9,
+          "pub_lcl": 39.4,
+          "pub_ucl": 44.3,
+          "pub_ci_source": "published",
+          "q2e": 41.87,
+          "q2e_lcl": 39.42,
+          "q2e_ucl": 44.35,
+          "n": 8295,
+          "diff_pts": -0.03,
+          "rel_diff_pct": -0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Male",
+          "published": 41.6,
+          "pub_lcl": 37.4,
+          "pub_ucl": 45.8,
+          "pub_ci_source": "published",
+          "q2e": 41.58,
+          "q2e_lcl": 37.44,
+          "q2e_ucl": 45.81,
+          "n": 4051,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.01
+        },
+        {
+          "group": "Female",
+          "published": 42.1,
+          "pub_lcl": 39.6,
+          "pub_ucl": 44.8,
+          "pub_ci_source": "published",
+          "q2e": 42.14,
+          "q2e_lcl": 39.56,
+          "q2e_ucl": 44.75,
+          "n": 4244,
+          "diff_pts": 0.04,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.03
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 8295,
+      "status": "answered",
+      "seconds": 5.3,
+      "set": "core",
+      "published_overall": 41.9
+    },
+    {
+      "id": "severe_obesity_P",
+      "question": "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "severe_obesity_cdc",
+      "q2e_label": "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "severe_obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 9.0,
+          "pub_lcl": 7.8,
+          "pub_ucl": 10.3,
+          "pub_ci_source": "published",
+          "q2e": 8.98,
+          "q2e_lcl": 7.78,
+          "q2e_ucl": 10.29,
+          "n": 8295,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.04
+        },
+        {
+          "group": "Male",
+          "published": 6.4,
+          "pub_lcl": 5.1,
+          "pub_ucl": 8.0,
+          "pub_ci_source": "published",
+          "q2e": 6.43,
+          "q2e_lcl": 5.09,
+          "q2e_ucl": 7.98,
+          "n": 4051,
+          "diff_pts": 0.03,
+          "rel_diff_pct": 0.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.03
+        },
+        {
+          "group": "Female",
+          "published": 11.4,
+          "pub_lcl": 9.7,
+          "pub_ucl": 13.3,
+          "pub_ci_source": "published",
+          "q2e": 11.38,
+          "q2e_lcl": 9.68,
+          "q2e_ucl": 13.27,
+          "n": 4244,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 8295,
+      "status": "answered",
+      "seconds": 4.6,
+      "set": "core",
+      "published_overall": 9.0
+    },
+    {
+      "id": "hypertension_P",
+      "question": "What is the prevalence of hypertension among US adults aged 18 and over?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "htn_accaha2017",
+      "q2e_label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18",
+        "pregnant == 1"
+      ],
+      "expected_definition": "htn_accaha2017",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 48.1,
+          "pub_lcl": 45.4,
+          "pub_ucl": 50.8,
+          "pub_ci_source": "published",
+          "q2e": 49.01,
+          "q2e_lcl": 46.38,
+          "q2e_ucl": 51.64,
+          "n": 8264,
+          "diff_pts": 0.91,
+          "rel_diff_pct": 1.9,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.66
+        },
+        {
+          "group": "Male",
+          "published": 50.5,
+          "pub_lcl": 46.9,
+          "pub_ucl": 54.2,
+          "pub_ci_source": "published",
+          "q2e": 51.19,
+          "q2e_lcl": 47.66,
+          "q2e_ucl": 54.7,
+          "n": 4104,
+          "diff_pts": 0.69,
+          "rel_diff_pct": 1.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.37
+        },
+        {
+          "group": "Female",
+          "published": 45.7,
+          "pub_lcl": 42.8,
+          "pub_ucl": 48.6,
+          "pub_ci_source": "published",
+          "q2e": 46.91,
+          "q2e_lcl": 44.07,
+          "q2e_ucl": 49.76,
+          "n": 4160,
+          "diff_pts": 1.21,
+          "rel_diff_pct": 2.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.82
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 8264,
+      "status": "answered",
+      "seconds": 5.9,
+      "set": "core",
+      "published_overall": 48.1
+    },
+    {
+      "id": "diabetes_P",
+      "question": "What is the prevalence of diabetes among US adults aged 20 and over?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "diabetes_nchs",
+      "q2e_label": "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "diabetes_nchs",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 16.2,
+          "pub_lcl": 14.2,
+          "pub_ucl": 18.3,
+          "pub_ci_source": "published",
+          "q2e": 16.16,
+          "q2e_lcl": 14.18,
+          "q2e_ucl": 18.3,
+          "n": 3769,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.04
+        },
+        {
+          "group": "Male",
+          "published": 17.7,
+          "pub_lcl": 15.5,
+          "pub_ucl": 20.2,
+          "pub_ci_source": "published",
+          "q2e": 17.7,
+          "q2e_lcl": 15.45,
+          "q2e_ucl": 20.13,
+          "n": 1822,
+          "diff_pts": -0.0,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.0
+        },
+        {
+          "group": "Female",
+          "published": 14.8,
+          "pub_lcl": 12.2,
+          "pub_ucl": 17.7,
+          "pub_ci_source": "published",
+          "q2e": 14.69,
+          "q2e_lcl": 12.08,
+          "q2e_ucl": 17.61,
+          "n": 1947,
+          "diff_pts": -0.11,
+          "rel_diff_pct": -0.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.08
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTSAFPRP",
+      "n_analytic": 3769,
+      "status": "answered",
+      "seconds": 4.5,
+      "set": "core",
+      "published_overall": 16.2
+    },
+    {
+      "id": "child_obesity_P",
+      "question": "What is the prevalence of obesity among US children and adolescents aged 2 to 19 years?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "obesity_cdc",
+      "q2e_label": "Obesity - BMI >=30 kg/m2 (adults); BMI >=95th percentile of the CDC growth charts (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 2 & age <= 19",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 19.7,
+          "pub_lcl": 17.9,
+          "pub_ucl": 21.6,
+          "pub_ci_source": "published",
+          "q2e": 19.83,
+          "q2e_lcl": 18.14,
+          "q2e_ucl": 21.61,
+          "n": 4756,
+          "diff_pts": 0.13,
+          "rel_diff_pct": 0.7,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.14
+        },
+        {
+          "group": "Male",
+          "published": 20.9,
+          "pub_lcl": 18.9,
+          "pub_ucl": 22.9,
+          "pub_ci_source": "published",
+          "q2e": 21.08,
+          "q2e_lcl": 19.16,
+          "q2e_ucl": 23.09,
+          "n": 2414,
+          "diff_pts": 0.18,
+          "rel_diff_pct": 0.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.17
+        },
+        {
+          "group": "Female",
+          "published": 18.5,
+          "pub_lcl": 16.3,
+          "pub_ucl": 21.0,
+          "pub_ci_source": "published",
+          "q2e": 18.56,
+          "q2e_lcl": 16.44,
+          "q2e_ucl": 20.83,
+          "n": 2342,
+          "diff_pts": 0.06,
+          "rel_diff_pct": 0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.05
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 4756,
+      "status": "answered",
+      "seconds": 4.4,
+      "set": "core",
+      "published_overall": 19.7
+    },
+    {
+      "id": "absolute_iron_deficiency_P",
+      "question": "What is the prevalence of absolute iron deficiency (ferritin below 30 ng/mL) among US adults?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "aid_tawfik2024",
+      "q2e_label": "Absolute iron deficiency - ferritin <30 ng/mL",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18",
+        "!is.na(ferritin)",
+        "pregnant == 1"
+      ],
+      "expected_definition": "aid_tawfik2024",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 14.0,
+          "pub_lcl": 13.0,
+          "pub_ucl": 15.0,
+          "pub_ci_source": "published",
+          "q2e": 13.75,
+          "q2e_lcl": 12.76,
+          "q2e_ucl": 14.78,
+          "n": 8360,
+          "diff_pts": -0.25,
+          "rel_diff_pct": -1.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.5
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 8360,
+      "status": "answered",
+      "seconds": 6.2,
+      "set": "core",
+      "published_overall": 14.0
+    },
+    {
+      "id": "functional_iron_deficiency_P",
+      "question": "What is the prevalence of functional iron deficiency among US adults?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "fid_tawfik2024",
+      "q2e_label": "Functional iron deficiency - ferritin >=30 ng/mL with TSAT <20%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18",
+        "!is.na(ferritin) & !is.na(tsat)",
+        "pregnant == 1"
+      ],
+      "expected_definition": "fid_tawfik2024",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 15.0,
+          "pub_lcl": 14.0,
+          "pub_ucl": 17.0,
+          "pub_ci_source": "published",
+          "q2e": 15.44,
+          "q2e_lcl": 14.44,
+          "q2e_ucl": 16.48,
+          "n": 8212,
+          "diff_pts": 0.44,
+          "rel_diff_pct": 2.9,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.57
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 8212,
+      "status": "answered",
+      "seconds": 6.0,
+      "set": "core",
+      "published_overall": 15.0
+    },
+    {
+      "id": "obesity_L",
+      "question": "What is the prevalence of obesity among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "obesity_bmi30",
+      "q2e_label": "Obesity - BMI >=30 kg/m2",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_bmi30",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 40.3,
+          "pub_lcl": 36.77,
+          "pub_ucl": 43.83,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 40.26,
+          "q2e_lcl": 36.31,
+          "q2e_ucl": 44.32,
+          "n": 5929,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Male",
+          "published": 39.2,
+          "pub_lcl": 35.48,
+          "pub_ucl": 42.92,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 39.2,
+          "q2e_lcl": 35.07,
+          "q2e_ucl": 43.46,
+          "n": 2680,
+          "diff_pts": 0.0,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        },
+        {
+          "group": "Female",
+          "published": 41.3,
+          "pub_lcl": 36.99,
+          "pub_ucl": 45.61,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 41.28,
+          "q2e_lcl": 36.56,
+          "q2e_ucl": 46.13,
+          "n": 3249,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.01
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 5929,
+      "status": "answered",
+      "seconds": 4.5,
+      "set": "core",
+      "published_overall": 40.3
+    },
+    {
+      "id": "severe_obesity_L",
+      "question": "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "severe_obesity_cdc",
+      "q2e_label": "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "severe_obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 9.4,
+          "pub_lcl": 8.03,
+          "pub_ucl": 10.77,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 9.41,
+          "q2e_lcl": 8.05,
+          "q2e_ucl": 10.92,
+          "n": 5929,
+          "diff_pts": 0.01,
+          "rel_diff_pct": 0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.02
+        },
+        {
+          "group": "Male",
+          "published": 6.7,
+          "pub_lcl": 5.33,
+          "pub_ucl": 8.07,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 6.65,
+          "q2e_lcl": 5.25,
+          "q2e_ucl": 8.29,
+          "n": 2680,
+          "diff_pts": -0.05,
+          "rel_diff_pct": -0.7,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.07
+        },
+        {
+          "group": "Female",
+          "published": 12.1,
+          "pub_lcl": 10.34,
+          "pub_ucl": 13.86,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 12.07,
+          "q2e_lcl": 10.28,
+          "q2e_ucl": 14.06,
+          "n": 3249,
+          "diff_pts": -0.03,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.03
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 5929,
+      "status": "answered",
+      "seconds": 4.3,
+      "set": "core",
+      "published_overall": 9.4
+    },
+    {
+      "id": "hypertension_L",
+      "question": "What is the prevalence of hypertension among US adults aged 18 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "htn_accaha2017",
+      "q2e_label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18",
+        "pregnant == 1"
+      ],
+      "expected_definition": "htn_accaha2017",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 47.7,
+          "pub_lcl": 45.4,
+          "pub_ucl": 49.9,
+          "pub_ci_source": "published",
+          "q2e": 48.03,
+          "q2e_lcl": 45.83,
+          "q2e_ucl": 50.23,
+          "n": 6165,
+          "diff_pts": 0.33,
+          "rel_diff_pct": 0.7,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.29
+        },
+        {
+          "group": "Male",
+          "published": 50.8,
+          "pub_lcl": 48.4,
+          "pub_ucl": 53.2,
+          "pub_ci_source": "published",
+          "q2e": 51.1,
+          "q2e_lcl": 48.64,
+          "q2e_ucl": 53.55,
+          "n": 2805,
+          "diff_pts": 0.3,
+          "rel_diff_pct": 0.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.24
+        },
+        {
+          "group": "Female",
+          "published": 44.6,
+          "pub_lcl": 41.4,
+          "pub_ucl": 47.8,
+          "pub_ci_source": "published",
+          "q2e": 45.07,
+          "q2e_lcl": 41.99,
+          "q2e_ucl": 48.18,
+          "n": 3360,
+          "diff_pts": 0.47,
+          "rel_diff_pct": 1.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.29
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 6165,
+      "status": "answered",
+      "seconds": 5.0,
+      "set": "core",
+      "published_overall": 47.7
+    },
+    {
+      "id": "diabetes_L",
+      "question": "What is the prevalence of diabetes among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "diabetes_nchs",
+      "q2e_label": "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "diabetes_nchs",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 15.8,
+          "pub_lcl": 13.6,
+          "pub_ucl": 18.2,
+          "pub_ci_source": "published",
+          "q2e": 15.78,
+          "q2e_lcl": 13.58,
+          "q2e_ucl": 18.17,
+          "n": 2940,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Male",
+          "published": 18.0,
+          "pub_lcl": 15.7,
+          "pub_ucl": 20.4,
+          "pub_ci_source": "published",
+          "q2e": 17.94,
+          "q2e_lcl": 15.67,
+          "q2e_ucl": 20.39,
+          "n": 1308,
+          "diff_pts": -0.06,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.05
+        },
+        {
+          "group": "Female",
+          "published": 13.7,
+          "pub_lcl": 11.0,
+          "pub_ucl": 16.7,
+          "pub_ci_source": "published",
+          "q2e": 13.66,
+          "q2e_lcl": 11.0,
+          "q2e_ucl": 16.69,
+          "n": 1632,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.03
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTSAF2YR",
+      "n_analytic": 2940,
+      "status": "answered",
+      "seconds": 4.3,
+      "set": "core",
+      "published_overall": 15.8
+    },
+    {
+      "id": "high_cholesterol_L",
+      "question": "What is the prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "high_tc_240",
+      "q2e_label": "High total cholesterol - serum total cholesterol >=240 mg/dL",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "high_tc_240",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 11.3,
+          "pub_lcl": 9.8,
+          "pub_ucl": 12.9,
+          "pub_ci_source": "published",
+          "q2e": 11.16,
+          "q2e_lcl": 9.69,
+          "q2e_ucl": 12.77,
+          "n": 5462,
+          "diff_pts": -0.14,
+          "rel_diff_pct": -1.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.17
+        },
+        {
+          "group": "Male",
+          "published": 10.6,
+          "pub_lcl": 8.6,
+          "pub_ucl": 12.9,
+          "pub_ci_source": "published",
+          "q2e": 10.6,
+          "q2e_lcl": 8.61,
+          "q2e_ucl": 12.87,
+          "n": 2481,
+          "diff_pts": 0.0,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        },
+        {
+          "group": "Female",
+          "published": 11.9,
+          "pub_lcl": 10.3,
+          "pub_ucl": 13.6,
+          "pub_ci_source": "published",
+          "q2e": 11.7,
+          "q2e_lcl": 10.09,
+          "q2e_ucl": 13.47,
+          "n": 2981,
+          "diff_pts": -0.2,
+          "rel_diff_pct": -1.7,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.24
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTPH2YR",
+      "n_analytic": 5462,
+      "status": "answered",
+      "seconds": 4.5,
+      "set": "core",
+      "published_overall": 11.3
+    },
+    {
+      "id": "low_hdl_L",
+      "question": "What is the prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "low_hdl_40",
+      "q2e_label": "Low HDL cholesterol - HDL-C <40 mg/dL",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": "low_hdl_40",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 13.8,
+          "pub_lcl": 12.1,
+          "pub_ucl": 15.7,
+          "pub_ci_source": "published",
+          "q2e": 13.97,
+          "q2e_lcl": 12.22,
+          "q2e_ucl": 15.86,
+          "n": 5462,
+          "diff_pts": 0.17,
+          "rel_diff_pct": 1.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.18
+        },
+        {
+          "group": "Male",
+          "published": 21.5,
+          "pub_lcl": 18.6,
+          "pub_ucl": 24.6,
+          "pub_ci_source": "published",
+          "q2e": 21.47,
+          "q2e_lcl": 18.6,
+          "q2e_ucl": 24.56,
+          "n": 2481,
+          "diff_pts": -0.03,
+          "rel_diff_pct": -0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Female",
+          "published": 6.6,
+          "pub_lcl": 5.4,
+          "pub_ucl": 8.0,
+          "pub_ci_source": "published",
+          "q2e": 6.76,
+          "q2e_lcl": 5.5,
+          "q2e_ucl": 8.19,
+          "n": 2981,
+          "diff_pts": 0.16,
+          "rel_diff_pct": 2.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.24
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTPH2YR",
+      "n_analytic": 5462,
+      "status": "answered",
+      "seconds": 4.8,
+      "set": "core",
+      "published_overall": 13.8
+    },
+    {
+      "id": "anemia_L",
+      "question": "What is the prevalence of anemia in the US population aged 2 years and older?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "anemia_who",
+      "q2e_label": "Anemia - WHO hemoglobin thresholds",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 2",
+        "pregnant == 1"
+      ],
+      "expected_definition": "anemia_who",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 9.3,
+          "pub_lcl": 8.32,
+          "pub_ucl": 10.28,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 9.13,
+          "q2e_lcl": 8.09,
+          "q2e_ucl": 10.26,
+          "n": 7514,
+          "diff_pts": -0.17,
+          "rel_diff_pct": -1.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.34
+        },
+        {
+          "group": "Male",
+          "published": 5.5,
+          "pub_lcl": 4.52,
+          "pub_ucl": 6.48,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 5.4,
+          "q2e_lcl": 4.3,
+          "q2e_ucl": 6.67,
+          "n": 3475,
+          "diff_pts": -0.1,
+          "rel_diff_pct": -1.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.2
+        },
+        {
+          "group": "Female",
+          "published": 13.0,
+          "pub_lcl": 11.82,
+          "pub_ucl": 14.18,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 12.79,
+          "q2e_lcl": 11.54,
+          "q2e_ucl": 14.12,
+          "n": 4039,
+          "diff_pts": -0.21,
+          "rel_diff_pct": -1.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.35
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTPH2YR",
+      "n_analytic": 7514,
+      "status": "answered",
+      "seconds": 5.0,
+      "set": "core",
+      "published_overall": 9.3
+    },
+    {
+      "id": "depression_L",
+      "question": "What is the prevalence of depression among US adolescents and adults aged 12 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "depression_phq9",
+      "q2e_label": "Depression - PHQ-9 score >=10",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18"
+      ],
+      "expected_definition": "depression_phq9",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 13.1,
+          "pub_lcl": 11.73,
+          "pub_ucl": 14.47,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 12.78,
+          "q2e_lcl": 11.14,
+          "q2e_ucl": 14.56,
+          "n": 5455,
+          "diff_pts": -0.32,
+          "rel_diff_pct": -2.5,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.46
+        },
+        {
+          "group": "Male",
+          "published": 10.1,
+          "pub_lcl": 8.34,
+          "pub_ucl": 11.86,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 10.05,
+          "q2e_lcl": 8.17,
+          "q2e_ucl": 12.19,
+          "n": 2487,
+          "diff_pts": -0.05,
+          "rel_diff_pct": -0.5,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.06
+        },
+        {
+          "group": "Female",
+          "published": 16.0,
+          "pub_lcl": 14.24,
+          "pub_ucl": 17.76,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 15.43,
+          "q2e_lcl": 13.41,
+          "q2e_ucl": 17.63,
+          "n": 2968,
+          "diff_pts": -0.57,
+          "rel_diff_pct": -3.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.63
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [
+        "warning: Ages 12-17 are not in the public files"
+      ],
+      "status": "flagged_limit",
+      "note": "warning: Ages 12-17 are not in the public files",
+      "weight": "WTINT2YR",
+      "n_analytic": 5455,
+      "seconds": 4.6,
+      "set": "core",
+      "published_overall": 13.1
+    },
+    {
+      "id": "holdout_obesity_20_39_L",
+      "question": "What is the prevalence of obesity among US adults aged 20 to 39 years?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "obesity_bmi30",
+      "q2e_label": "Obesity - BMI >=30 kg/m2",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20 & age <= 39",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_bmi30",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 35.5,
+          "pub_lcl": 29.62,
+          "pub_ucl": 41.38,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 35.53,
+          "q2e_lcl": 29.24,
+          "q2e_ucl": 42.2,
+          "n": 1498,
+          "diff_pts": 0.03,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.01
+        },
+        {
+          "group": "Male",
+          "published": 34.3,
+          "pub_lcl": 28.81,
+          "pub_ucl": 39.79,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 34.3,
+          "q2e_lcl": 28.36,
+          "q2e_ucl": 40.62,
+          "n": 672,
+          "diff_pts": -0.0,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.0
+        },
+        {
+          "group": "Female",
+          "published": 36.8,
+          "pub_lcl": 29.74,
+          "pub_ucl": 43.86,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 36.82,
+          "q2e_lcl": 29.25,
+          "q2e_ucl": 44.9,
+          "n": 826,
+          "diff_pts": 0.02,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.01
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 1498,
+      "status": "answered",
+      "seconds": 3.9,
+      "set": "holdout",
+      "published_overall": 35.5
+    },
+    {
+      "id": "holdout_obesity_60plus_L",
+      "question": "How common is obesity in US adults aged 60 and older?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "obesity_bmi30",
+      "q2e_label": "Obesity - BMI >=30 kg/m2",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_bmi30",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 38.9,
+          "pub_lcl": 35.96,
+          "pub_ucl": 41.84,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 38.9,
+          "q2e_lcl": 35.58,
+          "q2e_ucl": 42.29,
+          "n": 2722,
+          "diff_pts": -0.0,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.0
+        },
+        {
+          "group": "Male",
+          "published": 38.0,
+          "pub_lcl": 33.49,
+          "pub_ucl": 42.51,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 38.04,
+          "q2e_lcl": 33.23,
+          "q2e_ucl": 43.03,
+          "n": 1246,
+          "diff_pts": 0.04,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.02
+        },
+        {
+          "group": "Female",
+          "published": 39.6,
+          "pub_lcl": 35.88,
+          "pub_ucl": 43.32,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 39.63,
+          "q2e_lcl": 35.46,
+          "q2e_ucl": 43.91,
+          "n": 1476,
+          "diff_pts": 0.03,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.01
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 2722,
+      "status": "answered",
+      "seconds": 4.0,
+      "set": "holdout",
+      "published_overall": 38.9
+    },
+    {
+      "id": "holdout_severe_obesity_60plus_P",
+      "question": "What percentage of US adults aged 60 and over have severe obesity?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "severe_obesity_cdc",
+      "q2e_label": "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60",
+        "pregnant == 1"
+      ],
+      "expected_definition": "severe_obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 6.1,
+          "pub_lcl": 5.2,
+          "pub_ucl": 7.2,
+          "pub_ci_source": "published",
+          "q2e": 6.12,
+          "q2e_lcl": 5.17,
+          "q2e_ucl": 7.18,
+          "n": 3041,
+          "diff_pts": 0.02,
+          "rel_diff_pct": 0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.04
+        },
+        {
+          "group": "Male",
+          "published": 3.5,
+          "pub_lcl": 2.6,
+          "pub_ucl": 4.5,
+          "pub_ci_source": "published",
+          "q2e": 3.5,
+          "q2e_lcl": 2.66,
+          "q2e_ucl": 4.51,
+          "n": 1554,
+          "diff_pts": -0.0,
+          "rel_diff_pct": -0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.01
+        },
+        {
+          "group": "Female",
+          "published": 8.3,
+          "pub_lcl": 6.8,
+          "pub_ucl": 10.0,
+          "pub_ci_source": "published",
+          "q2e": 8.3,
+          "q2e_lcl": 6.84,
+          "q2e_ucl": 9.96,
+          "n": 1487,
+          "diff_pts": 0.0,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 3041,
+      "status": "answered",
+      "seconds": 4.0,
+      "set": "holdout",
+      "published_overall": 6.1
+    },
+    {
+      "id": "holdout_hypertension_18_39_L",
+      "question": "What is the prevalence of hypertension in US adults aged 18 to 39?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "htn_accaha2017",
+      "q2e_label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 18 & age <= 39",
+        "pregnant == 1"
+      ],
+      "expected_definition": "htn_accaha2017",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 23.4,
+          "pub_lcl": 20.2,
+          "pub_ucl": 26.9,
+          "pub_ci_source": "published",
+          "q2e": 23.64,
+          "q2e_lcl": 20.37,
+          "q2e_ucl": 27.17,
+          "n": 1718,
+          "diff_pts": 0.24,
+          "rel_diff_pct": 1.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.14
+        },
+        {
+          "group": "Male",
+          "published": 30.0,
+          "pub_lcl": 26.2,
+          "pub_ucl": 34.1,
+          "pub_ci_source": "published",
+          "q2e": 30.02,
+          "q2e_lcl": 26.17,
+          "q2e_ucl": 34.1,
+          "n": 788,
+          "diff_pts": 0.02,
+          "rel_diff_pct": 0.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.01
+        },
+        {
+          "group": "Female",
+          "published": 16.4,
+          "pub_lcl": 12.6,
+          "pub_ucl": 21.0,
+          "pub_ci_source": "published",
+          "q2e": 16.94,
+          "q2e_lcl": 12.99,
+          "q2e_ucl": 21.52,
+          "n": 930,
+          "diff_pts": 0.54,
+          "rel_diff_pct": 3.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.25
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 1718,
+      "status": "answered",
+      "seconds": 4.4,
+      "set": "holdout",
+      "published_overall": 23.4
+    },
+    {
+      "id": "holdout_hypertension_60plus_P",
+      "question": "How common is high blood pressure among US adults aged 60 and older?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "htn_accaha2017",
+      "q2e_label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60",
+        "pregnant == 1"
+      ],
+      "expected_definition": "htn_accaha2017",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 74.1,
+          "pub_lcl": 71.4,
+          "pub_ucl": 76.7,
+          "pub_ci_source": "published",
+          "q2e": 74.95,
+          "q2e_lcl": 72.24,
+          "q2e_ucl": 77.52,
+          "n": 3010,
+          "diff_pts": 0.85,
+          "rel_diff_pct": 1.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.63
+        },
+        {
+          "group": "Male",
+          "published": 73.1,
+          "pub_lcl": 68.5,
+          "pub_ucl": 77.3,
+          "pub_ci_source": "published",
+          "q2e": 73.66,
+          "q2e_lcl": 69.18,
+          "q2e_ucl": 77.8,
+          "n": 1544,
+          "diff_pts": 0.56,
+          "rel_diff_pct": 0.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.25
+        },
+        {
+          "group": "Female",
+          "published": 75.0,
+          "pub_lcl": 72.1,
+          "pub_ucl": 77.7,
+          "pub_ci_source": "published",
+          "q2e": 76.04,
+          "q2e_lcl": 73.3,
+          "q2e_ucl": 78.63,
+          "n": 1466,
+          "diff_pts": 1.04,
+          "rel_diff_pct": 1.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.73
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 3010,
+      "status": "answered",
+      "seconds": 5.4,
+      "set": "holdout",
+      "published_overall": 74.1
+    },
+    {
+      "id": "holdout_diabetes_60plus_P",
+      "question": "What is the prevalence of diabetes among US adults aged 60 and over?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "diabetes_nchs",
+      "q2e_label": "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60",
+        "pregnant == 1"
+      ],
+      "expected_definition": "diabetes_nchs",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 30.0,
+          "pub_lcl": 27.2,
+          "pub_ucl": 32.9,
+          "pub_ci_source": "published",
+          "q2e": 29.95,
+          "q2e_lcl": 27.13,
+          "q2e_ucl": 32.89,
+          "n": 1381,
+          "diff_pts": -0.05,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.03
+        },
+        {
+          "group": "Male",
+          "published": 36.3,
+          "pub_lcl": 30.8,
+          "pub_ucl": 42.1,
+          "pub_ci_source": "published",
+          "q2e": 36.31,
+          "q2e_lcl": 30.77,
+          "q2e_ucl": 42.12,
+          "n": 704,
+          "diff_pts": 0.01,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        },
+        {
+          "group": "Female",
+          "published": 24.4,
+          "pub_lcl": 19.4,
+          "pub_ucl": 30.1,
+          "pub_ci_source": "published",
+          "q2e": 24.36,
+          "q2e_lcl": 19.3,
+          "q2e_ucl": 30.01,
+          "n": 677,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.01
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTSAFPRP",
+      "n_analytic": 1381,
+      "status": "answered",
+      "seconds": 4.5,
+      "set": "holdout",
+      "published_overall": 30.0
+    },
+    {
+      "id": "holdout_diagnosed_diabetes_L",
+      "question": "What is the prevalence of diagnosed diabetes among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "diabetes_diagnosed",
+      "q2e_label": "Diagnosed diabetes - ever told by a doctor (other than during pregnancy)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": null,
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 11.3,
+          "pub_lcl": 9.3,
+          "pub_ucl": 13.5,
+          "pub_ci_source": "published",
+          "q2e": 11.23,
+          "q2e_lcl": 9.85,
+          "q2e_ucl": 12.73,
+          "n": 7765,
+          "diff_pts": -0.07,
+          "rel_diff_pct": -0.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.07
+        },
+        {
+          "group": "Male",
+          "published": 12.9,
+          "pub_lcl": 11.0,
+          "pub_ucl": 15.0,
+          "pub_ci_source": "published",
+          "q2e": 11.79,
+          "q2e_lcl": 10.6,
+          "q2e_ucl": 13.07,
+          "n": 3486,
+          "diff_pts": -1.11,
+          "rel_diff_pct": -8.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -1.08
+        },
+        {
+          "group": "Female",
+          "published": 9.7,
+          "pub_lcl": 7.3,
+          "pub_ucl": 12.7,
+          "pub_ci_source": "published",
+          "q2e": 10.69,
+          "q2e_lcl": 8.72,
+          "q2e_ucl": 12.94,
+          "n": 4279,
+          "diff_pts": 0.99,
+          "rel_diff_pct": 10.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.72
+        }
+      ],
+      "definition_match": false,
+      "data_limits": [],
+      "weight": "WTINT2YR",
+      "n_analytic": 7765,
+      "status": "answered",
+      "seconds": 4.1,
+      "set": "holdout",
+      "published_overall": 11.3
+    },
+    {
+      "id": "holdout_undiagnosed_diabetes_L",
+      "question": "What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "diabetes_undiagnosed",
+      "q2e_label": "Undiagnosed diabetes - no diagnosis, but fasting plasma glucose >=126 mg/dL or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20",
+        "pregnant == 1"
+      ],
+      "expected_definition": null,
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 4.5,
+          "pub_lcl": 3.3,
+          "pub_ucl": 5.9,
+          "pub_ci_source": "published",
+          "q2e": 4.48,
+          "q2e_lcl": 3.34,
+          "q2e_ucl": 5.88,
+          "n": 2940,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Male",
+          "published": 5.1,
+          "pub_lcl": 3.6,
+          "pub_ucl": 6.9,
+          "pub_ci_source": "published",
+          "q2e": 5.06,
+          "q2e_lcl": 3.57,
+          "q2e_ucl": 6.93,
+          "n": 1308,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.05
+        },
+        {
+          "group": "Female",
+          "published": 3.9,
+          "pub_lcl": 2.8,
+          "pub_ucl": 5.3,
+          "pub_ci_source": "published",
+          "q2e": 3.92,
+          "q2e_lcl": 2.83,
+          "q2e_ucl": 5.29,
+          "n": 1632,
+          "diff_pts": 0.02,
+          "rel_diff_pct": 0.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.04
+        }
+      ],
+      "definition_match": false,
+      "data_limits": [],
+      "weight": "WTSAF2YR",
+      "n_analytic": 2940,
+      "status": "answered",
+      "seconds": 4.2,
+      "set": "holdout",
+      "published_overall": 4.5
+    },
+    {
+      "id": "holdout_child_obesity_12_19_P",
+      "question": "What is the prevalence of obesity among US adolescents aged 12 to 19?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "obesity_cdc",
+      "q2e_label": "Obesity - BMI >=30 kg/m2 (adults); BMI >=95th percentile of the CDC growth charts (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 12 & age <= 19",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 22.2,
+          "pub_lcl": 19.7,
+          "pub_ucl": 24.8,
+          "pub_ci_source": "published",
+          "q2e": 22.13,
+          "q2e_lcl": 19.76,
+          "q2e_ucl": 24.63,
+          "n": 1832,
+          "diff_pts": -0.07,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.06
+        },
+        {
+          "group": "Male",
+          "published": 22.6,
+          "pub_lcl": 19.7,
+          "pub_ucl": 25.7,
+          "pub_ci_source": "published",
+          "q2e": 22.34,
+          "q2e_lcl": 19.17,
+          "q2e_ucl": 25.77,
+          "n": 945,
+          "diff_pts": -0.26,
+          "rel_diff_pct": -1.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.17
+        },
+        {
+          "group": "Female",
+          "published": 21.7,
+          "pub_lcl": 18.1,
+          "pub_ucl": 25.7,
+          "pub_ci_source": "published",
+          "q2e": 21.9,
+          "q2e_lcl": 18.35,
+          "q2e_ucl": 25.78,
+          "n": 887,
+          "diff_pts": 0.2,
+          "rel_diff_pct": 0.9,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.1
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 1832,
+      "status": "answered",
+      "seconds": 4.1,
+      "set": "holdout",
+      "published_overall": 22.2
+    },
+    {
+      "id": "holdout_child_obesity_2_5_P",
+      "question": "How common is obesity in US children aged 2 to 5 years?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "obesity_cdc",
+      "q2e_label": "Obesity - BMI >=30 kg/m2 (adults); BMI >=95th percentile of the CDC growth charts (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 2 & age <= 5",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 12.7,
+          "pub_lcl": 10.8,
+          "pub_ucl": 14.8,
+          "pub_ci_source": "published",
+          "q2e": 12.67,
+          "q2e_lcl": 10.83,
+          "q2e_ucl": 14.7,
+          "n": 1154,
+          "diff_pts": -0.03,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.03
+        },
+        {
+          "group": "Male",
+          "published": 13.6,
+          "pub_lcl": 10.8,
+          "pub_ucl": 16.8,
+          "pub_ci_source": "published",
+          "q2e": 13.98,
+          "q2e_lcl": 10.8,
+          "q2e_ucl": 17.68,
+          "n": 572,
+          "diff_pts": 0.38,
+          "rel_diff_pct": 2.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.25
+        },
+        {
+          "group": "Female",
+          "published": 11.8,
+          "pub_lcl": 9.3,
+          "pub_ucl": 14.8,
+          "pub_ci_source": "published",
+          "q2e": 11.4,
+          "q2e_lcl": 9.31,
+          "q2e_ucl": 13.77,
+          "n": 582,
+          "diff_pts": -0.4,
+          "rel_diff_pct": -3.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.28
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 1154,
+      "status": "answered",
+      "seconds": 4.0,
+      "set": "holdout",
+      "published_overall": 12.7
+    },
+    {
+      "id": "holdout_depression_12_19_L",
+      "question": "What is the prevalence of depression among US adolescents aged 12 to 19?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "depression_phq9",
+      "q2e_label": "Depression - PHQ-9 score >=10",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 12 & age <= 19"
+      ],
+      "expected_definition": "depression_phq9",
+      "comparisons": [],
+      "definition_match": true,
+      "data_limits": [
+        "blocker: Public NHANES files have no data for ages 12-17"
+      ],
+      "status": "flagged_limit",
+      "note": "blocker: Public NHANES files have no data for ages 12-17",
+      "set": "holdout",
+      "published_overall": 19.2
+    },
+    {
+      "id": "holdout_depression_60plus_L",
+      "question": "What is the prevalence of depression in US adults aged 60 and older?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "depression_phq9",
+      "q2e_label": "Depression - PHQ-9 score >=10",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60"
+      ],
+      "expected_definition": "depression_phq9",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 8.7,
+          "pub_lcl": 7.13,
+          "pub_ucl": 10.27,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 8.58,
+          "q2e_lcl": 6.96,
+          "q2e_ucl": 10.44,
+          "n": 2394,
+          "diff_pts": -0.12,
+          "rel_diff_pct": -1.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.15
+        },
+        {
+          "group": "Male",
+          "published": 6.5,
+          "pub_lcl": 3.95,
+          "pub_ucl": 9.05,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 6.33,
+          "q2e_lcl": 3.95,
+          "q2e_ucl": 9.55,
+          "n": 1090,
+          "diff_pts": -0.17,
+          "rel_diff_pct": -2.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.13
+        },
+        {
+          "group": "Female",
+          "published": 10.6,
+          "pub_lcl": 8.44,
+          "pub_ucl": 12.76,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 10.53,
+          "q2e_lcl": 8.35,
+          "q2e_ucl": 13.06,
+          "n": 1304,
+          "diff_pts": -0.07,
+          "rel_diff_pct": -0.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.06
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTINT2YR",
+      "n_analytic": 2394,
+      "status": "answered",
+      "seconds": 4.3,
+      "set": "holdout",
+      "published_overall": 8.7
+    },
+    {
+      "id": "holdout_anemia_women_20_59_L",
+      "question": "What is the prevalence of anemia among US women aged 20 to 59?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "anemia_who",
+      "q2e_label": "Anemia - WHO hemoglobin thresholds",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20 & age <= 59",
+        "female == 1",
+        "pregnant == 1"
+      ],
+      "expected_definition": "anemia_who",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 14.0,
+          "pub_lcl": 12.63,
+          "pub_ucl": 15.37,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 13.87,
+          "q2e_lcl": 12.26,
+          "q2e_ucl": 15.61,
+          "n": 1718,
+          "diff_pts": -0.13,
+          "rel_diff_pct": -0.9,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.19
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTPH2YR",
+      "n_analytic": 1718,
+      "status": "answered",
+      "seconds": 4.3,
+      "set": "holdout",
+      "published_overall": 14.0
+    },
+    {
+      "id": "h2_hypertension_40_59_L",
+      "question": "How many US adults aged 40 to 59 have hypertension?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "htn_accaha2017",
+      "q2e_label": "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 40 & age <= 59",
+        "pregnant == 1"
+      ],
+      "expected_definition": "htn_accaha2017",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 52.5,
+          "pub_lcl": 49.5,
+          "pub_ucl": 55.4,
+          "pub_ci_source": "published",
+          "q2e": 52.63,
+          "q2e_lcl": 49.81,
+          "q2e_ucl": 55.43,
+          "n": 1700,
+          "diff_pts": 0.13,
+          "rel_diff_pct": 0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.08
+        },
+        {
+          "group": "Male",
+          "published": 55.9,
+          "pub_lcl": 50.6,
+          "pub_ucl": 61.1,
+          "pub_ci_source": "published",
+          "q2e": 56.2,
+          "q2e_lcl": 50.79,
+          "q2e_ucl": 61.49,
+          "n": 759,
+          "diff_pts": 0.3,
+          "rel_diff_pct": 0.5,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.11
+        },
+        {
+          "group": "Female",
+          "published": 49.0,
+          "pub_lcl": 45.8,
+          "pub_ucl": 52.3,
+          "pub_ci_source": "published",
+          "q2e": 49.1,
+          "q2e_lcl": 45.94,
+          "q2e_ucl": 52.27,
+          "n": 941,
+          "diff_pts": 0.1,
+          "rel_diff_pct": 0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.06
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 1700,
+      "status": "answered",
+      "seconds": 4.4,
+      "set": "holdout2",
+      "published_overall": 52.5
+    },
+    {
+      "id": "h2_diabetes_40_59_L",
+      "question": "What share of US adults aged 40 to 59 have diabetes?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "diabetes_nchs",
+      "q2e_label": "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 40 & age <= 59",
+        "pregnant == 1"
+      ],
+      "expected_definition": "diabetes_nchs",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 17.7,
+          "pub_lcl": 14.7,
+          "pub_ucl": 21.0,
+          "pub_ci_source": "published",
+          "q2e": 17.7,
+          "q2e_lcl": 14.74,
+          "q2e_ucl": 20.99,
+          "n": 861,
+          "diff_pts": 0.0,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTSAF2YR",
+      "n_analytic": 861,
+      "status": "answered",
+      "seconds": 4.1,
+      "set": "holdout2",
+      "published_overall": 17.7
+    },
+    {
+      "id": "h2_diabetes_20_39_L",
+      "question": "Prevalence of diabetes in young adults aged 20 to 39 in the US",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "diabetes_nchs",
+      "q2e_label": "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20 & age <= 39",
+        "pregnant == 1"
+      ],
+      "expected_definition": "diabetes_nchs",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 3.6,
+          "pub_lcl": 2.0,
+          "pub_ucl": 5.9,
+          "pub_ci_source": "published",
+          "q2e": 3.56,
+          "q2e_lcl": 1.95,
+          "q2e_ucl": 5.92,
+          "n": 690,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -1.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.04
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTSAF2YR",
+      "n_analytic": 690,
+      "status": "answered",
+      "seconds": 4.3,
+      "set": "holdout2",
+      "published_overall": 3.6
+    },
+    {
+      "id": "h2_severe_obesity_40_59_L",
+      "question": "What proportion of US adults aged 40 to 59 have class 3 obesity?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "severe_obesity_cdc",
+      "q2e_label": "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 40 & age <= 59",
+        "pregnant == 1"
+      ],
+      "expected_definition": "severe_obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 12.0,
+          "pub_lcl": 10.04,
+          "pub_ucl": 13.96,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 11.96,
+          "q2e_lcl": 9.83,
+          "q2e_ucl": 14.36,
+          "n": 1709,
+          "diff_pts": -0.04,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.04
+        },
+        {
+          "group": "Male",
+          "published": 9.2,
+          "pub_lcl": 6.65,
+          "pub_ucl": 11.75,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 9.2,
+          "q2e_lcl": 6.63,
+          "q2e_ucl": 12.35,
+          "n": 762,
+          "diff_pts": -0.0,
+          "rel_diff_pct": -0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.0
+        },
+        {
+          "group": "Female",
+          "published": 14.7,
+          "pub_lcl": 11.96,
+          "pub_ucl": 17.44,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 14.68,
+          "q2e_lcl": 11.83,
+          "q2e_ucl": 17.9,
+          "n": 947,
+          "diff_pts": -0.02,
+          "rel_diff_pct": -0.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMEC2YR",
+      "n_analytic": 1709,
+      "status": "answered",
+      "seconds": 3.9,
+      "set": "holdout2",
+      "published_overall": 12.0
+    },
+    {
+      "id": "h2_severe_obesity_20_39_P",
+      "question": "What is the prevalence of severe obesity among adults aged 20 to 39?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "severe_obesity_cdc",
+      "q2e_label": "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 20 & age <= 39",
+        "pregnant == 1"
+      ],
+      "expected_definition": "severe_obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 9.7,
+          "pub_lcl": 7.7,
+          "pub_ucl": 12.0,
+          "pub_ci_source": "published",
+          "q2e": 9.67,
+          "q2e_lcl": 7.68,
+          "q2e_ucl": 11.98,
+          "n": 2489,
+          "diff_pts": -0.03,
+          "rel_diff_pct": -0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.02
+        },
+        {
+          "group": "Male",
+          "published": 7.0,
+          "pub_lcl": 4.7,
+          "pub_ucl": 10.1,
+          "pub_ci_source": "published",
+          "q2e": 7.02,
+          "q2e_lcl": 4.65,
+          "q2e_ucl": 10.1,
+          "n": 1177,
+          "diff_pts": 0.02,
+          "rel_diff_pct": 0.3,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.02
+        },
+        {
+          "group": "Female",
+          "published": 12.4,
+          "pub_lcl": 9.8,
+          "pub_ucl": 15.3,
+          "pub_ci_source": "published",
+          "q2e": 12.4,
+          "q2e_lcl": 9.85,
+          "q2e_ucl": 15.34,
+          "n": 1312,
+          "diff_pts": 0.0,
+          "rel_diff_pct": 0.0,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.0
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 2489,
+      "status": "answered",
+      "seconds": 4.1,
+      "set": "holdout2",
+      "published_overall": 9.7
+    },
+    {
+      "id": "h2_anemia_60plus_L",
+      "question": "How common is anemia among Americans aged 60 and older?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "anemia_who",
+      "q2e_label": "Anemia - WHO hemoglobin thresholds",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 60",
+        "pregnant == 1"
+      ],
+      "expected_definition": "anemia_who",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 12.5,
+          "pub_lcl": 10.74,
+          "pub_ucl": 14.26,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 12.07,
+          "q2e_lcl": 10.25,
+          "q2e_ucl": 14.1,
+          "n": 2646,
+          "diff_pts": -0.43,
+          "rel_diff_pct": -3.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.47
+        },
+        {
+          "group": "Male",
+          "published": 12.8,
+          "pub_lcl": 10.64,
+          "pub_ucl": 14.96,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 12.3,
+          "q2e_lcl": 10.1,
+          "q2e_ucl": 14.78,
+          "n": 1216,
+          "diff_pts": -0.5,
+          "rel_diff_pct": -3.9,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.46
+        },
+        {
+          "group": "Female",
+          "published": 12.4,
+          "pub_lcl": 10.05,
+          "pub_ucl": 14.75,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 11.88,
+          "q2e_lcl": 9.67,
+          "q2e_ucl": 14.39,
+          "n": 1430,
+          "diff_pts": -0.52,
+          "rel_diff_pct": -4.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": -0.43
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTPH2YR",
+      "n_analytic": 2646,
+      "status": "answered",
+      "seconds": 4.4,
+      "set": "holdout2",
+      "published_overall": 12.5
+    },
+    {
+      "id": "h2_child_obesity_6_11_P",
+      "question": "What percentage of US children aged 6 to 11 years have obesity?",
+      "cycles": [
+        "P"
+      ],
+      "q2e_definition": "obesity_cdc",
+      "q2e_label": "Obesity - BMI >=30 kg/m2 (adults); BMI >=95th percentile of the CDC growth charts (2-19 y)",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 6 & age <= 11",
+        "pregnant == 1"
+      ],
+      "expected_definition": "obesity_cdc",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 20.7,
+          "pub_lcl": 17.9,
+          "pub_ucl": 23.7,
+          "pub_ci_source": "published",
+          "q2e": 21.23,
+          "q2e_lcl": 18.53,
+          "q2e_ucl": 24.13,
+          "n": 1770,
+          "diff_pts": 0.53,
+          "rel_diff_pct": 2.6,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.36
+        },
+        {
+          "group": "Male",
+          "published": 22.9,
+          "pub_lcl": 19.5,
+          "pub_ucl": 26.5,
+          "pub_ci_source": "published",
+          "q2e": 23.68,
+          "q2e_lcl": 20.34,
+          "q2e_ucl": 27.29,
+          "n": 897,
+          "diff_pts": 0.78,
+          "rel_diff_pct": 3.4,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.44
+        },
+        {
+          "group": "Female",
+          "published": 18.5,
+          "pub_lcl": 15.2,
+          "pub_ucl": 22.1,
+          "pub_ci_source": "published",
+          "q2e": 18.7,
+          "q2e_lcl": 15.61,
+          "q2e_ucl": 22.11,
+          "n": 873,
+          "diff_pts": 0.2,
+          "rel_diff_pct": 1.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.11
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTMECPRP",
+      "n_analytic": 1770,
+      "status": "answered",
+      "seconds": 4.0,
+      "set": "holdout2",
+      "published_overall": 20.7
+    },
+    {
+      "id": "h2_depression_40_59_L",
+      "question": "What is the prevalence of depression among US adults aged 40 to 59?",
+      "cycles": [
+        "L"
+      ],
+      "q2e_definition": "depression_phq9",
+      "q2e_label": "Depression - PHQ-9 score >=10",
+      "q2e_type": "binary",
+      "q2e_population": [
+        "age >= 40 & age <= 59"
+      ],
+      "expected_definition": "depression_phq9",
+      "comparisons": [
+        {
+          "group": "overall",
+          "published": 10.8,
+          "pub_lcl": 9.23,
+          "pub_ucl": 12.37,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 11.0,
+          "q2e_lcl": 9.3,
+          "q2e_ucl": 12.89,
+          "n": 1478,
+          "diff_pts": 0.2,
+          "rel_diff_pct": 1.8,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.25
+        },
+        {
+          "group": "Male",
+          "published": 7.9,
+          "pub_lcl": 5.55,
+          "pub_ucl": 10.25,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 8.07,
+          "q2e_lcl": 5.55,
+          "q2e_ucl": 11.25,
+          "n": 668,
+          "diff_pts": 0.17,
+          "rel_diff_pct": 2.1,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.14
+        },
+        {
+          "group": "Female",
+          "published": 13.8,
+          "pub_lcl": 11.25,
+          "pub_ucl": 16.35,
+          "pub_ci_source": "est +/- 1.96 SE",
+          "q2e": 13.97,
+          "q2e_lcl": 11.33,
+          "q2e_ucl": 16.96,
+          "n": 810,
+          "diff_pts": 0.17,
+          "rel_diff_pct": 1.2,
+          "within_pub_ci": true,
+          "ci_overlap": true,
+          "z": 0.13
+        }
+      ],
+      "definition_match": true,
+      "data_limits": [],
+      "weight": "WTINT2YR",
+      "n_analytic": 1478,
+      "status": "answered",
+      "seconds": 4.4,
+      "set": "holdout2",
+      "published_overall": 10.8
+    }
+  ]
+}
