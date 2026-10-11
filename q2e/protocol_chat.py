@@ -4,11 +4,11 @@ The analyst writes what they want in plain words ("only adults over 40", "report
 "don't adjust for income", "use 2015-2018"). The agent applies the change right away (no
 "are you sure?" step - there is an Undo), explains exactly what changed, and records it in an
 amendment history with a timestamp so the lead investigator can follow every change without
-emails or meetings. It only asks a question when a request cannot be grounded in Q2E's
+emails or meetings. It only asks a question when a request cannot be grounded in BEDSIDE's
 knowledge base / the NHANES catalog - it never guesses.
 
 Everything is rule-based (no LLM), so nothing is invented: changes are made with the same
-planner operations and parser the rest of Q2E uses.
+planner operations and parser the rest of BEDSIDE uses.
 """
 from __future__ import annotations
 
@@ -89,7 +89,7 @@ def summary_lines(changes: list[dict]) -> list[str]:
 # Turning a request into a change
 # ---------------------------------------------------------------------------
 def _cycle_codes(text: str, k: Knowledge) -> list[str]:
-    """Survey cycles named by years in the text ('2015-2018', '2017-2018 and 2021-2023'), limited to cycles Q2E has."""
+    """Survey cycles named by years in the text ('2015-2018', '2017-2018 and 2021-2023'), limited to cycles BEDSIDE has."""
     years = [int(y) for y in re.findall(r"\b(?:19|20)\d\d\b", text)]
     if not years:
         return []
@@ -101,7 +101,7 @@ def _cycle_codes(text: str, k: Knowledge) -> list[str]:
 
 
 def _block_for(text: str, k: Knowledge) -> str | None:
-    """A building block (adjustable variable) Q2E knows for a word like 'smoking' or 'income'; None if unknown."""
+    """A building block (adjustable variable) BEDSIDE knows for a word like 'smoking' or 'income'; None if unknown."""
     t = text.lower().strip()
     if not t:
         return None
@@ -309,7 +309,7 @@ def _ask(msg: str, k: Knowledge) -> dict:
         for s in expertise.term_suggestions(term, k)[:3]:
             options.append({"label": s["label"], "hint": s["hint"],
                             "send": re.sub(r"\b" + re.escape(term) + r"\b", s["replace"], msg, count=1, flags=re.I)})
-    text = ("I couldn't turn that into a change to the protocol using what Q2E knows about NHANES, so I left the protocol as it was."
+    text = ("I couldn't turn that into a change to the protocol using what BEDSIDE knows about NHANES, so I left the protocol as it was."
             + (" Did you mean one of these?" if options else
                " Try naming a health topic, a group of people (e.g. 'only adults over 40'), survey years (e.g. '2015-2018'), "
                "an adjustment (e.g. 'adjust for smoking') or an effect measure (e.g. 'report odds ratios')."))

@@ -169,6 +169,60 @@ def detect_comparison(question: str) -> dict | None:
     return {"enabled": True, "group_var": best["group_var"], "levels": lv, "level": level, "reference": ref}
 
 
+_AGE_SPANS = [
+    (r"\b(\d{1,2})\s*(?:-|–|to|through)\s*(\d{1,2})\b(?!\s*(?:mg|g/|mmol|%|kg|cm))", "range"),
+    (r"\b(\d{1,2})\s*(?:years?\s*(?:of age\s*|old\s*)?)?(?:and|or)\s*(?:older|over|above)\b", "min"),
+    (r"\b(\d{1,2})\s*\+", "min"),
+    (r"\b(?:over|older than|above|at least)\s+(?:age\s+)?(\d{1,2})\b", "min"),
+    (r"\b(\d{1,2})\s*(?:years?\s*)?(?:and|or)\s*(?:under|younger|below)\b", "max_incl"),
+    (r"\b(?:under|younger than|below)\s+(?:age\s+)?(\d{1,2})\b", "max"),
+]
+
+
+def age_groups(question: str) -> list[dict]:
+    """Every age group a question names, in order: 'adults 60 and older than adults 20-39' -> [60+, 20-39]."""
+    q = " " + question.lower() + " "
+    found, used = [], []
+    for pat, kind in _AGE_SPANS:
+        for m in re.finditer(pat, q):
+            if any(a < m.end() and m.start() < b for a, b in used):
+                continue
+            if kind == "range":
+                lo, hi = int(m.group(1)), int(m.group(2))
+                if hi <= lo:
+                    continue
+                g = {"lo": lo, "hi": hi, "label": f"{lo}-{hi}"}
+            elif kind == "min":
+                lo = int(m.group(1)); g = {"lo": lo, "hi": None, "label": f"{lo}+"}
+            else:
+                hi = int(m.group(1)) - (0 if kind == "max_incl" else 1); g = {"lo": None, "hi": hi, "label": f"<{hi + 1}"}
+            used.append((m.start(), m.end()))
+            found.append((m.start(), g))
+    return [g for _, g in sorted(found, key=lambda t: t[0])]
+
+
+def age_comparison(question: str) -> dict | None:
+    """Two or more named age groups plus a comparison cue -> a comparison on a custom age-group variable."""
+    if not COMPARE_CUES.search(" " + question.lower() + " "):
+        return None
+    groups = age_groups(question)
+    labels = list(dict.fromkeys(g["label"] for g in groups))
+    if len(labels) < 2:
+        return None
+    groups = [next(g for g in groups if g["label"] == l) for l in labels]
+    parts = []
+    for g in groups:
+        cond = " & ".join(c for c in ((f"age >= {g['lo']}" if g["lo"] is not None else ""), (f"age <= {g['hi']}" if g["hi"] is not None else "")) if c)
+        parts += [cond, f'"{g["label"]}"']
+    lo = min((g["lo"] for g in groups if g["lo"] is not None), default=None)
+    his = [g["hi"] for g in groups]
+    hi = None if any(h is None for h in his) else max(his)
+    return {"enabled": True, "group_var": "age_cmp", "levels": labels, "level": labels[0], "reference": labels[1],
+            "label": "Age group", "age_range": (lo, hi),
+            "custom": {"name": "age_cmp", "expr": "cases(" + ", ".join(parts) + ")", "type": "categorical",
+                       "label": "Age group (" + " vs ".join(labels) + ")", "source": "rules"}}
+
+
 def cycles_named(question: str) -> list[str]:
     """Survey cycles a question names explicitly ('in 2021-2023', 'NHANES 2017-2018', '2015 to 2018')."""
     out = []

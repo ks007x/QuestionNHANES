@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Q2E safe expression language
+# BEDSIDE safe expression language
 #
 # Derived variables and inclusion criteria are written in a small subset of R.
 # Expressions are parsed, every node of the syntax tree is checked against a
@@ -146,7 +146,7 @@ dsl_validate <- function(expr_str, allowed_vars = NULL) {
       head <- e[[1]]
       if (!is.name(head)) stop(sprintf("Illegal construct in '%s'", expr_str))
       fname <- as.character(head)
-      if (!fname %in% fns) stop(sprintf("Function '%s' is not allowed in Q2E expressions ('%s')", fname, expr_str))
+      if (!fname %in% fns) stop(sprintf("Function '%s' is not allowed in BEDSIDE expressions ('%s')", fname, expr_str))
       args <- as.list(e)[-1]
       for (a in args) walk(a)
     } else if (is.name(e)) {
@@ -183,7 +183,7 @@ dsl_eval <- function(expr_str, data) {
   out
 }
 
-# Coerce an evaluated vector to the declared Q2E type.
+# Coerce an evaluated vector to the declared BEDSIDE type.
 dsl_coerce <- function(x, type, levels = NULL) {
   switch(type,
     binary = {

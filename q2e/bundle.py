@@ -9,7 +9,7 @@ from pathlib import Path
 from .config import settings
 from .store import ProjectStore
 
-REPRODUCE_R = """# Reproduce Q2E analysis {plan_id} (plan sha256 {plan_hash})
+REPRODUCE_R = """# Reproduce BEDSIDE analysis {plan_id} (plan sha256 {plan_hash})
 # Requirements: R >= 4.2 with survey, jsonlite, haven, ggplot2, mice, mitools
 #   install.packages(c("survey", "jsonlite", "haven", "ggplot2", "mice", "mitools"))
 # Data: put the NHANES .xpt files listed in compiled_plan.json in ./data, or leave
@@ -75,7 +75,7 @@ def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str 
                                 f"* Plan `{compiled['plan_id']}` v{compiled['plan_version']}, sha256 `{compiled['plan_hash']}`\n"
                                 f"* Run `{run['id']}` ({run.get('data_source')})\n"
                                 f"* `analysis.R` is the whole analysis as one readable script (survey + haven only): files, recodes, eligibility, design, models.\n"
-                                f"* `Rscript reproduce.R` re-executes the analysis with the Q2E engine and asserts the primary estimate matches.\n"
+                                f"* `Rscript reproduce.R` re-executes the analysis with the BEDSIDE engine and asserts the primary estimate matches.\n"
                                 f"* `protocol_and_sap.md` is the approved study protocol and statistical analysis plan.\n"
                                 f"* `provenance.json` is a hash-chained ledger of every human and AI action.\n")
     return buf.getvalue()

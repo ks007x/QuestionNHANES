@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # -----------------------------------------------------------------------------
-# Q2E biostatistics engine - executes an approved, compiled study plan.
+# BEDSIDE biostatistics engine - executes an approved, compiled study plan.
 #
 #   Rscript r/engine/run_pipeline.R --plan compiled_plan.json --out results_dir
 #
@@ -374,7 +374,7 @@ run_pipeline <- function(plan_path, outdir) {
       outcome = bm$outcome, outcome_label = o$outcome_label, label = bm$label, published = bm$estimate, published_lcl = bm$lcl, published_ucl = bm$ucl,
       published_n = bm$n %||% NA, replicated = o$est, replicated_lcl = o$lcl, replicated_ucl = o$ucl, replicated_n = o$n, overlap = overlap,
       difference_pts = round(100 * (o$est - bm$estimate), 1),
-      message = sprintf("%s: Q2E %.1f%% (%.1f-%.1f) vs published %.1f%% (%.1f-%.1f) [%s] - %s", o$outcome_label,
+      message = sprintf("%s: BEDSIDE %.1f%% (%.1f-%.1f) vs published %.1f%% (%.1f-%.1f) [%s] - %s", o$outcome_label,
                         100 * o$est, 100 * o$lcl, 100 * o$ucl, 100 * bm$estimate, 100 * bm$lcl, 100 * bm$ucl, bm$label,
                         if (overlap) "confidence intervals overlap (consistent)" else "confidence intervals do not overlap - investigate definitions, population and cycles"))
   }

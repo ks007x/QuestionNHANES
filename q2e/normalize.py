@@ -54,6 +54,8 @@ _RULES: list[tuple[str, str, str, str, int]] = [
     (r"\b(?:ANC)\b", "neutrophil count", "Absolute neutrophil count", "", 0),
     (r"\b(?:vit\.?\s*d|25-?oh-?d)\b", "vitamin d", "Vitamin D (25-hydroxyvitamin D)", "", re.I),
     (r"\b(?:IDA)\b", "iron deficiency anemia", "Iron-deficiency anemia", "", 0),
+    (r"\beos(?:ino)?s?\b", "eosinophil count", "Eosinophil count", "", re.I),
+    (r"\bAEC\b", "absolute eosinophil count", "Absolute eosinophil count", "", 0),
     (r"\b(?:a1c)\b", "hba1c", "Hemoglobin A1c", "", re.I),
     # lung, sleep, mood
     (r"\bOSA\b", "obstructive sleep apnea", "Obstructive sleep apnea", "", 0),
@@ -124,7 +126,7 @@ def _spell(text: str, changes: list[dict]) -> str:
         if not cands and len(lw) >= 7:
             cands = difflib.get_close_matches(lw, targets, n=4, cutoff=0.84)
         # typos keep the first letter and are not just a longer/shorter form of the same word
-        cands = [c for c in cands if c[0] == lw[0] and not (lw.startswith(c) or c.startswith(lw))]
+        cands = [c for c in cands if c[0] == lw[0] and not (lw.startswith(c) or c.startswith(lw)) and abs(len(c) - len(lw)) < 2]
         if not cands:
             return w
         # a typo usually keeps the word's length ("diabetis" -> "diabetes", not "diabetics")

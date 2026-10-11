@@ -1,7 +1,7 @@
 """AI interviewer: an LLM suggests extra follow-up questions about the idea, grounded in the NHANES catalog.
 
-The LLM only writes the question and why it matters, and picks choices from Q2E's own catalog (topics, groups of
-people, age ranges). Every choice is turned into wording by Q2E and kept only if the rule-based parser reads it back
+The LLM only writes the question and why it matters, and picks choices from BEDSIDE's own catalog (topics, groups of
+people, age ranges). Every choice is turned into wording by BEDSIDE and kept only if the rule-based parser reads it back
 as intended, so the AI cannot offer something NHANES does not have. Results are cached so the same idea always gets
 the same questions (answers are matched to them later).
 """
@@ -17,7 +17,7 @@ from .language_guard import scan_causal
 MAX_AI_QUESTIONS = 2
 _CACHE: dict[tuple, list[dict]] = {}
 
-SYSTEM = ("You are the Interviewer agent of Q2E, a tool that turns a research idea into an NHANES study. You help a "
+SYSTEM = ("You are the Interviewer agent of BEDSIDE, a tool that turns a research idea into an NHANES study. You help a "
           "researcher make their idea specific before the study is designed. You never invent data: every answer choice "
           "you offer must come from the catalog you are given. Reply with JSON only.")
 
@@ -31,8 +31,8 @@ def _catalog(k: Knowledge) -> str:
 def _prompt(question: str, understood: list[dict], asked: list[dict], k: Knowledge) -> str:
     read = "\n".join(f"  - {u['label']}: {u['value']}" for u in understood) or "  - nothing yet"
     already = "\n".join(f"  - {q['text']}" for q in asked) or "  - none"
-    return (f"{_catalog(k)}\n\nRESEARCH IDEA: \"{question}\"\n\nWHAT Q2E ALREADY READ FROM IT:\n{read}\n\n"
-            f"QUESTIONS Q2E IS ALREADY ASKING:\n{already}\n\n"
+    return (f"{_catalog(k)}\n\nRESEARCH IDEA: \"{question}\"\n\nWHAT BEDSIDE ALREADY READ FROM IT:\n{read}\n\n"
+            f"QUESTIONS BEDSIDE IS ALREADY ASKING:\n{already}\n\n"
             f"Is anything else in the idea still vague, so a study designer would have to guess? Examples: which measure of "
             f"a topic is meant, which group of people, which ages, whether to compare by a subgroup. Ask about it. "
             f"Do not repeat the questions above or ask about what was already read. If nothing is vague, return no questions.\n\n"
@@ -43,7 +43,7 @@ def _prompt(question: str, understood: list[dict], asked: list[dict], k: Knowled
 
 
 def _option(raw: dict, i: int, question: str, k: Knowledge) -> dict | None:
-    """Turn one AI choice into a Q2E option; None when it is not in the catalog or the parser does not read it back."""
+    """Turn one AI choice into a BEDSIDE option; None when it is not in the catalog or the parser does not read it back."""
     base = question.rstrip()
     if base and base[-1] not in ".?!":
         base += "."
@@ -103,7 +103,7 @@ def suggest(question: str, understood: list[dict], asked: list[dict], k: Knowled
     try:
         out = client.complete_json("Interviewer", SYSTEM, _prompt(question, understood, asked, k), max_tokens=900)
     except LLMError as e:
-        return [], f"The AI interviewer is unavailable ({str(e)[:160]}); the questions below come from Q2E's rules."
+        return [], f"The AI interviewer is unavailable ({str(e)[:160]}); the questions below come from BEDSIDE's rules."
     qs: list[dict[str, Any]] = []
     seen_text = {q["text"].lower() for q in asked}
     who_asked = any(q["id"] in ("population", "ages") for q in asked)    # the rules already ask who / which ages

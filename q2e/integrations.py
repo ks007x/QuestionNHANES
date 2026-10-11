@@ -1,4 +1,4 @@
-"""Generate tool manifests so the sponsors' AI platforms can call Q2E.
+"""Generate tool manifests so the sponsors' AI platforms can call BEDSIDE.
 
   python -m q2e integrations --base-url https://YOUR-Q2E-HOST --out integrations/generated
 
@@ -42,7 +42,7 @@ def openapi(base_url: str) -> dict:
                           "400": {"description": "Tool error (e.g., plan not approved by a human)"}},
             "security": [{"q2eKey": []}]}}
     return {"openapi": "3.0.3",
-            "info": {"title": "Q2E AI Research Copilot tools", "version": __version__,
+            "info": {"title": "BEDSIDE AI Research Copilot tools", "version": __version__,
                      "description": "Clinical question -> reproducible NHANES study. Humans approve; AI drafts, checks and runs approved plans."},
             "servers": [{"url": base_url.rstrip("/")}], "paths": paths,
             "components": {"securitySchemes": {"q2eKey": {"type": "apiKey", "in": "header", "name": "X-Q2E-Key"}}}}

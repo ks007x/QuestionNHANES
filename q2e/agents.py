@@ -94,11 +94,16 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
         dialogue.append({"agent": "Recognizer", "source": "llm" if any(r["source"] == "ai" for r in recognized) else "rules",
                          "message": "Recognized " + "; ".join(f"\"{r['from']}\" as {r['label'] or r['to']}" for r in recognized) + "."})
     parsed = planner.parse_question(rule_q, k)
+    from . import estimands as _est
+    cmp = _est.detect_comparison(rule_q)
     if client.enabled and llm_out:
         try:
             agreed = []
             for key in ("outcome_concept", "exposure_concept"):
                 v = llm_out.get(key)
+                if v and v in k.concepts and key == "exposure_concept" and (cmp or parsed.get("arms")) \
+                        and k.concepts[v].get("domain") in planner.DEMOGRAPHIC_DOMAINS | {"infection"}:
+                    continue    # the group comparison (sex, age, race...) or the arms already carry this; not a second exposure
                 if v and v in k.concepts:
                     if parsed.get(key) and parsed[key] != v:
                         dialogue.append({"agent": "Investigator (LLM)", "source": "llm",
@@ -108,9 +113,18 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
                         agreed.append(v)
             if llm_out.get("study_type") in ("prevalence", "association") and not parsed.get("outcome_concept"):
                 parsed["study_type"] = llm_out["study_type"]
+            skipped = []
             for pid in llm_out.get("populations", []) or []:
-                if any(p["id"] == pid for p in k.populations) and pid not in parsed["populations"]:
-                    parsed["populations"].append(pid)
+                if not any(p["id"] == pid for p in k.populations) or pid in parsed["populations"]:
+                    continue
+                why = _population_conflict(pid, parsed["populations"], cmp)
+                if why:
+                    skipped.append(f"{pid} ({why})")
+                    continue
+                parsed["populations"].append(pid)
+            if skipped:
+                dialogue.append({"agent": "Investigator (LLM)", "source": "llm",
+                                 "message": "Did not apply AI population filters that would break the question: " + "; ".join(skipped) + "."})
             # the AI's definition picks are offered, not applied: the investigator chooses in the definition picker
             ai_defs = [d for d in llm_out.get("preferred_definitions", []) or []
                        if d in k.definitions and d not in parsed["hints"]["prefer"]]
@@ -213,6 +227,29 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     plan["idea_gaps"] = expertise.idea_gaps(plan.get("question", ""), plan, k)
     _gap_issues(plan)
     return plan
+
+
+# populations that pick one group of a baseline characteristic: two from the same family can never both hold, and
+# none may be added when the question compares the groups of that characteristic
+_POP_FAMILY = {"men": "sex", "women": "sex", "women_repro": "sex", "pregnant": "sex",
+               "race_nhwhite": "race_eth", "race_nhblack": "race_eth", "race_nhasian": "race_eth", "race_hispanic": "race_eth",
+               "children": "agecat", "adolescents": "agecat", "adults": "agecat", "older_adults": "agecat"}
+
+
+def _population_conflict(pid: str, current: list[str], cmp: dict | None) -> str:
+    fam = _POP_FAMILY.get(pid)
+    if not fam:
+        return ""
+    gv = (cmp or {}).get("group_var", "")
+    if cmp and (gv == fam or gv.startswith(fam) or (fam == "agecat" and gv.startswith("agecat"))):
+        if not (fam == "agecat" and pid == "adults"):        # "adults" only sets the age floor of an age comparison
+            return f"the question compares {cmp.get('label', fam).lower()} groups"
+    clash = [c for c in current if _POP_FAMILY.get(c) == fam and fam != "agecat"]
+    if clash:
+        return f"conflicts with {clash[0]}"
+    if fam == "agecat" and any(_POP_FAMILY.get(c) == "agecat" for c in current):
+        return "an age group is already set"
+    return ""
 
 
 def _gap_issues(plan: dict) -> None:

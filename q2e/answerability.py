@@ -85,7 +85,7 @@ def static_assessment(plan: dict | None, parsed: dict, k: Knowledge | None = Non
                         f"match confidence {m['confidence']}.", "Confirm coding against the CDC codebook before approval."))
     if parsed.get("association_cue") and (not plan or plan.get("study_type") == "prevalence"):
         out.append(_chk("Coverage", "fail", "Association asked, but fewer than two concepts could be mapped",
-                        "The question describes a relationship, but Q2E could not map both sides of it, so the draft defaults to a prevalence study.",
+                        "The question describes a relationship, but BEDSIDE could not map both sides of it, so the draft defaults to a prevalence study.",
                         "Map the missing concept (see coverage items above) or rephrase."))
     if not plan:
         return out

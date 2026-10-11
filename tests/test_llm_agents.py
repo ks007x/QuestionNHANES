@@ -67,7 +67,7 @@ class InterviewerProvider(FakeProvider):
     calls = 0
 
     def complete(self, system, user, max_tokens=2000):
-        assert "QUESTIONS Q2E IS ALREADY ASKING" in user
+        assert "QUESTIONS BEDSIDE IS ALREADY ASKING" in user
         InterviewerProvider.calls += 1
         return json.dumps({"questions": [
             {"text": "Which group of people should be studied?", "why": "Hypertension differs a lot by group.",

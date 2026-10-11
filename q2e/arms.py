@@ -19,8 +19,13 @@ from typing import Any
 from .knowledge import Knowledge
 
 VS = re.compile(r"\s(?:vs\.?|versus|v\.|compared (?:with|to)|against)\s")
-CONTROL_WORDS = re.compile(r"\b(healthy controls?|healthy (?:participants|people|adults|individuals|subjects)|controls?|uninfected|"
-                           r"seronegative|negative controls?|unexposed|neither|non-?infected|without (?:either|any|infection))\b")
+# when the question is clearly a group comparison, plain list words also separate groups:
+# "higher in Toxocara than Toxoplasma and healthy adults", "between Toxocara, Toxoplasma and healthy people"
+CUE = re.compile(r"\b(?:vs\.?|versus|compar\w*|between|than|differ\w*|difference)\b|\bhealthy\b|\bcontrols?\b")
+LIST_SEP = re.compile(r"(?:\s(?:than|and|or|&)\s|,\s|\s/\s)")
+CONTROL_WORDS = re.compile(r"\b(healthy controls?|healthy (?:participants|people|adults|individuals|subjects|children|persons)|"
+                           r"healthy|controls?|uninfected|seronegative|negative controls?|unexposed|neither|non-?infected|"
+                           r"without (?:either|any|infection))\b")
 HEALTHY_WORDS = re.compile(r"\bhealthy\b")
 OUTCOME_LEADS = re.compile(r"\b(?:for|on|in terms of|regarding|with respect to|risk of|rates? of|prevalence of|odds of|levels? of)\s")
 
@@ -41,11 +46,19 @@ def detect(q: str, ordered: list[dict], k: Knowledge, concept_of) -> dict | None
     Arms are the concepts sitting directly on either side of a 'vs / versus / compared with' separator; the outcome is
     the remaining clinical concept ("... for eosinophilia", "eosinophilia in A vs B", "is X more common with A than ...")."""
     seps = list(VS.finditer(q))
+    if CUE.search(q):
+        seps = sorted(seps + [m for m in LIST_SEP.finditer(q) if not any(v.start() <= m.start() < v.end() for v in seps)],
+                      key=lambda m: m.start())
     if not seps:
         return None
     clinical = sorted([c for c in ordered if concept_of(c["concept"]).get("domain") not in ("demographic",)], key=lambda c: c["pos"])
     if len(clinical) < 2:
         return None
+
+    def can_be_arm(cid: str) -> bool:      # a group is a yes/no condition (infection, disease), never a lab level
+        cc = concept_of(cid)
+        defs = [d for d in (cc.get("definitions") or []) if k.definitions.get(d, {}).get("type") == "binary"]
+        return bool(defs) or cid.startswith("dict:") or k.blocks.get(cc.get("block", ""), {}).get("type") == "binary"
 
     def end(c):
         return c["pos"] + len(c["phrase"])
@@ -56,20 +69,18 @@ def detect(q: str, ordered: list[dict], k: Knowledge, concept_of) -> dict | None
             return len(gap.split()) <= 4 and not CONTROL_WORDS.search(gap) and not OUTCOME_LEADS.search(" " + gap + " ")
         before = [c for c in clinical if end(c) <= m.start() + 1 and adjacent(q[end(c):m.start()])]
         after = [c for c in clinical if c["pos"] >= m.end() - 1 and adjacent(q[m.end():c["pos"]])]
-        for c in ([before[-1]] if before else []) + ([after[0]] if after else []):
-            if c["concept"] not in arm_ids:
+        pair = ([before[-1]] if before else []) + ([after[0]] if after else [])
+        if not VS.fullmatch(m.group(0)) and m.group(0).strip() not in ("than",) and not all(can_be_arm(c["concept"]) for c in pair):
+            continue        # "eosinophil count and Toxocara": a list word only joins two groups, not an outcome and a group
+        for c in pair:
+            if c["concept"] not in arm_ids and can_be_arm(c["concept"]):
                 arm_ids.append(c["concept"])
     rest = [c for c in clinical if c["concept"] not in arm_ids]
     if not rest:
         return None
     led = [c for c in rest if OUTCOME_LEADS.search(q[max(0, c["pos"] - 25):c["pos"]] + " ")]
     outcome = (led or rest)[0]
-    arms = []
-    for cid in arm_ids:
-        cc = concept_of(cid)
-        defs = [d for d in (cc.get("definitions") or []) if k.definitions.get(d, {}).get("type") == "binary"]
-        if defs or cid.startswith("dict:") or k.blocks.get(cc.get("block", ""), {}).get("type") == "binary":
-            arms.append(cid)
+    arms = list(arm_ids)
     if not arms:
         return None
     first_arm = min(c["pos"] for c in clinical if c["concept"] in arms)

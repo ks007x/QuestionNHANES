@@ -1,7 +1,7 @@
-"""Model Context Protocol server for Q2E (stdio, JSON-RPC 2.0, no third-party dependency).
+"""Model Context Protocol server for BEDSIDE (stdio, JSON-RPC 2.0, no third-party dependency).
 
 Lets MCP-capable assistants (Claude Desktop/Code, VS Code/GitHub Copilot agents, Azure AI Foundry and AWS agents via
-their MCP connectors) use the Q2E tools. Run:  python -m q2e mcp
+their MCP connectors) use the BEDSIDE tools. Run:  python -m q2e mcp
 Messages are newline-delimited JSON on stdin/stdout; logs go to stderr.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ from typing import Any
 from . import __version__, tools
 
 SUPPORTED = ["2025-06-18", "2025-03-26", "2024-11-05"]
-INSTRUCTIONS = ("Q2E turns clinical research questions into reproducible, survey-weighted NHANES studies. Typical flow: "
+INSTRUCTIONS = ("BEDSIDE turns clinical research questions into reproducible, survey-weighted NHANES studies. Typical flow: "
                 "assess_question -> design_study -> check_novelty / feasibility_probe / apply_review_fix -> request_approval "
                 "(a human must approve in the app) -> run_analysis -> get_results -> where_next. Never describe results as causal.")
 
@@ -33,7 +33,7 @@ def handle(msg: dict, client: str = "mcp") -> dict | None:
             want = params.get("protocolVersion")
             return _ok(mid, {"protocolVersion": want if want in SUPPORTED else SUPPORTED[0],
                              "capabilities": {"tools": {"listChanged": False}},
-                             "serverInfo": {"name": "q2e", "title": "Q2E AI Research Copilot", "version": __version__},
+                             "serverInfo": {"name": "q2e", "title": "BEDSIDE AI Research Copilot", "version": __version__},
                              "instructions": INSTRUCTIONS})
         if method == "ping":
             return _ok(mid, {})

@@ -509,7 +509,11 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     # (women AND men) and not a second topic (race matched to RIDRETH3)
     from . import estimands as _est
     compare_by = _est.detect_comparison(question)
-    if compare_by:
+    age_cmp = _est.age_comparison(question)
+    if age_cmp and (not compare_by or compare_by["group_var"] == "agecat"):
+        compare_by = age_cmp          # "adults 60 and older vs 20-39": compare the named age groups, do not filter to one
+        pop_ids = [p for p in pop_ids if p not in ("older_adults", "adolescents", "children")]
+    if compare_by and compare_by["group_var"] != "age_cmp":
         graw = _est.GROUP_RAW.get(compare_by["group_var"], set())
 
         def _is_group(c):
@@ -531,6 +535,13 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     demographic = [c for c in ordered if _concept(c["concept"], k).get("domain") in DEMOGRAPHIC_DOMAINS]
     has_prev = any(cue in q for cue in PREVALENCE_CUES)
     has_assoc = any(cue in q for cue in ASSOC_CUES)
+    if compare_by and len(clinical) >= 2:
+        # "obesity and diabetes between men and women": a list of outcomes compared across groups -> one study per outcome
+        gaps = [q[a["pos"] + len(a["phrase"]):b["pos"]] for a, b in zip(clinical, clinical[1:])]
+        if all(re.fullmatch(r"\s*(?:,|and|or|&|,\s*and)?\s*", g) for g in gaps):
+            cond_notes.append(f"One outcome per study: this study compares {clinical[0]['phrase']}; ask again for "
+                              + ", ".join(c["phrase"] for c in clinical[1:]) + ".")
+            clinical = clinical[:1]
     if compare_by and len(clinical) != 1:
         compare_by = None
     if compare_by:
@@ -550,6 +561,13 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
             if re.search(r"\b(among|in)\b.*\b(with|who have|having)\b", between):
                 outcome, exposure = first, second
                 notes.append("Ordering cue ('<outcome> among people with <exposure>') - first concept treated as outcome.")
+            elif re.search(r"\b(?:by|across|according to)\b", between) and re.search(r"\b(?:compar\w*|differ\w*|vary|varies)\b", q):
+                outcome, exposure = first, second
+                notes.append("Ordering cue ('compare <outcome> by <group>') - first concept treated as outcome.")
+            elif re.search(r"\b(?:higher|lower|greater|smaller|increased|elevated|raised|reduced|decreased|worse|better|"
+                           r"(?:more|less) (?:common|prevalent|frequent|likely))\b[^.?]*?\b(?:in|among|with|for)\b", between):
+                outcome, exposure = first, second
+                notes.append("Ordering cue ('is <outcome> higher in <exposure>') - first concept treated as outcome.")
             else:
                 exposure, outcome = first, second
                 notes.append("First clinical concept treated as exposure, second as outcome (swap in the UI if needed).")
@@ -557,6 +575,20 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
             outcome, exposure = clinical[0], demographic[0]
     else:
         outcome = clinical[0] if clinical else None
+    # "Is anemia more common in adults with CKD?" compares people with and without the condition: the condition is the
+    # exposure, not a population filter (which would leave nobody without it to compare against)
+    COND_POPS = {"ckd": "ckd", "diabetes": "diabetes", "htn_pop": "hypertension", "heart_failure": "heart_failure"}
+    if (study_type == "prevalence" and outcome and not compare_by and len(clinical) == 1
+            and re.search(r"\b(?:more|less) (?:common|prevalent|frequent|likely)\b|\b(?:higher|lower|greater|increased|"
+                          r"decreased|elevated|reduced|than)\b", q)):
+        cond = [p for p in pop_ids if p in COND_POPS and COND_POPS[p] in k.concepts and COND_POPS[p] != outcome["concept"]]
+        if cond:
+            cid = COND_POPS[cond[0]]
+            pop_ids = [p for p in pop_ids if p != cond[0]]
+            m = re.search(r"\bwith\s+(\w[\w\s-]{0,40})", q[outcome["pos"]:])
+            exposure = {"concept": cid, "phrase": k.concepts[cid]["label"].lower(), "pos": outcome["pos"] + (m.start() if m else 1)}
+            study_type = "association"
+            notes.append(f"'{k.concepts[cid]['label']}' is compared (with vs without), not used to restrict the population.")
     if study_type == "prevalence" and outcome and outcome["concept"] in k.concepts:
         # national-prevalence questions use the definition NCHS uses for official estimates, unless one was named
         oc = k.concepts[outcome["concept"]]
@@ -597,7 +629,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         "dictionary_matches": dict_matches,
         "unmapped_terms": unmapped,
         "association_cue": has_assoc and not has_prev,
-        "age_range": parse_age(q),
+        "age_range": (compare_by or {}).get("age_range") or parse_age(q),
         "hard_stop": [n for n in not_in if n.get("hard_stop")],
         "compare_by": compare_by,
     }
@@ -844,7 +876,7 @@ def variable_map(plan: dict, k: Knowledge) -> list[dict]:
         else:
             b = k.blocks.get(n, {})
             expr = b.get("nhanes") if b.get("tier") == "measure" else b.get("expr")
-            source, kind = b.get("source", "Q2E building block"), b.get("tier", "block")
+            source, kind = b.get("source", "BEDSIDE building block"), b.get("tier", "block")
         if not cycles and kind == "measure":
             expr = gm.get(n) or ""
             raw = [expr] if expr else []
@@ -1380,7 +1412,7 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         limitations.append("Fasting-subsample variables restrict the analysis to the morning fasting subsample (fasting weights).")
     if parsed.get("out_of_scope"):
         for m in parsed["out_of_scope"]:
-            agent_notes.append({"agent": "Epidemiologist", "message": f"Scope: {m}. Q2E will estimate cross-sectional associations only."})
+            agent_notes.append({"agent": "Epidemiologist", "message": f"Scope: {m}. BEDSIDE will estimate cross-sectional associations only."})
 
     epi_rationale = _epi_rationale(outcome, exposure, covs, cov_notes, k)
     trend_cfg = {"enabled": bool(est_cues["trend"] and study_type != "association" and len(cycles) >= 2
@@ -1408,13 +1440,16 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         cmp = {**cmp, "group_var": nm, "levels": [young if l == "younger" else l for l in cmp["levels"]],
                "level": "60+" if cmp.get("level") in ("60+", None) else cmp["level"],
                "reference": young if cmp.get("reference") in ("younger", None) else cmp["reference"]}
+    if cmp and cmp["group_var"] == "age_cmp":
+        age_adjust["not_by"] = list(age_adjust.get("not_by") or []) + ["age_cmp"]   # no age adjustment across age groups
     if cmp:
         g = cmp["group_var"]
         subgroups = [g] + [x for x in subgroups if x != g]
-        cmp = {**cmp, "label": k.label(g)}
-        agent_notes.append({"agent": "Statistician", "message": (f"Group comparison by {k.label(g).lower()}: "
+        cmp = {**cmp, "label": cmp.get("label") if g == "age_cmp" else k.label(g)}
+        adj = "crude only (no age adjustment across age groups)" if g in ("age_cmp",) or g.startswith("agecat") else "crude and age-adjusted"
+        agent_notes.append({"agent": "Statistician", "message": (f"Group comparison by {cmp['label'].lower()}: "
                             + (f"{cmp['level']} vs {cmp['reference']}" if cmp.get("level") and cmp.get("reference") else "each group vs the reference")
-                            + ", as a difference and a ratio, crude and age-adjusted, with a design-based test of any difference.")})
+                            + f", as a difference and a ratio, {adj}, with a design-based test of any difference.")})
     estimand_cfg = {"kind": ("comparison" if cmp else "trend" if trend_cfg["enabled"] else "association" if study_type == "association" else
                              "mean" if outcome["type"] == "continuous" else "prevalence"),
                     "median": est_cues["median"], "percentile": est_cues.get("percentile"), "count": est_cues["count"] and study_type != "association",
@@ -1438,6 +1473,7 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         "table1_vars": t1, "table1_by": "arms" if exposure and exposure.get("arms") else t1_by,
         "benchmarks": benchmarks,
         "custom_variables": [v["custom"] for v in [outcome, exposure] + co_primary if v and v.get("custom")]
+                            + ([cmp["custom"]] if cmp and cmp.get("custom") else [])
                             + ([exposure["alt_seroneg"]] if exposure and exposure.get("alt_seroneg") else [])
                             + (list(exposure.get("arm_custom") or []) if exposure else []),
         "arms": exposure.get("arms") if exposure else None,

@@ -24,9 +24,9 @@ class RunError(RuntimeError):
     pass
 
 
-R_MISSING = ("R is not installed on this computer. Q2E uses R (the free statistics program) to analyse the data, "
+R_MISSING = ("R is not installed on this computer. BEDSIDE uses R (the free statistics program) to analyse the data, "
              f"for both runs and the feasibility probe. Install R from {R_DOWNLOAD_URL} (default options), "
-             "then run: Rscript r/install_packages.R - no restart of Q2E is needed.")
+             "then run: Rscript r/install_packages.R - no restart of BEDSIDE is needed.")
 
 
 def r_status() -> dict:

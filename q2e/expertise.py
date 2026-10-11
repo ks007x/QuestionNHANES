@@ -1,6 +1,6 @@
 """Interviewer agent: adaptive follow-up questions before the study is designed.
 
-The user never tells Q2E how experienced they are. Instead we *infer* it from how the
+The user never tells BEDSIDE how experienced they are. Instead we *infer* it from how the
 research idea is written (jargon, NHANES variable codes, thresholds, guideline names vs.
 everyday words like "I noticed" or "is it bad for"). Then we look at what the rule-based
 parser could NOT work out from the question (no outcome, no population, ambiguous
@@ -13,7 +13,7 @@ those gaps only - worded for the detected level:
 
 Nothing is left ambiguous at any level: every question says why it is asked and every
 choice has a one-line explanation. When a word is not understood we do not ask the user
-to "say it another way"; we suggest the closest terms Q2E knows, each explained.
+to "say it another way"; we suggest the closest terms BEDSIDE knows, each explained.
 
 Safety: answers only ever (a) append text to the question, which the normal parser then
 reads, or (b) apply whitelisted plan edits (the same `planner.apply_fix` operations the UI
@@ -270,7 +270,7 @@ def idea_gaps(original: str, plan: dict, k: Knowledge | None = None) -> list[dic
     for t in missing_topics(first, k):
         gaps.append({"text": t, "status": "not_in_nhanes", "alternatives": alts,
                      "note": f"\"{t}\" is not in this study: none of the {len(k.dictionary):,} official NHANES variables mention it, "
-                             "so it cannot be measured. Q2E does not swap in a different measure without asking."})
+                             "so it cannot be measured. BEDSIDE does not swap in a different measure without asking."})
     for c in (first.get("outcome_concept"), first.get("exposure_concept")):
         if c and c not in in_study and not c.startswith(("dict:", "thr:")):
             gaps.append({"text": _label(c, k), "status": "not_used", "alternatives": [],
@@ -399,7 +399,7 @@ def _slips_allowed(word: str) -> int:
     return 1 if len(word) <= 6 else 2 if len(word) <= 11 else 3
 
 
-# group-of-people words (Q2E's population patterns and the vague age-group words it asks about)
+# group-of-people words (BEDSIDE's population patterns and the vague age-group words it asks about)
 GROUP_WORDS = set("""kid kids child children childs youth youths teen teens teenager teenagers adolescent adolescents
 senior seniors elderly retiree retirees adult adults woman women female females man men male males pregnant pregnancy
 infant infants toddler toddlers baby babies""".split())
@@ -421,7 +421,7 @@ def _spell_vocab(k: Knowledge) -> tuple[set[str], set[str], dict[str, set[str]],
             ws = re.findall(r"[a-z]+", str(r.get("label", "")).lower())
             pairs.update(f"{a} {b}" for a, b in zip(ws, ws[1:]) if len(a) >= 4 and len(b) >= 4)
         index: dict[str, set[str]] = {}
-        for ph in phrases:          # corrections only towards Q2E topic phrases; label phrases just mark real wording
+        for ph in phrases:          # corrections only towards BEDSIDE topic phrases; label phrases just mark real wording
             for w in ph.split():
                 index.setdefault(w, set()).add(ph)
         _SPELL_VOCAB[id(k)] = (health, everyday, index, pairs | phrases)
@@ -450,7 +450,7 @@ def _closest(word: str, words: set[str]) -> str | None:
 
 def fix_spelling(question: str, k: Knowledge) -> tuple[str, list[dict]]:
     """Correct misspelled health words and phrases ("obeisty", "pregant", "blod presure", "hearing lose"), but only
-    towards words in Q2E's NHANES vocabulary or phrases in official NHANES variable labels (never invents terms)."""
+    towards words in BEDSIDE's NHANES vocabulary or phrases in official NHANES variable labels (never invents terms)."""
     health, everyday, index, known_phrases = _spell_vocab(k)
     real = _label_words(k)
     fixes: list[dict] = []
@@ -709,7 +709,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             "novice": f"NHANES never measured {names}, so it cannot be part of the study. What would you like to do instead?",
             "intermediate": f"{names} is not measured in NHANES. How should the question be reframed?",
             "expert": f"{names}: no NHANES variable. Reframe?"}, {
-            "novice": f"None of the {len(k.dictionary):,} official NHANES variables mention {names}. Q2E will not quietly use something "
+            "novice": f"None of the {len(k.dictionary):,} official NHANES variables mention {names}. BEDSIDE will not quietly use something "
                       f"else in its place, so you choose: a close question that keeps {lbl} and uses something NHANES does measure, "
                       f"or a study of {lbl} on its own.",
             "intermediate": f"No CDC variable mentions {names}. Choose a measured substitute topic or a descriptive study of {lbl}.",
@@ -782,7 +782,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             text = {"novice": f"No NHANES question mentions {missing}. Which of these, which NHANES did measure, is closest to what you mean?",
                     "intermediate": f"No NHANES variable mentions {missing}. Closest measured proxy?",
                     "expert": f"No NHANES variable mentions {missing}. Proxy?"}
-            why = {"novice": "Q2E only uses things NHANES actually measured, so it will not pretend these are the same as "
+            why = {"novice": "BEDSIDE only uses things NHANES actually measured, so it will not pretend these are the same as "
                              f"{missing}. Pick the closest one, or leave it out.",
                    "intermediate": f"These are proxies, not measures of {missing}; results must be read that way.",
                    "expert": "Proxy choice affects construct validity; state it as a limitation."}
@@ -798,7 +798,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             text = {"novice": f"We couldn't find \"{ph}\" in the health survey. Did you mean one of these?",
                     "intermediate": f"\"{ph}\" is not an NHANES term. Closest matches:",
                     "expert": f"Unmapped term \"{ph}\". Candidate mappings:"}
-            why = {"novice": "Q2E only understands words that match what NHANES actually measured. Pick the closest one, or leave it out.",
+            why = {"novice": "BEDSIDE only understands words that match what NHANES actually measured. Pick the closest one, or leave it out.",
                    "intermediate": "Only terms that map to NHANES variables can be used in the analysis.",
                    "expert": "Pick a mapping or drop the term."}
         qs.append(_question(f"term{i}", level, text, why,
@@ -838,7 +838,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                           "Which ages should we study?",
                 "intermediate": f"{by} is only collected from age {floor}, which excludes most \"{word}\". Which ages?",
                 "expert": f"{by}: age >= {floor}; \"{word}\" only partly covered. Bounds?"}, {
-                "novice": "Q2E will not pretend the younger ones were measured. You can study the older part of the group, "
+                "novice": "BEDSIDE will not pretend the younger ones were measured. You can study the older part of the group, "
                           "or go back and pick a topic NHANES measured at younger ages.",
                 "intermediate": "Younger participants have the measure missing by design.",
                 "expert": "Missing by design below the component's minimum age."},
@@ -849,7 +849,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
                 "intermediate": f"\"{word}\" can mean different age ranges. Which one?",
                 "expert": f"Age bounds for \"{word}\"?"}, {
                 "novice": f"People use \"{word}\" for different age ranges, and the result depends on who is counted, "
-                          "so Q2E asks instead of guessing. Pick one or type the exact ages.",
+                          "so BEDSIDE asks instead of guessing. Pick one or type the exact ages.",
                 "intermediate": "Studies define this group differently; the age bounds change the estimate and its comparability.",
                 "expert": "Explicit age bounds are required for the analytic domain."},
                 opts, {"placeholder": "Or type the exact ages, e.g. 8 to 15, or 70 and older", "template": " Study people aged {text}."}))
@@ -899,8 +899,8 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
             opts = [{"id": d, "label": k.definitions[d].get("label", d),
                      "hint": str(k.definitions[d].get("short") or k.definitions[d].get("criteria_text") or "")[:160],
                      "fixes": [{"op": "set_definition", "role": "outcome", "value": d, "concept": out_c}]} for d in defs[:4]]
-            opts.append({"id": "auto", "label": "Use the default definition" if level != "novice" else "Let Q2E choose",
-                         "hint": "Q2E's standard choice for this topic."})
+            opts.append({"id": "auto", "label": "Use the default definition" if level != "novice" else "Let BEDSIDE choose",
+                         "hint": "BEDSIDE's standard choice for this topic."})
             qs.append(_question("definition", level, {
                 "novice": f"Doctors' guidelines draw the line for {_label(out_c, k).lower()} in different places. Which one should we use?",
                 "intermediate": f"Several guideline definitions exist for {_label(out_c, k).lower()}. Which one?",
@@ -941,7 +941,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
     return qs
 
 
-# Group words that do not say which ages are meant. Q2E never guesses: it asks, offering the age ranges commonly
+# Group words that do not say which ages are meant. BEDSIDE never guesses: it asks, offering the age ranges commonly
 # used for that word (each one only if NHANES measures the study's topics at those ages), or exact ages typed in.
 VAGUE_GROUPS = [
     (re.compile(r"\b(?:kids?|children|child|youths?|young people|minors|pediatric|paediatric)\b", re.I), "children",
@@ -1037,14 +1037,14 @@ def population_options(plan: dict | None, out_c: str | None, exp_c: str | None, 
             opts.append({"id": f"with_{cid}", "label": f"Adults with {lab}", "hint": f"Only people who have {lab}, a group often studied for this topic.",
                          "append": f" Study adults with {k.concepts[cid]['synonyms'][0]}."})
     default = "; ".join(c["label"] for c in (plan or {}).get("population", []) if c.get("kind") == "inclusion") or "adults (18 and older)"
-    opts.append({"id": "auto", "label": "Let Q2E choose", "hint": f"Q2E would use: {default}."})
+    opts.append({"id": "auto", "label": "Let BEDSIDE choose", "hint": f"BEDSIDE would use: {default}."})
     return opts, floor, by
 
 
 def personal_notice(question: str) -> str:
     """Plain note when someone describes their own health ("I have ...")."""
     if PERSONAL_PATTERN.search(question.lower()):
-        return ("Q2E looks for patterns across thousands of people in a national US health survey (NHANES). "
+        return ("BEDSIDE looks for patterns across thousands of people in a national US health survey (NHANES). "
                 "It cannot give personal medical advice - for your own health, please talk to a doctor. "
                 "Below, we turn your idea into a research question about people like you.")
     return ""
@@ -1141,7 +1141,7 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
     pop = _population_phrase(parsed, k)
     hi = (parsed.get("age_range") or (None, None))[1]
 
-    # example rewrites built from this idea's own words and group of people; each is kept only if Q2E's parser
+    # example rewrites built from this idea's own words and group of people; each is kept only if BEDSIDE's parser
     # reads it and NHANES measures both topics at the ages asked about
     candidates = []
     own = [c for c in related if c in group]
@@ -1170,7 +1170,7 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
     return {
         "missing": missing[:3],
         "what_happened": (f"You asked about {shown}, but none of the {len(k.dictionary):,} official variables in the national "
-                          f"survey Q2E uses (NHANES) mention {'it' if len(missing) == 1 else 'them'}, so there is nothing to "
+                          f"survey BEDSIDE uses (NHANES) mention {'it' if len(missing) == 1 else 'them'}, so there is nothing to "
                           f"study yet. (If NHANES uses a different name for it, try that name.)") if missing else
                          "We could not find a health condition or measurement in your idea, so there is nothing to study yet.",
         "what_to_do": "Rewrite your idea around something NHANES did measure. Click an example below to use it, "
@@ -1182,7 +1182,7 @@ def rewrite_help(question: str, parsed: dict, k: Knowledge) -> dict:
 
 
 def understood(question: str, parsed: dict, spelling: list[dict], qs: list[dict], k: Knowledge) -> list[dict]:
-    """What Q2E already read from the idea, so it is visible why some things are not asked again.
+    """What BEDSIDE already read from the idea, so it is visible why some things are not asked again.
     Built only from the parser's matches against the NHANES knowledge base."""
     out = []
     for s in spelling:
@@ -1200,7 +1200,7 @@ def understood(question: str, parsed: dict, spelling: list[dict], qs: list[dict]
         pops = [names.get(p, p).replace("_", " ") for p in parsed.get("populations") or []]
         out.append({"label": "People", "value": ", ".join(x for x in [*pops, ages] if x)})
     elif not asked_pop:
-        out.append({"label": "People", "value": "Q2E's usual group for this topic (most often adults), listed on the Protocol page"})
+        out.append({"label": "People", "value": "BEDSIDE's usual group for this topic (most often adults), listed on the Protocol page"})
     asked = {q.get("term") for q in qs}
     dropped = [t for t in unclear_terms(parsed) if t not in asked and not term_suggestions(t, k)]
     if dropped:
