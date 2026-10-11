@@ -166,6 +166,8 @@ def normalize(question: str) -> tuple[str, list[dict]]:
     return text, out
 
 
+_WHO = re.compile(r"\b(?:aged?|years?|adults?|men|women|males?|females?|children|kids|adolescents?|teens?|people|persons?|"
+                  r"population|participants?|patients?|americans?|united states|u\.?s\.?|elderly|seniors?)\b", re.I)
 _SAFE_TERM = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ,'()/+\-.]{0,59}$")
 
 
@@ -181,6 +183,10 @@ def apply_ai_terms(question: str, terms: list[dict] | None) -> tuple[str, list[d
         dst = str(t.get("standard_term") or "").strip()
         if not src or not dst or src.lower() == dst.lower() or not _SAFE_TERM.match(dst) or len(src) > 60:
             continue
+        if set(re.findall(r"\d+", dst)) - set(re.findall(r"\d+", src)):
+            continue        # no new numbers: ages, years and cut-offs come from the investigator, not the AI
+        if _WHO.search(src) or _WHO.search(dst):
+            continue        # who is studied (adults, women, US...) is set by the rules and the investigator
         rx = re.compile(r"(?<![A-Za-z0-9])" + re.escape(src) + r"(?![A-Za-z0-9])", re.I)
         if not rx.search(text):
             continue

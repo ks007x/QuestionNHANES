@@ -1235,7 +1235,15 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
                 continue
             if v not in corr:
                 corr.append(v)
-        adjustment_sets = [{"id": "full", "label": "Mutually adjusted correlates", "covariates": corr}] if otype == "binary" else []
+        cb = parsed.get("compare_by")
+        label = "Mutually adjusted correlates"
+        if cb:
+            # a group comparison: the adjusted model answers "does the difference persist after accounting for the
+            # other characteristics?" (a secondary analysis; the primary result is the survey-weighted comparison)
+            words = {"sex": "sex", "race_eth": "race and ethnicity", "pir_cat": "income", "educ": "education", "agecat": "age group"}
+            gl = cb.get("label") or words.get(cb["group_var"], "age group" if cb["group_var"].startswith("age") else cb["group_var"])
+            label = f"Adjusted comparison by {gl.lower()} (prevalence ratios, each characteristic adjusted for the others; secondary)"
+        adjustment_sets = [{"id": "full", "label": label, "covariates": corr}] if otype == "binary" else []
         interactions = []
 
     # ---------------- secondary outcomes ----------------

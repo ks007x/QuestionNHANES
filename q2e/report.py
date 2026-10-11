@@ -327,7 +327,9 @@ def _models_html(results, plan) -> str:
             rows.append(f"<tr><td>{esc(m['label'])}</td><td>{esc(t['label'])}</td><td>{m['n']:,}</td>"
                         f"<td>{eff(t['est'], t['lcl'], t['ucl'])}</td><td>{pfmt(t['p'])}</td></tr>")
     eff_label = models[0].get("effect_label", "")
-    cap = "Association of the exposure with the outcome across adjustment sets" if plan["study_type"] == "association" else "Mutually adjusted correlates of the outcome"
+    cap = ("Association of the exposure with the outcome across adjustment sets" if plan["study_type"] == "association" else
+           "Adjusted comparison: prevalence ratios with each characteristic adjusted for the others"
+           if (plan.get("estimand") or {}).get("comparison") else "Mutually adjusted correlates of the outcome")
     return (f"<table class='tbl'><caption><b>Table 3.</b> {cap} ({esc(eff_label)}, survey-weighted {esc(models[0]['family'])} regression)</caption>"
             f"<thead><tr><th>Model</th><th>Term</th><th>No.</th><th>{esc(_short_effect(models[0]['effect']))} (95% CI)</th><th>P value</th></tr></thead>"
             f"<tbody>{''.join(rows)}</tbody></table>")

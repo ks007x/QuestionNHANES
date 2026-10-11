@@ -64,7 +64,10 @@ def _reviewer_llm(client: LLMClient, plan: dict, rule_issues: list[dict]) -> dic
     slim = {"refined_question": plan["refined_question"], "hypothesis": plan["hypothesis"], "population": [c["label"] for c in plan["population"] if c.get("enabled")],
             "outcome": plan["outcome"]["label"], "exposure": (plan.get("exposure") or {}).get("label"),
             "covariates": plan["covariates"], "model": plan["model"]["family"], "sensitivity": [s["label"] for s in plan["sensitivity"] if s.get("enabled")],
-            "limitations": plan["limitations"], "already_flagged": [i["title"] for i in rule_issues]}
+            "limitations": plan["limitations"], "already_flagged": [i["title"] for i in rule_issues],
+            "primary_estimand": (plan.get("estimand") or {}).get("kind"),
+            "comparison": {k2: v for k2, v in ((plan.get("estimand") or {}).get("comparison") or {}).items() if k2 in ("label", "level", "reference")},
+            "secondary_models": [a["label"] for a in plan.get("adjustment_sets", [])]}
     user = ("Act as a critical peer reviewer (\"Reviewer 2\") for JAMA Network Open. Plan:\n" + json.dumps(slim, indent=1) +
             "\n\nReturn JSON {issues: [{severity: 'major'|'minor', title, detail}]} with at most 4 NEW issues not already flagged "
             "(confounding, selection, measurement, generalizability, reporting).")
