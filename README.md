@@ -1,4 +1,6 @@
-# Q2E — Question → Evidence
+# BEDSIDE — Bedside Evidence, Data-driven Studies, Instantly Designed and Executed
+
+*Ops Unleashed Team 11 · formerly Q2E (the Python package and CLI keep the `q2e` name).*
 
 **An AI research copilot that turns a clinical observation into an approved, executed, validated and
 reproducible survey-weighted study — written up in JAMA Network Open style.**

@@ -45,7 +45,7 @@ def _domains(v: dict | None, k: Knowledge) -> set[str]:
     return out
 
 
-def suggest(plan: dict, k: Knowledge | None = None) -> dict:
+def suggest(plan: dict, k: Knowledge | None = None, provider: str | None = None, use_llm: bool = True) -> dict:
     k = k or get_knowledge()
     from .planner import _raw_dependencies, available_cycles
     y, x = plan["outcome"], plan.get("exposure")
@@ -97,6 +97,43 @@ def suggest(plan: dict, k: Knowledge | None = None) -> dict:
                     "already_in_sensitivity": n in sens_extra})
     order = {"confounder": 0, "both": 1, "mediator": 2}
     out.sort(key=lambda s: (not s["available"], order[s["role"]]))
-    return {"suggestions": out,
+    ai = _ai_review(plan, out, provider) if use_llm and out else None
+    return {"suggestions": out, "ai": ai,
             "note": "Confounders (common causes) belong in the primary model. Mediators sit on the causal path - adjusting for them "
                     "removes part of the effect - so they are offered as sensitivity analyses only."}
+
+
+AI_SYSTEM = ("You are the epidemiologist on BEDSIDE, which designs survey-weighted NHANES analyses. You see study metadata only, "
+             "never data. Classify candidate adjustment variables by causal role. Respond with one JSON object only.")
+
+
+def _ai_review(plan: dict, out: list[dict], provider: str | None) -> dict | None:
+    """Amazon Bedrock (or another approved model) reviews the rule-based candidates. It can only comment on listed
+    variables and flag one as a likely confounder or mediator; it cannot add variables or change the plan itself."""
+    import json
+    from .llm import LLMClient
+    client = LLMClient(provider)
+    if not client.enabled:
+        return None
+    x = plan.get("exposure") or {}
+    slim = {"question": plan.get("refined_question"), "outcome": plan["outcome"]["label"], "exposure": x.get("label"),
+            "already_adjusted": plan.get("covariates", []),
+            "candidates": [{"variable": o["variable"], "label": o["label"], "rule_role": o["role"]} for o in out[:20]]}
+    user = (json.dumps(slim, default=str) + "\n\nReturn JSON {picks: [{variable, role: 'confounder'|'mediator'|'both'|'not needed', "
+            "why: one sentence}], summary: one sentence on the adjustment strategy}. Use only listed variable names.")
+    try:
+        data = client.complete_json("Epidemiologist", AI_SYSTEM, user, max_tokens=900)
+    except Exception:  # noqa: BLE001
+        return None
+    names = {o["variable"]: o for o in out}
+    n = 0
+    for pick in (data.get("picks") or [])[:20] if isinstance(data, dict) else []:
+        if not isinstance(pick, dict) or pick.get("variable") not in names:
+            continue
+        role = pick.get("role") if pick.get("role") in ("confounder", "mediator", "both", "not needed") else None
+        if role:
+            names[pick["variable"]]["ai"] = {"role": role, "why": str(pick.get("why") or "")[:240],
+                                             "agrees": role == names[pick["variable"]]["role"]}
+            n += 1
+    return {"provider": client.provider.name, "model": client.provider.model, "reviewed": n,
+            "summary": str((data or {}).get("summary") or "")[:400]} if n else None

@@ -33,7 +33,7 @@ def _execute(proj, run, res, tmp_path):
     f = tmp_path / "analysis.R"
     f.write_text(script, encoding="utf-8")
     env = {**os.environ, "NHANES_DIR": str(settings.synthetic_dir)}
-    out = subprocess.run([find_rscript(os.environ.get("Q2E_RSCRIPT", "")), str(f)], cwd=tmp_path, env=env,
+    out = subprocess.run([find_rscript(os.environ.get("BEDSIDE_RSCRIPT", "")), str(f)], cwd=tmp_path, env=env,
                          capture_output=True, text=True, timeout=600)
     assert out.returncode == 0, out.stderr[-2000:]
     return script, out.stdout
@@ -49,7 +49,7 @@ def test_readable_script_reproduces_engine(question, tmp_path):
     proj, run, res = _run(question)
     script, stdout = _execute(proj, run, res, tmp_path)
     assert "svydesign(ids = ~.psu, strata = ~.strata, weights = ~.wt, nest = TRUE" in script
-    assert "Matches the Q2E run: TRUE" in stdout, stdout[-3000:]
+    assert "Matches the BEDSIDE run: TRUE" in stdout, stdout[-3000:]
     # interaction tests now run in the engine (product terms were being dropped)
     if res.get("interactions"):
         assert any(i["p_interaction"] is not None for i in res["interactions"])

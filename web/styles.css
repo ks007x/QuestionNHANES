@@ -1,4 +1,4 @@
-/* Q2E - a working instrument for clinical researchers.
+/* BEDSIDE - a working instrument for clinical researchers.
    Type: Public Sans (the US federal web typeface; NHANES is a federal survey) for the interface,
    Newsreader for study titles and estimates (they read like a manuscript), IBM Plex Mono only for
    NHANES variable codes and expressions. Colour: neutral grey paper, one deep teal for actions,
@@ -43,7 +43,7 @@ code, .mono { font-family: var(--mono); font-size: 12.5px; }
 /* ---------- top bar ---------- */
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 18px; padding: 10px 24px; background: var(--panel); border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; color: var(--ink); }
-.brand b { font: 600 21px var(--serif); letter-spacing: -.01em; }
+.brand b { font: 600 21px var(--serif); letter-spacing: .05em; }
 .brand span { color: var(--ink-3); font-size: 13px; }
 .topbar .spacer { flex: 1; }
 .navlink { color: var(--ink-2); text-decoration: none; font-size: 14px; padding: 4px 2px; border-bottom: 2px solid transparent; }

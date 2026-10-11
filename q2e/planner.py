@@ -370,6 +370,8 @@ def apply_thresholds(q: str, ordered: list[dict], hints: dict, k: Knowledge) -> 
 
 def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     k = k or get_knowledge()
+    from .normalize import normalize
+    question, _ = normalize(question)   # "T2DM", "type ii diabetes", "HTN", "diabetis" -> terms the catalog knows
     q = " " + question.lower().replace("’", "'") + " "
     acronyms = {w.lower() for w in re.findall(r"\b[A-Z][A-Z0-9]{1,5}\b", question)}
     taken: list[tuple[int, int]] = []

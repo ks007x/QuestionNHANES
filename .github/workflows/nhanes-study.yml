@@ -92,7 +92,7 @@ jobs:
           if [ "$CYCLES" = "auto" ] || [ -z "$CYCLES" ]; then CY=""; else CY="--cycles $CYCLES"; fi
           python -m q2e study "$QUESTION" --source cdc $CY --approver "$APPROVER" --out outputs/real 2>&1 | tee outputs_log.txt
           rc=${PIPESTATUS[0]}
-          if [ $rc -ne 0 ]; then echo "::error title=Q2E run failed::$(grep -E 'Run failed|Error|ERROR|in:|Blockers|Traceback|Exception' outputs_log.txt | tail -8 | tr '\n' ' ' | cut -c1-900)"; fi
+          if [ $rc -ne 0 ]; then echo "::error title=BEDSIDE run failed::$(grep -E 'Run failed|Error|ERROR|in:|Blockers|Traceback|Exception' outputs_log.txt | tail -8 | tr '\n' ' ' | cut -c1-900)"; fi
           exit $rc
       - name: Re-run the readable R script (analysis.R) on the same CDC files
         if: success()
@@ -100,8 +100,8 @@ jobs:
           cd outputs/real
           NHANES_DIR="$GITHUB_WORKSPACE/data/cache" Rscript analysis.R > analysis_check.txt 2>&1 || true
           tail -n 3 analysis_check.txt
-          if grep -q "Matches the Q2E run: TRUE" analysis_check.txt; then echo "analysis.R reproduces the primary estimate";
-          elif grep -q "Matches the Q2E run" analysis_check.txt; then echo "::warning title=analysis.R::estimate differs from the engine - see analysis_check.txt"; fi
+          if grep -q "Matches the BEDSIDE run: TRUE" analysis_check.txt; then echo "analysis.R reproduces the primary estimate";
+          elif grep -q "Matches the BEDSIDE run" analysis_check.txt; then echo "::warning title=analysis.R::estimate differs from the engine - see analysis_check.txt"; fi
       - name: Summary
         if: always()
         env:
@@ -132,7 +132,7 @@ jobs:
           for attempt in 1 2 3 4; do
             if git fetch -q --depth 1 origin results 2>/dev/null; then git checkout -q -f -B results FETCH_HEAD; else git checkout -q -f --orphan results && git rm -rqf . ; fi
             mkdir -p "$dest" && cp -r /tmp/pub/. "$dest/"
-            { echo "# Q2E study runs"; echo; for d in $(ls -1r runs); do echo "- [$d](runs/$d/README.md): $(head -1 runs/$d/README.md | sed 's/^# //')"; done; } > INDEX.md
+            { echo "# BEDSIDE study runs"; echo; for d in $(ls -1r runs); do echo "- [$d](runs/$d/README.md): $(head -1 runs/$d/README.md | sed 's/^# //')"; done; } > INDEX.md
             git add -f INDEX.md "$dest"
             git commit -qm "Results: run ${{ github.run_number }}"
             if git push -q origin results; then echo "Saved to results/$dest"; exit 0; fi

@@ -1,6 +1,6 @@
-# Using AWS Bedrock with Q2E
+# Using Amazon Bedrock with BEDSIDE
 
-Q2E runs without any AI model: every agent has a rule-based version, and the statistics are always done by the R
+BEDSIDE (formerly Q2E; the package and CLI keep the `q2e` name) runs without any AI model: every agent has a rule-based version, and the statistics are always done by the R
 engine. Turning on Bedrock adds a language model on top. It never sees row-level data, only the question, the
 study plan, variable metadata and aggregate results (estimates, CIs, counts). Identifiers are scrubbed before
 every call and each call is logged.
@@ -9,11 +9,13 @@ every call and each call is logged.
 
 | Where | Agent | Without AI | With Bedrock |
 |---|---|---|---|
+| Ask | Recognizer | Abbreviations, variants and typos by rules ("type ii diabetes", "T2DM", "HTN", "diabetis") | Model also maps lay, regional and unusual terms ("sugar diabetes", "renal stones") to catalog terms; only phrases that appear verbatim in the question are relabelled, shown as "Recognized: … · AI" chips |
 | Ask | Interviewer | Fixed follow-up questions | Extra follow-up questions written for your idea (every choice checked against the NHANES catalog) |
 | Plan | Investigator, Reviewer | Rule-based plan and review | Model refines the question and adds review comments |
 | Plan | Statistician (model advisor) | Options scored by rules | Model re-ranks the same options and explains why (it can only pick from the listed, runnable models) |
 | Results | Librarian (published evidence) | Regex reads OR/PR/HR/β with CIs from abstracts | Model also reads each abstract; a number is kept only if it appears in the abstract text |
-| Results | Writer | Template manuscript | "Manuscript + AI narrative" button |
+| Plan | Epidemiologist (covariates) | Confounder/mediator roles from the curated library | Model reviews each candidate's role and explains it; it can only comment on listed variables and nothing changes until you click |
+| Results | Writer | Template manuscript | "Manuscript + AI narrative": introduction, discussion, limitations, a methods summary and a plain-language summary. Every number still comes from R |
 
 The app header shows which one is active: `AI: bedrock · <model>`, `AI: bedrock not ready` (hover for the reason),
 or `AI off · rule-based agents`. The model advisor and evidence cards also say which model produced them.

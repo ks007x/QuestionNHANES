@@ -8,13 +8,13 @@ import json
 import re
 from typing import Any
 
-from . import answerability, expressions, planner, privacy
+from . import answerability, expressions, normalize, planner, privacy
 from .knowledge import Knowledge, get_knowledge
 from .language_guard import scan_causal
 from .llm import LLMClient, LLMError
 
 SYSTEM_BASE = (
-    "You are part of Q2E, a research copilot that designs survey-weighted cross-sectional analyses of NHANES "
+    "You are part of BEDSIDE, a research copilot that designs survey-weighted cross-sectional analyses of NHANES "
     "(or another open dataset) to the standard of JAMA Network Open. You never see participant-level data. "
     "Use associational (non-causal) language. Respond with a single JSON object only."
 )
@@ -37,7 +37,12 @@ def _investigator_llm(client: LLMClient, question: str, k: Knowledge) -> dict:
             "populations (list of population ids), subgroup_concepts (list of concept ids), preferred_definitions (definition ids "
             "explicitly requested or most appropriate), adjust_bmi (bool), refined_question (one sentence, PICO-explicit), "
             "hypothesis (one sentence, associational), clarifying_questions (<=3), unmapped (list of {phrase, role, label, type, "
-            "proposed_expression} for important concepts NOT in the catalog; expressions must use building-block names).")
+            "proposed_expression} for important concepts NOT in the catalog; expressions must use building-block names), "
+            "terms (list of {text, standard_term, label, note} for every abbreviation, misspelling, lay or regional term in the "
+            "idea: text = the exact characters as they appear in the idea, standard_term = the catalog synonym that means the same "
+            "thing (e.g. 'sugar diabetes' -> 'diabetes', 'renal stones' -> 'kidney stones'), label = formal clinical name "
+            "(e.g. 'Type 2 diabetes mellitus'), note = one short caveat if NHANES measures it differently; never change ages, "
+            "years, populations or the direction of the question).")
     return client.complete_json("Investigator", SYSTEM_BASE, user, max_tokens=1500)
 
 
@@ -75,11 +80,22 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
     if findings:
         dialogue.append({"agent": "Privacy Guard", "source": "rules",
                          "message": f"Redacted {len(findings)} potential identifier(s) ({', '.join(sorted({f['type'] for f in findings}))}) before analysis."})
-    parsed = planner.parse_question(clean_q, k)
+    # Question recognition: rules first (abbreviations, variants, spelling), then the AI Recognizer on Amazon Bedrock
+    rule_q, recognized = normalize.normalize(clean_q)
     llm_out: dict = {}
     if client.enabled:
         try:
-            llm_out = _investigator_llm(client, clean_q, k)
+            llm_out = _investigator_llm(client, rule_q, k)
+            rule_q, ai_terms = normalize.apply_ai_terms(rule_q, llm_out.get("terms"))
+            recognized += ai_terms
+        except LLMError as e:
+            dialogue.append({"agent": "Recognizer (AI)", "source": "llm", "message": f"AI unavailable ({e}); recognized terms with rules only."})
+    if recognized:
+        dialogue.append({"agent": "Recognizer", "source": "llm" if any(r["source"] == "ai" for r in recognized) else "rules",
+                         "message": "Recognized " + "; ".join(f"\"{r['from']}\" as {r['label'] or r['to']}" for r in recognized) + "."})
+    parsed = planner.parse_question(rule_q, k)
+    if client.enabled and llm_out:
+        try:
             agreed = []
             for key in ("outcome_concept", "exposure_concept"):
                 v = llm_out.get(key)
@@ -102,9 +118,12 @@ def design_study(question: str, cycles: list[str] | None = None, dataset: dict |
                 parsed["adjust_bmi"] = True
             dialogue.append({"agent": "Investigator (LLM)", "source": "llm",
                              "message": "Interpreted the idea; clarifying questions: " + ("; ".join(llm_out.get("clarifying_questions", [])[:3]) or "none")})
-        except LLMError as e:
-            dialogue.append({"agent": "Investigator (LLM)", "source": "llm", "message": f"LLM unavailable ({e}); continuing with rule-based agents."})
-    plan = planner.build_plan(clean_q, parsed, cycles, dataset, k)
+        except (LLMError, AttributeError, TypeError) as e:
+            dialogue.append({"agent": "Investigator (LLM)", "source": "llm", "message": f"AI reply unusable ({e}); continuing with rule-based agents."})
+    plan = planner.build_plan(rule_q, parsed, cycles, dataset, k)
+    plan["recognized_terms"] = recognized
+    if rule_q != clean_q:
+        plan["question_original"] = clean_q
 
     # LLM narrative merges (guarded)
     if llm_out:
@@ -253,10 +272,15 @@ def narrative(plan: dict, results: dict, provider: str | None = None) -> dict | 
            "sensitivity": [{"label": s.get("label"), "est": s.get("est")} for s in results.get("sensitivity", [])],
            "subgroups": [{"group": f"{p['group_label']}: {p['group']}", "est": p["est"]} for p in results.get("prevalence", [])
                          if p.get("nchs") == "meets standard" and p["outcome"] == plan["outcome"]["variable"]][:12],
-           "synthetic_data": results.get("meta", {}).get("synthetic")}
+           "synthetic_data": results.get("meta", {}).get("synthetic"),
+           "methods": {"design": "cross-sectional, survey-weighted NHANES", "model": plan.get("model", {}).get("family"),
+                       "covariates": plan.get("covariates", []), "sensitivity": [s.get("label") for s in plan.get("sensitivity", []) if s.get("enabled")]},
+           "limitations_from_plan": plan.get("limitations", [])[:8]}
     user = ("Aggregate results (no individual data):\n" + json.dumps(agg, default=str, indent=1) +
             "\n\nReturn JSON {introduction: 2 short paragraphs (context, gap, objective), discussion: 3 short paragraphs "
-            "(principal findings in context, implications, strengths), conclusion: 1-2 sentences}. Do not invent citations or numbers "
+            "(principal findings in context, implications, strengths), limitations: 1 paragraph prioritising the most important "
+            "limitations_from_plan and what they mean for interpretation, methods_summary: 2-3 plain sentences on how the study "
+            "was done, plain_summary: 3 sentences a patient could read, conclusion: 1-2 sentences}. Do not invent citations or numbers "
             "beyond those provided; use associational language; if synthetic_data is true say results are illustrative only.")
     try:
         out = client.complete_json("Writer", SYSTEM_BASE, user, max_tokens=1500)

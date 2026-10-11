@@ -1,4 +1,4 @@
-/* Q2E single-page app - vanilla JS, no build step. */
+/* BEDSIDE single-page app - vanilla JS, no build step. */
 "use strict";
 
 const S = { meta: null, project: null, run: null, results: null, summary: null, poll: null, lit: null, watch: null, proposal: null,
@@ -115,7 +115,7 @@ function rMissing(what) {
   return `<div class="banner warn"><b>${esc(what)} needs R, which is not installed on this computer.</b>
     R is the free statistics program that does the actual analysis. To fix it:
     <ol class="small" style="margin:6px 0 6px 18px"><li>Download and install R from <a href="${esc(S.meta.r.download)}" target="_blank" rel="noopener">${esc(S.meta.r.download)}</a> (keep the default options).</li>
-    <li>In a terminal in the Q2E folder run <code>Rscript r/install_packages.R</code> (one time, installs the survey tools).</li>
+    <li>In a terminal in the BEDSIDE folder run <code>Rscript r/install_packages.R</code> (one time, installs the survey tools).</li>
     <li>Press <button class="btn sm" data-act="rcheck">Check again</button>. No restart needed.</li></ol></div>`;
 }
 function toast(msg, err = false) {
@@ -148,13 +148,22 @@ function unlocked(stage) {
   const lr = latestRun();
   if (["protocol", "map", "plan"].includes(stage)) return true;
   if (stage === "run") return p.approved_current || !!lr;
-  if (stage === "results") return lr && lr.status === "completed";
-  if (stage === "signoff") return lr && lr.status === "completed";
+  // One-way path: results exist only after the R engine has run the current plan. Editing the plan locks them again.
+  const fresh = !!(lr && lr.status === "completed" && lr.plan_hash === p.plan_hash);
+  if (stage === "results") return fresh;
+  if (stage === "signoff") return fresh;
   return false;
+}
+/* Furthest section the study may open right now (used when a locked section is requested by link or bookmark). */
+function furthestOpen(stage) {
+  const i = STEPS.findIndex((x) => x.id === stage);
+  for (let j = Math.min(i, STEPS.length - 1); j >= 0; j--) if (unlocked(STEPS[j].id)) return STEPS[j].id;
+  return "protocol";
 }
 /* Why the next section is still locked (shown under the last step's Next button). */
 const LOCK_REASON = { run: "Approve the analysis plan first (bottom of the Analysis plan page).",
-                      results: "Run the analysis first and wait for it to finish.", signoff: "Run the analysis first and wait for it to finish." };
+                      results: "Run the analysis in R first and wait for it to finish. Results open only after R has run the current plan.",
+                      signoff: "Run the analysis in R first and wait for it to finish." };
 function stageDone(stage) {
   const p = S.project; if (!p) return false; const lr = latestRun();
   const appr = p.approved_current || !!lr;
@@ -211,11 +220,18 @@ async function render() {
     }
   } catch (e) { main.innerHTML = `<div class="banner bad">${esc(e.message)}</div>`; return; }
   const views = { ask: viewAsk, projects: viewProjects, library: viewLibrary };
+  if (r.view === "project" && !unlocked(r.stage) && STEPS.some((x) => x.id === r.stage)) {
+    // no skipping ahead: Ask -> Protocol -> Data map -> Analysis plan -> approve -> Run in R -> Results -> Sign-off
+    S.lockNote = { stage: r.stage, reason: LOCK_REASON[r.stage] || "" };
+    location.replace(`#/p/${S.project.id}/${furthestOpen(r.stage)}`);
+    return;
+  }
   if (r.view === "project") {
     const lrSeen = latestRun();
     if (r.stage === "results" && lrSeen && lrSeen.status === "completed") store.set(`q2e.seen.${S.project.id}.${lrSeen.id}`, "1");
     const fn = { protocol: viewProtocol, map: viewMap, plan: viewPlan, run: viewRun, results: viewResults, signoff: viewSignoff }[r.stage] || viewProtocol;
-    main.innerHTML = stepper(r.stage, fn());
+    const note = S.lockNote; S.lockNote = null;
+    main.innerHTML = (note ? `<div class="banner warn"><b>${esc((STEPS.find((x) => x.id === note.stage) || {}).label || note.stage)} is locked.</b> ${esc(note.reason)}</div>` : "") + stepper(r.stage, fn());
     renderRail(r);
     if (r.stage === "run" && S.run?.status === "running") startPolling();
   } else { S.curStep = null; renderRail(r); main.innerHTML = await views[r.view](); }
@@ -238,7 +254,7 @@ async function viewAsk() {
   const dataNote = S.meta.data.local_files ? `${S.meta.data.local_files} NHANES files found in ${esc(S.meta.data.local_dir)}` :
     S.meta.data.allow_download ? "Files download from CDC on first use and are cached." : "Downloads disabled: place NHANES .xpt files in the local folder or use synthetic data.";
   return `<h1 class="page">From clinical observation to reproducible evidence</h1>
-  <p class="lede">Describe a research idea in plain language. Q2E's agents turn it into a protocol, map it to NHANES (or your own open dataset), and draft a statistical analysis plan for your approval. Nothing runs until you approve it, and nothing is final until you sign off.</p>
+  <p class="lede">Describe a research idea in plain language. BEDSIDE's agents turn it into a protocol, map it to NHANES (or your own open dataset), and draft a statistical analysis plan for your approval. Nothing runs until you approve it, and nothing is final until you sign off.</p>
   <div class="card">
     <textarea id="q" class="ask${S.rewrite ? " needs-fix" : ""}" placeholder="e.g. Do a research study on the prevalence of functional iron deficiency in US adults.">${esc(store.get("q2e.q", ""))}</textarea>
     ${S.rewrite ? rewriteCard(S.rewrite) : ""}
@@ -262,7 +278,7 @@ async function viewAsk() {
   <div class="grid g2" style="margin-top:18px">
     <div class="card"><h3 class="sub" style="margin-top:0">Recent projects</h3>${recent.length ? recent.map((p) => `<div class="crit"><div class="lbl"><a href="#/p/${p.id}/protocol">${esc(p.title)}</a><div class="tiny muted">${esc(p.created.slice(0, 16).replace("T", " "))} · ${p.runs} run(s)</div></div><span class="chip ${p.signed ? "ok" : "info"}">${p.signed ? "signed" : esc(p.status)}</span></div>`).join("") : `<p class="muted small">No projects yet.</p>`}</div>
     <details class="card"><summary><b>Use your own open dataset</b> <span class="muted small">CSV upload</span></summary>
-      <p class="small muted">Upload a CSV and (optionally) its data dictionary. Q2E detects weight/strata/PSU columns and maps building blocks to your variables for review.</p>
+      <p class="small muted">Upload a CSV and (optionally) its data dictionary. BEDSIDE detects weight/strata/PSU columns and maps building blocks to your variables for review.</p>
       <div class="grid" style="gap:8px"><input type="text" id="dsName" placeholder="Dataset name (e.g. BRFSS 2024 extract)">
       <label class="field">Data (.csv)<input type="file" id="dsData" accept=".csv"></label>
       <label class="field">Data dictionary (.csv, optional)<input type="file" id="dsDict" accept=".csv"></label>
@@ -295,7 +311,7 @@ async function loadOptionNovelty(qid) {
 }
 async function fetchAiQuestions(q) {
   try { return await api("/api/clarify/ai", { method: "POST", body: { question: q, cycles: S.ask.cycles, provider: S.ask.provider || null } }); }
-  catch (e) { return { questions: [], note: `The AI interviewer is unavailable (${e.message}); the questions come from Q2E's rules.` }; }
+  catch (e) { return { questions: [], note: `The AI interviewer is unavailable (${e.message}); the questions come from BEDSIDE's rules.` }; }
 }
 async function loadAiQuestions(c) {
   const extra = await fetchAiQuestions(c.question);
@@ -718,7 +734,8 @@ function viewProtocol() {
         html: `${p.privacy?.findings?.length ? `<div class="banner warn">Privacy guard redacted ${p.privacy.findings.length} identifier(s) from your question before processing.</div>` : ""}
         <div class="card"><div class="tiny muted">${esc(p.study_type[0].toUpperCase() + p.study_type.slice(1))} study, cross-sectional design</div>
           <h3 class="sub" style="margin-top:6px">Title</h3><p style="font:600 18px var(--serif);margin:0">${editable("title", p.title, "title-edit")}</p>
-          <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc((p.clarification || {}).original_question || p.question)}”</p>
+          <p class="muted small" style="margin:6px 0 0">Your original idea: “${esc((p.clarification || {}).original_question || p.question_original || p.question)}”</p>
+          ${recognizedBox(p)}
           ${ideaGapBox()}
           <h3 class="sub">Research question</h3>
           <p style="font:400 16.5px/1.55 var(--serif);margin:0">${editable("refined_question", p.refined_question)}</p>
@@ -773,7 +790,7 @@ function viewMap() {
       { id: "table", title: "Your variables and their sources",
         help: "Each row is one thing your study uses. <b>Availability</b> shows which survey years have it (✓ yes, ✗ no). Click <b>expr</b> to see the exact formula.",
         html: `<div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Variable</th><th>Role</th><th>Source</th><th>Raw variables</th><th>Files</th><th>Availability</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>` },
-      generic && { id: "columns", title: "Match your columns", help: "Tell Q2E which column in your file holds each item.", html: generic },
+      generic && { id: "columns", title: "Match your columns", help: "Tell BEDSIDE which column in your file holds each item.", html: generic },
       custom.length && { id: "proposed", title: "Approve the AI's suggested variables", help: "The AI suggested these. They will not be used until you approve them.",
         html: `<div class="card">${custom.map((c) => `<div class="crit"><div class="lbl"><b>${esc(c.label)}</b> <code>${esc(c.name)} = ${esc(c.expr)}</code></div><button class="btn sm" data-act="fix" data-id="custom_${c.name}">Approve</button></div>`).join("")}</div>` },
       { id: "dictionary", title: "Search the data dictionary (optional)", help: "Look up any survey item, for example to check a variable exists. You can skip this step.",
@@ -950,7 +967,7 @@ function benchCards() {
     return `<div class="card bench"><div class="row" style="justify-content:space-between"><b class="small">${nice(b.outcome_label)}</b><span class="chip ${b.overlap ? "ok" : "warn"}">${b.overlap ? "consistent with literature" : "differs from literature"}</span></div>
       <div class="small">Published <b>${pct(b.published)}</b> (${pct(b.published_lcl)}-${pct(b.published_ucl)}) · ${esc(b.label)}</div>
       <div class="bar"><i class="pub" style="left:${pos(b.published_lcl)};width:calc(${pos(b.published_ucl)} - ${pos(b.published_lcl)})"></i><em style="left:${pos(b.published)}"></em></div>
-      <div class="small">Q2E <b>${pct(b.replicated)}</b> (${pct(b.replicated_lcl)}-${pct(b.replicated_ucl)}) · n=${b.replicated_n.toLocaleString()}</div>
+      <div class="small">BEDSIDE <b>${pct(b.replicated)}</b> (${pct(b.replicated_lcl)}-${pct(b.replicated_ucl)}) · n=${b.replicated_n.toLocaleString()}</div>
       <div class="bar"><i class="rep" style="left:${pos(b.replicated_lcl)};width:calc(${pos(b.replicated_ucl)} - ${pos(b.replicated_lcl)})"></i><em style="left:${pos(b.replicated)}"></em></div>
       ${b.overlap ? "" : ptTalk(`bench:${b.outcome_label}`, `Differs from literature: ${b.outcome_label}`)}</div>`;
   }).join("");
@@ -977,7 +994,7 @@ function viewResults() {
     <div class="row"><button class="btn sm" data-act="listen">Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
     { id: "evidence", title: "Checked against published NHANES studies", help: "The Librarian agent finds NHANES papers on the same question in high-impact journals (JAMA Network, Lancet group, NEJM, BMJ, Annals and society journals such as JACC, Stroke, Blood, ACG and J Hepatol), reads their abstracts, and checks whether your estimate agrees with theirs.",
       html: evidenceCard() },
-    benchCards() && { id: "bench", title: "Does it match published studies?", help: "Q2E's numbers next to numbers already published, as a sanity check.",
+    benchCards() && { id: "bench", title: "Does it match published studies?", help: "BEDSIDE's numbers next to numbers already published, as a sanity check.",
       html: `<div class="grid g2">${benchCards()}</div>` },
     R.figures.length && { id: "figures", title: "Figures", help: "Charts of the results.",
       html: `<div class="grid g2">${R.figures.map((f, i) => `<figure class="fig"><img src="${base}/files/${f.file}" alt="${esc(f.title)}" loading="lazy"><figcaption><b>Figure ${i + 1}.</b> ${nice(f.title)}</figcaption></figure>`).join("")}</div>` },
@@ -1122,14 +1139,23 @@ function powerCard() {
       <button class="btn sm" data-act="powerset">Recalculate</button></div></details></div>`;
 }
 
+/* Terms BEDSIDE recognized in the question (abbreviations, variants, spelling), by rules or the AI on Amazon Bedrock. */
+function recognizedBox(p) {
+  const r = p.recognized_terms || [];
+  if (!r.length) return "";
+  return `<div class="recognized" style="margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="tiny muted">Recognized:</span>${r.map((t) =>
+    `<span class="chip ${t.source === "ai" ? "accent" : "info"}" title="${esc(t.note || (t.source === "ai" ? "Recognized by the AI on Amazon Bedrock" : "Recognized by rules"))}">${esc(t.from)} → ${esc(t.label || t.to)}${t.source === "ai" ? " · AI" : ""}</span>`).join("")}
+    ${r.filter((t) => t.note && t.note !== "spelling").map((t) => `<div class="tiny muted" style="flex-basis:100%">${esc(t.note)}</div>`).join("")}</div>`;
+}
+
 function covSuggestCard() {
   const C = lazy("covs", `/api/projects/${S.project.id}/covariates`);
   if (!C) return loading;
   if (C.error) return `<div class="card"><p class="small" style="color:var(--bad)">${esc(C.error)}</p></div>`;
   const role = { confounder: ["ok", "Confounder"], mediator: ["warn", "Possible mediator"], both: ["warn", "Confounder or mediator"] };
-  const items = C.suggestions.map((x, i) => `<div class="issue"><span class="chip ${role[x.role][0]}">${role[x.role][1]}</span><div><b class="small">${esc(x.label)}</b><div class="small muted">${esc(x.why)}</div></div>
+  const items = C.suggestions.map((x, i) => `<div class="issue"><span class="chip ${role[x.role][0]}">${role[x.role][1]}</span><div><b class="small">${esc(x.label)}</b><div class="small muted">${esc(x.why)}</div>${x.ai ? `<div class="small" style="margin-top:3px"><span class="chip ${x.ai.agrees ? "ok" : "warn"}" style="font-size:10px;padding:0 6px">AI: ${esc(x.ai.role)}</span> ${esc(x.ai.why)}</div>` : ""}</div>
     <div>${x.fix ? `<button class="btn sm" data-act="covadd" data-i="${i}">${esc(x.action)}</button>` : `<span class="tiny muted">${esc(x.already_in_sensitivity ? "Already a sensitivity analysis" : x.action)}</span>`}</div></div>`).join("");
-  return `<div class="card">${items || `<p class="small muted" style="margin:0">No further covariates to suggest - the model already covers the usual confounders.</p>`}<p class="tiny muted" style="margin:8px 0 0">${esc(C.note)}</p></div>`;
+  return `<div class="card">${items || `<p class="small muted" style="margin:0">No further covariates to suggest - the model already covers the usual confounders.</p>`}<p class="tiny muted" style="margin:8px 0 0">${esc(C.note)}</p>${C.ai ? `<p class="tiny muted" style="margin:4px 0 0">AI review (${esc(C.ai.provider)}): ${esc(C.ai.summary)} You decide; nothing changes until you click.</p>` : ""}</div>`;
 }
 
 function appraisalCard() {
@@ -1457,7 +1483,7 @@ const A = {
   plansource: (el) => edit({ op: "set_source", value: el.dataset.v }),
   gmap: (el) => edit({ op: "set_generic_mapping", block: el.dataset.block, expr: $(`#gm_${el.dataset.block}`).value.trim() }),
   teach: async (el) => {
-    const v = el.dataset.var; const term = prompt(`Which words should Q2E read as ${v} in future questions?`, ($("#dictQ").value || "").trim());
+    const v = el.dataset.var; const term = prompt(`Which words should BEDSIDE read as ${v} in future questions?`, ($("#dictQ").value || "").trim());
     if (!term) return;
     const by = store.get("q2e.name", "") || prompt("Your name (recorded with the mapping)") || "";
     if (!by) return toast("A name is required", true);
@@ -1551,7 +1577,7 @@ $("#themeBtn").addEventListener("click", () => {
 });
 (async function init() {
   const t = store.get("q2e.theme", ""); if (t) document.documentElement.dataset.theme = t;
-  try { S.meta = await api("/api/meta"); } catch (e) { $("#main").innerHTML = `<div class="banner bad">Cannot reach the Q2E server: ${esc(e.message)}</div>`; return; }
+  try { S.meta = await api("/api/meta"); } catch (e) { $("#main").innerHTML = `<div class="banner bad">Cannot reach the BEDSIDE server: ${esc(e.message)}</div>`; return; }
   renderBoundary(); render();
 })();
 

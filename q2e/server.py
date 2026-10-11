@@ -26,7 +26,7 @@ from .runner import RunError, get_run, load_results, r_status, run_probe, start_
 from .store import store
 
 settings.ensure_dirs()
-app = FastAPI(title="Q2E - Question to Evidence", version=__version__)
+app = FastAPI(title="BEDSIDE - Bedside Evidence, Data-driven Studies, Instantly Designed and Executed", version=__version__)
 WEB = settings.root / "web"
 app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
 
@@ -657,7 +657,7 @@ def project_power(pid: str):
 @app.get("/api/projects/{pid}/covariates")
 def project_covariates(pid: str):
     from . import covariates
-    return covariates.suggest(_project(pid)["plan"])
+    return covariates.suggest(_project(pid)["plan"])   # AI review (Amazon Bedrock) when a provider is configured
 
 
 @app.get("/api/projects/{pid}/appraisal")

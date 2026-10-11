@@ -1,6 +1,6 @@
 """Readable, stand-alone R script for one approved study.
 
-The Q2E engine (r/engine) is generic: it reads compiled_plan.json and runs any study. Reviewers and statisticians
+The BEDSIDE engine (r/engine) is generic: it reads compiled_plan.json and runs any study. Reviewers and statisticians
 usually want to read the analysis itself, top to bottom, the way they would write it. This module writes that
 script from the same compiled plan: the NHANES files and variables, every recode, the eligibility steps, the
 survey design, and each svyglm call, using only the survey and haven packages. Run on the same data it gives the
@@ -177,18 +177,18 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
     w = L.append
 
     q = plan.get("refined_question") or plan.get("question") or ""
-    w(f"# {spec.get('title') or 'Q2E study'}")
+    w(f"# {spec.get('title') or 'BEDSIDE study'}")
     if q:
         w(f"# Question: {q}")
-    w(f"# Plan {spec['plan_id']} v{spec.get('plan_version', 1)}, sha256 {spec['plan_hash'][:16]}...  Written by Q2E on {dt.date.today().isoformat()}.")
+    w(f"# Plan {spec['plan_id']} v{spec.get('plan_version', 1)}, sha256 {spec['plan_hash'][:16]}...  Written by BEDSIDE on {dt.date.today().isoformat()}.")
     w("#")
     w("# A stand-alone, readable version of the approved analysis: the same files, recodes, eligibility steps, survey")
-    w("# design and models the Q2E engine ran. Needs R >= 4.2 with the survey and haven packages:")
+    w("# design and models the BEDSIDE engine ran. Needs R >= 4.2 with the survey and haven packages:")
     w("#   install.packages(c(\"survey\", \"haven\"))")
     w("# Run with:  Rscript analysis.R      (or source it in RStudio and inspect `dat`, `des` and the model objects)")
     w("#")
     w("# Sections: helper functions, then 1 Data, 2 Recodes, 3 Eligibility, 4 Survey design, 5 Prevalence/means,")
-    w("#           6 Regression models, 7 Effect modification, 8 Sensitivity analyses, and a check against the Q2E run.")
+    w("#           6 Regression models, 7 Effect modification, 8 Sensitivity analyses, and a check against the BEDSIDE run.")
     w("")
     w("suppressPackageStartupMessages({ library(survey); library(haven) })")
     w("options(survey.lonely.psu = \"adjust\")")
@@ -458,14 +458,14 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
                     fam_r = {"gaussian": "gaussian()", "quasipoisson": "quasipoisson(link = \"log\")", "quasibinomial": "quasibinomial()"}[fam]
                     w(f"summary(glm({y} ~ {' + '.join(base_terms)}, data = des$variables[des$variables$.in_cc, ], family = {fam_r}))$coefficients   # ignores the design")
                 elif t == "mi":
-                    w("#   Multiple imputation (mice, then svyglm on each imputed design and Rubin's rules) is run by the Q2E engine;")
+                    w("#   Multiple imputation (mice, then svyglm on each imputed design and Rubin's rules) is run by the BEDSIDE engine;")
                     w("#   see reproduce.R in the bundle. It is not repeated here to keep this script short.")
                 elif t == "exposure_quartiles":
                     w(f"q <- svyquantile(~{x}, d_cc, c(.25, .5, .75), ci = FALSE)[[1]]")
                     w(f"des$variables${x}_q <- cut(des$variables${x}, c(-Inf, q, Inf), labels = paste0(\"Q\", 1:4), right = FALSE)")
                     w(f"fit_model(subset(des, .in_cc), {_s(y)}, {_vec([x + '_q'] + [c for c in base_terms if c != x])}, {_s(fam)})")
                 else:
-                    w(f"#   ({t}: run by the Q2E engine; see reproduce.R)")
+                    w(f"#   ({t}: run by the BEDSIDE engine; see reproduce.R)")
             w("")
     else:
         w("# Descriptive study: the weighted prevalence / mean above is the primary estimate.")
@@ -473,7 +473,7 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
 
     pe = (results or {}).get("primary_estimate") or {}
     if pe.get("est") is not None and x:
-        w("# ---- Check against the Q2E run ---------------------------------------------------------------------------")
-        w(f"q2e_primary <- {pe['est']!r}   # {pe.get('label', '')} reported by the Q2E engine")
-        w("if (exists(\"primary\")) cat(\"Matches the Q2E run:\", isTRUE(all.equal(primary$est, q2e_primary, tolerance = 1e-6)), \"\\n\")")
+        w("# ---- Check against the BEDSIDE run ---------------------------------------------------------------------------")
+        w(f"q2e_primary <- {pe['est']!r}   # {pe.get('label', '')} reported by the BEDSIDE engine")
+        w("if (exists(\"primary\")) cat(\"Matches the BEDSIDE run:\", isTRUE(all.equal(primary$est, q2e_primary, tolerance = 1e-6)), \"\\n\")")
     return "\n".join(L) + "\n"
