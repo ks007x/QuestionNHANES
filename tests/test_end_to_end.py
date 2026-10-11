@@ -53,7 +53,7 @@ def test_fid_end_to_end_synthetic():
     assert "Key Points" in html and "SYNTHETIC" in html and "Korn-Graubard" in html
     z = zipfile.ZipFile(io.BytesIO(build_bundle(proj, run, html, None, store)))
     names = set(z.namelist())
-    assert {"reproduce.R", "compiled_plan.json", "provenance.json", "results/results.json", "engine/run_pipeline.R"} <= names
+    assert {"reproduce.R", "analysis.R", "compiled_plan.json", "provenance.json", "results/results.json", "engine/run_pipeline.R"} <= names
 
 
 @requires_r

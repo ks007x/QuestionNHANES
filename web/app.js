@@ -80,7 +80,7 @@ function wrapAbbr(box, terms) {
   const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT); const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   for (const n of nodes) {
-    if (!n.parentElement || n.parentElement.closest("abbr, textarea, option, select, script, style, .gloss")) continue;
+    if (!n.parentElement || n.parentElement.closest("abbr, textarea, option, select, script, style, pre, code, .gloss")) continue;
     if (!n.nodeValue.match(re)) continue;
     const tmp = document.createElement("span");
     tmp.innerHTML = esc(n.nodeValue).replace(re, (m) => `<abbr title="${esc(GLOSS[m].meaning)}">${m}</abbr>`);
@@ -612,7 +612,7 @@ const FOLDED = {
   map: ["dictionary"],
   plan: ["covsuggest", "power", "sensitivity", "audit"],
   run: ["flow", "technical"],
-  results: ["bench", "sensitivity", "literature", "where"],
+  results: ["bench", "sensitivity", "literature", "where", "rcode"],
   signoff: ["human", "ledger"],
 };
 S.fold = (() => { try { return JSON.parse(store.get("q2e.fold", "{}")) || {}; } catch { return {}; } })();
@@ -972,8 +972,37 @@ function viewResults() {
     <a class="btn" href="${base}/report.md" target="_blank">Markdown</a>
     <a class="btn" href="${base}/bundle.zip">Reproducibility bundle (.zip)</a>
     <a class="btn" href="/api/projects/${S.project.id}/protocol.html" target="_blank">Protocol &amp; analysis plan</a>
+    <a class="btn" href="${base}/analysis.R?download=1">R code (analysis.R)</a>
     <a class="btn ghost" href="/api/projects/${S.project.id}/compiled" target="_blank">Compiled plan JSON</a></div>` },
+    { id: "rcode", title: "R code for this analysis", help: "A stand-alone script using only the survey and haven packages: the NHANES files, every recode, the eligibility steps, the survey design and each model, in the order they ran. It gives the same estimates as this run.",
+      html: rcodeCard(base) },
   ] };
+}
+
+/* Readable R script for the run, with light highlighting (comments, strings, survey calls) */
+function highlightR(src) {
+  return src.split("\n").map((line) => {
+    let q = null, cut = -1;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (q) { if (ch === "\\") i++; else if (ch === q) q = null; }
+      else if (ch === '"' || ch === "'") q = ch;
+      else if (ch === "#") { cut = i; break; }
+    }
+    const code = cut < 0 ? line : line.slice(0, cut), com = cut < 0 ? "" : line.slice(cut);
+    const body = esc(code)
+      .replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)/g, '<span class="r-str">$1</span>')
+      .replace(/\b(svydesign|svyglm|svyciprop|svyby|svymean|svyquantile|regTermTest|subset|fit_model|exposure_row|read_xpt|degf)\(/g, '<span class="r-fn">$1</span>(');
+    return body + (com ? `<span class="r-com">${esc(com)}</span>` : "");
+  }).join("\n");
+}
+function rcodeCard(base) {
+  const dl = `<a class="btn sm" href="${base}/analysis.R?download=1">Download analysis.R</a>`;
+  if (!S.rcode || S.rcode.key !== base) return `<div class="card row"><button class="btn sm" data-act="rcode">Show the R code</button>${dl}</div>`;
+  const n = S.rcode.text.split("\n").length;
+  return `<div class="card"><div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="rcodecopy">Copy</button>${dl}
+    <span class="tiny muted">${n} lines · R ≥ 4.2 with survey and haven · put the .xpt files in ./data or let it download them from CDC</span></div>
+    <pre class="rcode"><code>${highlightR(S.rcode.text)}</code></pre></div>`;
 }
 
 /* AI statistician: model options, scored with what similar published NHANES papers used */
@@ -1362,6 +1391,13 @@ const A = {
     const why = prompt("Why did you make this change? (optional - helps the lead investigator)"); if (!why || !why.trim()) return;
     try { S.project = await api(`/api/projects/${S.project.id}/amendments/${el.dataset.id}/reason`, { method: "POST", body: { reason: why.trim(), actor: store.get("q2e.name", "") || "analyst" } }); rerender(); }
     catch (e) { toast(e.message, true); }
+  },
+  rcode: async () => {
+    const base = `/api/projects/${S.project.id}/runs/${latestRun().id}`;
+    try { S.rcode = { key: base, text: await api(`${base}/analysis.R`) }; rerender(); } catch (e) { toast(e.message, true); }
+  },
+  rcodecopy: async () => {
+    try { await navigator.clipboard.writeText(S.rcode.text); toast("R code copied"); } catch (e) { toast("Copy failed - use Download instead", true); }
   },
   amCopy: async () => {
     try { await navigator.clipboard.writeText(weeklySummary()); toast("Weekly summary copied - paste it into an email or report"); }

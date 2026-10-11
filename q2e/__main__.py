@@ -77,6 +77,9 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     (out / "manuscript.html").write_text(report.build_html(proj, run, results), encoding="utf-8")
     (out / "manuscript.md").write_text(report.build_markdown(proj, run, results), encoding="utf-8")
     (out / "bundle.zip").write_bytes(build_bundle(proj, run, None, None, store))
+    from . import r_script
+    (out / "analysis.R").write_text(r_script.build(json.loads((Path(run["dir"]) / "compiled_plan.json").read_text(encoding="utf-8")),
+                                                   proj, results), encoding="utf-8")
     try:
         from . import venues
         (out / "where_next.md").write_text(venues.to_markdown(venues.where_next(proj["plan"], results, live=settings.allow_download)), encoding="utf-8")
@@ -112,7 +115,7 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     for c in results["checks"]:
         if c["status"] != "pass":
             print(f"   QC {c['status'].upper():5} {c['title']}: {c['message'][:140]}")
-    print(f"   Outputs: {out}/manuscript.html, manuscript.md, bundle.zip  (project {proj['id']})")
+    print(f"   Outputs: {out}/manuscript.html, manuscript.md, analysis.R, bundle.zip  (project {proj['id']})")
     return 0
 
 

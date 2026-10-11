@@ -94,6 +94,14 @@ jobs:
           rc=${PIPESTATUS[0]}
           if [ $rc -ne 0 ]; then echo "::error title=Q2E run failed::$(grep -E 'Run failed|Error|ERROR|in:|Blockers|Traceback|Exception' outputs_log.txt | tail -8 | tr '\n' ' ' | cut -c1-900)"; fi
           exit $rc
+      - name: Re-run the readable R script (analysis.R) on the same CDC files
+        if: success()
+        run: |
+          cd outputs/real
+          NHANES_DIR="$GITHUB_WORKSPACE/data/cache" Rscript analysis.R > analysis_check.txt 2>&1 || true
+          tail -n 3 analysis_check.txt
+          if grep -q "Matches the Q2E run: TRUE" analysis_check.txt; then echo "analysis.R reproduces the primary estimate";
+          elif grep -q "Matches the Q2E run" analysis_check.txt; then echo "::warning title=analysis.R::estimate differs from the engine - see analysis_check.txt"; fi
       - name: Summary
         if: always()
         env:
@@ -117,7 +125,7 @@ jobs:
           dest="runs/$(date -u +%Y-%m-%d)-run${{ github.run_number }}"
           mkdir -p /tmp/pub && cp -r outputs/real/. /tmp/pub/ && cp outputs_log.txt /tmp/pub/
           (cd /tmp/pub && unzip -q -o bundle.zip -d bundle || true)
-          printf '# %s\n\nRun %s, cycles %s, approved by %s, AI agents: ${{ inputs.ai || 'offline' }}.\n\n[Manuscript](manuscript.md) | [Run log](outputs_log.txt) | [Bundle](bundle/)\n' \
+          printf '# %s\n\nRun %s, cycles %s, approved by %s, AI agents: ${{ inputs.ai || 'offline' }}.\n\n[Manuscript](manuscript.md) | [R code](analysis.R) | [Run log](outputs_log.txt) | [Bundle](bundle/)\n' \
             "$QUESTION" "${{ github.run_number }}" "${{ inputs.cycles }}" "${{ inputs.approver }}" > /tmp/pub/README.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

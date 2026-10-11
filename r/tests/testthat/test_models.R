@@ -31,3 +31,12 @@ test_that("empty exposure levels are removed", {
   p <- .prepare_terms(des, "y", c("x", "age"), "x")
   expect_equal(levels(p$design$variables$x), c("Control", "A"))
 })
+
+test_that("product terms (x:modifier) are kept so interaction tests run", {
+  des <- mk(); des$variables$sex <- factor(rep(c("M", "F"), length.out = nrow(des$variables)))
+  p <- .prepare_terms(des, "y", c("age", "sex", "age:sex"), "age")
+  expect_equal(p$terms, c("age", "sex", "age:sex"))
+  expect_equal(sum(.model_rows(des, c("y", "age:sex"))), nrow(des$variables))
+  p2 <- .prepare_terms(des, "y", c("age", "smk", "age:smk"), "age")   # smk is constant -> its product term goes too
+  expect_equal(p2$terms, "age")
+})

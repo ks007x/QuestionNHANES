@@ -527,6 +527,17 @@ def report_summary(pid: str, rid: str):
     return report.build_sections(proj, results, narr)
 
 
+@app.get("/api/projects/{pid}/runs/{rid}/analysis.R", response_class=PlainTextResponse)
+def analysis_r(pid: str, rid: str, download: bool = False):
+    """Stand-alone, readable R script that repeats this run (survey + haven only)."""
+    from . import r_script
+    proj, r, results, _ = _report(pid, rid, False)
+    spec = json.loads((Path(r["dir"]) / "compiled_plan.json").read_text(encoding="utf-8"))
+    text = r_script.build(spec, proj, results)
+    headers = {"Content-Disposition": f"attachment; filename=analysis_{pid}.R"} if download else {}
+    return PlainTextResponse(text, headers=headers)
+
+
 @app.get("/api/projects/{pid}/runs/{rid}/bundle.zip")
 def bundle(pid: str, rid: str):
     proj, r, results, narr = _report(pid, rid, False)

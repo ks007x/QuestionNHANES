@@ -346,3 +346,10 @@ table.t td details > summary { white-space: nowrap; }
 .mopt-more ul { margin: 0; padding-left: 16px; }
 .mopt-more ul.pros li::marker { content: "+  "; color: var(--ok); }
 .mopt-more ul.cons li::marker { content: "–  "; color: var(--bad); }
+
+/* R code viewer */
+pre.rcode { margin: 0; max-height: 560px; overflow: auto; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--radius); font: 12px/1.55 var(--mono); color: var(--ink); white-space: pre; tab-size: 2; }
+pre.rcode .r-com { color: var(--ink-3); font-style: italic; }
+pre.rcode .r-str { color: var(--accent-ink); }
+pre.rcode .r-fn { color: var(--accent); font-weight: 600; }

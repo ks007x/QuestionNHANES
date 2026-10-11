@@ -44,7 +44,7 @@ family_info <- function(fam) {
 .model_rows <- function(design, vars) {
   pos <- stats::weights(design) > 0
   ok <- pos
-  for (v in vars) ok <- ok & !is.na(design$variables[[v]])
+  for (v in unique(unlist(strsplit(vars, ":", fixed = TRUE)))) ok <- ok & !is.na(design$variables[[v]])   # x:m -> x and m
   ok
 }
 
@@ -55,6 +55,11 @@ family_info <- function(fam) {
   notes <- character(0); keep <- character(0)
   rows <- .model_rows(design, c(outcome, terms))
   for (t in terms) {
+    if (grepl(":", t, fixed = TRUE)) {            # product term: kept when both parts are in the model
+      if (all(strsplit(t, ":", fixed = TRUE)[[1]] %in% keep)) keep <- c(keep, t)
+      else notes <- c(notes, sprintf("Dropped '%s': a component is not in the model", t))
+      next
+    }
     v <- design$variables[[t]]
     if (is.null(v)) { notes <- c(notes, sprintf("Dropped '%s': not in the analysis data", t)); next }
     vals <- v[rows]

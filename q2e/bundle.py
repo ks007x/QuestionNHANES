@@ -47,6 +47,13 @@ def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str 
         z.writestr("provenance.json", json.dumps({"events": proj["events"], "history": proj["history"],
                                                   "chain": store.verify_chain(proj), "signoff": proj.get("signoff")}, indent=2, default=str))
         z.writestr("reproduce.R", REPRODUCE_R.format(plan_id=compiled["plan_id"], plan_hash=compiled["plan_hash"]))
+        try:
+            from . import r_script
+            res_f = run_dir / "out" / "results.json"
+            res = json.loads(res_f.read_text(encoding="utf-8")) if res_f.exists() else None
+            z.writestr("analysis.R", r_script.build(compiled, proj, res))
+        except Exception:  # noqa: BLE001 - the engine copy below still reproduces the run
+            pass
         for f in (run_dir / "out").glob("*"):
             z.write(f, f"results/{f.name}")
         if (run_dir / "run_log.txt").exists():
@@ -67,7 +74,8 @@ def build_bundle(proj: dict, run: dict, report_html: str | None, report_md: str 
         z.writestr("README.md", f"# Reproducibility bundle - {proj['plan']['title']}\n\n"
                                 f"* Plan `{compiled['plan_id']}` v{compiled['plan_version']}, sha256 `{compiled['plan_hash']}`\n"
                                 f"* Run `{run['id']}` ({run.get('data_source')})\n"
-                                f"* `Rscript reproduce.R` re-executes the analysis and asserts the primary estimate matches.\n"
+                                f"* `analysis.R` is the whole analysis as one readable script (survey + haven only): files, recodes, eligibility, design, models.\n"
+                                f"* `Rscript reproduce.R` re-executes the analysis with the Q2E engine and asserts the primary estimate matches.\n"
                                 f"* `protocol_and_sap.md` is the approved study protocol and statistical analysis plan.\n"
                                 f"* `provenance.json` is a hash-chained ledger of every human and AI action.\n")
     return buf.getvalue()
