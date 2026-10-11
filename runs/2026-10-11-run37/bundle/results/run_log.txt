@@ -1,0 +1,29 @@
+02:45:03  Plan plan_11b457e03a (hash 780f3a793976) loaded
+02:45:03  Loaded 15,560 records from 6 file(s)
+02:45:04  Derived 25 analysis variables
+02:45:04  Analytic population: 7,988
+02:45:05  Computed 11 prevalence estimates
+02:45:05  Fitted 3 models (family gaussian)
+02:45:06  Sensitivity analysis 1 of 8: Binary outcome: Elevated HbA1c (>=6.5%) (PR) ...
+02:45:06     done in 0.1 s
+02:45:06  Sensitivity analysis 2 of 8: Exclude participants on glucose-lowering therapy ...
+02:45:06     done in 0.1 s
+02:45:06  Sensitivity analysis 3 of 8: Exclude anemia (HbA1c unreliable) ...
+02:45:06     done in 0.1 s
+02:45:06  Sensitivity analysis 4 of 8: Multiple imputation of missing covariates (m = 10) ...
+02:45:11     done in 5.2 s
+02:45:11  Sensitivity analysis 5 of 8: Exposure in weighted quartiles (Q4 vs Q1, P for trend) ...
+02:45:11     done in 0.2 s
+02:45:11  Sensitivity analysis 6 of 8: Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women) ...
+02:45:11     done in 0.1 s
+02:45:11  Sensitivity analysis 7 of 8: Alternative exposure: Central adiposity - waist-to-height ratio >=0.5 ...
+02:45:11     done in 0.1 s
+02:45:11  Sensitivity analysis 8 of 8: Unweighted analysis (design ignored) ...
+02:45:11     done in 0.0 s
+02:45:11  Ran 8 sensitivity analyses
+`height` was translated to `width`.
+02:45:13  QC: 18 checks, 0 fail, 4 warn
+02:45:13  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_b3ac5793a3/runs/run_1124ad7d/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

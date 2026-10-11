@@ -1,0 +1,159 @@
+{
+  "options": [
+    {
+      "id": "linear",
+      "title": "Survey linear regression - mean difference",
+      "estimand": "Adjusted mean difference (beta)",
+      "when": "Continuous, roughly symmetric outcomes",
+      "pros": [
+        "Effect on the original clinical scale",
+        "Simple to explain"
+      ],
+      "cons": [
+        "Sensitive to skew and outliers"
+      ],
+      "score": 81,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "Used in 1 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.08333333333333333,
+      "recommended": true
+    },
+    {
+      "id": "quartiles",
+      "title": "Exposure in weighted quartiles with P for trend",
+      "estimand": "Q4 vs Q1 contrast and dose-response",
+      "when": "Checking for a dose-response or a non-linear shape",
+      "pros": [
+        "No linearity assumption",
+        "Supports the dose-response GRADE domain"
+      ],
+      "cons": [
+        "Cut points are sample-specific"
+      ],
+      "score": 64,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "Used in 0 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.0,
+      "recommended": false
+    },
+    {
+      "id": "threshold",
+      "title": "Clinical threshold - prevalence ratio",
+      "estimand": "PR for crossing a guideline cut-off",
+      "when": "Readers think in categories (e.g. HbA1c >=6.5%)",
+      "pros": [
+        "Clinically meaningful",
+        "Comparable with papers that dichotomise"
+      ],
+      "cons": [
+        "Discards information and power"
+      ],
+      "score": 55,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "mi",
+      "title": "Multiple imputation (chained equations) for missing covariates",
+      "estimand": "Same estimand, all eligible participants",
+      "when": "Complete-case loss is 17% in this run",
+      "pros": [
+        "Less bias if data are missing at random",
+        "Uses everyone eligible"
+      ],
+      "cons": [
+        "Assumes missing at random given the imputation model"
+      ],
+      "score": 55,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "Used in 0 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.0,
+      "recommended": false
+    },
+    {
+      "id": "loglinear",
+      "title": "Log-transformed outcome - ratio of geometric means",
+      "estimand": "Percent difference in the outcome",
+      "when": "Right-skewed laboratory values (ferritin, CRP, UACR, insulin, toxicants)",
+      "pros": [
+        "Handles skew; exp(beta) is a ratio, so 1.10 means 10% higher",
+        "Usual choice in biomarker papers"
+      ],
+      "cons": [
+        "Zeros and negative values cannot be logged (set to missing)",
+        "Less intuitive than a mean difference"
+      ],
+      "score": 50,
+      "fix": {
+        "op": "batch",
+        "fixes": [
+          {
+            "op": "add_custom_variable",
+            "name": "log_hba1c",
+            "expr": "ifelse(hba1c > 0, log(hba1c), NA)",
+            "type": "continuous",
+            "label": "log HbA1c",
+            "source": "model advisor"
+          },
+          {
+            "op": "add_sensitivity",
+            "item": {
+              "type": "alt_outcome",
+              "label": "Log-transformed outcome: log HbA1c (exp(beta) = ratio of geometric means)",
+              "outcome": "log_hba1c",
+              "family": "gaussian"
+            }
+          }
+        ]
+      },
+      "current": false,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "quantile",
+      "title": "Quantile (median) regression",
+      "estimand": "Difference in the median",
+      "when": "Outcomes with heavy tails where the median matters",
+      "pros": [
+        "Robust to outliers"
+      ],
+      "cons": [
+        "Not run by the engine; design-based quantile regression needs replicate weights"
+      ],
+      "score": 30,
+      "fix": null,
+      "current": false,
+      "runnable": false,
+      "literature": "Used in 0 of 12 similar NHANES papers in high-impact journals",
+      "literature_share": 0.0,
+      "recommended": false
+    }
+  ],
+  "recommended": "linear",
+  "rationale": "Survey linear regression - mean difference scores highest (81/100) for this outcome; used in 1 of 12 similar NHANES papers in high-impact journals. The plan already uses it.",
+  "ai": null,
+  "landscape": {
+    "papers": 12,
+    "counts": {
+      "logistic": 5,
+      "interaction": 4,
+      "survey_weighted": 2,
+      "linear": 1,
+      "mediation": 1
+    }
+  },
+  "basis": "rule-based scoring with methods learned from published papers"
+}

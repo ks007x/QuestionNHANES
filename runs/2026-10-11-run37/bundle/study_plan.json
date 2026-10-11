@@ -1,0 +1,891 @@
+{
+  "plan_id": "plan_11b457e03a",
+  "version": 1,
+  "status": "executed",
+  "created": "2026-10-11T02:44:59+00:00",
+  "question": "I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.",
+  "refined_question": "Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is greater waist circumference (per 10 cm) associated with higher HbA1c, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, and body mass index?",
+  "title": "Association of Abdominal Obesity (Waist Circumference) With Glycemic Control (HbA1c) Among US Adults: NHANES 2017-March 2020 pre-pandemic",
+  "hypothesis": "Greater waist circumference is associated with higher HbA1c independent of BMI.",
+  "study_type": "association",
+  "design": "cross-sectional",
+  "dataset": {
+    "type": "nhanes",
+    "cycles": [
+      "P"
+    ],
+    "source": "cdc"
+  },
+  "pico": {
+    "population": "noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination)",
+    "exposure": "Waist circumference (per 10 cm)",
+    "comparator": "Lower levels of the exposure (per-unit contrast; quartile 1 in sensitivity analysis)",
+    "outcome": "HbA1c",
+    "covariates": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Educational attainment, Smoking status, and Body mass index",
+    "design": "Cross-sectional, nationally representative complex survey"
+  },
+  "outcome": {
+    "concept": "glycemic_control",
+    "concept_label": "Glycemic control (HbA1c)",
+    "variable": "hba1c",
+    "kind": "block",
+    "type": "continuous",
+    "label": "HbA1c",
+    "definition_id": null,
+    "alternatives": [
+      "poor_glycemic_control"
+    ],
+    "companions": [],
+    "domain": "glycemia"
+  },
+  "exposure": {
+    "concept": "abdominal_obesity",
+    "concept_label": "Abdominal obesity (waist circumference)",
+    "variable": "waist",
+    "kind": "block",
+    "type": "continuous",
+    "label": "Waist circumference",
+    "definition_id": null,
+    "alternatives": [
+      "abd_obesity_atp3",
+      "whtr_05"
+    ],
+    "companions": [],
+    "domain": "anthropometry",
+    "scale": 10,
+    "units": "cm"
+  },
+  "population": [
+    {
+      "label": "Age >=18 years",
+      "expr": "age >= 18",
+      "kind": "inclusion",
+      "source": "question ('adults')",
+      "enabled": true,
+      "id": "c1"
+    },
+    {
+      "label": "Pregnant at examination",
+      "expr": "pregnant == 1",
+      "kind": "exclusion",
+      "source": "domain default",
+      "optional": false,
+      "enabled": true,
+      "id": "c2"
+    }
+  ],
+  "covariates": [
+    "age",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "smoking",
+    "bmi"
+  ],
+  "covariate_notes": {
+    "bmi": "BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF check)."
+  },
+  "subgroups": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "interactions": [
+    "sex",
+    "agecat"
+  ],
+  "model": {
+    "family": "gaussian",
+    "rationale": "Continuous outcome: survey-weighted linear regression (design-based Taylor-series SEs) estimates adjusted mean differences. A binary clinical threshold of the outcome is analysed as a sensitivity analysis.",
+    "primary_set": "full"
+  },
+  "adjustment_sets": [
+    {
+      "id": "crude",
+      "label": "Unadjusted",
+      "covariates": []
+    },
+    {
+      "id": "demographic",
+      "label": "Adjusted for age, sex, and race and ethnicity",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth"
+      ]
+    },
+    {
+      "id": "full",
+      "label": "Fully adjusted (primary)",
+      "covariates": [
+        "age",
+        "sex",
+        "race_eth",
+        "pir_cat",
+        "educ",
+        "smoking",
+        "bmi"
+      ]
+    }
+  ],
+  "missing_data": {
+    "method": "complete_case",
+    "rationale": "Complete-case primary analysis within the design; multiple imputation by chained equations as sensitivity analysis when covariates are missing."
+  },
+  "prevalence_outcomes": [
+    "poor_glycemic_control"
+  ],
+  "prevalence_by": [
+    "sex",
+    "agecat",
+    "race_eth"
+  ],
+  "sensitivity": [
+    {
+      "type": "alt_outcome",
+      "label": "Binary outcome: Elevated HbA1c (>=6.5%) (PR)",
+      "outcome": "poor_glycemic_control",
+      "family": "quasipoisson",
+      "id": "s1",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude participants on glucose-lowering therapy",
+      "expr": "coalesce(insulin_use, 0) == 1 | coalesce(dm_pills, 0) == 1",
+      "id": "s2",
+      "enabled": true
+    },
+    {
+      "type": "exclude",
+      "label": "Exclude anemia (HbA1c unreliable)",
+      "expr": "coalesce(anemia, 0) == 1",
+      "id": "s3",
+      "enabled": true
+    },
+    {
+      "type": "mi",
+      "label": "Multiple imputation of missing covariates (m = 10)",
+      "m": 10,
+      "id": "s4",
+      "enabled": true
+    },
+    {
+      "type": "exposure_quartiles",
+      "label": "Exposure in weighted quartiles (Q4 vs Q1, P for trend)",
+      "id": "s5",
+      "enabled": true
+    },
+    {
+      "type": "alt_exposure",
+      "label": "Alternative exposure: Abdominal obesity - waist >102 cm (men) / >88 cm (women)",
+      "exposure": "abd_obesity_atp3",
+      "id": "s6",
+      "enabled": true
+    },
+    {
+      "type": "alt_exposure",
+      "label": "Alternative exposure: Central adiposity - waist-to-height ratio >=0.5",
+      "exposure": "whtr_05",
+      "id": "s7",
+      "enabled": true
+    },
+    {
+      "type": "unweighted",
+      "label": "Unweighted analysis (design ignored)",
+      "id": "s8",
+      "enabled": true
+    }
+  ],
+  "table1_vars": [
+    "agecat",
+    "sex",
+    "race_eth",
+    "pir_cat",
+    "educ",
+    "smoking",
+    "bmi",
+    "hba1c",
+    "waist"
+  ],
+  "table1_by": "abd_obesity_atp3",
+  "benchmarks": [],
+  "custom_variables": [],
+  "arms": null,
+  "co_primary": [],
+  "rationale": {
+    "statistician": "Continuous outcome: survey-weighted linear regression (design-based Taylor-series SEs) estimates adjusted mean differences. A binary clinical threshold of the outcome is analysed as a sensitivity analysis.",
+    "epidemiologist": "Covariates were selected as plausible common causes of waist circumference and HbA1c (minimal confounder set from the domain library): Age, Sex, Race and ethnicity, Income-to-poverty ratio, Educational attainment, Smoking status, and Body mass index. Body mass index: BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF check). Variables on the causal pathway or sharing laboratory components with the outcome/exposure are excluded to avoid over-adjustment."
+  },
+  "limitations": [
+    "Cross-sectional design: temporality cannot be established and associations must not be interpreted causally.",
+    "Single measurement of laboratory values; within-person variability and chronicity cannot be assessed.",
+    "Residual confounding by unmeasured or imperfectly measured factors (e.g., diet, medications, menstrual blood loss).",
+    "Self-reported comorbidities and behaviours are subject to recall and social-desirability bias.",
+    "NHANES excludes institutionalized and active-duty military populations."
+  ],
+  "agent_notes": [
+    {
+      "agent": "Investigator",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "message": "Diabetes (self-report, medication, or HbA1c >=6.5%): Diabetes status is defined partly by HbA1c and lies on the causal path; adjusting for it is over-adjustment."
+    },
+    {
+      "agent": "Epidemiologist",
+      "message": "Body mass index: BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF check)."
+    }
+  ],
+  "data_limits": [],
+  "acknowledgements": {},
+  "approvals": [
+    {
+      "stage": "protocol",
+      "by": "Karan",
+      "at": "2026-10-11T02:45:02.261574+00:00",
+      "plan_hash": "780f3a793976e5b3911be4ffb120ad59f194624e55fa4a64bfe1e441d32607a1",
+      "statement": "CLI approval"
+    }
+  ],
+  "parsed": {
+    "study_type": "association",
+    "arms": null,
+    "outcome_concept": "glycemic_control",
+    "exposure_concept": "abdominal_obesity",
+    "extra_concepts": [
+      "dict:BMXWT"
+    ],
+    "populations": [
+      "adults"
+    ],
+    "subgroup_concepts": [],
+    "hints": {
+      "prefer": [],
+      "upgrade": {},
+      "matched": []
+    },
+    "adjust_bmi": true,
+    "direction_continuous": true,
+    "out_of_scope": [],
+    "notes": [
+      "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    ],
+    "matched_phrases": [
+      {
+        "concept": "abdominal_obesity",
+        "phrase": "abdominal obesity"
+      },
+      {
+        "concept": "glycemic_control",
+        "phrase": "blood sugar control"
+      },
+      {
+        "concept": "dict:BMXWT",
+        "phrase": "weight"
+      }
+    ],
+    "not_in_nhanes": [],
+    "component_matches": [],
+    "dictionary_matches": [
+      {
+        "phrase": "weight",
+        "variable": "BMXWT",
+        "label": "Weight",
+        "file": "BMX",
+        "cycles": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "P",
+          "L"
+        ],
+        "curated": true,
+        "confidence": 0.8,
+        "binary": false,
+        "type": "continuous"
+      }
+    ],
+    "unmapped_terms": [],
+    "association_cue": true,
+    "age_range": [
+      null,
+      null
+    ],
+    "hard_stop": []
+  },
+  "variable_map": [
+    {
+      "variable": "hba1c",
+      "label": "HbA1c",
+      "role": "Outcome",
+      "kind": "measure",
+      "direct": true,
+      "expr": "LBXGH",
+      "raw_variables": [
+        "LBXGH"
+      ],
+      "files": {
+        "P": [
+          "P_GHB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "waist",
+      "label": "Waist circumference",
+      "role": "Exposure",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXWAIST",
+      "raw_variables": [
+        "BMXWAIST"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "age",
+      "label": "Age",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "RIDAGEYR",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "sex",
+      "label": "Sex",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(female == 0, \"Male\", female == 1, \"Female\")",
+      "raw_variables": [
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "race_eth",
+      "label": "Race and ethnicity",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "coalesce(cases(RIDRETH3 == 3, \"Non-Hispanic White\", RIDRETH3 == 4, \"Non-Hispanic Black\", RIDRETH3 %in% c(1, 2), \"Hispanic\", RIDRETH3 == 6, \"Non-Hispanic Asian\", RIDRETH3 == 7, \"Other or multiracial\"), cases(RIDRETH1 == 3, \"Non-Hispanic White\", RIDRETH1 == 4, \"Non-Hispanic Black\", RIDRETH1 %in% c(1, 2), \"Hispanic\", RIDRETH1 == 5, \"Other or multiracial\"))",
+      "raw_variables": [
+        "RIDRETH1",
+        "RIDRETH3"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "pir_cat",
+      "label": "Income-to-poverty ratio",
+      "role": "Covariate",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(pir < 1.3, \"<1.30\", pir < 3.5, \"1.30-3.49\", pir >= 3.5, \"3.50+\")",
+      "raw_variables": [
+        "INDFMPIR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "educ",
+      "label": "Educational attainment",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(DMDEDUC2 %in% c(1, 2), \"Less than high school\", DMDEDUC2 == 3, \"High school or GED\", DMDEDUC2 == 4, \"Some college\", DMDEDUC2 == 5, \"College graduate or above\")",
+      "raw_variables": [
+        "DMDEDUC2"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "smoking",
+      "label": "Smoking status",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": false,
+      "expr": "cases(SMQ020 == 2, \"Never\", SMQ040 == 3, \"Former\", SMQ040 %in% c(1, 2), \"Current\")",
+      "raw_variables": [
+        "SMQ020",
+        "SMQ040"
+      ],
+      "files": {
+        "P": [
+          "P_SMQ"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "bmi",
+      "label": "Body mass index",
+      "role": "Covariate",
+      "kind": "measure",
+      "direct": true,
+      "expr": "BMXBMI",
+      "raw_variables": [
+        "BMXBMI"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "agecat",
+      "label": "Age group",
+      "role": "Subgroup",
+      "kind": "derived",
+      "direct": false,
+      "expr": "cases(age < 18, \"<18\", age < 40, \"18-39\", age < 65, \"40-64\", age >= 65, \"65+\")",
+      "raw_variables": [
+        "RIDAGEYR"
+      ],
+      "files": {
+        "P": [
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Q2E building block",
+      "status": "curated",
+      "confidence": 1.0
+    },
+    {
+      "variable": "poor_glycemic_control",
+      "label": "Elevated HbA1c (>=6.5%)",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "hba1c >= 6.5",
+      "raw_variables": [
+        "LBXGH"
+      ],
+      "files": {
+        "P": [
+          "P_GHB"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "American Diabetes Association Standards of Care.",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "abd_obesity_atp3",
+      "label": "Abdominal obesity - waist >102 cm (men) / >88 cm (women)",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "ifelse(female == 1, waist > 88, waist > 102)",
+      "raw_variables": [
+        "BMXWAIST",
+        "RIAGENDR"
+      ],
+      "files": {
+        "P": [
+          "P_BMX",
+          "P_DEMO"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in Adults. JAMA. 2001;285:2486-2497 (NCEP ATP III).",
+      "status": "verified",
+      "confidence": 1.0
+    },
+    {
+      "variable": "whtr_05",
+      "label": "Central adiposity - waist-to-height ratio >=0.5",
+      "role": "Sensitivity",
+      "kind": "definition",
+      "direct": false,
+      "expr": "waist / height_cm >= 0.5",
+      "raw_variables": [
+        "BMXHT",
+        "BMXWAIST"
+      ],
+      "files": {
+        "P": [
+          "P_BMX"
+        ]
+      },
+      "available": {
+        "P": true
+      },
+      "source": "Ashwell M, Gibson S. BMJ Open. 2016;6:e010159.",
+      "status": "verified",
+      "confidence": 1.0
+    }
+  ],
+  "design_audit": {
+    "grade": "Defensible with caveats",
+    "counts": {
+      "pass": 5,
+      "caution": 3,
+      "fail": 0
+    },
+    "checks": [
+      {
+        "id": "temporality",
+        "area": "Temporality",
+        "status": "caution",
+        "title": "Cross-sectional: temporality cannot be established",
+        "detail": "Results are reported as associations; causal language is blocked in the manuscript.",
+        "critique": "Causal over-interpretation",
+        "fix": null
+      },
+      {
+        "id": "prespecification",
+        "area": "Prespecification",
+        "status": "caution",
+        "title": "Approve to hash-lock the protocol before results",
+        "detail": "SHA-256 of the analysis plan is recorded at approval; any later edit voids the approval. All 8 prespecified sensitivity analyses are reported regardless of result; 5 subgroup/interaction tests are labelled exploratory.",
+        "critique": "Post-hoc analyses / p-hacking",
+        "fix": null
+      },
+      {
+        "id": "oversight",
+        "area": "Oversight",
+        "status": "caution",
+        "title": "Add a named statistician or epidemiologist sign-off",
+        "detail": "Investigator approval is required to run; journals increasingly expect documented methodological co-authorship for large-database studies.",
+        "critique": "Data access without methodological expertise",
+        "fix": null
+      },
+      {
+        "id": "comparator",
+        "area": "Comparator",
+        "status": "pass",
+        "title": "Explicit, same-population comparator",
+        "detail": "Contrast: per 10 cm higher waist circumference; weighted quartiles (Q1 reference) as sensitivity. Both groups come from the same probability sample and eligibility criteria (no convenience controls).",
+        "critique": "Inappropriate comparator",
+        "fix": null
+      },
+      {
+        "id": "outcome_ascertainment",
+        "area": "Outcome",
+        "status": "pass",
+        "title": "Outcome includes measured (exam or laboratory) data",
+        "detail": "Objective measurement captures undiagnosed cases, unlike code-based EHR outcomes.",
+        "critique": "Code-based / unvalidated outcome",
+        "fix": null
+      },
+      {
+        "id": "confounding",
+        "area": "Confounding",
+        "status": "pass",
+        "title": "Prespecified adjustment set",
+        "detail": "Adjusted for 7 covariates. Mediators and definitional overlaps are removed automatically, and an E-value quantifies how strong unmeasured confounding would need to be.",
+        "critique": "Residual confounding (only platform-captured variables)",
+        "fix": null
+      },
+      {
+        "id": "rationale",
+        "area": "Rationale",
+        "status": "pass",
+        "title": "A priori hypothesis with literature check",
+        "detail": "Hypothesis stated before analysis; PubMed/MEDLINE novelty check: 11 PubMed NHANES paper(s) on the full question in 10 years (7 in the last 3). By element - Abdominal obesity (waist circumference) x Glycemic control (HbA1c): 11 NHANES / 352 any data.",
+        "critique": "Template exposure-outcome pairs without rationale",
+        "fix": null
+      },
+      {
+        "id": "reproducibility",
+        "area": "Reproducibility",
+        "status": "pass",
+        "title": "Executable methods with data provenance",
+        "detail": "Every result comes with the compiled plan, R code, reproduce.R and MD5 checksums of the exact CDC files - the methods section describes what actually ran.",
+        "critique": "Methods the platform cannot actually run",
+        "fix": null
+      }
+    ],
+    "framework": "Criticisms of EHR-network (TriNetX-style) studies: comparator, outcome, temporality, confounding, rationale, prespecification, reproducibility, meaningfulness, oversight."
+  },
+  "review": [
+    {
+      "id": "collinearity",
+      "severity": "info",
+      "agent": "Reviewer",
+      "title": "Waist and BMI are strongly correlated",
+      "detail": "Adjusting for BMI isolates central adiposity but inflates variance; the engine reports VIFs.",
+      "fix": null
+    },
+    {
+      "id": "multiplicity",
+      "severity": "minor",
+      "agent": "Reviewer",
+      "title": "Multiplicity",
+      "detail": "Many subgroup/interaction tests - interpret as exploratory or adjust for multiple comparisons.",
+      "fix": null
+    }
+  ],
+  "feasibility": {
+    "score": 100,
+    "label": "High",
+    "components": [
+      {
+        "name": "Core variables available in selected cycles",
+        "score": 30,
+        "max": 30
+      },
+      {
+        "name": "Covariates available",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Question answerable with cross-sectional data",
+        "score": 20,
+        "max": 20,
+        "note": ""
+      },
+      {
+        "name": "Definitions verified against sources",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Measured in full exam sample (not a subsample)",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "Expected analytic sample size",
+        "score": 10,
+        "max": 10
+      },
+      {
+        "name": "No unresolved reviewer blockers",
+        "score": 10,
+        "max": 10
+      }
+    ]
+  },
+  "answerability": {
+    "verdict": "Answerable with caveats",
+    "status": "caution",
+    "n_fail": 0,
+    "n_caution": 2,
+    "suggestions": [
+      "Confirm coding against the CDC codebook before approval.",
+      "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+    ],
+    "checks": [
+      {
+        "dimension": "Design fit",
+        "status": "ok",
+        "title": "Cross-sectional question",
+        "message": "Prevalence and cross-sectional associations are what NHANES is designed to estimate.",
+        "suggestion": ""
+      },
+      {
+        "dimension": "Coverage",
+        "status": "caution",
+        "title": "'weight' mapped to BMXWT by dictionary search",
+        "message": "Weight (BMX, cycles A, B, C, D, E, F, G, H, I, J, P, L); curated entry, match confidence 0.8.",
+        "suggestion": "Confirm coding against the CDC codebook before approval."
+      },
+      {
+        "dimension": "Co-measurement",
+        "status": "ok",
+        "title": "All core variables are measured together",
+        "message": "Jointly available in A, B, C, D, E, F, G, H, I, J, L, P; selected P.",
+        "suggestion": "Pooling A, B, C, D, E, F, G, H, I, L could increase precision."
+      },
+      {
+        "dimension": "Eligibility",
+        "status": "caution",
+        "title": "Some measures are collected only at older ages",
+        "message": "DMDEDUC2: typically age >=20 (population starts at 18 y).",
+        "suggestion": "Raise the minimum age or accept missingness by design (the probe shows the real counts)."
+      },
+      {
+        "dimension": "Measurement",
+        "status": "ok",
+        "title": "Outcome is measured objectively",
+        "message": "Examination/laboratory measures from a single visit (no repeat measurement for chronicity).",
+        "suggestion": ""
+      }
+    ],
+    "metrics": {},
+    "probed": false,
+    "probe_note": "Run the blinded feasibility probe to check real counts and precision."
+  },
+  "agent_dialogue": [
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "I read this as an association question. Outcome: HbA1c. Exposure: Waist circumference (per 10 cm). Population: Age >=18 years."
+    },
+    {
+      "agent": "Data Steward",
+      "source": "rules",
+      "message": "Mapped 13 analysis variables (4 direct NHANES measures, 9 derived/guideline definitions) onto 12 raw variables in 4 files: P_BMX, P_DEMO, P_GHB, P_SMQ."
+    },
+    {
+      "agent": "Investigator",
+      "source": "rules",
+      "message": "First clinical concept treated as exposure, second as outcome (swap in the UI if needed)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Diabetes (self-report, medication, or HbA1c >=6.5%): Diabetes status is defined partly by HbA1c and lies on the causal path; adjusting for it is over-adjustment."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Body mass index: BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF check)."
+    },
+    {
+      "agent": "Statistician",
+      "source": "rules",
+      "message": "Continuous outcome: survey-weighted linear regression (design-based Taylor-series SEs) estimates adjusted mean differences. A binary clinical threshold of the outcome is analysed as a sensitivity analysis."
+    },
+    {
+      "agent": "Reviewer",
+      "source": "rules",
+      "message": "Critique: 0 blocker, 0 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval."
+    },
+    {
+      "agent": "Design auditor",
+      "source": "rules",
+      "message": "Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail)."
+    },
+    {
+      "agent": "Epidemiologist",
+      "source": "rules",
+      "message": "Can NHANES answer this? Answerable with caveats (0 blocking, 2 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving."
+    }
+  ],
+  "llm": {
+    "provider": "offline",
+    "model": "rules",
+    "configured": true,
+    "why": "",
+    "policy_allowed": true,
+    "policy_message": "Offline rule-based agents - nothing leaves this machine.",
+    "enabled": false,
+    "calls": []
+  },
+  "privacy": {
+    "findings": [],
+    "provider": "offline",
+    "policy": "public",
+    "allowed": true,
+    "message": "Offline rule-based agents - nothing leaves this machine.",
+    "row_level_data_to_llm": false,
+    "aggregates_to_llm": false,
+    "approved_providers": [
+      "offline",
+      "ollama",
+      "azure_openai",
+      "bedrock"
+    ]
+  },
+  "idea_gaps": [],
+  "novelty": {
+    "score": 18,
+    "label": "Low",
+    "summary": "11 PubMed NHANES paper(s) on the full question in 10 years (7 in the last 3). By element - Abdominal obesity (waist circumference) x Glycemic control (HbA1c): 11 NHANES / 352 any data.",
+    "checked": "2026-10-11"
+  }
+}
