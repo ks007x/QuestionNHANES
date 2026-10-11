@@ -222,15 +222,17 @@ async function render() {
   const views = { ask: viewAsk, projects: viewProjects, library: viewLibrary };
   if (r.view === "project" && !unlocked(r.stage) && STEPS.some((x) => x.id === r.stage)) {
     // no skipping ahead: Ask -> Protocol -> Data map -> Analysis plan -> approve -> Run in R -> Results -> Sign-off
-    S.lockNote = { stage: r.stage, reason: LOCK_REASON[r.stage] || "" };
-    location.replace(`#/p/${S.project.id}/${furthestOpen(r.stage)}`);
+    const at = furthestOpen(r.stage);
+    S.lockNote = { stage: r.stage, reason: LOCK_REASON[r.stage] || "", at };
+    location.replace(`#/p/${S.project.id}/${at}`);
     return;
   }
   if (r.view === "project") {
     const lrSeen = latestRun();
     if (r.stage === "results" && lrSeen && lrSeen.status === "completed") store.set(`q2e.seen.${S.project.id}.${lrSeen.id}`, "1");
     const fn = { protocol: viewProtocol, map: viewMap, plan: viewPlan, run: viewRun, results: viewResults, signoff: viewSignoff }[r.stage] || viewProtocol;
-    const note = S.lockNote; S.lockNote = null;
+    if (S.lockNote && S.lockNote.at !== r.stage) S.lockNote = null;   // keep the notice while the redirected page redraws
+    const note = S.lockNote;
     main.innerHTML = (note ? `<div class="banner warn"><b>${esc((STEPS.find((x) => x.id === note.stage) || {}).label || note.stage)} is locked.</b> ${esc(note.reason)}</div>` : "") + stepper(r.stage, fn());
     renderRail(r);
     if (r.stage === "run" && S.run?.status === "running") startPolling();
