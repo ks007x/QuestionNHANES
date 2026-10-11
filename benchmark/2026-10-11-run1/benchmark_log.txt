@@ -1,0 +1,89 @@
+== obesity_P: What is the prevalence of obesity among US adults aged 20 and over?
+   overall  published  41.9  Q2E 41.87  diff -0.03  in CI True
+   Male     published  41.6  Q2E 41.58  diff -0.02  in CI True
+   Female   published  42.1  Q2E 42.14  diff 0.04  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== severe_obesity_P: What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?
+   status wrong_measure  definition bmi (expected None)  Q2E reported Mean difference of Obesity - BMI >=30 kg/m2 = 11.2308834492, not a prevalence
+== hypertension_P: What is the prevalence of hypertension among US adults aged 18 and over?
+   overall  published  48.1  Q2E 49.07  diff 0.97  in CI True
+   Male     published  50.5  Q2E 51.27  diff 0.77  in CI True
+   Female   published  45.7  Q2E 46.94  diff 1.24  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== diabetes_P: What is the prevalence of diabetes among US adults aged 20 and over?
+   overall  published  16.2  Q2E 14.61  diff -1.59  in CI True
+   Male     published  17.7  Q2E 15.72  diff -1.98  in CI True
+   Female   published  14.8  Q2E 13.56  diff -1.24  in CI True
+   status answered  definition diabetes_ada (expected diabetes_ada)  
+== child_obesity_P: What is the prevalence of obesity among US children and adolescents aged 2 to 19 years?
+   overall  published  19.7  Q2E 8.64  diff -11.06  in CI False
+   Male     published  20.9  Q2E 7.98  diff -12.92  in CI False
+   Female   published  18.5  Q2E 9.32  diff -9.18  in CI False
+   status answered  definition obesity_bmi30 (expected None)  
+== absolute_iron_deficiency_P: What is the prevalence of absolute iron deficiency (ferritin below 30 ng/mL) among US adults?
+   overall  published  14.0  Q2E 23.54  diff 9.54  in CI False
+   status answered  definition id_ash2026 (expected aid_tawfik2024)  
+== functional_iron_deficiency_P: What is the prevalence of functional iron deficiency among US adults?
+   overall  published  15.0  Q2E 15.44  diff 0.44  in CI True
+   status answered  definition fid_tawfik2024 (expected fid_tawfik2024)  
+== obesity_L: What is the prevalence of obesity among US adults aged 20 and over?
+   overall  published  40.3  Q2E 40.26  diff -0.04  in CI True
+   Male     published  39.2  Q2E 39.2  diff 0.0  in CI True
+   Female   published  41.3  Q2E 41.28  diff -0.02  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== severe_obesity_L: What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?
+   status wrong_measure  definition bmi (expected None)  Q2E reported Mean difference of Obesity - BMI >=30 kg/m2 = 11.4657265059, not a prevalence
+== hypertension_L: What is the prevalence of hypertension among US adults aged 18 and over?
+   overall  published  47.7  Q2E 37.39  diff -10.31  in CI False
+   Male     published  50.8  Q2E 40.66  diff -10.14  in CI False
+   Female   published  44.6  Q2E 34.21  diff -10.39  in CI False
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== diabetes_L: What is the prevalence of diabetes among US adults aged 20 and over?
+   overall  published  15.8  Q2E 14.83  diff -0.97  in CI True
+   Male     published  18.0  Q2E 15.65  diff -2.35  in CI False
+   Female   published  13.7  Q2E 14.05  diff 0.35  in CI True
+   status answered  definition diabetes_ada (expected diabetes_ada)  
+== high_cholesterol_L: What is the prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?
+   status wrong_measure  definition tc (expected None)  Q2E reported Weighted mean of Total cholesterol = 188.0093190521, not a prevalence
+== low_hdl_L: What is the prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?
+   status wrong_measure  definition hdl (expected None)  Q2E reported Weighted mean of HDL cholesterol = 53.609486941, not a prevalence
+== anemia_L: What is the prevalence of anemia in the US population aged 2 years and older?
+   overall  published   9.3  Q2E 0  diff -9.3  in CI False
+   Male     published   5.5  Q2E None  diff None  in CI None
+   Female   published  13.0  Q2E None  diff None  in CI None
+   status answered  definition anemia_who (expected anemia_who)  
+== depression_L: What is the prevalence of depression among US adolescents and adults aged 12 and over?
+   overall  published  13.1  Q2E 12.64  diff -0.46  in CI True
+   Male     published  10.1  Q2E 10.05  diff -0.05  in CI True
+   Female   published  16.0  Q2E 15.14  diff -0.86  in CI True
+   status answered  definition depression_phq9 (expected depression_phq9)  
+{
+  "questions": 15,
+  "answered_as_prevalence": 11,
+  "right_definition": 9,
+  "no_matching_definition_in_q2e": 5,
+  "status": {
+    "answered": 11,
+    "wrong_measure": 4
+  },
+  "all_answered": {
+    "n": 27,
+    "within_published_ci": 18,
+    "ci_overlap": 20,
+    "mean_abs_diff_pts": 3.57,
+    "median_abs_diff_pts": 0.97,
+    "max_abs_diff_pts": 12.92,
+    "within_1pt": 14,
+    "within_2pt": 18
+  },
+  "right_definition_only": {
+    "n": 23,
+    "within_published_ci": 18,
+    "ci_overlap": 20,
+    "mean_abs_diff_pts": 2.33,
+    "median_abs_diff_pts": 0.86,
+    "max_abs_diff_pts": 10.39,
+    "within_1pt": 14,
+    "within_2pt": 18
+  }
+}
