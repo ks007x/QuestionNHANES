@@ -122,12 +122,35 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     return 0
 
 
+def _bedrock_connect(region: str, model: str) -> int:
+    """Ask for the Bedrock API key without echoing it, test it, and save it to .env (which git ignores)."""
+    import getpass
+    import os
+    from .llm import LLMError, bedrock_connect
+    print("Connect BEDSIDE to Amazon Bedrock.\nCreate a key in the AWS console: Amazon Bedrock > API keys > Generate. "
+          "The key is saved only in this folder's .env file, which is never uploaded to GitHub.")
+    key = getpass.getpass("Bedrock API key (hidden): ").strip()
+    region = region or input(f"AWS region [{os.environ.get('AWS_REGION', 'us-east-1')}]: ").strip()
+    model = model or input("Model id (Enter = pick a Claude model automatically): ").strip()
+    print("Testing the key with one short request...")
+    try:
+        out = bedrock_connect(key, region, model, remember=True)
+    except LLMError as e:
+        print(f"Not connected: {e}")
+        return 1
+    print(f"Connected: {out['model']} in {out['region']} (key {out['key']}). Saved to .env. "
+          "Start the app with: python -m q2e serve")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="q2e")
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8000)
     sub.add_parser("synth")
     sub.add_parser("bedrock-check", help="test the AWS Bedrock login and list the models it can use")
+    bc = sub.add_parser("bedrock-connect", help="enter a Bedrock API key (hidden), test it and save it to the local .env")
+    bc.add_argument("--region", default=""); bc.add_argument("--model", default="")
     sub.add_parser("mcp", help="run the MCP (Model Context Protocol) server on stdio")
     ig = sub.add_parser("integrations", help="write tool manifests for Azure/AWS/ElevenLabs/MCP")
     ig.add_argument("--base-url", default=settings.public_url); ig.add_argument("--out", default="integrations/generated")
@@ -143,6 +166,8 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "bedrock-check":
         from .llm import bedrock_check
         return bedrock_check()
+    if a.cmd == "bedrock-connect":
+        return _bedrock_connect(a.region, a.model)
     if a.cmd == "mcp":
         from .mcp_server import serve_stdio
         serve_stdio()

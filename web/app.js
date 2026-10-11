@@ -181,6 +181,60 @@ function renderBoundary() {
   el.className = "chip " + (b.allowed && !notReady ? "ok" : "bad");
   el.title = (notReady ? `${l.why || l.policy_message} ` : "") + b.message + " Row-level data never sent to LLMs.";
   el.innerHTML = `● ${esc(mode)} · ${esc(b.policy)} data policy`;
+  el.dataset.act = "aiSetup"; el.setAttribute("role", "button"); el.tabIndex = 0; el.style.cursor = "pointer";
+  el.title = (l.enabled ? "Click to change or turn off the AI connection. " : "Click to connect Amazon Bedrock with your API key. ") + el.title;
+}
+
+/* ------------------------------------------------------------------ Amazon Bedrock login (API key) */
+const AWS_REGIONS = ["us-east-1", "us-east-2", "us-west-2", "ca-central-1", "eu-central-1", "eu-west-1", "eu-west-3", "ap-northeast-1", "ap-southeast-2", "ap-south-1"];
+function aiSetupOpen() {
+  const l = S.meta?.llm || {}; const on = l.enabled && l.provider === "bedrock";
+  document.querySelector("#aiOverlay")?.remove();
+  const box = document.createElement("div"); box.className = "cq-overlay"; box.id = "aiOverlay";
+  box.innerHTML = `<div class="card" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+    <div class="row" style="justify-content:space-between"><h3 class="sub" id="aiTitle" style="margin:0">Connect Amazon Bedrock</h3><button class="btn ghost sm" data-act="aiClose" aria-label="Close">Close</button></div>
+    <p class="small muted" style="margin:6px 0 12px">BEDSIDE works without AI. With Amazon Bedrock, the AI agents also recognize unusual wording in questions, help choose models and covariates, and draft methods, results and limitations. Only the question, the plan and aggregate results are sent, never participant-level data.</p>
+    <p class="small" style="margin:0 0 12px">Now: <span class="chip ${on ? "ok" : "info"}">${on ? `connected · ${esc(l.model)}` : l.provider === "bedrock" ? "Bedrock selected, not ready" : "AI off · rule-based agents"}</span>${!on && l.why ? `<span class="tiny muted"> ${esc(l.why)}</span>` : ""}</p>
+    <form id="aiForm" autocomplete="off">
+      <label class="field">Bedrock API key<input type="password" id="bkKey" autocomplete="new-password" spellcheck="false" placeholder="Paste the key from Amazon Bedrock > API keys" required minlength="20"></label>
+      <div class="grid g2" style="margin-top:10px">
+        <label class="field">AWS region<select id="bkRegion">${AWS_REGIONS.map((r) => `<option ${r === (S.aiRegion || "us-east-1") ? "selected" : ""}>${r}</option>`).join("")}</select></label>
+        <label class="field">Model id (optional)<input id="bkModel" spellcheck="false" placeholder="Automatic: a Claude model" value="${esc(on ? l.model : "")}"></label>
+      </div>
+      <label class="small" style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" id="bkRemember" checked> <span>Remember on this computer (saved in the local <code>.env</code> file, which is never uploaded to GitHub)</span></label>
+      <div id="aiMsg" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:12px;gap:8px;justify-content:flex-end">
+        ${l.enabled ? `<button type="button" class="btn" data-act="aiOff">Turn AI off</button>` : ""}
+        <button type="submit" class="btn primary" id="aiGo">Test and connect</button>
+      </div>
+    </form>
+    <details style="margin-top:12px"><summary class="small">How to get a Bedrock API key</summary><ol class="small" style="margin:8px 0 0;padding-left:20px">
+      <li>Sign in to the AWS console and open <b>Amazon Bedrock</b>.</li>
+      <li>Under <b>Model access</b>, make sure an Anthropic Claude model is enabled in your region.</li>
+      <li>Open <b>API keys</b> and generate a key (short-term keys expire within hours; long-term keys last until you delete them).</li>
+      <li>Paste it here. BEDSIDE sends one tiny test request before it keeps the key; the key is never shown again or saved in a project.</li>
+    </ol></details></div>`;
+  document.body.appendChild(box);
+  box.addEventListener("click", (e) => { if (e.target === box) aiSetupClose(); });
+  box.querySelector("#aiForm").addEventListener("submit", aiConnect);
+  setTimeout(() => box.querySelector("#bkKey")?.focus(), 0);
+}
+function aiSetupClose() { document.querySelector("#aiOverlay")?.remove(); }
+async function aiConnect(e) {
+  e.preventDefault();
+  const key = $("#bkKey"); const go = $("#aiGo"); const msg = $("#aiMsg");
+  S.aiRegion = $("#bkRegion").value;
+  go.disabled = true; go.innerHTML = `<span class="spinner"></span> Testing the key…`; msg.innerHTML = "";
+  try {
+    const r = await api("/api/ai/bedrock", { method: "POST", body: { api_key: key.value.trim(), region: S.aiRegion, model_id: $("#bkModel").value.trim() || null, remember: $("#bkRemember").checked } });
+    key.value = "";
+    S.meta = await api("/api/meta"); renderBoundary(); aiSetupClose();
+    toast(`Amazon Bedrock connected: ${r.model} (${r.region})${r.remembered ? ", saved on this computer" : ""}`);
+    if (route().view === "ask") render();
+  } catch (err) {
+    msg.innerHTML = `<div class="banner bad small">${esc(String(err.message).replace(/^"|"$/g, ""))}</div>`;
+    go.disabled = false; go.textContent = "Test and connect";
+  }
 }
 function renderRail(r) {
   const rail = $("#rail"); const ms = $("#mobileSteps");
@@ -264,7 +318,8 @@ async function viewAsk() {
     <details class="settings"${S.settingsOpen ? " open" : ""}><summary>Data and settings <span class="muted">${a.dataset ? "uploaded dataset" : "NHANES"}, ${a.cycles.length ? a.cycles.length + " cycle(s) chosen" : "most recent cycle that has your variables"}, ${a.source === "synthetic" ? "synthetic demo data" : a.source === "local" ? "local files" : "CDC download"}</span></summary>
     <div class="grid g3" style="margin-top:12px">
       <label class="field">Dataset<select id="dsSel"><option value="">NHANES (public)</option>${ds.map((d) => `<option value="${d.id}" ${a.dataset === d.id ? "selected" : ""}>${esc(d.name)} (uploaded)</option>`).join("")}</select></label>
-      <label class="field">AI agents<select id="provSel">${provs.map((p) => `<option value="${p}" ${a.provider === p ? "selected" : ""}>${p === "" ? `Server default (${esc(S.meta.llm.provider)})` : p}</option>`).join("")}</select></label>
+      <label class="field">AI agents<select id="provSel">${provs.map((p) => `<option value="${p}" ${a.provider === p ? "selected" : ""}>${p === "" ? `Server default (${esc(S.meta.llm.provider)})` : p}</option>`).join("")}</select>
+        <button type="button" class="linkbtn tiny" data-act="aiSetup" style="margin-top:4px;text-align:left">${S.meta.llm.enabled ? `Connected: ${esc(S.meta.llm.model)} · change` : "Connect Amazon Bedrock (API key)"}</button></label>
       <div class="field">Voice<div class="row"><button class="btn" data-act="mic" id="micBtn">Dictate</button><span class="tiny muted">${S.meta.voice ? "ElevenLabs Scribe" : "browser speech"}</span></div></div>
     </div>
     <div class="row" style="margin-top:14px;justify-content:space-between">
@@ -1549,6 +1604,17 @@ const A = {
   importDef: async () => { try { S.proposal = await api("/api/guidelines/import", { method: "POST", body: { text: $("#gtext").value } }); rerender(); } catch (e) { toast(e.message, true); } },
   approveDef: async () => { try { await api("/api/guidelines/approve", { method: "POST", body: { id: S.proposal.id, by: $("#propBy").value || "investigator" } }); S.proposal = null; S.meta = await api("/api/meta"); toast("Definition added to library"); rerender(); } catch (e) { toast(e.message, true); } },
 };
+A.aiSetup = () => aiSetupOpen();
+A.aiClose = () => aiSetupClose();
+A.aiOff = async () => {
+  const forget = confirm("Turn the AI off?\n\nOK also removes the saved key from this computer's .env file. Cancel keeps it saved for next time.");
+  try { await api(`/api/ai/bedrock?forget=${forget ? "true" : "false"}`, { method: "DELETE" }); S.meta = await api("/api/meta"); renderBoundary(); aiSetupClose(); toast("AI off: rule-based agents only"); if (route().view === "ask") render(); }
+  catch (err) { toast(err.message, true); }
+};
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && document.querySelector("#aiOverlay")) aiSetupClose();
+  if ((e.key === "Enter" || e.key === " ") && e.target.id === "boundary") { e.preventDefault(); aiSetupOpen(); }
+});
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const fn = A[el.dataset.act]; if (fn && !(el.tagName === "INPUT" || el.tagName === "SELECT")) { e.preventDefault(); fn(el, e); }

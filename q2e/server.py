@@ -76,6 +76,46 @@ def meta():
             "datasets": generic.list_datasets(), "r": r_status()}
 
 
+class BedrockKey(BaseModel):
+    api_key: str = Field(min_length=20, max_length=4000)
+    region: str = Field("us-east-1", max_length=30)
+    model_id: str | None = Field(None, max_length=200)
+    remember: bool = False
+
+
+def _may_set_keys(request: Request) -> None:
+    """Only the person at this computer (or a caller holding Q2E_TOOL_KEY) may change the AI login."""
+    host = (request.client.host if request.client else "") or ""
+    if host in ("127.0.0.1", "::1", "localhost", "testclient"):
+        return
+    if settings.tool_key and request.headers.get("x-q2e-key") == settings.tool_key:
+        return
+    _bad("For safety, the Bedrock key can only be entered on the computer running BEDSIDE (or put it in its .env file).", 403)
+
+
+@app.post("/api/ai/bedrock")
+def ai_bedrock_connect(body: BedrockKey, request: Request):
+    """Connect Amazon Bedrock with a Bedrock API key. The key is tested, kept in this server's memory (and in the local
+    .env only if `remember`), and never returned, logged or stored in a project."""
+    _may_set_keys(request)
+    from .llm import LLMError, bedrock_connect
+    try:
+        out = bedrock_connect(body.api_key, body.region, body.model_id or "", body.remember)
+    except LLMError as e:
+        _bad(str(e), 400)
+    print(f"[BEDSIDE] Amazon Bedrock connected: {out['model']} in {out['region']} (key {out['key']})", flush=True)
+    return {**out, "llm": LLMClient().status()}
+
+
+@app.delete("/api/ai/bedrock")
+def ai_bedrock_disconnect(request: Request, forget: bool = False):
+    _may_set_keys(request)
+    from .llm import bedrock_disconnect
+    out = bedrock_disconnect(forget)
+    print("[BEDSIDE] Amazon Bedrock disconnected" + (" and key removed from .env" if forget else ""), flush=True)
+    return {**out, "llm": LLMClient().status()}
+
+
 @app.get("/api/r-status")
 def r_check():
     return r_status()

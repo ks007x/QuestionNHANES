@@ -20,6 +20,24 @@ every call and each call is logged.
 The app header shows which one is active: `AI: bedrock · <model>`, `AI: bedrock not ready` (hover for the reason),
 or `AI off · rule-based agents`. The model advisor and evidence cards also say which model produced them.
 
+## Quickest: paste your Bedrock API key into BEDSIDE
+
+1. AWS console → **Amazon Bedrock** → **Model access**: enable an Anthropic Claude model in your region.
+2. **Amazon Bedrock → API keys → Generate**. Copy the key.
+3. In BEDSIDE, click the **AI chip** in the top bar (it says `AI off · rule-based agents`), or *Connect Amazon Bedrock*
+   under *Data and settings* on the Ask page. Paste the key, pick the region, leave the model blank to let BEDSIDE pick a
+   Claude model, and press **Test and connect**.
+
+BEDSIDE sends one tiny test request before it keeps the key. The key is never shown again, never written to a
+project, log or GitHub, and is saved only in this folder's `.env` file if *Remember on this computer* is ticked
+(`.env` is in `.gitignore`). For safety the key can only be entered from the computer running BEDSIDE. *Turn AI off*
+in the same dialog disconnects and can also remove the saved key.
+
+From a terminal instead: `python -m q2e bedrock-connect` asks for the key without showing it, tests it and saves it.
+
+**Never put a real key in `.env.example`** - that file is committed. If a key was ever committed, delete it in the
+AWS console (Bedrock → API keys) and generate a new one; removing it from the file does not remove it from git history.
+
 ## 1. Get credentials (one of two kinds)
 
 * **Bedrock API key** (simplest): AWS console → Amazon Bedrock → API keys → generate. One long value.
