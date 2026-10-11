@@ -122,6 +122,67 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     return 0
 
 
+AI_TEST_QUESTIONS = ["Is HTN more common in men than women among US adults?",
+                     "Is sugar diabetes linked to renal stones?",
+                     "Toxocara vs Toxoplasma vs healthy for eos",
+                     "Does obesity prevalence differ by race and ethnicity?"]
+
+
+def _ai_test(questions: list[str]) -> int:
+    """Run the AI agents live and print what each one did. Writes ai_test.md (no data is analysed, nothing is run)."""
+    import time
+    from . import agents, covariates
+    from .llm import LLMClient
+    client = LLMClient("bedrock")
+    st = client.status()
+    print(f"Amazon Bedrock: {st['model'] or '(no model id)'} - " + ("ready" if st["enabled"] else f"NOT ready: {st['why'] or st['policy_message']}"))
+    if not st["enabled"]:
+        print("Connect first: python3 -m q2e bedrock-connect")
+        return 1
+    lines = ["# BEDSIDE live AI test", "", f"Model: `{st['model']}` on Amazon Bedrock", ""]
+    ok = True
+    for q in questions or AI_TEST_QUESTIONS:
+        t0 = time.time()
+        plan = agents.design_study(q, None, None, provider="bedrock")
+        secs = time.time() - t0
+        calls = plan.get("llm", {}).get("calls", [])
+        good = sum(1 for c in calls if c.get("ok"))
+        cmp = (plan.get("estimand") or {}).get("comparison") or {}
+        x = plan.get("exposure") or {}
+        block = [f"## {q}", "",
+                 f"- AI calls: {good}/{len(calls)} succeeded in {secs:.0f} s",
+                 f"- Understood as: **{plan['study_type']}** - outcome *{plan['outcome']['label']}*"
+                 + (f"; exposure *{x.get('label')}*" if x else "")
+                 + (f"; comparison by {cmp.get('label', cmp.get('group_var'))} ("
+                    + (f"{cmp['level']} vs {cmp['reference']}" if cmp.get("level") and cmp.get("reference") else "every group vs the reference")
+                    + ")" if cmp else "")]
+        for t in plan.get("recognized_terms", []):
+            block.append(f"- Recognized ({'AI' if t['source'] == 'ai' else 'rules'}): \"{t['from']}\" -> {t['label'] or t['to']}")
+        for d in plan.get("agent_dialogue", []):
+            if d.get("source") == "llm":
+                block.append(f"- {d['agent']}: {d['message']}")
+        if plan.get("refined_question_llm"):
+            block.append(f"- AI phrasing of the question: {plan['refined_question_llm']}")
+        for i in plan.get("review", []):
+            if i.get("agent") == "Reviewer (LLM)":
+                block.append(f"- AI reviewer ({i['severity']}): {i['title']}")
+        if x and not x.get("arms"):
+            cv = covariates.suggest(plan, provider="bedrock")
+            for s in cv.get("suggestions", []):
+                if s.get("ai"):
+                    block.append(f"- AI on covariate {s['label']}: {s['ai']['role']} - {s['ai']['why']}")
+        failed = [c for c in calls if not c.get("ok")]
+        for c in failed[:3]:
+            block.append(f"- FAILED call ({c.get('agent')}): {str(c.get('error'))[:200]}")
+        ok = ok and good > 0
+        print("\n".join(block) + "\n")
+        lines += block + [""]
+    from pathlib import Path
+    Path("ai_test.md").write_text("\n".join(lines), encoding="utf-8")
+    print("Saved: ai_test.md" + ("" if ok else "  (some questions had no successful AI call - see FAILED lines)"))
+    return 0 if ok else 1
+
+
 def _bedrock_connect(region: str, model: str) -> int:
     """Ask for the Bedrock API key without echoing it, test it, and save it to .env (which git ignores)."""
     import getpass
@@ -149,6 +210,8 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("serve"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8000)
     sub.add_parser("synth")
     sub.add_parser("bedrock-check", help="test the AWS Bedrock login and list the models it can use")
+    at = sub.add_parser("ai-test", help="live test of the AI agents on Amazon Bedrock: shows what the AI did for a few questions")
+    at.add_argument("questions", nargs="*")
     sub.add_parser("setup-code", help="show the code the browser asks for when connecting Bedrock from a Codespace or another computer")
     bc = sub.add_parser("bedrock-connect", help="enter a Bedrock API key (hidden), test it and save it to the local .env")
     bc.add_argument("--region", default=""); bc.add_argument("--model", default="")
@@ -167,6 +230,8 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "bedrock-check":
         from .llm import bedrock_check
         return bedrock_check()
+    if a.cmd == "ai-test":
+        return _ai_test(a.questions)
     if a.cmd == "setup-code":
         from .access import setup_code
         print(f"BEDSIDE setup code: {setup_code()}")

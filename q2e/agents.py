@@ -243,7 +243,8 @@ def _population_conflict(pid: str, current: list[str], cmp: dict | None) -> str:
     gv = (cmp or {}).get("group_var", "")
     if cmp and (gv == fam or gv.startswith(fam) or (fam == "agecat" and gv.startswith("agecat"))):
         if not (fam == "agecat" and pid == "adults"):        # "adults" only sets the age floor of an age comparison
-            return f"the question compares {cmp.get('label', fam).lower()} groups"
+            words = {"sex": "sex", "race_eth": "race and ethnicity", "agecat": "age", "age_cmp": "age"}
+            return f"the question compares groups by {cmp.get('label') or words.get(gv, words.get(fam, fam))}".lower()
     clash = [c for c in current if _POP_FAMILY.get(c) == fam and fam != "agecat"]
     if clash:
         return f"conflicts with {clash[0]}"
