@@ -16,6 +16,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 import httpx
 
@@ -217,6 +218,145 @@ def bedrock_check() -> int:
         print(f"The test call failed: {e}\nIf it says 'access denied', enable this model under Bedrock > Model access in "
               "the AWS console, or try another id from the list.")
         return 1
+
+
+# ------------------------------------------------------------------ connect Bedrock with an API key (web app or CLI)
+_BEDROCK_ENV = ("AWS_BEARER_TOKEN_BEDROCK", "AWS_REGION", "Q2E_BEDROCK_MODEL_ID", "Q2E_LLM_PROVIDER")
+# tried in order when no model id is given and the account's model list cannot be read (geo prefix added per region)
+BEDROCK_MODEL_CANDIDATES = ("anthropic.claude-sonnet-4-5-20250929-v1:0", "anthropic.claude-haiku-4-5-20251001-v1:0",
+                            "anthropic.claude-sonnet-4-20250514-v1:0", "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                            "anthropic.claude-3-5-haiku-20241022-v1:0")
+_REGION_RX = re.compile(r"^[a-z]{2}(-gov)?-[a-z]+-\d$")
+
+
+def mask_secret(v: str) -> str:
+    v = v or ""
+    return f"...{v[-4:]}" if len(v) > 8 else "***"
+
+
+def _geo(region: str) -> str:
+    return {"us": "us", "eu": "eu", "ap": "apac", "ca": "us", "sa": "us"}.get(region.split("-")[0], "us")
+
+
+def _bedrock_models(region: str) -> list[str]:
+    """Claude models this key can call: the account's inference profiles when they can be listed, else known ids."""
+    found: list[str] = []
+    try:
+        import boto3
+        profiles = boto3.client("bedrock", region_name=region).list_inference_profiles().get("inferenceProfileSummaries", [])
+        ids = [p["inferenceProfileId"] for p in profiles if "anthropic.claude" in p.get("inferenceProfileId", "")]
+        found = sorted(ids, key=lambda i: (0 if "sonnet" in i else 1 if "haiku" in i else 2, i), reverse=False)
+    except Exception:  # noqa: BLE001 - listing is optional; some keys may only call models
+        pass
+    geo = _geo(region)
+    return found + [f"{geo}.{m}" for m in BEDROCK_MODEL_CANDIDATES if f"{geo}.{m}" not in found]
+
+
+def _write_env(updates: dict[str, str | None]) -> Path:
+    """Set (or with None, blank) keys in the local .env file, which git ignores. Other lines are kept as they are."""
+    from .config import ROOT
+    env = ROOT / ".env"
+    lines = env.read_text(encoding="utf-8-sig").splitlines() if env.exists() else []
+    seen = set()
+    for i, line in enumerate(lines):
+        k = line.split("=", 1)[0].strip() if "=" in line and not line.lstrip().startswith("#") else None
+        if k in updates:
+            lines[i] = f"{k}={updates[k] or ''}"
+            seen.add(k)
+    lines += [f"{k}={v or ''}" for k, v in updates.items() if k not in seen]
+    env.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    try:
+        os.chmod(env, 0o600)       # readable by this user only
+    except OSError:
+        pass
+    return env
+
+
+def bedrock_connect(api_key: str, region: str = "", model_id: str = "", remember: bool = False) -> dict:
+    """Use a Bedrock API key for this server. The key is tested with one tiny request before it is kept; on failure the
+    previous settings are restored. It is never returned, logged or written anywhere except (if asked) the local .env."""
+    key = (api_key or "").strip().strip('"').strip("'")
+    region = (region or _env("AWS_REGION", "us-east-1")).strip()
+    model_id = (model_id or "").strip()
+    if len(key) < 20 or any(c.isspace() for c in key):
+        raise LLMError("That does not look like a Bedrock API key (one long value, no spaces). Create one in the AWS "
+                       "console: Amazon Bedrock > API keys.")
+    if key.startswith("AKIA") or key.startswith("ASIA"):
+        raise LLMError("That is an AWS access key ID, not a Bedrock API key. Paste the Bedrock API key (from Amazon Bedrock > "
+                       "API keys), or put access keys in the .env file.")
+    if not _REGION_RX.match(region):
+        raise LLMError(f"'{region}' is not an AWS region (for example us-east-1).")
+    if model_id and not re.match(r"^[A-Za-z0-9.:\-/_]{3,200}$", model_id):
+        raise LLMError("The model id has unexpected characters.")
+    allowed, msg = privacy.provider_allowed("bedrock")
+    if not allowed:
+        raise LLMError(msg)
+    try:
+        import boto3  # noqa: F401
+    except ImportError as e:
+        raise LLMError("boto3 is not installed on this computer (pip install boto3).") from e
+    old = {k: os.environ.get(k) for k in _BEDROCK_ENV}
+
+    def restore() -> None:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    os.environ.update({"AWS_BEARER_TOKEN_BEDROCK": key, "AWS_REGION": region})
+    tried, last = [], ""
+    try:
+        for m in ([model_id] if model_id else _bedrock_models(region))[:8]:
+            os.environ["Q2E_BEDROCK_MODEL_ID"] = m
+            tried.append(m)
+            try:
+                BedrockProvider().complete("Reply with JSON only.", 'Return {"ok": true}.', max_tokens=20)
+            except LLMError as e:
+                last = str(e).replace(key, "***")
+                kind = _bedrock_error_kind(last)
+                if kind != "model":
+                    break   # the key or the network failed: other models will not help
+                continue
+            os.environ["Q2E_LLM_PROVIDER"] = "bedrock"
+            saved = _write_env({"AWS_BEARER_TOKEN_BEDROCK": key, "AWS_REGION": region, "Q2E_BEDROCK_MODEL_ID": m,
+                                "Q2E_LLM_PROVIDER": "bedrock"}) if remember else None
+            return {"connected": True, "provider": "bedrock", "model": m, "region": region, "key": mask_secret(key),
+                    "remembered": bool(saved), "tried": tried}
+    except BaseException:
+        restore()
+        raise
+    restore()                          # every attempt failed: put the previous settings back
+    kind = _bedrock_error_kind(last)
+    if kind == "network":
+        raise LLMError(f"Could not reach Amazon Bedrock from this computer. Check the internet connection, VPN or proxy, "
+                       f"then try again. ({last[:200]})")
+    if kind == "key":
+        raise LLMError(f"AWS did not accept this key: it may be mistyped, expired (short-term keys last hours) or deleted. "
+                       f"Generate a new one under Amazon Bedrock > API keys. ({last[:200]})")
+    raise LLMError(f"The key works, but no model answered ({last[:240] or 'no reply'}). Tried: {', '.join(tried) or '-'}. "
+                   f"Enable an Anthropic Claude model under Amazon Bedrock > Model access in {region}, or paste a model id "
+                   "from: python -m q2e bedrock-check.")
+
+
+def _bedrock_error_kind(msg: str) -> str:
+    m = msg.lower()
+    if any(w in m for w in ("failed to connect", "could not connect", "endpointconnectionerror", "timed out", "timeout",
+                            "proxy", "name resolution", "connection refused", "connection reset")):
+        return "network"
+    if any(w in m for w in ("unrecognizedclient", "security token", "expired", "invalid api key", "bearer token",
+                            "signature", "invalidclienttokenid")):
+        return "key"
+    return "model"
+
+
+def bedrock_disconnect(forget: bool = False) -> dict:
+    """Stop using Bedrock on this server (back to rule-based agents); with forget, also blank the key in .env."""
+    os.environ.pop("AWS_BEARER_TOKEN_BEDROCK", None)
+    os.environ["Q2E_LLM_PROVIDER"] = "offline"
+    if forget:
+        _write_env({"AWS_BEARER_TOKEN_BEDROCK": None, "Q2E_LLM_PROVIDER": "offline"})
+    return {"connected": False, "provider": "offline", "forgotten": forget}
 
 
 def get_provider(name: str | None = None) -> BaseProvider:

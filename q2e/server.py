@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expertise, expressions, generic, glossary, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
+from . import __version__, access, agents, answerability, expertise, expressions, generic, glossary, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -65,7 +65,7 @@ def index():
 
 # ------------------------------------------------------------------ meta
 @app.get("/api/meta")
-def meta():
+def meta(request: Request):
     k = get_knowledge()
     client = LLMClient()
     local = Path(settings.nhanes_dir)
@@ -73,7 +73,75 @@ def meta():
             "boundary": privacy.boundary_summary(client.provider.name), "voice": voice.enabled(),
             "data": {"local_dir": str(local), "local_files": len(list(local.glob("*.xpt")) + list(local.glob("*.XPT"))) if local.exists() else 0,
                      "synthetic_ready": (settings.synthetic_dir / "P_DEMO.xpt").exists(), "allow_download": settings.allow_download},
-            "datasets": generic.list_datasets(), "r": r_status()}
+            "datasets": generic.list_datasets(), "r": r_status(), "ai_setup": {"needs_code": not _is_local(request)}}
+
+
+class BedrockKey(BaseModel):
+    api_key: str = Field(min_length=20, max_length=4000)
+    region: str = Field("us-east-1", max_length=30)
+    model_id: str | None = Field(None, max_length=200)
+    remember: bool = False
+
+
+# A setup code printed in the terminal running BEDSIDE. The person who started the server can read it; a stranger who
+# can only reach the web page cannot. Needed only when the browser is not on the same computer (Codespaces, a forwarded
+# port, another machine on the network).
+_SETUP = {"fails": 0}
+_LOOPBACK = {"127.0.0.1", "::1", "localhost", "testclient"}
+
+
+def _is_local(request: Request) -> bool:
+    host = (request.client.host if request.client else "") or ""
+    forwarded = request.headers.get("x-forwarded-for") or request.headers.get("x-forwarded-host")
+    return host in _LOOPBACK and not forwarded
+
+
+def _may_set_keys(request: Request) -> None:
+    """Only the person running BEDSIDE may change the AI login: same computer, the terminal's setup code, or Q2E_TOOL_KEY."""
+    if _is_local(request):
+        return
+    if settings.tool_key and request.headers.get("x-q2e-key") == settings.tool_key:
+        return
+    if _SETUP["fails"] >= 10:
+        _bad("Too many wrong setup codes. Restart BEDSIDE to get a new code.", 429)
+    code = (request.headers.get("x-bedside-setup-code") or "").strip()
+    if code and access.check(code):
+        return
+    how = ("To see it, open a terminal in the BEDSIDE folder (in a Codespace: Terminal > New Terminal) and run: "
+           "python -m q2e setup-code")
+    if code:
+        _SETUP["fails"] += 1
+        _bad(f"That setup code is not right ({10 - _SETUP['fails']} tries left). {how}", 403)
+    _bad(f"Enter the BEDSIDE setup code (it proves you are the person running BEDSIDE). {how}", 403)
+
+
+@app.on_event("startup")
+def _announce_setup_code() -> None:
+    print(f"\n  BEDSIDE setup code: {access.setup_code()}\n  (type it in the browser only if it asks, when connecting "
+          f"Amazon Bedrock from another computer or a Codespace; show it again with: python -m q2e setup-code)\n", flush=True)
+
+
+@app.post("/api/ai/bedrock")
+def ai_bedrock_connect(body: BedrockKey, request: Request):
+    """Connect Amazon Bedrock with a Bedrock API key. The key is tested, kept in this server's memory (and in the local
+    .env only if `remember`), and never returned, logged or stored in a project."""
+    _may_set_keys(request)
+    from .llm import LLMError, bedrock_connect
+    try:
+        out = bedrock_connect(body.api_key, body.region, body.model_id or "", body.remember)
+    except LLMError as e:
+        _bad(str(e), 400)
+    print(f"[BEDSIDE] Amazon Bedrock connected: {out['model']} in {out['region']} (key {out['key']})", flush=True)
+    return {**out, "llm": LLMClient().status()}
+
+
+@app.delete("/api/ai/bedrock")
+def ai_bedrock_disconnect(request: Request, forget: bool = False):
+    _may_set_keys(request)
+    from .llm import bedrock_disconnect
+    out = bedrock_disconnect(forget)
+    print("[BEDSIDE] Amazon Bedrock disconnected" + (" and key removed from .env" if forget else ""), flush=True)
+    return {**out, "llm": LLMClient().status()}
 
 
 @app.get("/api/r-status")

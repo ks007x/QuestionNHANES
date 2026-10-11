@@ -133,7 +133,7 @@ h3.sub { font: 600 14px var(--sans); color: var(--ink); margin: 18px 0 8px; lett
 .btn.ghost:hover { border-color: var(--line); color: var(--ink); }
 .btn.sm { padding: 4px 10px; font-size: 13px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
-input[type=text], input[type=number], select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; }
+input[type=text], input[type=number], input[type=password], input:not([type]), select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; }
 textarea { width: 100%; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); border-color: var(--accent); }
 select { max-width: 100%; }
