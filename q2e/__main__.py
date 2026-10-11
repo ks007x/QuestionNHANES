@@ -175,7 +175,7 @@ def _ai_test(questions: list[str]) -> int:
         for c in failed[:3]:
             block.append(f"- FAILED call ({c.get('agent')}): {str(c.get('error'))[:200]}")
         ok = ok and good > 0
-        print("\n".join(block) + "\n")
+        print("\n".join(block) + "\n", flush=True)
         lines += block + [""]
     from pathlib import Path
     Path("ai_test.md").write_text("\n".join(lines), encoding="utf-8")

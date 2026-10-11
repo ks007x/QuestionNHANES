@@ -46,6 +46,39 @@ def _investigator_llm(client: LLMClient, question: str, k: Knowledge) -> dict:
     return client.complete_json("Investigator", SYSTEM_BASE, user, max_tokens=1500)
 
 
+def _methods_facts(plan: dict) -> dict:
+    """What the plan already specifies, in words, so the AI critiques real gaps instead of asking for things that are
+    already done (BP protocol, primary estimator, age standardization, multiplicity)."""
+    k = get_knowledge()
+    facts: dict = {}
+    try:
+        from .appraisal import methods_bullets
+        facts["methods"] = [b["label"] + ": " + b["text"] + (" (" + "; ".join(b["items"]) + ")" if b.get("items") else "")
+                            for b in methods_bullets(plan, None, k)]
+    except Exception:  # noqa: BLE001 - context only
+        facts["methods"] = [plan.get("model", {}).get("rationale", "")]
+    defs = {}
+    for role in ("outcome", "exposure"):
+        v = plan.get(role) or {}
+        d = k.definitions.get(v.get("variable", ""))
+        if d:
+            defs[role] = {"definition": d.get("label"), "criteria": d.get("criteria_text"),
+                          "measurement": d.get("operational_notes"), "source": (d.get("source") or {}).get("citation")}
+    facts["case_definitions"] = defs
+    est = plan.get("estimand") or {}
+    cmp = est.get("comparison") or {}
+    if est.get("kind") == "comparison" or cmp:
+        facts["primary_analysis"] = (f"Survey-weighted proportion in each group ({cmp.get('label', 'group')}: {cmp.get('level')} vs "
+                                     f"{cmp.get('reference')}) with Korn-Graubard 95% CIs; design-based difference in percentage points "
+                                     "and prevalence ratio with 95% CIs; Wald test of any difference. Regression is used only for the "
+                                     "secondary adjusted comparison.")
+        facts["multiplicity"] = "One prespecified primary comparison; subgroup and sensitivity estimates are descriptive and labelled as such."
+    aa = plan.get("age_adjust") or {}
+    if aa.get("enabled"):
+        facts["age_standardization"] = "Direct age standardization to the projected 2000 US population (NCHS age groups), reported with crude estimates."
+    return facts
+
+
 def _statistician_llm(client: LLMClient, plan: dict) -> dict:
     slim = {k2: plan[k2] for k2 in ("refined_question", "study_type", "covariates", "subgroups", "interactions", "model",
                                     "adjustment_sets", "missing_data") if k2 in plan}
@@ -53,10 +86,11 @@ def _statistician_llm(client: LLMClient, plan: dict) -> dict:
     if plan.get("exposure"):
         slim["exposure"] = {"label": plan["exposure"]["label"], "type": plan["exposure"]["type"], "scale": plan["exposure"].get("scale")}
     slim["sensitivity"] = [s["label"] for s in plan["sensitivity"]]
-    user = ("Draft statistical analysis plan:\n" + json.dumps(slim, indent=1) +
+    slim["already_specified"] = _methods_facts(plan)
+    user = ("Draft statistical analysis plan:\n" + json.dumps(slim, indent=1, default=str) +
             "\n\nReturn JSON {rationale: <=120-word justification of estimand, model family, weighting/variance estimation, "
             "missing-data and sensitivity strategy for a JAMA Network Open methods section>, suggestions: [<=3 short concrete "
-            "improvements]}.")
+            "improvements that are NOT already in already_specified; if the plan already covers something, do not suggest it]}.")
     return client.complete_json("Statistician", SYSTEM_BASE, user, max_tokens=900)
 
 
@@ -67,10 +101,14 @@ def _reviewer_llm(client: LLMClient, plan: dict, rule_issues: list[dict]) -> dic
             "limitations": plan["limitations"], "already_flagged": [i["title"] for i in rule_issues],
             "primary_estimand": (plan.get("estimand") or {}).get("kind"),
             "comparison": {k2: v for k2, v in ((plan.get("estimand") or {}).get("comparison") or {}).items() if k2 in ("label", "level", "reference")},
-            "secondary_models": [a["label"] for a in plan.get("adjustment_sets", [])]}
-    user = ("Act as a critical peer reviewer (\"Reviewer 2\") for JAMA Network Open. Plan:\n" + json.dumps(slim, indent=1) +
+            "secondary_models": [a["label"] for a in plan.get("adjustment_sets", [])],
+            "already_specified": _methods_facts(plan)}
+    slim.pop("model", None)       # the regression family is for the secondary model; already_specified gives the primary analysis
+    user = ("Act as a critical peer reviewer (\"Reviewer 2\") for JAMA Network Open. Plan:\n" + json.dumps(slim, indent=1, default=str) +
             "\n\nReturn JSON {issues: [{severity: 'major'|'minor', title, detail}]} with at most 4 NEW issues not already flagged "
-            "(confounding, selection, measurement, generalizability, reporting).")
+            "(confounding, selection, measurement, generalizability, reporting). Read already_specified first: do not raise "
+            "anything it already handles (estimator, BP or lab measurement protocol, age standardization, multiplicity). "
+            "Use 'major' only for problems that would change the conclusion.")
     return client.complete_json("Reviewer", SYSTEM_BASE, user, max_tokens=900)
 
 
