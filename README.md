@@ -278,3 +278,5 @@ tests/          pytest suite (r/tests for testthat)
 * This is research software, not a medical device. Outputs need expert review.
 
 MIT License.
+
+<!-- final -->
