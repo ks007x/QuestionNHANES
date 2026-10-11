@@ -19,10 +19,10 @@ from typing import Any
 
 from .knowledge import Knowledge, get_knowledge
 
-MED_VARS = {"BPQ040A", "BPQ050A", "DIQ050", "DIQ070", "MCQ053"}
+MED_VARS = {"BPQ040A", "BPQ050A", "BPQ150", "DIQ050", "DIQ070", "MCQ053"}
 # markers that a participant knows about the outcome condition (diagnosis or treatment) - used for reverse-causation checks
 SELF_REPORT_BLOCK = {"DIQ010": "dm_selfreport", "DIQ050": "insulin_use", "DIQ070": "dm_pills", "BPQ020": "htn_selfreport",
-                     "BPQ050A": "bp_meds", "MCQ160B": "hf", "MCQ160C": "chd", "MCQ160F": "stroke", "MCQ160E": "mi"}
+                     "BPQ050A": "bp_meds", "BPQ150": "bp_meds", "MCQ160B": "hf", "MCQ160C": "chd", "MCQ160F": "stroke", "MCQ160E": "mi"}
 VALIDATED_INSTRUMENT_PREFIX = ("DPQ",)   # PHQ-9 and similar validated questionnaires
 BEHAVIOUR_DOMAINS = {"behaviour", "nutrition"}
 MIN_ADJUST = {"age", "sex", "race_eth"}

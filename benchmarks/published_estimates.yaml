@@ -6,7 +6,9 @@
 #
 # Each item is asked of Q2E as a plain-language question, exactly as a clinician would type it. Q2E is run
 # unchanged (no item-specific tuning). `expected_definition` is the Q2E definition that matches the report, or
-# null when Q2E has no matching definition (coverage gap).
+# null when Q2E has no matching definition (coverage gap). Run 1 (2026-10-11) used the library as it was then;
+# the definitions learned from these NCHS reports were added afterwards, so items marked `set: holdout` (added
+# after the fixes, never used to tune Q2E) are the fair test of whether the fixes generalize.
 
 sources:
   nhsr158:
@@ -53,7 +55,7 @@ items:
     cycles: [P]
     question: "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?"
     definition: "BMI >=40 kg/m2; adults 20+"
-    expected_definition: null
+    expected_definition: severe_obesity_cdc
     published:
       overall: {est: 9.0, lcl: 7.8, ucl: 10.3}
       Male: {est: 6.4, lcl: 5.1, ucl: 8.0}
@@ -75,7 +77,7 @@ items:
     cycles: [P]
     question: "What is the prevalence of diabetes among US adults aged 20 and over?"
     definition: "Diagnosed (self-report, not pregnancy) or fasting plasma glucose >=126 mg/dL or HbA1c >=6.5%; fasting weights; 20+"
-    expected_definition: diabetes_ada
+    expected_definition: diabetes_nchs
     published:
       overall: {est: 16.2, lcl: 14.2, ucl: 18.3}
       Male: {est: 17.7, lcl: 15.5, ucl: 20.2}
@@ -86,7 +88,7 @@ items:
     cycles: [P]
     question: "What is the prevalence of obesity among US children and adolescents aged 2 to 19 years?"
     definition: "BMI >= sex- and age-specific 95th percentile of the 2000 CDC growth charts; 2-19 y"
-    expected_definition: null
+    expected_definition: obesity_cdc
     published:
       overall: {est: 19.7, lcl: 17.9, ucl: 21.6}
       Male: {est: 20.9, lcl: 18.9, ucl: 22.9}
@@ -128,7 +130,7 @@ items:
     cycles: [L]
     question: "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?"
     definition: "BMI >=40 kg/m2; 20+; pregnant women excluded"
-    expected_definition: null
+    expected_definition: severe_obesity_cdc
     published:
       overall: {est: 9.4, se: 0.7}
       Male: {est: 6.7, se: 0.7}
@@ -150,7 +152,7 @@ items:
     cycles: [L]
     question: "What is the prevalence of diabetes among US adults aged 20 and over?"
     definition: "Diagnosed (self-report) or FPG >=126 mg/dL or HbA1c >=6.5%; fasting weights; 20+; pregnant women excluded"
-    expected_definition: diabetes_ada
+    expected_definition: diabetes_nchs
     published:
       overall: {est: 15.8, lcl: 13.6, ucl: 18.2}
       Male: {est: 18.0, lcl: 15.7, ucl: 20.4}
@@ -161,7 +163,7 @@ items:
     cycles: [L]
     question: "What is the prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?"
     definition: "Serum total cholesterol >=240 mg/dL; 20+"
-    expected_definition: null
+    expected_definition: high_tc_240
     published:
       overall: {est: 11.3, lcl: 9.8, ucl: 12.9}
       Male: {est: 10.6, lcl: 8.6, ucl: 12.9}
@@ -172,7 +174,7 @@ items:
     cycles: [L]
     question: "What is the prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?"
     definition: "HDL-C <40 mg/dL (single threshold); 20+"
-    expected_definition: null
+    expected_definition: low_hdl_40
     published:
       overall: {est: 13.8, lcl: 12.1, ucl: 15.7}
       Male: {est: 21.5, lcl: 18.6, ucl: 24.6}
@@ -199,3 +201,146 @@ items:
       overall: {est: 13.1, se: 0.7}
       Male: {est: 10.1, se: 0.9}
       Female: {est: 16.0, se: 0.9}
+
+  # ---------------- HOLD-OUT: added after the fixes; not used to tune Q2E ----------------
+  - id: holdout_obesity_20_39_L
+    set: holdout
+    source: db508
+    table: "Data table for Figure 1 (crude; SE only)"
+    cycles: [L]
+    question: "What is the prevalence of obesity among US adults aged 20 to 39 years?"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 35.5, se: 3.0}
+      Male: {est: 34.3, se: 2.8}
+      Female: {est: 36.8, se: 3.6}
+  - id: holdout_obesity_60plus_L
+    set: holdout
+    source: db508
+    table: "Data table for Figure 1 (crude; SE only)"
+    cycles: [L]
+    question: "How common is obesity in US adults aged 60 and older?"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 38.9, se: 1.5}
+      Male: {est: 38.0, se: 2.3}
+      Female: {est: 39.6, se: 1.9}
+  - id: holdout_severe_obesity_60plus_P
+    set: holdout
+    source: nhsr158
+    table: "Table 6"
+    cycles: [P]
+    question: "What percentage of US adults aged 60 and over have severe obesity?"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 6.1, lcl: 5.2, ucl: 7.2}
+      Male: {est: 3.5, lcl: 2.6, ucl: 4.5}
+      Female: {est: 8.3, lcl: 6.8, ucl: 10.0}
+  - id: holdout_hypertension_18_39_L
+    set: holdout
+    source: db511
+    table: "Table 1"
+    cycles: [L]
+    question: "What is the prevalence of hypertension in US adults aged 18 to 39?"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 23.4, lcl: 20.2, ucl: 26.9}
+      Male: {est: 30.0, lcl: 26.2, ucl: 34.1}
+      Female: {est: 16.4, lcl: 12.6, ucl: 21.0}
+  - id: holdout_hypertension_60plus_P
+    set: holdout
+    source: nhsr158
+    table: "Table 7"
+    cycles: [P]
+    question: "How common is high blood pressure among US adults aged 60 and older?"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 74.1, lcl: 71.4, ucl: 76.7}
+      Male: {est: 73.1, lcl: 68.5, ucl: 77.3}
+      Female: {est: 75.0, lcl: 72.1, ucl: 77.7}
+  - id: holdout_diabetes_60plus_P
+    set: holdout
+    source: nhsr158
+    table: "Table 8"
+    cycles: [P]
+    question: "What is the prevalence of diabetes among US adults aged 60 and over?"
+    expected_definition: diabetes_nchs
+    published:
+      overall: {est: 30.0, lcl: 27.2, ucl: 32.9}
+      Male: {est: 36.3, lcl: 30.8, ucl: 42.1}
+      Female: {est: 24.4, lcl: 19.4, ucl: 30.1}
+  - id: holdout_diagnosed_diabetes_L
+    set: holdout
+    source: db516
+    table: "Diagnosed diabetes (crude)"
+    cycles: [L]
+    question: "What is the prevalence of diagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: null
+    published:
+      overall: {est: 11.3, lcl: 9.3, ucl: 13.5}
+      Male: {est: 12.9, lcl: 11.0, ucl: 15.0}
+      Female: {est: 9.7, lcl: 7.3, ucl: 12.7}
+  - id: holdout_undiagnosed_diabetes_L
+    set: holdout
+    source: db516
+    table: "Undiagnosed diabetes (crude)"
+    cycles: [L]
+    question: "What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: null
+    published:
+      overall: {est: 4.5, lcl: 3.3, ucl: 5.9}
+      Male: {est: 5.1, lcl: 3.6, ucl: 6.9}
+      Female: {est: 3.9, lcl: 2.8, ucl: 5.3}
+  - id: holdout_child_obesity_12_19_P
+    set: holdout
+    source: nhsr158
+    table: "Table 3"
+    cycles: [P]
+    question: "What is the prevalence of obesity among US adolescents aged 12 to 19?"
+    expected_definition: obesity_cdc
+    published:
+      overall: {est: 22.2, lcl: 19.7, ucl: 24.8}
+      Male: {est: 22.6, lcl: 19.7, ucl: 25.7}
+      Female: {est: 21.7, lcl: 18.1, ucl: 25.7}
+  - id: holdout_child_obesity_2_5_P
+    set: holdout
+    source: nhsr158
+    table: "Table 3"
+    cycles: [P]
+    question: "How common is obesity in US children aged 2 to 5 years?"
+    expected_definition: obesity_cdc
+    published:
+      overall: {est: 12.7, lcl: 10.8, ucl: 14.8}
+      Male: {est: 13.6, lcl: 10.8, ucl: 16.8}
+      Female: {est: 11.8, lcl: 9.3, ucl: 14.8}
+  - id: holdout_depression_12_19_L
+    set: holdout
+    source: db527
+    table: "Data table for Figure 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of depression among US adolescents aged 12 to 19?"
+    expected_definition: depression_phq9
+    published:
+      overall: {est: 19.2, se: 1.3}
+      Male: {est: 12.2, se: 1.5}
+      Female: {est: 26.5, se: 2.5}
+  - id: holdout_depression_60plus_L
+    set: holdout
+    source: db527
+    table: "Data table for Figure 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of depression in US adults aged 60 and older?"
+    expected_definition: depression_phq9
+    published:
+      overall: {est: 8.7, se: 0.8}
+      Male: {est: 6.5, se: 1.3}
+      Female: {est: 10.6, se: 1.1}
+  - id: holdout_anemia_women_20_59_L
+    set: holdout
+    source: db519
+    table: "Table 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of anemia among US women aged 20 to 59?"
+    expected_definition: anemia_who
+    published:
+      overall: {est: 14.0, se: 0.7}

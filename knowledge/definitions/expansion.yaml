@@ -10,6 +10,10 @@ definitions:
       - "BP is the mean of up to 3 readings at a single visit (oscillometric in 2017-2020/2021-2023; auscultatory in earlier cycles - mode differs across cycles)."
     source: {citation: "Whelton PK, et al. 2017 ACC/AHA Guideline for High Blood Pressure in Adults. Hypertension. 2018;71:e13-e115.", year: 2017}
     status: verified
+    benchmarks:
+      - {label: "NCHS NHSR 158, adults 18+, 2017-March 2020 (crude)", cycles: [P], min_age: 18, estimate: 0.481, lcl: 0.454, ucl: 0.508}
+      - {label: "NCHS Data Brief 511, adults 18+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 18, estimate: 0.477, lcl: 0.454, ucl: 0.499}
+
   - id: htn_jnc7
     concept: hypertension
     label: "Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)"
@@ -43,6 +47,9 @@ definitions:
       - "A positive screen, not a clinical diagnosis; any missing item makes the score missing."
     source: {citation: "Kroenke K, Spitzer RL, Williams JB. The PHQ-9. J Gen Intern Med. 2001;16:606-613.", year: 2001}
     status: verified
+    benchmarks:
+      - {label: "NCHS Data Brief 527, age 12+, Aug 2021-Aug 2023", cycles: [L], min_age: 12, estimate: 0.131, lcl: 0.117, ucl: 0.145}
+
   - id: hyperuricemia
     concept: hyperuricemia
     label: "Hyperuricemia - uric acid >7.0 (men) / >6.0 (women) mg/dL"
@@ -129,10 +136,14 @@ definitions:
     short: "BMI >=30"
     type: binary
     expr: "bmi >= 30"
-    criteria_text: "Measured BMI >=30 kg/m2."
+    child_alternative: obesity_cdc
+    criteria_text: "Measured BMI >=30 kg/m2 (adults; children and adolescents use CDC growth-chart percentiles instead)."
     operational_notes: []
     source: {citation: "WHO/CDC adult BMI categories.", year: 2000}
     status: verified
+    benchmarks:
+      - {label: "NCHS NHSR 158, adults 20+, 2017-March 2020 (crude)", cycles: [P], min_age: 20, estimate: 0.419, lcl: 0.394, ucl: 0.443}
+      - {label: "NCHS Data Brief 508, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.403, lcl: 0.368, ucl: 0.438}
   - id: osa_symptoms
     concept: sleep_apnea
     label: "Probable sleep-disordered breathing - frequent snoring or witnessed apneas"

@@ -31,10 +31,9 @@ def _not_in_cycles(name: str, cycles: list[str], k: Knowledge, plan: dict) -> bo
         return False
 
 
-def _with_subsample(cm: dict, sub: dict | None) -> dict:
-    if not sub:
-        return cm
-    cm = {**cm, "weights": {**cm["weights"], "subsample": sub["weight"]}, "weight_files": {**cm.get("weight_files", {}), "subsample": sub["file"]}}
+def _with_subsample(cm: dict, subs: dict | None) -> dict:
+    for level, sub in (subs or {}).items():
+        cm = {**cm, "weights": {**cm["weights"], level: sub["weight"]}, "weight_files": {**cm.get("weight_files", {}), level: sub["file"]}}
     return cm
 
 
@@ -157,15 +156,51 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
                     continue
                 hit = k.subsample_weight(r["variable"], c)
                 if hit:
-                    subsample.setdefault(c, {"weight": hit[0], "file": hit[1], "because": r["variable"]})
-                    r["weight_level"] = "subsample"
-        levels = [r["weight_level"] for r in raw_vars if r["type"] not in ("weight", "design", "id")]
-        weight_level = max(levels, key=lambda x: RAW_VAR_RANK.get(x, 0)) if levels else "interview"
-        if weight_level == "subsample":
-            missing_w = [c for c in cycles if c not in subsample]
+                    level = "phlebotomy" if hit[0].upper().startswith("WTPH") else "subsample"
+                    subsample.setdefault(c, {}).setdefault(level, {"weight": hit[0], "file": hit[1], "because": r["variable"]})
+                    if r["weight_level"] == "mec" or level == "subsample":
+                        r["weight_level"] = level
+        # The analysis weight is set by the variables that define the analytic sample - outcome, exposure, model
+        # covariates and eligibility criteria. Descriptive extras (Table 1 columns, other prevalence outcomes,
+        # subgroups, sensitivity analyses) must not switch the whole study to a smaller subsample weight: those
+        # that would need one are left out and listed (e.g. HbA1c in a 2021-2023 hypertension Table 1 forced the
+        # phlebotomy weight and moved hypertension prevalence 10 points from the NCHS estimate).
+        by_var = {r["variable"]: r for r in raw_vars}
+        dexpr = {d["name"]: d["expr"] for d in derived}
+
+        def deps(name: str, seen: set | None = None) -> set:
+            seen = seen if seen is not None else set()
+            if name in seen:
+                return set()
+            seen.add(name)
+            if name in by_var:
+                return {name}
+            if name in dexpr:
+                out: set = set()
+                for i in expressions.identifiers(dexpr[name]):
+                    out |= deps(i, seen)
+                return out
+            return set()
+
+        def level_of(names) -> str:
+            lv = [by_var[v]["weight_level"] for n in names for v in deps(n) if by_var[v]["type"] not in ("weight", "design", "id")]
+            return max(lv, key=lambda x: RAW_VAR_RANK.get(x, 0)) if lv else "interview"
+        core = [outcome] + ([exposure] if exposure else [])
+        if exposure:     # covariates only enter models when there is an exposure
+            core += list(plan.get("covariates", []))
+            for a in plan.get("adjustment_sets", []):
+                core += a["covariates"]
+        for c in population:
+            core += expressions.validate(c["expr"])
+        weight_level = level_of(core)
+        rank = RAW_VAR_RANK.get(weight_level, 0)
+        too_strict = {n for n in names if RAW_VAR_RANK.get(level_of([n]), 0) > rank}
+        if weight_level in ("subsample", "phlebotomy"):
+            missing_w = [c for c in cycles if weight_level not in subsample.get(c, {})]
             if missing_w:
                 raise CompileError(f"Subsample variables need subsample weights, but none were found for cycle(s) {', '.join(missing_w)}.")
     else:
+        too_strict = set()
         cycles = []
         for v in sorted(raw):
             raw_vars.append({"variable": v, "file": "data", "cycles": [], "type": "unknown", "min": None, "max": None,
@@ -176,8 +211,15 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
     for a in plan.get("adjustment_sets", []):
         sets.append({"id": a["id"], "label": a["label"], "covariates": [c for c in a["covariates"] if c != exposure]})
     sens_out = []
+    weight_notes = []
     for s in sens:
         item = {k2: v for k2, v in s.items() if k2 not in ("enabled",)}
+        used = ([item["outcome"]] if item.get("outcome") else []) + ([item["exposure"]] if item.get("exposure") else []) \
+            + list(item.get("covariates") or []) + (expressions.validate(item["expr"]) if item.get("expr") else [])
+        if any(u in too_strict for u in used):
+            weight_notes.append(f"Sensitivity analysis '{item.get('label', item.get('type'))}' left out: it needs a subsample weight "
+                                f"the primary analysis does not use.")
+            continue
         if item.get("type") == "alt_exposure" and plan["exposure"].get("type") == "continuous" and k.var_type(item["exposure"]) == "continuous":
             pass
         sens_out.append(item)
@@ -201,7 +243,7 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
         "title": plan.get("title"), "study_type": plan["study_type"],
         "dataset": dataset_spec,
         "cycles_meta": ({c: _with_subsample(k.cycles[c], subsample.get(c)) for c in cycles} if is_nhanes else {}),
-        "subsample_weights": subsample if is_nhanes else {},
+        "subsample_weights": {c: v.get(weight_level) or next(iter(v.values())) for c, v in subsample.items()} if is_nhanes else {},
         "weight_level": weight_level,
         "raw_variables": raw_vars,
         "derived": derived,
@@ -212,21 +254,25 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
                       "arms": plan.get("arms")}
                      if exposure else None),
         "covariates": [c for c in plan.get("covariates", []) if c != exposure],
-        "subgroups": plan.get("subgroups", []),
+        "subgroups": [g for g in plan.get("subgroups", []) if g not in too_strict],
         "analysis": {
             "estimand": plan["study_type"],
-            "table1_vars": plan.get("table1_vars", []),
-            "table1_by": plan.get("table1_by"),
-            "prevalence": {"outcomes": plan.get("prevalence_outcomes", []), "by": plan.get("prevalence_by", [])},
+            "table1_vars": [v for v in plan.get("table1_vars", []) if v not in too_strict],
+            "table1_by": plan.get("table1_by") if plan.get("table1_by") not in too_strict else None,
+            "prevalence": {"outcomes": [v for v in plan.get("prevalence_outcomes", []) if v not in too_strict],
+                           "by": [v for v in plan.get("prevalence_by", []) if v not in too_strict]},
             "model": {"family": plan["model"]["family"], "primary_set": plan["model"].get("primary_set", "full")},
             "adjustment_sets": sets,
-            "interactions": plan.get("interactions", []),
+            "interactions": [v for v in plan.get("interactions", []) if v not in too_strict],
             "missing": {"method": plan.get("missing_data", {}).get("method", "complete_case"), "m": 10},
             "sensitivity": sens_out,
             "benchmarks": plan.get("benchmarks", []),
             "distribution_var": None,
         },
         "options": {"seed": 2026, "alpha": 0.05},
+        "weight_notes": weight_notes + [f"'{meta.get(v, {}).get('label', v)}' left out of descriptive tables: it is measured in a subsample "
+                                        f"with its own weight, and the primary analysis uses the {weight_level} weight." for v in sorted(too_strict)
+                                        if v in set(plan.get("table1_vars", [])) | set(plan.get("prevalence_outcomes", [])) | set(plan.get("prevalence_by", []))],
         "unavailable_measures": unavailable + ([d["name"] for d in derived if _not_in_cycles(d["name"], cycles, k, plan)] if is_nhanes else []),
     }
     if plan["study_type"] == "prevalence":

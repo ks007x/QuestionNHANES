@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 
 ALLOWED_FUNCTIONS = {
-    "c", "ifelse", "coalesce", "any_of", "all_of", "cases", "pmin", "pmax", "log", "log10",
+    "c", "ifelse", "mean_of", "cdc_bmi_pct", "cdc_bmi_p95", "coalesce", "any_of", "all_of", "cases", "pmin", "pmax", "log", "log10",
     "exp", "sqrt", "abs", "is.na", "round", "as.numeric",
 }
 CONSTANTS = {"TRUE", "FALSE", "NA", "Inf", "NaN", "T", "F"}

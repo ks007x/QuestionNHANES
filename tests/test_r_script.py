@@ -43,6 +43,7 @@ def _execute(proj, run, res, tmp_path):
 @pytest.mark.parametrize("question", [
     "Is abdominal obesity linked to worse glycemic control?",                       # gaussian, continuous exposure
     "Is higher liver stiffness associated with thrombocytopenia in US adults?",     # quasipoisson prevalence ratio
+    "Is obesity associated with hypertension in US adolescents aged 12 to 19?",    # CDC growth-chart obesity
 ])
 def test_readable_script_reproduces_engine(question, tmp_path):
     proj, run, res = _run(question)

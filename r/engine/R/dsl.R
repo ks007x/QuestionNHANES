@@ -81,12 +81,45 @@ q2e_cases <- function(..., .default = NULL) {
   factor(out, levels = lv)
 }
 
+# Mean of the available values across columns (e.g. "average of up to three BP readings"); NA when all are missing.
+q2e_mean_of <- function(...) {
+  m <- do.call(cbind, lapply(list(...), function(v) suppressWarnings(as.numeric(v))))
+  out <- rowMeans(m, na.rm = TRUE)
+  out[is.nan(out)] <- NA_real_
+  out
+}
+
+# CDC 2000 growth charts (ages 24-240.5 months): LMS parameters interpolated linearly in age, as in the CDC SAS program.
+.cdc_lms_at <- function(agemos, female) {
+  ref <- if (exists(".cdc_bmi_lms")) .cdc_bmi_lms else stop("CDC growth reference not loaded (R/growth_ref.R)")
+  n <- max(length(agemos), length(female)); agemos <- rep_len(as.numeric(agemos), n); sx <- rep_len(as.numeric(female), n) + 1
+  L <- M <- S <- rep(NA_real_, n)
+  for (g in 1:2) {
+    r <- ref[ref$sex == g, ]
+    i <- which(sx == g & !is.na(agemos) & agemos >= 24 & agemos <= 240.5)
+    if (!length(i)) next
+    a <- pmin(agemos[i], 240)
+    L[i] <- stats::approx(r$agemos, r$L, a)$y; M[i] <- stats::approx(r$agemos, r$M, a)$y; S[i] <- stats::approx(r$agemos, r$S, a)$y
+  }
+  list(L = L, M = M, S = S)
+}
+q2e_cdc_bmi_pct <- function(bmi, agemos, female) {          # BMI-for-age percentile (0-100)
+  p <- .cdc_lms_at(agemos, female); bmi <- as.numeric(bmi)
+  z <- ifelse(abs(p$L) < 1e-8, log(bmi / p$M) / p$S, ((bmi / p$M)^p$L - 1) / (p$L * p$S))
+  100 * stats::pnorm(z)
+}
+q2e_cdc_bmi_p95 <- function(agemos, female) {               # BMI at the 95th percentile for age and sex
+  p <- .cdc_lms_at(agemos, female)
+  p$M * (1 + p$L * p$S * stats::qnorm(0.95))^(1 / p$L)
+}
+
 .q2e_functions <- list(
   "+" = base::`+`, "-" = base::`-`, "*" = base::`*`, "/" = base::`/`, "^" = base::`^`,
   "(" = base::`(`, "<" = base::`<`, ">" = base::`>`, "<=" = base::`<=`, ">=" = base::`>=`,
   "==" = base::`==`, "!=" = base::`!=`, "&" = base::`&`, "|" = base::`|`, "!" = base::`!`,
   "%in%" = base::`%in%`, "c" = base::c, "ifelse" = base::ifelse,
   "coalesce" = q2e_coalesce, "any_of" = q2e_any_of, "all_of" = q2e_all_of, "cases" = q2e_cases,
+  "mean_of" = q2e_mean_of, "cdc_bmi_pct" = q2e_cdc_bmi_pct, "cdc_bmi_p95" = q2e_cdc_bmi_p95,
   "pmin" = function(...) base::pmin(..., na.rm = FALSE),
   "pmax" = function(...) base::pmax(..., na.rm = FALSE),
   "log" = function(x) suppressWarnings(base::log(x)), "log10" = function(x) suppressWarnings(base::log10(x)),

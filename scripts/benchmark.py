@@ -125,38 +125,48 @@ def summarize(items: list[dict]) -> dict:
             "all_answered": stats(comps), "right_definition_only": stats(matched)}
 
 
-def to_markdown(items: list[dict], summ: dict, meta: dict) -> str:
-    def pct(a, b):
-        return f"{a}/{b} ({100 * a / b:.0f}%)" if b else "-"
+def _pct(a, b):
+    return f"{a}/{b} ({100 * a / b:.0f}%)" if b else "-"
+
+
+def _summary_lines(summ: dict) -> list[str]:
     s, m = summ["all_answered"], summ["right_definition_only"]
-    L = ["# Q2E accuracy against published NHANES estimates", "",
-         f"Run {meta['date']} on CDC public-use files. {summ['questions']} published prevalence questions from NCHS reports and "
-         "JAMA Network Open; each asked once in plain language; Q2E unchanged and auto-approved; crude weighted prevalence "
-         "compared with the published crude estimate (overall, men, women).", "",
-         "## Summary", "",
-         f"* Questions answered as a prevalence: {pct(summ['answered_as_prevalence'], summ['questions'])}",
-         f"* Questions where Q2E picked the published case definition: {pct(summ['right_definition'], summ['questions'])}"
+    L = [f"* Questions answered as a prevalence: {_pct(summ['answered_as_prevalence'], summ['questions'])}",
+         f"* Questions where Q2E picked the published case definition: {_pct(summ['right_definition'], summ['questions'])}"
          f" ({summ['no_matching_definition_in_q2e']} published definitions are not in Q2E's library)", ""]
     for title, st in (("When Q2E used the published definition", m), ("All estimates Q2E produced", s)):
         if st["n"]:
             L += [f"**{title}** ({st['n']} estimates):", "",
-                  f"* Inside the published 95% CI: {pct(st['within_published_ci'], st['n'])}",
-                  f"* 95% CIs overlap: {pct(st['ci_overlap'], st['n'])}",
-                  f"* Within 1 percentage point: {pct(st['within_1pt'], st['n'])}; within 2 points: {pct(st['within_2pt'], st['n'])}",
+                  f"* Inside the published 95% CI: {_pct(st['within_published_ci'], st['n'])}",
+                  f"* 95% CIs overlap: {_pct(st['ci_overlap'], st['n'])}",
+                  f"* Within 1 percentage point: {_pct(st['within_1pt'], st['n'])}; within 2 points: {_pct(st['within_2pt'], st['n'])}",
                   f"* Mean absolute difference {st['mean_abs_diff_pts']} points (median {st['median_abs_diff_pts']}, max {st['max_abs_diff_pts']})", ""]
+    return L
+
+
+def to_markdown(items: list[dict], summ: dict, meta: dict) -> str:
+    L = ["# Q2E accuracy against published NHANES estimates", "",
+         f"Run {meta['date']} on CDC public-use files. Published crude prevalence estimates from NCHS reports and JAMA Network "
+         "Open; each question asked once in plain language; Q2E auto-approved with no per-item tuning; crude weighted "
+         "prevalence compared with the published figure (overall, men, women).", ""]
+    for key, title in (("core", "Original questions"), ("holdout", "Hold-out questions (added after the fixes, never used to tune Q2E)"),
+                       ("all", "All questions")):
+        if key in summ and summ[key]["questions"]:
+            L += [f"## {title}", ""] + _summary_lines(summ[key])
     L += ["## Item by item", "", "| Item | Group | Published % (95% CI) | Q2E % (95% CI) | Diff (pts) | In CI | Q2E definition |",
           "|---|---|---|---|---|---|---|"]
     for it in items:
+        tag = " (hold-out)" if it.get("set") == "holdout" else ""
         dn = f"{it['q2e_label']}" + ("" if it["definition_match"] else (" - **differs**" if it.get("expected_definition") else " - **no matching definition**"))
         if it["status"] != "answered":
-            L.append(f"| {it['id']} | - | {it['comparisons'][0]['published'] if it['comparisons'] else ''} | **{it['status']}**: {it.get('note', '')} | | | {dn} |")
+            L.append(f"| {it['id']}{tag} | - | {it.get('published_overall', '')} | **{it['status']}**: {it.get('note', '')} | | | {dn} |")
             continue
         for c in it["comparisons"]:
             got = c.get("q2e") is not None
             q = f"{c['q2e']:.1f} ({c['q2e_lcl']:.1f}-{c['q2e_ucl']:.1f})" if got else "-"
             d = f"{c['diff_pts']:+.1f}" if got else ""
             inci = ("yes" if c["within_pub_ci"] else "no") if got else ""
-            L.append(f"| {it['id']} | {c['group']} | {c['published']:.1f} ({c['pub_lcl']:.1f}-{c['pub_ucl']:.1f}) | {q} | {d} | {inci} | "
+            L.append(f"| {it['id']}{tag} | {c['group']} | {c['published']:.1f} ({c['pub_lcl']:.1f}-{c['pub_ucl']:.1f}) | {q} | {d} | {inci} | "
                      f"{dn if c['group'] == 'overall' else ''} |")
     L += ["", "## Sources", ""] + [f"* {v['citation']} {v['url']}" for v in meta["sources"].values()]
     L += ["", "_CIs from reports that give only standard errors are estimate +/- 1.96 SE. Q2E reports crude (not age-adjusted) prevalence, "
@@ -187,8 +197,11 @@ def main() -> int:
         for c in r.get("comparisons", []):
             print(f"   {c['group']:8} published {c['published']:5.1f}  Q2E {c.get('q2e')}  diff {c.get('diff_pts')}  in CI {c.get('within_pub_ci')}", flush=True)
         print(f"   status {r['status']}  definition {r.get('q2e_definition')} (expected {r.get('expected_definition')})  {r.get('note', '')}", flush=True)
+        r["set"] = it.get("set", "core")
+        r["published_overall"] = it["published"]["overall"]["est"]
         items.append(r)
-    summ = summarize(items)
+    summ = {"core": summarize([i for i in items if i.get("set") != "holdout"]),
+            "holdout": summarize([i for i in items if i.get("set") == "holdout"]), "all": summarize(items)}
     meta = {"date": dt.date.today().isoformat(), "sources": cfg["sources"]}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)

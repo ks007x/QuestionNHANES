@@ -1,0 +1,92 @@
+# Case definitions learned from NCHS's own NHANES reports (National Health Statistics Reports and Data Briefs).
+# These are the definitions behind the official U.S. prevalence figures, so a question about national prevalence
+# should be answered with them. `benchmarks` are the published crude estimates for the same definition, cycle and
+# age range; every matching run compares itself with them automatically (Results -> "Replication of published estimate").
+definitions:
+  - id: obesity_cdc
+    concept: obesity
+    label: "Obesity - BMI >=30 kg/m2 (adults); BMI >=95th percentile of the CDC growth charts (2-19 y)"
+    short: "NCHS obesity"
+    type: binary
+    expr: "ifelse(age < 20, bmi_pct_cdc >= 95, bmi >= 30)"
+    criteria_text: "Adults 20+: measured BMI >=30 kg/m2. Children and adolescents 2-19 y: BMI at or above the sex- and age-specific 95th percentile of the 2000 CDC growth charts."
+    operational_notes:
+      - "Age in months at examination (RIDEXAGM) is used when released; 2017-March 2020 files give whole years only, so age is taken as the middle of the year of age."
+      - "Adult cutoffs are never applied to children."
+    source:
+      citation: "Stierman B, et al. NHANES 2017-March 2020 prepandemic data files. National Health Statistics Reports no. 158. NCHS; 2021."
+      url: "https://stacks.cdc.gov/view/cdc/106273"
+      year: 2021
+    status: verified
+    benchmarks:
+      - {label: "NCHS NHSR 158, adults 20+, 2017-March 2020 (crude)", cycles: [P], min_age: 20, estimate: 0.419, lcl: 0.394, ucl: 0.443}
+      - {label: "NCHS NHSR 158, children 2-19 y, 2017-March 2020", cycles: [P], min_age: 2, max_age: 19, estimate: 0.197, lcl: 0.179, ucl: 0.216}
+      - {label: "NCHS Data Brief 508, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.403, lcl: 0.368, ucl: 0.438}
+
+  - id: severe_obesity_cdc
+    concept: severe_obesity
+    label: "Severe obesity - BMI >=40 kg/m2 (adults); BMI >=120% of the 95th percentile (2-19 y)"
+    short: "NCHS severe obesity"
+    type: binary
+    expr: "ifelse(age < 20, bmi >= 1.2 * bmi_p95_cdc, bmi >= 40)"
+    criteria_text: "Adults 20+: BMI >=40 kg/m2 (class 3). Children 2-19 y: BMI >=120% of the CDC 95th percentile for age and sex."
+    operational_notes: []
+    source:
+      citation: "NCHS Data Brief no. 508 (2024); NHSR no. 158 (2021)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db508.htm"
+      year: 2024
+    status: verified
+    benchmarks:
+      - {label: "NCHS NHSR 158, adults 20+, 2017-March 2020 (crude)", cycles: [P], min_age: 20, estimate: 0.090, lcl: 0.078, ucl: 0.103}
+      - {label: "NCHS Data Brief 508, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.094, lcl: 0.080, ucl: 0.108}
+
+  - id: diabetes_nchs
+    concept: diabetes
+    label: "Total diabetes (NCHS) - diagnosed, or fasting plasma glucose >=126 mg/dL, or HbA1c >=6.5%"
+    short: "NCHS total diabetes"
+    type: binary
+    expr: "any_of(dm_selfreport, fpg >= 126, hba1c >= 6.5)"
+    criteria_text: "Told by a doctor they have diabetes (other than during pregnancy), or undiagnosed diabetes: fasting plasma glucose >=126 mg/dL or HbA1c >=6.5% (ADA criteria). Fasting subsample weights."
+    operational_notes:
+      - "Uses the morning fasting subsample, so the fasting weight is applied and the sample is about half the examined adults."
+    source:
+      citation: "NCHS Data Brief no. 516 (2024); NHSR no. 158 (2021)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
+      year: 2024
+    status: verified
+    prevalence_default: true
+    benchmarks:
+      - {label: "NCHS NHSR 158, adults 20+, 2017-March 2020 (crude)", cycles: [P], min_age: 20, estimate: 0.162, lcl: 0.142, ucl: 0.183}
+      - {label: "NCHS Data Brief 516, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.158, lcl: 0.136, ucl: 0.182}
+
+  - id: high_tc_240
+    concept: total_cholesterol
+    label: "High total cholesterol - serum total cholesterol >=240 mg/dL"
+    short: "TC >=240"
+    type: binary
+    expr: "tc >= 240"
+    criteria_text: "Serum total cholesterol >=240 mg/dL."
+    operational_notes: []
+    source:
+      citation: "NCHS Data Brief no. 515 (2024)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db515.htm"
+      year: 2024
+    status: verified
+    benchmarks:
+      - {label: "NCHS Data Brief 515, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.113, lcl: 0.098, ucl: 0.129}
+
+  - id: low_hdl_40
+    concept: hdl
+    label: "Low HDL cholesterol - HDL-C <40 mg/dL"
+    short: "HDL <40"
+    type: binary
+    expr: "hdl < 40"
+    criteria_text: "Serum HDL cholesterol <40 mg/dL (single threshold for both sexes, as in NCHS reports)."
+    operational_notes: []
+    source:
+      citation: "NCHS Data Brief no. 515 (2024)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db515.htm"
+      year: 2024
+    status: verified
+    benchmarks:
+      - {label: "NCHS Data Brief 515, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.138, lcl: 0.121, ucl: 0.157}

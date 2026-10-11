@@ -57,14 +57,18 @@ definitions:
     label: "Anemia - WHO hemoglobin thresholds"
     short: "WHO Hb"
     type: binary
-    expr: "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))"
-    criteria_text: "Hemoglobin <13 g/dL (men), <12 g/dL (nonpregnant women), <11 g/dL (pregnancy)."
+    expr: "hgb_adj < hb_cutoff_who"
+    exclude_pregnant: true
+    criteria_text: "Hemoglobin below the WHO 2024 cutoff: <11.0 g/dL (2-4 y), <11.5 (5-11 y), <12.0 (12-14 y and nonpregnant females 15+), <13.0 (males 15+), <11.0 (pregnancy)."
     operational_notes:
-      - "No altitude or smoking adjustment applied."
+      - "Hemoglobin lowered by 0.3 g/dL in self-reported current smokers (WHO 2024); no altitude adjustment (as in NCHS Data Brief 519)."
+      - "2021-2023 laboratory values carry phlebotomy weights (WTPH2YR), which Q2E applies automatically."
     source:
       citation: "World Health Organization. Guideline on haemoglobin cutoffs to define anaemia in individuals and populations. Geneva: WHO; 2024."
       year: 2024
     status: verified
+    benchmarks:
+      - {label: "NCHS Data Brief 519, age 2+, Aug 2021-Aug 2023", cycles: [L], min_age: 2, estimate: 0.093, lcl: 0.083, ucl: 0.103}
 
   - id: ckd_kdigo
     concept: ckd

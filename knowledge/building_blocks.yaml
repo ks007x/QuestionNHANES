@@ -71,6 +71,8 @@ blocks:
   - {name: stroke, tier: measure, type: binary, label: "Stroke (self-report)", nhanes: "MCQ160F == 1", match_terms: [stroke]}
   - {name: cancer_hx, tier: measure, type: binary, label: "History of cancer (self-report)", nhanes: "MCQ220 == 1", match_terms: [cancer, malignancy]}
   - {name: htn_selfreport, tier: measure, type: binary, label: "Self-reported hypertension", nhanes: "BPQ020 == 1", match_terms: [high blood pressure, hypertension]}
+  - {name: age_months, tier: measure, type: continuous, units: months, label: "Age in months at examination (2-19 y)", nhanes: "coalesce(RIDEXAGM, ifelse(RIDAGEYR < 20, RIDAGEYR * 12 + 6, NA))", match_terms: [age in months]}
+  - {name: current_smoker, tier: measure, type: binary, label: "Current cigarette smoker (self-report)", nhanes: "SMQ040 %in% c(1, 2)", match_terms: [current smoker]}
   - {name: smoking, tier: measure, type: categorical, label: "Smoking status",
      nhanes: 'cases(SMQ020 == 2, "Never", SMQ040 == 3, "Former", SMQ040 %in% c(1, 2), "Current")',
      match_terms: [smoking status, cigarettes, tobacco]}
@@ -83,8 +85,14 @@ blocks:
   - {name: pir_cat, tier: derived, type: categorical, label: "Income-to-poverty ratio", expr: 'cases(pir < 1.3, "<1.30", pir < 3.5, "1.30-3.49", pir >= 3.5, "3.50+")'}
   - {name: tsat, tier: derived, type: continuous, units: "%", label: "Transferrin saturation", expr: "coalesce(tsat_reported, 100 * serum_iron / tibc)"}
   - {name: log_ferritin, tier: derived, type: continuous, label: "log(ferritin)", expr: "log(ferritin)"}
-  - {name: anemia, tier: derived, type: binary, label: "Anemia (WHO hemoglobin thresholds)", expr: "hgb < ifelse(female == 0, 13, ifelse(pregnant == 1, 11, 12))",
-     source: "WHO hemoglobin thresholds (adult cutoffs retained in WHO 2024 guideline): <13 g/dL men, <12 g/dL nonpregnant women, <11 g/dL pregnancy"}
+  - {name: hgb_adj, tier: derived, type: continuous, units: g/dL, label: "Hemoglobin adjusted for smoking (WHO 2024)", expr: "hgb - ifelse(coalesce(current_smoker, 0) == 1, 0.3, 0)",
+     source: "WHO 2024 guideline: subtract 0.3 g/dL from measured hemoglobin in current smokers"}
+  - {name: hb_cutoff_who, tier: derived, type: continuous, units: g/dL, label: "WHO 2024 hemoglobin cutoff for age, sex and pregnancy",
+     expr: "ifelse(age < 5, 11, ifelse(age < 12, 11.5, ifelse(age < 15, 12, ifelse(female == 1, ifelse(pregnant == 1, 11, 12), 13))))"}
+  - {name: anemia, tier: derived, type: binary, label: "Anemia (WHO hemoglobin thresholds)", expr: "hgb_adj < hb_cutoff_who",
+     source: "WHO 2024: Hb <11.0 (2-4 y), <11.5 (5-11 y), <12.0 (12-14 y and nonpregnant females 15+), <13.0 (males 15+), <11.0 in pregnancy; smoking-adjusted"}
+  - {name: bmi_pct_cdc, tier: derived, type: continuous, units: percentile, label: "BMI-for-age percentile (CDC 2000 growth charts)", expr: "cdc_bmi_pct(bmi, age_months, female)"}
+  - {name: bmi_p95_cdc, tier: derived, type: continuous, units: kg/m2, label: "95th percentile of BMI for age and sex (CDC 2000)", expr: "cdc_bmi_p95(age_months, female)"}
   - {name: inflammation, tier: derived, type: binary, label: "Systemic inflammation (hsCRP >5 mg/L)", expr: "crp > 5"}
   - {name: egfr, tier: derived, type: continuous, units: "mL/min/1.73m2", label: "eGFR (CKD-EPI 2021, race-free)",
      expr: "142 * pmin(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^ifelse(female == 1, -0.241, -0.302) * pmax(creatinine / ifelse(female == 1, 0.7, 0.9), 1)^(-1.2) * 0.9938^age * ifelse(female == 1, 1.012, 1)",
@@ -101,10 +109,10 @@ blocks:
   - {name: steatosis, tier: derived, type: binary, label: "Steatosis (CAP >=274 dB/m)", expr: "cap >= 274", source: "Eddowes PJ et al. Gastroenterology 2019 (CAP 274 dB/m, 90% sensitivity for S>=1)"}
 
   # ================= expansion: cardiometabolic =================
-  - {name: sbp, tier: measure, type: continuous, units: mmHg, label: "Systolic blood pressure (mean of readings)", nhanes: "coalesce((BPXOSY1 + BPXOSY2 + BPXOSY3) / 3, (BPXSY1 + BPXSY2 + BPXSY3) / 3)", match_terms: [systolic blood pressure, systolic]}
-  - {name: dbp, tier: measure, type: continuous, units: mmHg, label: "Diastolic blood pressure (mean of readings)", nhanes: "coalesce((BPXODI1 + BPXODI2 + BPXODI3) / 3, (BPXDI1 + BPXDI2 + BPXDI3) / 3)", match_terms: [diastolic blood pressure, diastolic]}
+  - {name: sbp, tier: measure, type: continuous, units: mmHg, label: "Systolic blood pressure (mean of up to 3 readings)", nhanes: "coalesce(mean_of(BPXOSY1, BPXOSY2, BPXOSY3), mean_of(BPXSY1, BPXSY2, BPXSY3))", match_terms: [systolic blood pressure, systolic]}
+  - {name: dbp, tier: measure, type: continuous, units: mmHg, label: "Diastolic blood pressure (mean of up to 3 readings)", nhanes: "coalesce(mean_of(BPXODI1, BPXODI2, BPXODI3), mean_of(BPXDI1, BPXDI2, BPXDI3))", match_terms: [diastolic blood pressure, diastolic]}
   - {name: bp_meds_advised, tier: measure, type: binary, label: "Told to take antihypertensive medication", nhanes: "BPQ040A == 1", match_terms: [told to take prescription for hypertension]}
-  - {name: bp_meds, tier: measure, type: binary, label: "Taking antihypertensive medication", nhanes: "BPQ050A == 1", match_terms: [blood pressure medication, antihypertensive]}
+  - {name: bp_meds, tier: measure, type: binary, label: "Taking antihypertensive medication", nhanes: "coalesce(BPQ050A == 1, BPQ150 == 1)", match_terms: [blood pressure medication, antihypertensive]}
   - {name: ldl, tier: measure, type: continuous, units: mg/dL, label: "LDL cholesterol", nhanes: "LBDLDL", match_terms: [ldl cholesterol, ldl]}
   - {name: tg, tier: measure, type: continuous, units: mg/dL, label: "Triglycerides (fasting)", nhanes: "LBXTR", match_terms: [triglycerides]}
   - {name: uric_acid, tier: measure, type: continuous, units: mg/dL, label: "Serum uric acid", nhanes: "LBXSUA", match_terms: [uric acid, urate]}

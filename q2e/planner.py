@@ -108,6 +108,11 @@ AGE_PATTERNS = [
 ]
 
 
+# questionnaire items NHANES administers only from a given age (participants below it are missing by design)
+ADULT_ONLY_ITEMS = {"DMDEDUC2": 20, "SMQ020": 18, "SMQ040": 18, "ALQ111": 18, "ALQ121": 18, "ALQ130": 18,
+                    "DMDMARTZ": 20, "DMDMARTL": 20}
+
+
 def parse_age(q: str) -> tuple[int | None, int | None]:
     for pat, kind in AGE_PATTERNS:
         m = re.search(pat, q)
@@ -130,6 +135,10 @@ def _concept(cid: str, k: Knowledge) -> dict:
         var = cid[5:]
         row = k.dictionary.get(var, {})
         return {"id": cid, "label": row.get("label", var), "domain": "default", "dict_var": var, "synonyms": []}
+    if cid.startswith("thr:"):
+        _, base, op, num = cid.split(":")
+        bc = k.concepts.get(base, {})
+        return {"id": cid, "label": f"{bc.get('label', base)} {op} {num}", "domain": bc.get("domain", "default"), "synonyms": []}
     if cid.startswith("arms:"):
         first = cid[5:].split("+")[0]
         base = k.concepts.get(first, {})
@@ -258,6 +267,91 @@ def _overlaps(a: tuple[int, int], taken: list[tuple[int, int]]) -> bool:
 # ---------------------------------------------------------------------------
 # Investigator agent
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Numeric thresholds written in the question ("BMI 40 or higher", "ferritin below 30 ng/mL")
+# ---------------------------------------------------------------------------
+_NUM = r"(?P<num>\d+(?:\.\d+)?)"
+_UNIT = r"(?:\s*(?:%|percent|mg/dl|ng/ml|g/dl|kg/m2|kg/m²|mm\s*hg|mmhg|mg/l|nmol/l|ug/dl|µg/dl|x\s*10\^?9/l|mmol/l|kpa|db/m))?"
+_THRESH_PATTERNS = [
+    (rf"{_NUM}{_UNIT}\s*(?:or|and)\s+(?:higher|above|greater|more|over)\b", ">="),
+    (rf"(?:at\s+least|>=|≥|no\s+less\s+than)\s*{_NUM}{_UNIT}", ">="),
+    (rf"{_NUM}{_UNIT}\s*(?:or|and)\s+(?:lower|less|below|under)\b", "<="),
+    (rf"(?:at\s+most|<=|≤|no\s+more\s+than)\s*{_NUM}{_UNIT}", "<="),
+    (rf"(?:below|under|less\s+than|lower\s+than|<)\s*{_NUM}{_UNIT}", "<"),
+    (rf"(?:above|over|greater\s+than|higher\s+than|more\s+than|exceeding|>)\s*{_NUM}{_UNIT}", ">"),
+]
+_OP_NAME = {">=": "ge", "<=": "le", "<": "lt", ">": "gt"}
+
+
+def find_thresholds(q: str) -> list[dict]:
+    """Numeric cut-points in the question, ignoring ages ('aged 20 and over', '2 years and older')."""
+    out, taken = [], []
+    for pat, op in _THRESH_PATTERNS:
+        for m in re.finditer(pat, q):
+            if any(a <= m.start() < b for a, b in taken):
+                continue
+            before, after = q[max(0, m.start() - 14): m.start()], q[m.end(): m.end() + 8]
+            if re.search(r"\b(aged?|ages)\s*$", before) or re.search(r"\b(aged?|ages)\b", before[-8:]) or \
+               re.match(r"\s*(years?|yrs?|y\b|months?|-year)", q[m.start("num") + len(m.group("num")):][:8]) or re.search(r"\byears?\b", after[:6]):
+                continue
+            taken.append((m.start(), m.end()))
+            out.append({"pos": m.start(), "end": m.end(), "op": op, "num": float(m.group("num")), "text": m.group(0)})
+    return sorted(out, key=lambda t: t["pos"])
+
+
+def _def_matches_threshold(expr: str, var: str, op: str, num: float) -> bool:
+    for m in re.finditer(rf"\b{re.escape(var)}\s*(>=|<=|<|>)\s*(\d+(?:\.\d+)?)", expr):
+        if m.group(1) == op and abs(float(m.group(2)) - num) < 1e-9:
+            return True
+    return False
+
+
+def apply_thresholds(q: str, ordered: list[dict], hints: dict, k: Knowledge) -> tuple[list[dict], list[str]]:
+    """Turn a stated cut-point into the matching published definition, or into a yes/no variable when the
+    library has none. A measure that only defines another concept ('severe obesity (BMI 40 or higher)') is
+    folded into it instead of becoming a second study variable."""
+    notes: list[str] = []
+    for t in find_thresholds(q):
+        prior = [c for c in ordered if c["pos"] < t["pos"] and t["pos"] - c["pos"] <= 70 and not c["concept"].startswith(("dict:", "thr:"))]
+        anchor = next((c for c in reversed(prior) if (k.concepts.get(c["concept"]) or {}).get("block")), None)
+        if not anchor:
+            continue
+        var = k.concepts[anchor["concept"]]["block"]
+        num_s = f"{t['num']:g}"
+        cands = []
+        for c in ordered:
+            cc = k.concepts.get(c["concept"]) or {}
+            for d in list(cc.get("definitions", [])) + list(cc.get("alt_definitions", [])):
+                if d in k.definitions and _def_matches_threshold(k.definitions[d]["expr"], var, t["op"], t["num"]):
+                    cands.append((c, d))
+        if not cands:     # any definition anywhere in the library with this exact cut-point
+            for d, dd in k.definitions.items():
+                if dd.get("type") == "binary" and dd.get("status") != "proposed" and _def_matches_threshold(dd["expr"], var, t["op"], t["num"]) \
+                        and dd.get("concept") in k.concepts:
+                    cands.append(({"concept": dd["concept"], "phrase": anchor["phrase"], "pos": anchor["pos"]}, d))
+                    break
+        defined = next((c for c in reversed(prior) if c is not anchor and c["pos"] < anchor["pos"]
+                        and re.fullmatch(r"\s*\(?\s*", q[c["pos"] + len(c["phrase"]): anchor["pos"]] or "")), None)
+        if cands:
+            owner, d = next(((c, d) for c, d in cands if c is not anchor), cands[0])
+            if d not in hints["prefer"]:
+                hints["prefer"].insert(0, d)
+            hints.setdefault("matched", []).append(f"threshold {t['text'].strip()}")
+            if owner["concept"] not in [c["concept"] for c in ordered]:
+                ordered = [owner if c is anchor else c for c in ordered]
+            elif owner is not anchor:
+                ordered = [c for c in ordered if c is not anchor]
+            notes.append(f"'{t['text'].strip()}' matches the published definition {k.definitions[d].get('short', d)}.")
+        else:
+            hints.setdefault("matched", []).append(f"threshold {t['text'].strip()}")
+            cid = f"thr:{anchor['concept']}:{t['op']}:{num_s}"
+            new = {"concept": cid, "phrase": anchor["phrase"], "pos": anchor["pos"]}
+            ordered = [new if c is anchor else c for c in ordered if c is not defined]
+            notes.append(f"'{anchor['phrase']} {t['text'].strip()}' is analysed as a yes/no variable ({var} {t['op']} {num_s}).")
+    return ordered, notes
+
+
 def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     k = k or get_knowledge()
     q = " " + question.lower().replace("’", "'") + " "
@@ -365,11 +459,12 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         if cid not in seen:
             seen.add(cid)
             ordered.append({"concept": cid, "phrase": phrase, "pos": pos})
-    cond_notes: list[str] = []
+    ordered, thr_notes = apply_thresholds(q, ordered, hints, k)
+    cond_notes: list[str] = list(thr_notes)
     # condition wording ("vitamin D deficiency", "hypertriglyceridemia", "low albumin") asks for a yes/no
     # definition, not the continuous level - promote the concept's binary definition when one exists
     for c in ordered:
-        if c["concept"].startswith("dict:"):
+        if c["concept"].startswith(("dict:", "thr:")):
             continue
         cc = _concept(c["concept"], k)
         ph = re.escape(c["phrase"])
@@ -412,6 +507,14 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
             outcome, exposure = clinical[0], demographic[0]
     else:
         outcome = clinical[0] if clinical else None
+    if study_type == "prevalence" and outcome and outcome["concept"] in k.concepts:
+        # national-prevalence questions use the definition NCHS uses for official estimates, unless one was named
+        oc = k.concepts[outcome["concept"]]
+        all_defs = list(oc.get("definitions", [])) + list(oc.get("alt_definitions", []))
+        surv = [d for d in all_defs if k.definitions.get(d, {}).get("prevalence_default")]
+        if surv and not any(p in all_defs for p in hints["prefer"]):
+            hints["prefer"].append(surv[0])
+            notes.append(f"National prevalence: the NCHS definition {k.definitions[surv[0]].get('short', surv[0])} is used.")
     subgroup_concepts = [c["concept"] for c in demographic if not exposure or c["concept"] != exposure["concept"]]
     out_of_scope = [f"'{n['phrase']}': {n['reason']}" for n in not_in]
     from . import arms as _arms
@@ -468,6 +571,17 @@ def choose_variable(concept_id: str, role: str, hints: dict, k: Knowledge, prefe
             entry["scale"] = 1
             entry["units"] = row.get("units", "")
         return entry
+    if concept_id.startswith("thr:"):
+        _, base, op, num = concept_id.split(":")
+        bc = k.concepts[base]
+        var = bc["block"]
+        units = k.units(var) or ""
+        name = f"{var}_{_OP_NAME[op]}{num.replace('.', '_')}"
+        label = f"{k.label(var)} {op} {num}{(' ' + units) if units else ''}"
+        return {"concept": concept_id, "concept_label": label, "variable": name, "kind": "custom", "type": "binary",
+                "label": label, "definition_id": None, "alternatives": [], "companions": [], "domain": bc.get("domain", "default"),
+                "custom": {"name": name, "expr": f"{var} {op} {num}", "label": label, "type": "binary",
+                           "source": "threshold stated in the question", "confidence": 0.9}}
     c = k.concepts[concept_id]
     defs = list(c.get("definitions", []))
     alt_defs = list(c.get("alt_definitions", []))
@@ -759,6 +873,19 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
                                         both=parsed["arms"].get("both", "separate"))
     elif parsed["study_type"] == "association" and parsed.get("exposure_concept"):
         exposure = choose_variable(parsed["exposure_concept"], "exposure", hints, k, prefer_continuous=parsed.get("direction_continuous", False))
+    # adult cut-points are never applied to children: a definition with a `child_alternative` (e.g. BMI >=30 ->
+    # CDC growth-chart percentiles) is swapped when the study includes anyone under 18
+    lo_age = (parsed.get("age_range") or (None, None))[0]
+    if (lo_age is not None and lo_age < 18) or "children" in (parsed.get("populations") or []):
+        for role in ("outcome", "exposure"):
+            v = outcome if role == "outcome" else exposure
+            alt = k.definitions.get((v or {}).get("definition_id") or "", {}).get("child_alternative")
+            if alt and alt in k.definitions:
+                nv = choose_variable(v["concept"], role, {**hints, "prefer": [alt] + list(hints.get("prefer", []))}, k)
+                if role == "outcome":
+                    outcome = nv
+                else:
+                    exposure = nv
     cycle_note = None
     if user_cycles is None and (dataset or {}).get("type", "nhanes") == "nhanes":
         core = [v for v in (outcome, exposure) if v]
@@ -809,13 +936,23 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         if not (("ckd" in hint_ids) and "ckd" in pops):
             criteria.append({"label": f"Definition scope: {out_def['population_hint']}", "expr": out_def["population_hint"],
                              "kind": "inclusion", "source": f"definition {out_def['id']}"})
+    if out_def and out_def.get("exclude_pregnant") and "pregnant" not in pops and not any("pregnant" in c["expr"] for c in criteria):
+        criteria.append({"label": "Pregnant at examination", "expr": "pregnant == 1", "kind": "exclusion",
+                         "source": f"definition {out_def['id']} (pregnancy has its own threshold; excluded as in NCHS reports)"})
     domains = []
     for v in (outcome, exposure):
         if v and v["domain"] not in domains:
             domains.append(v["domain"])
     dom_cfgs = [k.domains.get(d, k.domains["default"]) for d in domains] or [k.domains["default"]]
+    used_raw: set[str] = set()
+    _cust = {v["custom"]["name"]: v["custom"] for v in (outcome, exposure) if v and v.get("custom")}
+    for v in (outcome, exposure):
+        if v:
+            used_raw |= _raw_dependencies(v["variable"], k, _cust)
     for d, cfg in zip(domains, dom_cfgs):
-        req = cfg.get("required_measures", [])
+        # a domain's required measures apply only when the outcome/exposure is built from them (the iron panel
+        # is required for iron deficiency, not for anemia, which needs only hemoglobin)
+        req = [r for r in cfg.get("required_measures", []) if not used_raw or _raw_dependencies(r, k) <= used_raw]
         if req:
             if req == ["lsm_valid"]:
                 expr, label = "lsm_valid == 1", "Reliable liver elastography (complete exam, IQR/median <30%)"
@@ -884,6 +1021,15 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
             covs.remove(cv)
             agent_notes.append({"agent": "Epidemiologist", "message": f"Removed covariate '{k.label(cv)}': it shares {', '.join(sorted(overlap - demographic_raw))} "
                                                                        f"with the outcome/exposure (definitional overlap)."})
+    # items NHANES asks only of adults (education 20+, smoking and alcohol 18+) would empty a pediatric model
+    hi_age = (parsed.get("age_range") or (None, None))[1]
+    if (hi_age is not None and hi_age < 20) or ("children" in pops and "adults" not in pops):
+        for cv in list(covs):
+            ages = [ADULT_ONLY_ITEMS[r] for r in _raw_dependencies(cv, k) if r in ADULT_ONLY_ITEMS]
+            if ages and (hi_age is None or hi_age < max(ages)):
+                covs.remove(cv)
+                agent_notes.append({"agent": "Epidemiologist", "message": f"Removed covariate '{k.label(cv)}': NHANES asks it only of "
+                                                                           f"participants aged {max(ages)}+, so it is missing for this age group."})
     for flag in k.causal_flags:
         if exposure and ({flag["exposure"], flag["outcome"]} == {exposure["concept"], outcome["concept"]} if flag["role"] == "measurement_overlap"
                          else (flag["exposure"] == exposure["concept"] and flag["outcome"] == outcome["concept"])):
@@ -1049,13 +1195,39 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         t1.remove(t1_by)
 
     # ---------------- benchmark ----------------
+    # Published estimates for the same definition, cycle and age range (learned from NCHS reports and journal
+    # articles; see knowledge/definitions/*.yaml) are attached so the run checks itself against them.
     benchmarks = []
-    default_pop = all(c.get("source", "").startswith(("question ('adults'", "iron domain", "domain default")) or not c.get("enabled", True)
-                      for c in criteria)
+    age_lo = age_hi = None
+    other_incl = False
+    for c in criteria:
+        if not c.get("enabled", True) or c.get("kind") == "exclusion":
+            continue
+        ex = c["expr"].replace(" ", "")
+        m_lo = re.fullmatch(r"age>=(\d+)", ex) or re.match(r"age>=(\d+)&age<=(\d+)$", ex)
+        if m_lo:
+            age_lo = int(m_lo.group(1))
+            if m_lo.re.groups == 2:
+                age_hi = int(m_lo.group(2))
+            continue
+        src = c.get("source", "")
+        if src.startswith(("question ('adults'", "iron domain", "domain default", "definition ")) or "domain requirement" in src:
+            continue
+        other_incl = True
+    if age_lo is None and any(c.get("source", "").startswith("question ('adults'") for c in criteria):
+        age_lo = 18
     for d in prevalence_outcomes:
-        bm = k.definitions.get(d, {}).get("benchmark")
-        if bm and set(bm.get("cycles", [])) == set(cycles) and default_pop and study_type == "prevalence":
-            benchmarks.append({**bm, "outcome": d})
+        dd = k.definitions.get(d, {})
+        for bm in list(dd.get("benchmarks") or []) + ([dd["benchmark"]] if dd.get("benchmark") else []):
+            if set(bm.get("cycles", [])) != set(cycles) or other_incl or study_type != "prevalence":
+                continue
+            if bm.get("min_age") is not None and bm["min_age"] != age_lo:
+                continue
+            if bm.get("max_age") is not None and bm["max_age"] != age_hi:
+                continue
+            if any(b["label"] == bm["label"] for b in benchmarks):
+                continue
+            benchmarks.append({k2: v for k2, v in bm.items() if k2 not in ("min_age", "max_age")} | {"outcome": d})
 
     # ---------------- text ----------------
     pop_text = _population_text(criteria, cycles, k)

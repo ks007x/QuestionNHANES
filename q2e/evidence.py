@@ -277,9 +277,30 @@ def _relevant(est: dict, terms) -> bool:
     return any(t and t.lower()[:6] in c for t in terms)
 
 
+_NH = r"(?:nhanes|national health and nutrition examination survey)"
+_FOREIGN = re.compile(r"\b(haiti|china|chinese|korea\w*|japan\w*|india|brazil\w*|mexico|canada|canadian|uk biobank|england|europe\w*|"
+                      r"africa\w*|iran\w*|taiwan\w*|australia\w*|german\w*|france|french|ital\w*|spain|spanish|sweden|swedish|"
+                      r"denmark|danish|norway|finland|netherlands|dutch|thailand|vietnam|nigeria|ghana|kenya|uganda|pakistan|bangladesh)\b", re.I)
+
+
+def is_nhanes_analysis(paper: dict) -> bool:
+    """True when the paper analyses NHANES data itself, not a paper that only cites NHANES for comparison
+    (e.g. a Haitian cohort compared with U.S. NHANES rates)."""
+    ti, ab = paper.get("title", "").lower(), paper.get("abstract", "").lower()
+    if re.search(_NH, ti):
+        return True
+    if _FOREIGN.search(ti):
+        return False
+    return bool(re.search(rf"(data|participants|adults|children|individuals|respondents|cycles?|waves?|sample|using|from|in|of)\s+"
+                          rf"(?:the\s+)?(?:\d{{4}}[-\u2013]\d{{4}}\s+)?(?:us\s+|u\.s\.\s+)?{_NH}", ab)
+                or re.search(rf"{_NH}\s*(?:\(\w+\)\s*)?(?:\d{{4}}|data|participants|cycles?|database)", ab))
+
+
 def compare(ours: dict | None, paper: dict, terms: list[str]) -> dict:
     if not ours:
         return {"verdict": "Not compared", "why": "No estimate from this study yet - run the analysis first."}
+    if not is_nhanes_analysis(paper):
+        return {"verdict": "Not an NHANES analysis", "why": "The paper only mentions NHANES (e.g. as a comparison population); its estimates come from other data."}
     pool = paper["prevalence"] if ours["measure"] == "Prevalence %" else paper["estimates"]
     if not pool:
         return {"verdict": "No numbers in abstract", "why": "The abstract reports no estimate with a 95% CI that could be read."}

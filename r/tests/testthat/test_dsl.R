@@ -36,3 +36,12 @@ test_that("coalesce takes any number of alternatives", {
   expect_equal(dsl_eval("coalesce(a, b, c)", d), c(3, 2, 1))
   expect_equal(dsl_eval("coalesce(a == 1, b == 2, c == 1)", d), c(FALSE, TRUE, TRUE))
 })
+
+test_that("CDC growth-chart percentiles match the published charts", {
+  if (!exists(".cdc_bmi_lms")) source(file.path("..", "..", "engine", "R", "growth_ref.R"))
+  # 95th percentile BMI: boys 10.0 y ~22.2, girls 15.0 y ~28.1 kg/m2 (CDC 2000 charts)
+  expect_equal(q2e_cdc_bmi_p95(c(120.5, 180.5), c(0, 1)), c(22.15, 28.12), tolerance = 0.01)
+  expect_equal(round(q2e_cdc_bmi_pct(22.154, 120.5, 0)), 95)
+  expect_true(is.na(q2e_cdc_bmi_pct(25, 300, 0)))          # adults are outside the charts
+  expect_equal(q2e_mean_of(c(120, NA, NA), c(130, NA, 140), c(NA, NA, 150)), c(125, NA, 145))
+})

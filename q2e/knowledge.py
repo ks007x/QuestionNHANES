@@ -12,7 +12,8 @@ import yaml
 
 from .config import settings
 
-RAW_VAR_RANK = {"interview": 1, "mec": 2, "diet": 3, "fasting": 4, "subsample": 5}
+RAW_VAR_RANK = {"interview": 1, "mec": 2, "phlebotomy": 2.5, "diet": 3, "fasting": 4, "subsample": 5}
+# phlebotomy (2021-2023 WTPH2YR): every blood-based lab; the fasting subsample is drawn within it, so fasting outranks it
 
 
 CYCLE_ORDER = list("ABCDEFGHIJ") + ["P", "L"]

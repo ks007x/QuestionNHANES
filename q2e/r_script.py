@@ -82,13 +82,16 @@ coalesce <- function(x, ...) {                   # first non-missing value
   x
 }
 as_lgl <- function(v) if (is.logical(v)) v else if (is.numeric(v)) ifelse(is.na(v), NA, v != 0) else as.logical(v)
-any_of <- function(...) {                        # TRUE if any is TRUE; FALSE only if all are known
+any_of <- function(...) {                        # TRUE if any is TRUE; FALSE if none is TRUE and at least one is known
   a <- lapply(list(...), as_lgl); n <- max(lengths(a)); a <- lapply(a, rep_len, n)
   out <- rep(NA, n); out[Reduce(`|`, lapply(a, Negate(is.na)))] <- FALSE; out[Reduce(`|`, lapply(a, function(v) !is.na(v) & v))] <- TRUE; out
 }
 all_of <- function(...) {                        # FALSE if any is FALSE; TRUE only if all are known and TRUE
   a <- lapply(list(...), as_lgl); n <- max(lengths(a)); a <- lapply(a, rep_len, n)
   out <- rep(NA, n); out[Reduce(`&`, lapply(a, Negate(is.na)))] <- TRUE; out[Reduce(`|`, lapply(a, function(v) !is.na(v) & !v))] <- FALSE; out
+}
+mean_of <- function(...) {                       # mean of the available values ("average of up to 3 readings")
+  m <- do.call(cbind, lapply(list(...), as.numeric)); out <- rowMeans(m, na.rm = TRUE); out[is.nan(out)] <- NA; out
 }
 as_type <- function(x, type, levels = NULL) {    # store each variable as binary (0/1), continuous or factor
   x <- rep_len(x, nrow(dat))
@@ -116,11 +119,14 @@ fit_model <- function(design, y, terms, family = c("gaussian", "quasipoisson", "
   f <- as.formula(paste(y, "~", if (length(keep)) paste(keep, collapse = " + ") else "1"))
   fam <- switch(family, gaussian = gaussian(), quasipoisson = quasipoisson(link = "log"), quasibinomial = quasibinomial(link = "logit"))
   start <- NULL
-  if (family == "quasipoisson") {                # start values help log-link models converge
+  if (family == "quasipoisson" && any(rows)) {   # start values help log-link models converge
     mm <- model.matrix(f, model.frame(f, design$variables[rows, , drop = FALSE]))
     start <- c(log(max(mean(design$variables[[y]][rows]), 1e-4)), rep(0, ncol(mm) - 1))
   }
-  fit <- svyglm(f, design = design, family = fam, start = start)
+  if (!any(rows)) { message("  ", deparse1(f), ": no participants with complete data - not estimable"); return(invisible(data.frame())) }
+  fit <- tryCatch(svyglm(f, design = design, family = fam, start = start),
+                  error = function(e) { message("  ", deparse1(f), ": not estimable (", conditionMessage(e), ")"); NULL })
+  if (is.null(fit)) return(invisible(data.frame()))
   cf <- summary(fit, df.resid = Inf)$coefficients
   ddf <- max(degf(design), 1); tq <- qt(0.975, ddf)
   tf <- if (family == "gaussian") identity else exp
@@ -135,8 +141,24 @@ fit_model <- function(design, y, terms, family = c("gaussian", "quasipoisson", "
   invisible(out)
 }
 exposure_row <- function(m, x, first = FALSE) {   # the exposure coefficient (first arm vs control for multi-arm studies)
+  if (!nrow(m)) return(m)
   r <- m[startsWith(m$term, x) & !grepl(":", m$term), , drop = FALSE]; r[if (first) 1 else nrow(r), , drop = FALSE]
 }
+'''
+
+
+GROWTH_FUNS = r'''
+cdc_lms <- function(agemos, female) {            # L, M, S interpolated linearly in age (24-240.5 months)
+  n <- max(length(agemos), length(female)); a <- rep_len(as.numeric(agemos), n); sx <- rep_len(as.numeric(female), n) + 1
+  L <- M <- S <- rep(NA_real_, n)
+  for (g in 1:2) {
+    r <- .cdc_bmi_lms[.cdc_bmi_lms$sex == g, ]; i <- which(sx == g & !is.na(a) & a >= 24 & a <= 240.5)
+    if (length(i)) { x <- pmin(a[i], 240); L[i] <- approx(r$agemos, r$L, x)$y; M[i] <- approx(r$agemos, r$M, x)$y; S[i] <- approx(r$agemos, r$S, x)$y }
+  }
+  list(L = L, M = M, S = S)
+}
+cdc_bmi_pct <- function(bmi, agemos, female) { p <- cdc_lms(agemos, female); 100 * pnorm(((bmi / p$M)^p$L - 1) / (p$L * p$S)) }
+cdc_bmi_p95 <- function(agemos, female) { p <- cdc_lms(agemos, female); p$M * (1 + p$L * p$S * qnorm(0.95))^(1 / p$L) }
 '''
 
 
@@ -172,6 +194,12 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
     w("options(survey.lonely.psu = \"adjust\")")
     w(f"set.seed({int((spec.get('options') or {}).get('seed') or 2026)})")
     w(HELPERS.rstrip())
+    if any("cdc_bmi_" in d["expr"] for d in spec["derived"]):
+        from pathlib import Path as _P
+        w("")
+        w("# ---- CDC 2000 growth charts (BMI-for-age), used for children and adolescents --------------------------")
+        w((_P(__file__).resolve().parent.parent / "r" / "engine" / "R" / "growth_ref.R").read_text(encoding="utf-8").rstrip())
+        w(GROWTH_FUNS.rstrip())
     w("")
 
     # ---------------------------------------------------------------- 1. data
@@ -340,7 +368,8 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
             for mod in ints:
                 t2 = list(dict.fromkeys([x] + [c for c in prim["covariates"] if c != mod] + [mod, f"{x}:{mod}"]))
                 w(f"m_int <- fit_model(d_cc, {_s(y)}, {_vec(t2)}, {_s(fam)}, show = FALSE)")
-                w(f"print(regTermTest(attr(m_int, \"fit\"), ~{x}:{mod}, df = max(degf(d_cc), 1)))   # by {(meta.get(mod) or {}).get('label', mod)}")
+                w(f"if (!is.null(attr(m_int, \"fit\")) && any(grepl(\":\", m_int$term))) print(regTermTest(attr(m_int, \"fit\"), ~{x}:{mod}, df = max(degf(d_cc), 1))) "
+                  f"else message(\"  interaction with {mod}: not estimable\")   # by {(meta.get(mod) or {}).get('label', mod)}")
             w("")
         # sensitivity
         sens = an.get("sensitivity") or []

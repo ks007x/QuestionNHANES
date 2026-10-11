@@ -111,7 +111,10 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     except Exception as e:  # noqa: BLE001
         print("   (literature check skipped:", e, ")")
     pe = results.get("primary_estimate") or {}
-    print(f"\n   Primary: {pe.get('label')}: {pe.get('est'):.4f} ({pe.get('lcl'):.4f}-{pe.get('ucl'):.4f}) [{pe.get('effect')}]")
+    if pe.get("est") is not None:
+        print(f"\n   Primary: {pe.get('label')}: {pe.get('est'):.4f} ({pe.get('lcl'):.4f}-{pe.get('ucl'):.4f}) [{pe.get('effect')}]")
+    else:
+        print("\n   Primary: not estimable - see the QC checks and model warnings")
     for c in results["checks"]:
         if c["status"] != "pass":
             print(f"   QC {c['status'].upper():5} {c['title']}: {c['message'][:140]}")

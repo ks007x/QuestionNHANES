@@ -39,6 +39,8 @@ POP_TERMS = {
 
 def _concept_block(cid: str, field: str = "tiab") -> str:
     k = get_knowledge()
+    if cid.startswith("thr:"):
+        cid = cid.split(":")[1]
     c = k.concepts.get(cid, {})
     v = {"concept": cid, "concept_label": c.get("label", cid), "label": c.get("label", cid)}
     if cid.startswith("dict:"):

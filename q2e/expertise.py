@@ -209,7 +209,7 @@ def typed_notes(answers: dict | None, plan: dict, question: str, k: Knowledge | 
             continue
         seen.add(text.lower())
         p = planner.parse_question(text, k)
-        found = [c for c in (p.get("outcome_concept"), p.get("exposure_concept")) if c and not c.startswith("dict:")]
+        found = [c for c in (p.get("outcome_concept"), p.get("exposure_concept")) if c and not c.startswith(("dict:", "thr:"))]
         words = [w for w in re.findall(r"[a-z]+", text.lower()) if w not in FILLER_WORDS and len(w) > 2]
         if any(c in (out_c, exp_c) for c in found):
             role = "outcome" if out_c in found else "exposure"
@@ -272,7 +272,7 @@ def idea_gaps(original: str, plan: dict, k: Knowledge | None = None) -> list[dic
                      "note": f"\"{t}\" is not in this study: none of the {len(k.dictionary):,} official NHANES variables mention it, "
                              "so it cannot be measured. Q2E does not swap in a different measure without asking."})
     for c in (first.get("outcome_concept"), first.get("exposure_concept")):
-        if c and c not in in_study and not c.startswith("dict:"):
+        if c and c not in in_study and not c.startswith(("dict:", "thr:")):
             gaps.append({"text": _label(c, k), "status": "not_used", "alternatives": [],
                          "note": f"{_label(c, k)} was in your idea but is not in this study (it was changed during set-up). "
                                  "Ask below to put it back."})
@@ -305,7 +305,7 @@ def close_questions(question: str, k: Knowledge | None = None, limit: int = 4) -
     if out_c and exp_c:
         return []
     anchor = out_c or exp_c
-    if not anchor or anchor.startswith("dict:"):
+    if not anchor or anchor.startswith(("dict:", "thr:")):
         return []
     pops = POP_WORDS.findall(question)
     pop = pops[-1].lower() if pops else _population_phrase(parsed, k)
@@ -560,6 +560,9 @@ def assess_expertise(question: str, parsed: dict | None = None, k: Knowledge | N
 def _label(cid: str | None, k: Knowledge) -> str:
     if not cid:
         return "?"
+    if cid.startswith("thr:"):
+        _, base, op, num = cid.split(":")
+        return f"{k.concepts.get(base, {}).get('label', base)} {op} {num}"
     if cid.startswith("dict:"):
         return k.dictionary.get(cid[5:], {}).get("label", cid[5:])
     return k.concepts.get(cid, {}).get("label", cid)
@@ -647,6 +650,8 @@ def _plain_label(label: str, full: bool = False) -> str:
 
 def _any_hint(cid: str, k: Knowledge) -> str:
     """Explanation for a curated topic or a single NHANES survey item."""
+    if cid.startswith("thr:"):
+        return f"{_label(cid, k)} (cut-point written in the question)."
     if cid.startswith("dict:"):
         return f"NHANES survey item {cid[5:]}: {_label(cid, k)}."
     return _concept_hint(cid, k)
@@ -888,7 +893,7 @@ def build_questions(question: str, level: str, parsed: dict | None = None, cycle
               "fixes": [{"op": "swap_roles"}]}]))
 
     # (g) the outcome has several guideline definitions and none was named
-    if out_c and not out_c.startswith("dict:") and not parsed.get("hints", {}).get("matched"):
+    if out_c and not out_c.startswith(("dict:", "thr:")) and not parsed.get("hints", {}).get("matched"):
         defs = [d for d in k.concepts.get(out_c, {}).get("definitions", []) if d in k.definitions]
         if len(defs) > 1:
             opts = [{"id": d, "label": k.definitions[d].get("label", d),
@@ -1185,7 +1190,7 @@ def understood(question: str, parsed: dict, spelling: list[dict], qs: list[dict]
     for key, name in (("outcome_concept", "Health topic"), ("exposure_concept", "Factor to compare")):
         cid = parsed.get(key)
         if cid:
-            hint = "" if cid.startswith("dict:") else _concept_hint(cid, k)
+            hint = "" if cid.startswith(("dict:", "thr:")) else _concept_hint(cid, k)
             out.append({"label": name, "value": _label(cid, k), "hint": hint})
     asked_pop = any(q["id"] == "population" for q in qs)
     if parsed.get("populations") or any(a is not None for a in (parsed.get("age_range") or (None, None))):
@@ -1249,7 +1254,7 @@ def apply_answers(question: str, answers: dict[str, dict], level: str | None = N
 def _set_role(plan: dict, role: str, cid: str | None, k: Knowledge) -> dict:
     """Put another topic in the outcome or exposure role and rebuild the plan (like the planner's swap_roles)."""
     parsed = dict(plan.get("parsed") or {})
-    if not cid or not (cid in k.concepts or cid.startswith("dict:")) or not parsed:
+    if not cid or not (cid in k.concepts or cid.startswith(("dict:", "thr:"))) or not parsed:
         return plan
     old_out, old_exp = parsed.get("outcome_concept"), parsed.get("exposure_concept")
     if role == "outcome":

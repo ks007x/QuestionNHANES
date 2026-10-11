@@ -96,8 +96,8 @@ concepts:
     domain: glycemia
   - id: diabetes
     label: "Diabetes"
-    synonyms: ["diabetes", "diabetic", "type 2 diabetes", "t2d"]
-    definitions: [diabetes_ada]
+    synonyms: ["diabetes", "diabetic", "type 2 diabetes", "t2d", "total diabetes"]
+    definitions: [diabetes_ada, diabetes_nchs]
     domain: glycemia
   - id: abdominal_obesity
     label: "Abdominal obesity (waist circumference)"
@@ -115,7 +115,12 @@ concepts:
   - id: obesity
     label: "Obesity"
     synonyms: ["obesity", "obese"]
-    definitions: [obesity_bmi30]
+    definitions: [obesity_bmi30, obesity_cdc]
+    domain: anthropometry
+  - id: severe_obesity
+    label: "Severe obesity"
+    synonyms: ["severe obesity", "severely obese", "class 3 obesity", "class iii obesity", "morbid obesity", "morbidly obese"]
+    definitions: [severe_obesity_cdc]
     domain: anthropometry
   - id: bmi_concept
     label: "Body mass index"
@@ -184,10 +189,12 @@ concepts:
   - {id: stroke, label: "Stroke", synonyms: ["stroke", "cerebrovascular accident"], block: stroke, domain: cardio}
   - {id: coronary_disease, label: "Coronary heart disease", synonyms: ["coronary heart disease", "coronary artery disease", "cad", "chd"], block: chd, domain: cardio}
   - {id: ldl, label: "LDL cholesterol", synonyms: ["ldl cholesterol", "ldl", "bad cholesterol"], block: ldl, alt_definitions: [high_ldl], domain: cardio, default_scale: 10}
-  - {id: dyslipidemia, label: "Dyslipidemia", synonyms: ["dyslipidemia", "high cholesterol", "hyperlipidemia", "hypercholesterolemia"], definitions: [high_ldl], domain: cardio}
-  - {id: hdl, label: "HDL cholesterol", synonyms: ["hdl cholesterol", "hdl", "good cholesterol"], block: hdl, domain: cardio, default_scale: 10}
+  - {id: dyslipidemia, label: "Dyslipidemia", synonyms: ["dyslipidemia", "hyperlipidemia"], definitions: [high_ldl], domain: cardio}
+  - {id: high_cholesterol, label: "High total cholesterol", synonyms: ["high total cholesterol", "high cholesterol", "hypercholesterolemia", "elevated cholesterol"], definitions: [high_tc_240], alt_definitions: [high_ldl], domain: cardio}
+  - {id: low_hdl, label: "Low HDL cholesterol", synonyms: ["low hdl cholesterol", "low hdl", "low hdl-c"], definitions: [low_hdl_40], domain: cardio}
+  - {id: hdl, label: "HDL cholesterol", synonyms: ["hdl cholesterol", "hdl", "good cholesterol"], block: hdl, alt_definitions: [low_hdl_40], domain: cardio, default_scale: 10}
   - {id: triglycerides, label: "Triglycerides", synonyms: ["triglycerides", "triglyceride", "hypertriglyceridemia"], block: tg, alt_definitions: [hypertriglyceridemia_150], domain: cardio, default_scale: 50}
-  - {id: total_cholesterol, label: "Total cholesterol", synonyms: ["total cholesterol", "cholesterol"], block: tc, domain: cardio, default_scale: 10}
+  - {id: total_cholesterol, label: "Total cholesterol", synonyms: ["total cholesterol", "cholesterol"], block: tc, alt_definitions: [high_tc_240], domain: cardio, default_scale: 10}
   - {id: insulin_resistance, label: "Insulin resistance (HOMA-IR)", synonyms: ["insulin resistance", "homa-ir", "homa ir", "hyperinsulinemia"], block: homa_ir, alt_definitions: [insulin_resistance_homa], domain: glycemia}
   - {id: fasting_glucose, label: "Fasting glucose", synonyms: ["fasting glucose", "fasting plasma glucose", "fpg"], block: fpg, domain: glycemia, default_scale: 10}
   - {id: prediabetes, label: "Prediabetes (self-reported)", synonyms: ["prediabetes", "pre-diabetes", "borderline diabetes"], block: prediabetes_selfreport, domain: glycemia}
