@@ -69,7 +69,7 @@ due lack lacks lacking lacked absence absent noticed notice notices noticing thi
 maybe perhaps possibly probably likely unlikely because therefore thus hence people person persons folks someone everyone anyone
 kind kinds sort sorts type types way ways part parts reason reasons often sometimes usually always never possible normal
 lately recently currently generally mostly mainly especially actually basically involved related regarding concerning toward
-towards versus compared aged old young younger older year years""".split())
+towards versus compared aged old young younger older year years raise raises raised rise rises risen""".split())
 # Everyday words a typo is most likely meant to be ("pepole" -> "people"); corrected, then ignored like any filler word.
 COMMON_WORDS = {w for w in FILLER_WORDS | planner._STOP | planner._RESEARCH_WORDS if len(w) >= 5}
 # "How can I stop / prevent / treat it?" - a personal goal NHANES cannot test directly.
@@ -376,25 +376,120 @@ def _label_words(k: Knowledge) -> set[str]:
     return _LABEL_WORDS[id(k)]
 
 
+def _typos(a: str, b: str, limit: int) -> int:
+    """Number of typing slips between two words (letter wrong, missing, extra, or two letters swapped).
+    Stops early and returns limit + 1 once the words are further apart than `limit`."""
+    if abs(len(a) - len(b)) > limit:
+        return limit + 1
+    prev2, prev = None, list(range(len(b) + 1))
+    for i in range(1, len(a) + 1):
+        cur = [i] + [0] * len(b)
+        for j in range(1, len(b) + 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] != b[j - 1]))
+            if prev2 is not None and i > 1 and j > 1 and a[i - 1] == b[j - 2] and a[i - 2] == b[j - 1]:
+                cur[j] = min(cur[j], prev2[j - 2] + 1)
+        if min(cur) > limit:
+            return limit + 1
+        prev2, prev = prev, cur
+    return prev[-1]
+
+
+def _slips_allowed(word: str) -> int:
+    """Longer words can carry more typos and still be recognised."""
+    return 1 if len(word) <= 6 else 2 if len(word) <= 11 else 3
+
+
+# group-of-people words (Q2E's population patterns and the vague age-group words it asks about)
+GROUP_WORDS = set("""kid kids child children childs youth youths teen teens teenager teenagers adolescent adolescents
+senior seniors elderly retiree retirees adult adults woman women female females man men male males pregnant pregnancy
+infant infants toddler toddlers baby babies""".split())
+
+_SPELL_VOCAB: dict[int, tuple] = {}
+
+
+def _spell_vocab(k: Knowledge) -> tuple[set[str], set[str], dict[str, set[str]], set[str]]:
+    """(health words, everyday words, phrase index, NHANES label phrases) that a typo may be corrected to."""
+    if id(k) not in _SPELL_VOCAB:
+        health = {w for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]
+                  for w in re.findall(r"[a-z]+", s.lower()) if len(w) >= 4}
+        health |= {w for w in LAY_TERMS if len(w) >= 4} | GROUP_WORDS
+        health |= {w for p in k.populations for s in p.get("patterns", []) for w in re.findall(r"[a-z]+", s.lower()) if len(w) >= 4}
+        everyday = {w for w in COMMON_WORDS if w not in health}
+        phrases = {s.lower() for c in k.concepts.values() for s in c["synonyms"] + [c["label"]] if " " in s.strip()}
+        pairs = set()
+        for r in k.dictionary.values():
+            ws = re.findall(r"[a-z]+", str(r.get("label", "")).lower())
+            pairs.update(f"{a} {b}" for a, b in zip(ws, ws[1:]) if len(a) >= 4 and len(b) >= 4)
+        index: dict[str, set[str]] = {}
+        for ph in phrases:          # corrections only towards Q2E topic phrases; label phrases just mark real wording
+            for w in ph.split():
+                index.setdefault(w, set()).add(ph)
+        _SPELL_VOCAB[id(k)] = (health, everyday, index, pairs | phrases)
+        _TOPIC_NAMES.update(s.lower().strip() for c in k.concepts.values() for s in c["synonyms"] + [c["label"]])
+    return _SPELL_VOCAB[id(k)]
+
+
+_TOPIC_NAMES: set[str] = set()   # one-word topic names ("diabetes"), preferred when two words are equally close
+
+
+def _closest(word: str, words: set[str]) -> str | None:
+    """The word with the fewest typing slips from `word` (ties: a topic name, same first letter, same last letter,
+    same length)."""
+    limit = _slips_allowed(word)
+    best, key = None, None
+    for c in words:
+        if len(word) == 4 and c[0] != word[0]:
+            continue                # four-letter words are only corrected when the first letter matches
+        d = _typos(word, c, limit)
+        if d <= limit:
+            kk = (d, c not in _TOPIC_NAMES, c[0] != word[0], c[-1] != word[-1], len(c) != len(word), -difflib.SequenceMatcher(None, word, c).ratio())
+            if key is None or kk < key:
+                best, key = c, kk
+    return best
+
+
 def fix_spelling(question: str, k: Knowledge) -> tuple[str, list[dict]]:
-    """Correct misspelled health words, but only towards words in Q2E's NHANES vocabulary (never invents terms)."""
-    vocab = {w for c in k.concepts.values() for s in c["synonyms"] + [c["label"].lower()]
-             for w in re.findall(r"[a-z]+", s.lower()) if len(w) >= 5} | {w for w in LAY_TERMS if len(w) >= 5}
+    """Correct misspelled health words and phrases ("obeisty", "pregant", "blod presure", "hearing lose"), but only
+    towards words in Q2E's NHANES vocabulary or phrases in official NHANES variable labels (never invents terms)."""
+    health, everyday, index, known_phrases = _spell_vocab(k)
     real = _label_words(k)
-    fixes = []
+    fixes: list[dict] = []
 
-    def sub(m: re.Match) -> str:
-        w = m.group(0)
-        lw = w.lower()
-        if len(lw) < 5 or lw in vocab or lw in FILLER_WORDS or lw in COMMON_WORDS or lw in real:
-            return w      # a real word (used somewhere in NHANES wording) is never "corrected" into another one
-        best = difflib.get_close_matches(lw, vocab, n=1, cutoff=0.86) or difflib.get_close_matches(lw, COMMON_WORDS, n=1, cutoff=0.83)
-        if not best or best[0] in lw or lw in best[0]:
-            return w      # no close word, or a longer/shorter form ("smokers", "inactivity" vs "activity")
-        fixes.append({"from": w, "to": best[0]})
-        return best[0]
+    def word_fix(lw: str) -> str | None:
+        if len(lw) < 4 or lw in health or lw in FILLER_WORDS or lw in COMMON_WORDS or lw in real:
+            return None   # a real word (used somewhere in NHANES wording) is never "corrected" into another one
+        best = _closest(lw, health) or (_closest(lw, everyday) if len(lw) >= 5 else None)
+        if not best or (best in lw and len(lw) - len(best) <= 2 and lw.startswith(best)):
+            return None   # no close word, or just a longer form ("smokers" vs "smoker")
+        return best
 
-    return re.sub(r"[A-Za-z]+", sub, question), fixes
+    # 1) two-word phrases where one word is a real word used by mistake ("hearing lose" -> "hearing loss")
+    tokens = re.findall(r"[A-Za-z]+|[^A-Za-z]+", question)
+    words = [i for i, t in enumerate(tokens) if t[0].isalpha()]
+    for a, b in zip(words, words[1:]):
+        if not tokens[a + 1:b] or tokens[a + 1:b] != [" "] * (b - a - 1):
+            continue
+        wa, wb = tokens[a].lower(), tokens[b].lower()
+        if f"{wa} {wb}" in known_phrases or len(wa) < 4 or len(wb) < 4:
+            continue
+        for keep, other, pos in ((wa, wb, b), (wb, wa, a)):
+            cands = [ph for ph in index.get(keep, ()) if len(ph.split()) == 2 and keep in ph.split()]
+            hits = [ph for ph in cands if (ph.split()[1] if ph.split()[0] == keep else ph.split()[0]) != other
+                    and _typos(other, ph.split()[1] if ph.split()[0] == keep else ph.split()[0], 1) <= 1
+                    and (ph.split()[0] == keep) == (pos == b)]
+            if len(hits) == 1 and other in real and other not in health:
+                new = hits[0].split()[1] if pos == b else hits[0].split()[0]
+                fixes.append({"from": f"{tokens[a]} {tokens[b]}", "to": hits[0]})
+                tokens[pos] = new
+                break
+
+    # 2) single misspelled words
+    for i in words:
+        new = word_fix(tokens[i].lower())
+        if new:
+            fixes.append({"from": tokens[i], "to": new})
+            tokens[i] = new
+    return "".join(tokens), fixes
 
 
 def unclear_terms(parsed: dict) -> list[str]:
@@ -402,7 +497,8 @@ def unclear_terms(parsed: dict) -> list[str]:
     out = []
     for ph in parsed.get("unmapped_terms") or []:
         words = [w for w in re.split(r"[\s\-]+", ph.lower()) if w and w not in FILLER_WORDS and w not in planner._STOP
-                 and w not in planner._GENERIC and w not in planner._RESEARCH_WORDS and w not in ("too", "much", "lot")]
+                 and w not in planner._GENERIC and w not in planner._RESEARCH_WORDS and w not in ("too", "much", "lot")
+                 and w not in GROUP_WORDS]
         if words:
             out.append(" ".join(words))
     return out

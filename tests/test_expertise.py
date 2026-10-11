@@ -47,8 +47,35 @@ def test_unknown_word_gets_suggestions_and_keeps_word_order():
 
 
 def test_typo_suggests_the_right_topic():
-    q = expertise.clarify("is anemai linked to smoking in adults?")["questions"][0]
-    assert q["options"][0]["id"] == "c_anemia"
+    c = expertise.clarify("is anemai linked to smoking in adults?")
+    assert any(u["label"] == "Spelling" and '"anemia"' in u["value"] for u in c["understood"])   # shown, so it can be checked
+    assert any(u["value"] == "Anemia" for u in c["understood"])
+    assert not any(q["id"].startswith("term") for q in c["questions"])
+
+
+def test_misspellings_are_understood():
+    from q2e import planner
+    from q2e.knowledge import get_knowledge
+    k = get_knowledge()
+    cases = {
+        "Is diabetis more common in adults with obeisty?": ("diabetes", "obesity"),
+        "Does obesty raise the risk of diabeties?": ("diabetes", "obesity"),
+        "Does hypertention affect kidny disease?": ("ckd", "hypertension"),
+        "Is sleep apnia linked to obesity?": ("obesity", "sleep_apnea"),
+        "Is liver disease linked to alcohal use?": ("alcohol", "liver_disease"),
+    }
+    for idea, (out, exp) in cases.items():
+        clean, fixes = expertise.fix_spelling(idea, k)
+        p = planner.parse_question(clean, k)
+        assert fixes and (p["outcome_concept"], p["exposure_concept"]) == (out, exp), idea
+        assert not expertise.unclear_terms(p), idea
+    for idea in ["How common is astma in childern?", "Is anemai common in pregant women?", "How common is hypertenshun in seniors?"]:
+        p = planner.parse_question(expertise.fix_spelling(idea, k)[0], k)
+        assert p["outcome_concept"] and not expertise.unclear_terms(p), idea
+    # correctly spelled wording is never "corrected" into something else
+    for idea in ["Do people who drink alcohol have higher blood pressure?", "Do diabetics have more kidney disease?",
+                 "Do people who try to lose weight sleep less?", "Is the risk of diabetes higher in women?"]:
+        assert expertise.fix_spelling(idea, k)[1] == [], idea
 
 
 def test_personal_goal_is_reframed_with_factors():
