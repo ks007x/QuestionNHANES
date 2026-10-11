@@ -33,14 +33,17 @@ project, log or GitHub, and is saved only in this folder's `.env` file if *Remem
 (`.env` is in `.gitignore`). *Turn AI off* in the same dialog disconnects and can also remove the saved key.
 
 **Setup code.** If the browser is not on the computer running BEDSIDE (GitHub Codespaces, a forwarded port, another
-machine), the dialog also asks for a setup code. BEDSIDE prints it in its terminal when it starts:
+machine), the dialog also asks for a setup code. To see it, open a terminal in the BEDSIDE folder (in a Codespace:
+**Terminal → New Terminal**) and run:
 
 ```
-  BEDSIDE setup code: 1234-5678
+python -m q2e setup-code
 ```
 
-Only the person who started BEDSIDE can see it, so a stranger who can reach the web page cannot change the AI login.
-After 10 wrong codes the dialog locks until BEDSIDE is restarted (which prints a new code).
+The code is created once and stays the same across restarts (it lives in `workspace/.setup_code`, which git ignores);
+set your own with `Q2E_SETUP_CODE` in `.env`. Only someone with access to the BEDSIDE folder can read it, so a
+stranger who can reach the web page cannot change the AI login. After 10 wrong codes the dialog locks until BEDSIDE
+is restarted.
 
 From a terminal instead: `python -m q2e bedrock-connect` asks for the key without showing it, tests it and saves it.
 

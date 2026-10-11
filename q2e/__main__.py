@@ -149,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("serve"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8000)
     sub.add_parser("synth")
     sub.add_parser("bedrock-check", help="test the AWS Bedrock login and list the models it can use")
+    sub.add_parser("setup-code", help="show the code the browser asks for when connecting Bedrock from a Codespace or another computer")
     bc = sub.add_parser("bedrock-connect", help="enter a Bedrock API key (hidden), test it and save it to the local .env")
     bc.add_argument("--region", default=""); bc.add_argument("--model", default="")
     sub.add_parser("mcp", help="run the MCP (Model Context Protocol) server on stdio")
@@ -166,6 +167,10 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "bedrock-check":
         from .llm import bedrock_check
         return bedrock_check()
+    if a.cmd == "setup-code":
+        from .access import setup_code
+        print(f"BEDSIDE setup code: {setup_code()}")
+        return 0
     if a.cmd == "bedrock-connect":
         return _bedrock_connect(a.region, a.model)
     if a.cmd == "mcp":

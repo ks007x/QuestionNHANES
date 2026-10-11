@@ -7,7 +7,6 @@ from __future__ import annotations
 import datetime as _dt
 import hashlib
 import json
-import secrets
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, agents, answerability, expertise, expressions, generic, glossary, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
+from . import __version__, access, agents, answerability, expertise, expressions, generic, glossary, literature, novelty, planner, privacy, protocol_chat, report, tools as qtools, venues, voice
 from .bundle import build_bundle
 from .compiler import CompileError, compile_plan, plan_hash
 from .config import settings
@@ -87,7 +86,7 @@ class BedrockKey(BaseModel):
 # A setup code printed in the terminal running BEDSIDE. The person who started the server can read it; a stranger who
 # can only reach the web page cannot. Needed only when the browser is not on the same computer (Codespaces, a forwarded
 # port, another machine on the network).
-_SETUP = {"code": f"{secrets.randbelow(10 ** 4):04d}-{secrets.randbelow(10 ** 4):04d}", "fails": 0}
+_SETUP = {"fails": 0}
 _LOOPBACK = {"127.0.0.1", "::1", "localhost", "testclient"}
 
 
@@ -105,20 +104,21 @@ def _may_set_keys(request: Request) -> None:
         return
     if _SETUP["fails"] >= 10:
         _bad("Too many wrong setup codes. Restart BEDSIDE to get a new code.", 429)
-    code = (request.headers.get("x-bedside-setup-code") or "").strip().replace(" ", "")
-    if code and secrets.compare_digest(code, _SETUP["code"]):
+    code = (request.headers.get("x-bedside-setup-code") or "").strip()
+    if code and access.check(code):
         return
+    how = ("To see it, open a terminal in the BEDSIDE folder (in a Codespace: Terminal > New Terminal) and run: "
+           "python -m q2e setup-code")
     if code:
         _SETUP["fails"] += 1
-        _bad("That setup code is not right. It is printed in the terminal where BEDSIDE is running (like 1234-5678).", 403)
-    _bad("Enter the setup code printed in the terminal where BEDSIDE is running (like 1234-5678). It proves you are the "
-         "person running BEDSIDE.", 403)
+        _bad(f"That setup code is not right ({10 - _SETUP['fails']} tries left). {how}", 403)
+    _bad(f"Enter the BEDSIDE setup code (it proves you are the person running BEDSIDE). {how}", 403)
 
 
 @app.on_event("startup")
 def _announce_setup_code() -> None:
-    print(f"\n  BEDSIDE setup code: {_SETUP['code']}\n  (type it in the browser only if it asks, when connecting "
-          f"Amazon Bedrock from another computer or a Codespace)\n", flush=True)
+    print(f"\n  BEDSIDE setup code: {access.setup_code()}\n  (type it in the browser only if it asks, when connecting "
+          f"Amazon Bedrock from another computer or a Codespace; show it again with: python -m q2e setup-code)\n", flush=True)
 
 
 @app.post("/api/ai/bedrock")

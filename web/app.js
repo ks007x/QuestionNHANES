@@ -202,7 +202,7 @@ function aiSetupOpen() {
         <label class="field">Model id (optional)<input id="bkModel" spellcheck="false" placeholder="Automatic: a Claude model" value="${esc(on ? l.model : "")}"></label>
       </div>
       ${S.meta?.ai_setup?.needs_code || S.aiNeedsCode ? `<label class="field" style="margin-top:10px">Setup code<input id="bkCode" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1234-5678" style="max-width:200px">
-        <span class="tiny muted">Printed in the terminal where BEDSIDE is running (look for "BEDSIDE setup code"). Needed because this browser is not on the same computer.</span></label>` : ""}
+        <span class="tiny muted">Needed because this browser is not on the computer running BEDSIDE. To see it, open a terminal in the BEDSIDE folder (in a Codespace: <b>Terminal → New Terminal</b>) and run <code>python -m q2e setup-code</code>.</span></label>` : ""}
       <label class="small" style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" id="bkRemember" checked> <span>Remember on this computer (saved in the local <code>.env</code> file, which is never uploaded to GitHub)</span></label>
       <div id="aiMsg" style="margin-top:10px"></div>
       <div class="row" style="margin-top:12px;gap:8px;justify-content:flex-end">

@@ -89,25 +89,40 @@ def _req(host, **headers):
 
 def test_remote_browser_needs_the_terminal_setup_code(bedrock, monkeypatch):
     monkeypatch.setitem(server._SETUP, "fails", 0)
+    monkeypatch.setenv("Q2E_SETUP_CODE", "4821-0937")
     server._may_set_keys(_req("127.0.0.1"))                                   # same computer: no code needed
     for req in (_req("203.0.113.9"), _req("127.0.0.1", **{"x-forwarded-for": "203.0.113.9"})):   # remote / Codespaces proxy
         with pytest.raises(Exception) as e:
             server._may_set_keys(req)
-        assert e.value.status_code == 403 and "setup code" in e.value.detail
-    server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": server._SETUP["code"]}))
-    for _ in range(10):
+        assert e.value.status_code == 403 and "python -m q2e setup-code" in e.value.detail
+    for typed in ("4821-0937", "48210937", " 4821 0937 "):                    # dash and spaces do not matter
+        server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": typed}))
+    with pytest.raises(Exception) as e:
+        server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": "1234-5678"}))
+    assert "9 tries left" in e.value.detail
+    for _ in range(9):
         with pytest.raises(Exception):
-            server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": "0000-0000x"}))
+            server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": "0000-0000"}))
     with pytest.raises(Exception) as e:                                         # locked after 10 wrong tries
-        server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": server._SETUP["code"]}))
+        server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": "4821-0937"}))
     assert e.value.status_code == 429
 
 
+def test_setup_code_is_stable(tmp_path, monkeypatch):
+    from q2e import access
+    monkeypatch.delenv("Q2E_SETUP_CODE", raising=False)
+    monkeypatch.setattr(access.settings, "workspace", tmp_path)
+    first = access.setup_code()
+    assert first == access.setup_code() and (tmp_path / ".setup_code").read_text() == first   # same after a restart
+    assert access.check(first.replace("-", "")) and not access.check("")
+
+
 def test_meta_says_when_a_code_is_needed(bedrock):
+    from q2e import access
     c = TestClient(server.app)
     assert c.get("/api/meta").json()["ai_setup"]["needs_code"] is False
     assert c.get("/api/meta", headers={"x-forwarded-for": "203.0.113.9"}).json()["ai_setup"]["needs_code"] is True
-    assert server._SETUP["code"] not in c.get("/api/meta").text
+    assert access.setup_code() not in c.get("/api/meta").text
 
 
 def test_example_env_holds_no_key():
