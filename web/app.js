@@ -167,9 +167,10 @@ function stageDone(stage) {
 function renderBoundary() {
   const b = S.meta?.boundary; const l = S.meta?.llm; if (!b) return;
   const el = $("#boundary");
-  const mode = l.enabled ? `${l.provider} · ${l.model}` : "offline agents";
-  el.className = "chip " + (b.allowed ? "ok" : "bad");
-  el.title = b.message + " Row-level data never sent to LLMs.";
+  const notReady = !l.enabled && l.provider !== "offline";
+  const mode = l.enabled ? `AI: ${l.provider} · ${l.model}` : notReady ? `AI: ${l.provider} not ready` : "AI off · rule-based agents";
+  el.className = "chip " + (b.allowed && !notReady ? "ok" : "bad");
+  el.title = (notReady ? `${l.why || l.policy_message} ` : "") + b.message + " Row-level data never sent to LLMs.";
   el.innerHTML = `● ${esc(mode)} · ${esc(b.policy)} data policy`;
 }
 function renderRail(r) {

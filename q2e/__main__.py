@@ -24,6 +24,10 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
     from .store import store
 
     settings.ensure_dirs()
+    from .llm import LLMClient
+    st = LLMClient(provider).status()
+    print(f"AI agents: {st['provider']} ({st['model']})" if st["enabled"] else
+          "AI agents: off - rule-based agents only" + (f" ({st['provider']}: {st['why'] or st['policy_message']})" if st["provider"] != "offline" else ""))
     plan = agents.design_study(question, cycles, {"type": "nhanes", "cycles": cycles or ["P"], "source": source}, provider)
     proj = store.create(question, plan, approver)
     print(f"\n== {plan['title']}\n   {plan['refined_question']}\n   feasibility {plan['feasibility']['score']}/100 ({plan['feasibility']['label']})")
@@ -89,16 +93,18 @@ def _study(question: str, source: str, cycles: list[str] | None, out: Path, appr
         print("   (appraisal skipped:", e, ")")
     try:
         from . import evidence, model_advisor
-        ev = evidence.check(proj["plan"], results, live=settings.allow_download)
+        ev = evidence.check(proj["plan"], results, live=settings.allow_download, provider=provider)
         proj["evidence"] = ev
         store.save(proj)
         (out / "evidence_check.md").write_text(evidence.to_markdown(ev))
         s = ev["summary"]
         print(f"   Published evidence: {s['label']} ({s['papers']} papers, {s['comparable']} comparable, {s['same_direction']} same direction)"
               + (f" - {ev['error']}" if ev.get("error") else ""))
-        adv = model_advisor.advise(proj["plan"], proj["plan"].get("probe"), results, ev.get("landscape"))
+        adv = model_advisor.advise(proj["plan"], proj["plan"].get("probe"), results, ev.get("landscape"), provider=provider)
         (out / "model_options.json").write_text(json.dumps(adv, indent=2, default=str))
-        print(f"   Model advisor: {adv['rationale']}")
+        print(f"   Model advisor: {adv['rationale']}" + (f" [AI: {adv['ai']['provider']} {adv['ai']['model']}]" if adv.get("ai") else " [rule-based]"))
+        if ev.get("llm"):
+            print(f"   Abstracts also read by AI: {ev['llm']['provider']} {ev['llm']['model']} (numbers kept only if found in the abstract text)")
     except Exception as e:  # noqa: BLE001
         print("   (literature check skipped:", e, ")")
     pe = results.get("primary_estimate") or {}

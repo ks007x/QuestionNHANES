@@ -221,6 +221,7 @@ investigator approves them. **Guideline watch** queries PubMed for publications 
 
 ## AI providers & integrations
 `Q2E_LLM_PROVIDER = offline | anthropic | azure_openai | bedrock | openai | ollama`. See `.env.example`.
+**Step-by-step Bedrock setup (local, Codespaces and the GitHub workflow): [docs/BEDROCK.md](docs/BEDROCK.md).**
 
 * **Azure OpenAI** and **AWS Bedrock** suit enterprise tenants covered by a BAA or DUA. Add them to `Q2E_APPROVED_PROVIDERS` for restricted data.
 * **Ollama** keeps the model on your machine.

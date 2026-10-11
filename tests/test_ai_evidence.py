@@ -120,3 +120,11 @@ def test_tops_up_from_other_journals_when_few_high_impact(monkeypatch):
     ev = evidence.check(planner.draft(Q), None, use_llm=False)
     assert len(calls) == 2 and "topped up" in ev["scope"] and len(ev["papers"]) >= 2
     evidence._CACHE.clear()
+
+
+def test_bedrock_without_credentials_is_reported_not_ready(monkeypatch):
+    from q2e.llm import LLMClient
+    for k in ("AWS_BEARER_TOKEN_BEDROCK", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "Q2E_BEDROCK_MODEL_ID"):
+        monkeypatch.delenv(k, raising=False)
+    st = LLMClient("bedrock").status()
+    assert st["provider"] == "bedrock" and st["enabled"] is False and st["why"]

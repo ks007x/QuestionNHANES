@@ -18,6 +18,11 @@ on:
         description: "Name recorded as the approving investigator"
         required: true
         default: "Investigator"
+      ai:
+        description: "AI agents: 'offline' (rule-based, nothing leaves the runner) or 'bedrock' (needs the AWS secrets in docs/BEDROCK.md)"
+        type: choice
+        options: [offline, bedrock]
+        default: offline
 
 permissions:
   contents: write   # lets the run save its outputs to the 'results' branch
@@ -28,7 +33,8 @@ jobs:
     timeout-minutes: 60
     env:
       Q2E_ALLOW_DOWNLOAD: "true"
-      Q2E_LLM_PROVIDER: offline        # no study content leaves the runner
+      # offline: no study content leaves the runner. bedrock: only metadata and aggregate results are sent (never rows).
+      Q2E_LLM_PROVIDER: ${{ inputs.ai || 'offline' }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -49,6 +55,28 @@ jobs:
           python-version: "3.12"
       - name: Python packages
         run: pip install -r requirements.txt
+      - name: Connect to AWS Bedrock
+        if: inputs.ai == 'bedrock'
+        env:
+          S_TOKEN: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+          S_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          S_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S_SESSION: ${{ secrets.AWS_SESSION_TOKEN }}
+          S_MODEL: ${{ vars.Q2E_BEDROCK_MODEL_ID || secrets.Q2E_BEDROCK_MODEL_ID }}
+          S_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          # export only the values that are set, so an empty secret never hides a real credential
+          for pair in "AWS_BEARER_TOKEN_BEDROCK=$S_TOKEN" "AWS_ACCESS_KEY_ID=$S_KEY" "AWS_SECRET_ACCESS_KEY=$S_SECRET" \
+                      "AWS_SESSION_TOKEN=$S_SESSION" "Q2E_BEDROCK_MODEL_ID=$S_MODEL" "AWS_REGION=$S_REGION"; do
+            [ -n "${pair#*=}" ] && echo "$pair" >> "$GITHUB_ENV"
+          done
+          if [ -z "$S_TOKEN" ] && [ -z "$S_KEY" ]; then
+            echo "::error title=Bedrock not set up::Add the repository secret AWS_BEARER_TOKEN_BEDROCK (or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY). See docs/BEDROCK.md"; exit 1; fi
+          if [ -z "$S_MODEL" ]; then
+            echo "::error title=Bedrock not set up::Add the repository variable Q2E_BEDROCK_MODEL_ID (e.g. us.anthropic.claude-...). See docs/BEDROCK.md"; exit 1; fi
+      - name: Check Bedrock answers
+        if: inputs.ai == 'bedrock'
+        run: python -m q2e bedrock-check
       - name: Reuse previously downloaded CDC files
         uses: actions/cache@v4
         with:
@@ -89,7 +117,7 @@ jobs:
           dest="runs/$(date -u +%Y-%m-%d)-run${{ github.run_number }}"
           mkdir -p /tmp/pub && cp -r outputs/real/. /tmp/pub/ && cp outputs_log.txt /tmp/pub/
           (cd /tmp/pub && unzip -q -o bundle.zip -d bundle || true)
-          printf '# %s\n\nRun %s, cycles %s, approved by %s.\n\n[Manuscript](manuscript.md) | [Run log](outputs_log.txt) | [Bundle](bundle/)\n' \
+          printf '# %s\n\nRun %s, cycles %s, approved by %s, AI agents: ${{ inputs.ai || 'offline' }}.\n\n[Manuscript](manuscript.md) | [Run log](outputs_log.txt) | [Bundle](bundle/)\n' \
             "$QUESTION" "${{ github.run_number }}" "${{ inputs.cycles }}" "${{ inputs.approver }}" > /tmp/pub/README.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
