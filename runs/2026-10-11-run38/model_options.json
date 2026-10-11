@@ -1,0 +1,139 @@
+{
+  "options": [
+    {
+      "id": "pr",
+      "title": "Survey Poisson regression - prevalence ratio",
+      "estimand": "Adjusted prevalence ratio (PR)",
+      "when": "Cross-sectional studies, especially when the outcome is common (outcome in about 4% of participants)",
+      "pros": [
+        "Directly interpretable as 'x times as common'",
+        "Collapsible: unadjusted and adjusted estimates are comparable",
+        "Robust (sandwich) variance from the survey design"
+      ],
+      "cons": [
+        "Less familiar to some readers than odds ratios",
+        "Fitted probabilities can exceed 1 (rarely matters for PRs)"
+      ],
+      "score": 72,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": true
+    },
+    {
+      "id": "pr_plus_or",
+      "title": "Prevalence ratio primary, odds ratio as a sensitivity analysis",
+      "estimand": "PR, with OR reported alongside",
+      "when": "You want the better estimand and comparability with the literature",
+      "pros": [
+        "Reports both numbers reviewers expect",
+        "Shows how much the OR exaggerates the PR"
+      ],
+      "cons": [
+        "One more table row"
+      ],
+      "score": 70,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "or",
+      "title": "Survey logistic regression - odds ratio",
+      "estimand": "Adjusted odds ratio (OR)",
+      "when": "Rare outcomes (<10%), or when matching the published NHANES literature matters most (outcome in about 4% of participants)",
+      "pros": [
+        "Most widely used model in NHANES papers - easy to compare with prior work",
+        "Never predicts probabilities outside 0-1"
+      ],
+      "cons": [
+        "Overstates the prevalence ratio when the outcome is common",
+        "Non-collapsible: ORs shift with adjustment even without confounding"
+      ],
+      "score": 70,
+      "fix": {
+        "op": "set",
+        "path": "model.family",
+        "value": "quasibinomial"
+      },
+      "current": false,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "quartiles",
+      "title": "Exposure in weighted quartiles with P for trend",
+      "estimand": "Q4 vs Q1 contrast and dose-response",
+      "when": "Checking for a dose-response or a non-linear shape",
+      "pros": [
+        "No linearity assumption",
+        "Supports the dose-response GRADE domain"
+      ],
+      "cons": [
+        "Cut points are sample-specific"
+      ],
+      "score": 64,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "mi",
+      "title": "Multiple imputation (chained equations) for missing covariates",
+      "estimand": "Same estimand, all eligible participants",
+      "when": "Complete-case loss is 14% in this run",
+      "pros": [
+        "Less bias if data are missing at random",
+        "Uses everyone eligible"
+      ],
+      "cons": [
+        "Assumes missing at random given the imputation model"
+      ],
+      "score": 55,
+      "fix": null,
+      "current": true,
+      "runnable": true,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    },
+    {
+      "id": "logbin",
+      "title": "Log-binomial regression - risk ratio",
+      "estimand": "Adjusted risk (prevalence) ratio",
+      "when": "When a reviewer insists on a binomial model",
+      "pros": [
+        "Same estimand as Poisson PR with binomial variance"
+      ],
+      "cons": [
+        "Often fails to converge with several covariates",
+        "Not run by the engine - Poisson PR estimates the same quantity"
+      ],
+      "score": 35,
+      "fix": null,
+      "current": false,
+      "runnable": false,
+      "literature": "",
+      "literature_share": null,
+      "recommended": false
+    }
+  ],
+  "recommended": "pr",
+  "rationale": "Survey Poisson regression - prevalence ratio scores highest (72/100) for this outcome. The plan already uses it.",
+  "ai": null,
+  "landscape": {
+    "papers": 0,
+    "counts": {}
+  },
+  "basis": "rule-based scoring"
+}

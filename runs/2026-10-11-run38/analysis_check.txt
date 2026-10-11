@@ -1,0 +1,152 @@
+Records loaded: 15560 
+                                                            step     n
+                                                 In source files 15560
+                       Examined in the MEC (positive MEC weight) 14300
+                                                  Age >=18 years  8965
+ Non-missing outcome (Thrombocytopenia - platelets <150 x10^9/L)  8510
+            Non-missing exposure (Liver stiffness (VCTE median))  7978
+                          Complete covariate data (model sample)  6847
+
+Design df: 25   model-sample df: 25 
+                                   2.5%  97.5%
+.ind_thrombocytopenia_150 0.0352 0.0298 0.0413
+          sex .ind_thrombocytopenia_150       ci_l       ci_u
+Male     Male                0.05038214 0.04300431 0.05860864
+Female Female                0.02071035 0.01510165 0.02768206
+      agecat .ind_thrombocytopenia_150        ci_l       ci_u
+18-39  18-39                0.01502712 0.009964708 0.02172081
+40-64  40-64                0.04008186 0.030861378 0.05109775
+65+      65+                0.06336282 0.049916676 0.07911568
+
+thrombocytopenia_150 ~ lsm_per5   [n = 6,847, design df = 25, effect = prevalence ratio]
+        term     est     lcl     ucl        p
+ (Intercept) 0.02712 0.02306 0.03188 1.17e-25
+    lsm_per5 1.20000 1.15300 1.24800 9.15e-10
+
+thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth   [n = 6,847, design df = 25, effect = prevalence ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.00756 0.003537 0.01616 8.43e-13
+                     lsm_per5 1.17200 1.128000 1.21900 7.78e-09
+                          age 1.03700 1.026000 1.04800 1.79e-07
+                    sexFemale 0.37560 0.268000 0.52640 3.06e-06
+   race_ethNon-Hispanic Asian 1.05200 0.675000 1.63900 8.16e-01
+   race_ethNon-Hispanic Black 1.08900 0.695700 1.70400 6.99e-01
+   race_ethNon-Hispanic White 0.73890 0.450800 1.21100 2.19e-01
+ race_ethOther or multiracial 0.62220 0.306000 1.26500 1.81e-01
+
+thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking   [n = 6,847, design df = 25, effect = prevalence ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.01805 0.005725 0.05692 1.52e-07
+                     lsm_per5 1.19500 1.158000 1.23300 1.52e-11
+                          age 1.03300 1.022000 1.04300 5.92e-07
+                    sexFemale 0.41770 0.303500 0.57500 7.44e-06
+   race_ethNon-Hispanic Asian 0.88370 0.569300 1.37200 5.68e-01
+   race_ethNon-Hispanic Black 1.06400 0.660200 1.71600 7.90e-01
+   race_ethNon-Hispanic White 0.67960 0.383900 1.20300 1.76e-01
+ race_ethOther or multiracial 0.56710 0.258800 1.24200 1.49e-01
+             pir_cat1.30-3.49 1.32300 0.817100 2.14200 2.43e-01
+                 pir_cat3.50+ 1.41700 0.946400 2.12100 8.75e-02
+                          bmi 0.96220 0.934900 0.99030 1.07e-02
+                     diabetes 1.38500 0.987300 1.94400 5.86e-02
+                smokingFormer 1.31900 0.796100 2.18500 2.70e-01
+               smokingCurrent 1.42100 0.720400 2.80400 2.97e-01
+
+PRIMARY ESTIMATE: lsm_per5 1.1949 (95% CI 1.1577 to 1.2334), p = 1.52e-11
+Wald test for lsm_per5:sex
+ in svyglm(formula = f, design = design, family = fam, start = start)
+F =  1.315786  on  1  and  25  df: p= 0.26221 
+Wald test for lsm_per5:agecat
+ in svyglm(formula = f, design = design, family = fam, start = start)
+F =  4.151028  on  2  and  25  df: p= 0.027756 
+
+thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking   [n = 4,526, design df = 25, effect = prevalence ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.02246 0.006725 0.07501 8.64e-07
+                     lsm_per5 1.15100 1.084000 1.22100 5.80e-05
+                          age 1.03100 1.022000 1.04100 2.04e-07
+                    sexFemale 0.46010 0.300400 0.70470 9.37e-04
+   race_ethNon-Hispanic Asian 0.77270 0.474200 1.25900 2.87e-01
+   race_ethNon-Hispanic Black 0.93940 0.591400 1.49200 7.83e-01
+   race_ethNon-Hispanic White 0.59970 0.346800 1.03700 6.59e-02
+ race_ethOther or multiracial 0.71870 0.298500 1.73000 4.46e-01
+             pir_cat1.30-3.49 1.36600 0.864800 2.15700 1.72e-01
+                 pir_cat3.50+ 1.59200 1.086000 2.33500 1.93e-02
+                          bmi 0.95830 0.929100 0.98830 8.80e-03
+                     diabetes 1.42100 0.948600 2.12900 8.54e-02
+                smokingFormer 1.40300 0.808100 2.43500 2.18e-01
+               smokingCurrent 1.31700 0.684300 2.53400 3.95e-01
+      term      est      lcl      ucl            p
+2 lsm_per5 1.150542 1.083751 1.221449 5.798933e-05
+
+thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking   [n = 6,656, design df = 25, effect = prevalence ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.01578 0.004451 0.05597 4.49e-07
+                     lsm_per5 1.16000 1.108000 1.21300 4.26e-07
+                          age 1.03300 1.023000 1.04300 4.57e-07
+                    sexFemale 0.42900 0.311800 0.59020 1.13e-05
+   race_ethNon-Hispanic Asian 0.94450 0.587400 1.51900 8.06e-01
+   race_ethNon-Hispanic Black 1.10700 0.691600 1.77200 6.60e-01
+   race_ethNon-Hispanic White 0.70490 0.396800 1.25200 2.22e-01
+ race_ethOther or multiracial 0.59510 0.258200 1.37200 2.12e-01
+             pir_cat1.30-3.49 1.43300 0.924500 2.22200 1.03e-01
+                 pir_cat3.50+ 1.50800 1.016000 2.23700 4.20e-02
+                          bmi 0.96250 0.932600 0.99330 1.94e-02
+                     diabetes 1.44300 1.030000 2.02200 3.41e-02
+                smokingFormer 1.33100 0.761900 2.32600 3.01e-01
+               smokingCurrent 1.46700 0.677600 3.17700 3.17e-01
+      term      est      lcl      ucl            p
+2 lsm_per5 1.159533 1.108489 1.212926 4.260687e-07
+
+thrombocytopenia_150 ~ lsm_per5 + age + sex + race_eth + pir_cat + bmi + diabetes + smoking   [n = 6,847, design df = 25, effect = odds ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.01858 0.005607 0.06157 3.50e-07
+                     lsm_per5 1.26700 1.192000 1.34600 2.14e-08
+                          age 1.03500 1.024000 1.04600 8.05e-07
+                    sexFemale 0.39910 0.285700 0.55760 6.88e-06
+   race_ethNon-Hispanic Asian 0.87340 0.539400 1.41400 5.68e-01
+   race_ethNon-Hispanic Black 1.07400 0.636100 1.81400 7.81e-01
+   race_ethNon-Hispanic White 0.65500 0.351100 1.22200 1.74e-01
+ race_ethOther or multiracial 0.53750 0.231500 1.24800 1.42e-01
+             pir_cat1.30-3.49 1.36600 0.812200 2.29700 2.28e-01
+                 pir_cat3.50+ 1.46500 0.952500 2.25400 7.97e-02
+                          bmi 0.95670 0.928700 0.98560 5.15e-03
+                     diabetes 1.41200 0.976400 2.04100 6.55e-02
+                smokingFormer 1.36100 0.786000 2.35700 2.58e-01
+               smokingCurrent 1.44800 0.696100 3.01200 3.08e-01
+      term      est      lcl      ucl            p
+2 lsm_per5 1.266793 1.192341 1.345894 2.139359e-08
+
+thrombocytopenia_150 ~ lsm_per5_q + age + sex + race_eth + pir_cat + bmi + diabetes + smoking   [n = 6,847, design df = 25, effect = prevalence ratio]
+                         term     est      lcl     ucl        p
+                  (Intercept) 0.01987 0.005828 0.06772 6.79e-07
+                 lsm_per5_qQ2 0.87230 0.414400 1.83600 7.08e-01
+                 lsm_per5_qQ3 1.13400 0.625900 2.05400 6.67e-01
+                 lsm_per5_qQ4 1.83200 1.013000 3.31400 4.57e-02
+                          age 1.03200 1.023000 1.04200 2.74e-07
+                    sexFemale 0.41860 0.299100 0.58580 1.57e-05
+   race_ethNon-Hispanic Asian 0.91020 0.582100 1.42300 6.68e-01
+   race_ethNon-Hispanic Black 1.03400 0.632000 1.69300 8.89e-01
+   race_ethNon-Hispanic White 0.67150 0.375600 1.20000 1.70e-01
+ race_ethOther or multiracial 0.56280 0.257800 1.22800 1.42e-01
+             pir_cat1.30-3.49 1.35700 0.830200 2.21700 2.13e-01
+                 pir_cat3.50+ 1.42600 0.961200 2.11600 7.57e-02
+                          bmi 0.96080 0.933100 0.98930 9.29e-03
+                     diabetes 1.29100 0.915900 1.82000 1.38e-01
+                smokingFormer 1.33500 0.821400 2.16800 2.32e-01
+               smokingCurrent 1.38200 0.692900 2.75500 3.44e-01
+                                Estimate  Std. Error     t value     Pr(>|t|)
+(Intercept)                  -4.02153202 0.399931163 -10.0555605 1.266765e-23
+lsm_per5                      0.17333604 0.022064964   7.8557136 4.585960e-15
+age                           0.02928157 0.003912070   7.4849309 8.057159e-14
+sexFemale                    -0.65047121 0.128739455  -5.0526174 4.471068e-07
+race_ethNon-Hispanic Asian    0.13342826 0.221171137   0.6032806 5.463421e-01
+race_ethNon-Hispanic Black    0.14032455 0.177448783   0.7907890 4.290946e-01
+race_ethNon-Hispanic White   -0.06984021 0.171035692  -0.4083370 6.830391e-01
+race_ethOther or multiracial  0.14502147 0.294310240   0.4927503 6.222048e-01
+pir_cat1.30-3.49              0.11250725 0.146694985   0.7669468 4.431396e-01
+pir_cat3.50+                 -0.02204599 0.162619007  -0.1355684 8.921665e-01
+bmi                          -0.03166488 0.009880637  -3.2047407 1.358056e-03
+diabetes                      0.08225197 0.142007166   0.5792100 5.624666e-01
+smokingFormer                 0.14593023 0.140962306   1.0352429 3.005921e-01
+smokingCurrent                0.26442092 0.163506649   1.6171876 1.058840e-01
+Matches the Q2E run: TRUE 

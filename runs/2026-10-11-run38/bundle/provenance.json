@@ -1,0 +1,130 @@
+{
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-11T03:50:50+00:00",
+      "actor": "Karan",
+      "action": "question_submitted",
+      "detail": {
+        "question": "Is higher liver stiffness associated with thrombocytopenia in US adults?"
+      },
+      "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "ba0b33fa5a1887ee4ee3a50faf4f82e07d783c2cfae39244ca5ddf63f0a4ef11"
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-11T03:50:50+00:00",
+      "actor": "agents",
+      "action": "plan_drafted",
+      "detail": {
+        "plan_id": "plan_b2cc741679",
+        "llm": "offline",
+        "llm_calls": []
+      },
+      "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "prev": "ba0b33fa5a1887ee4ee3a50faf4f82e07d783c2cfae39244ca5ddf63f0a4ef11",
+      "hash": "cd26a870818322bff0286c1f9bf3781ac902312f14263ab025a6c022a1eed45e"
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-11T03:50:53+00:00",
+      "actor": "Karan",
+      "action": "protocol_approved",
+      "detail": {
+        "via": "cli"
+      },
+      "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "prev": "cd26a870818322bff0286c1f9bf3781ac902312f14263ab025a6c022a1eed45e",
+      "hash": "ba64716a34a183581e89831cd4652b1d0a8045d7cc315554283e530f1ab2a66e"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-11T03:50:53+00:00",
+      "actor": "Karan",
+      "action": "run_started",
+      "detail": {
+        "run_id": "run_80504146",
+        "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+        "data_source": "cdc"
+      },
+      "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "prev": "ba64716a34a183581e89831cd4652b1d0a8045d7cc315554283e530f1ab2a66e",
+      "hash": "79803b992619b46b68c5e26c03b7e9735f194317ad5116a16a810386b3180ee8"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-11T03:51:03+00:00",
+      "actor": "engine",
+      "action": "run_finished",
+      "detail": {
+        "run_id": "run_80504146",
+        "status": "completed",
+        "error": null,
+        "results_sha256": "78870068e67e28a582c278d10e8908a472e72cc8c10ae53dd0ec99f3621f6d82",
+        "qc": {
+          "pass": 16,
+          "warn": 2,
+          "fail": 0,
+          "info": 1
+        },
+        "data_files": [
+          {
+            "file": "P_DEMO",
+            "md5": "850382076eca1bef83b681d721c8362d"
+          },
+          {
+            "file": "P_ALQ",
+            "md5": "099deef39a0d722f0ef3f52fc9aa43ed"
+          },
+          {
+            "file": "P_BMX",
+            "md5": "62ff0ed76b35124059ddf97af4510310"
+          },
+          {
+            "file": "P_DIQ",
+            "md5": "f9cb20f47d64483b8583f47075be21e8"
+          },
+          {
+            "file": "P_HEQ",
+            "md5": "bf014e7509c6cc97b8ed535537666482"
+          },
+          {
+            "file": "P_GHB",
+            "md5": "7bf5b54573fc5e2fe63b99486fb847ea"
+          },
+          {
+            "file": "P_CBC",
+            "md5": "498bb01dcc4f8ed6f66260aa85e97657"
+          },
+          {
+            "file": "P_LUX",
+            "md5": "f13a60ec6b7dfb74ac70437f567ab9a0"
+          },
+          {
+            "file": "P_SMQ",
+            "md5": "04ff912a72ff16dca1520c16718dfa64"
+          }
+        ]
+      },
+      "plan_hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "prev": "79803b992619b46b68c5e26c03b7e9735f194317ad5116a16a810386b3180ee8",
+      "hash": "ede0039363ff6b472a2565e9664ee95feaf6e2c234d1088c9b34b72faa5a9aae"
+    }
+  ],
+  "history": [
+    {
+      "version": 1,
+      "hash": "0f5ba7ba4cf71b92984ebfca05f23e5bbba3345662805a16e978b5c3d21f0680",
+      "at": "2026-10-11T03:50:50+00:00",
+      "by": "Karan",
+      "note": "Initial AI draft"
+    }
+  ],
+  "chain": {
+    "valid": true,
+    "events": 5,
+    "head": "ede0039363ff6b472a2565e9664ee95feaf6e2c234d1088c9b34b72faa5a9aae"
+  },
+  "signoff": null
+}

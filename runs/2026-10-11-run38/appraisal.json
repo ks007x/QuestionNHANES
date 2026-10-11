@@ -1,0 +1,178 @@
+{
+  "methods": "Design: cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic. Population: Age >=18 years (analytic n = 6,847). Outcome: Thrombocytopenia - platelets <150 x10^9/L. Exposure: Liver stiffness (VCTE median). Comparator: per-unit contrast along the exposure (lower vs higher values); quartiles as sensitivity. Covariates: Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Diabetes (self-report, medication, or HbA1c >=6.5%), Smoking status. Descriptive: survey-weighted Table 1 by thrombocytopenia - platelets <150 x10^9/l; weighted prevalence with 95% CIs. Model: prevalence ratios (survey-weighted Poisson regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary). Effect modification: interaction tests and stratified estimates by sex, age group. Survey design: Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25. Sensitivity analyses: 6 prespecified. Missing data: complete-case primary analysis; multiple imputation as sensitivity. Reporting: STROBE; plan pre-registered by hash before data access.",
+  "methods_bullets": [
+    {
+      "label": "Design",
+      "text": "cross-sectional analysis of the National Health and Nutrition Examination Survey (NHANES), 2017-March 2020 pre-pandemic."
+    },
+    {
+      "label": "Population",
+      "text": "Age >=18 years (analytic n = 6,847)."
+    },
+    {
+      "label": "Outcome",
+      "text": "Thrombocytopenia - platelets <150 x10^9/L."
+    },
+    {
+      "label": "Exposure",
+      "text": "Liver stiffness (VCTE median)."
+    },
+    {
+      "label": "Comparator",
+      "text": "per-unit contrast along the exposure (lower vs higher values); quartiles as sensitivity."
+    },
+    {
+      "label": "Covariates",
+      "text": "Age, Sex, Race and ethnicity, Income-to-poverty ratio, Body mass index, Diabetes (self-report, medication, or HbA1c >=6.5%), Smoking status."
+    },
+    {
+      "label": "Descriptive",
+      "text": "survey-weighted Table 1 by thrombocytopenia - platelets <150 x10^9/l; weighted prevalence with 95% CIs."
+    },
+    {
+      "label": "Model",
+      "text": "prevalence ratios (survey-weighted Poisson regression); sequential models: Unadjusted, Adjusted for age, sex, and race and ethnicity, Fully adjusted (primary)."
+    },
+    {
+      "label": "Effect modification",
+      "text": "interaction tests and stratified estimates by sex, age group."
+    },
+    {
+      "label": "Survey design",
+      "text": "Taylor linearisation with strata and PSUs; weight WTMECPRP; design df = 25."
+    },
+    {
+      "label": "Sensitivity analyses",
+      "text": "6 prespecified.",
+      "items": [
+        "Exclude heavy alcohol (>2 drinks/day men, >1 women)",
+        "Exclude self-reported hepatitis B or C",
+        "Logistic regression (odds ratio)",
+        "Multiple imputation of missing covariates (m = 10)",
+        "Exposure in weighted quartiles (Q4 vs Q1, P for trend)",
+        "Unweighted analysis (design ignored)"
+      ]
+    },
+    {
+      "label": "Missing data",
+      "text": "complete-case primary analysis; multiple imputation as sensitivity."
+    },
+    {
+      "label": "Reporting",
+      "text": "STROBE; plan pre-registered by hash before data access."
+    }
+  ],
+  "limitations": [
+    {
+      "area": "Temporality",
+      "text": "Cross-sectional: exposure and outcome are measured at the same visit, so the direction of association cannot be established.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Confounding",
+      "text": "Residual and unmeasured confounding cannot be excluded in an observational analysis.",
+      "impact": "major",
+      "source": "Design"
+    },
+    {
+      "area": "Confounding",
+      "text": "E-value 1.68: a modest unmeasured confounder (RR \u2248 1.7 with both exposure and outcome) could explain the association.",
+      "impact": "moderate",
+      "source": "E-value"
+    },
+    {
+      "area": "Missing data",
+      "text": "Complete-case loss: 14.2% of the analytic sample (1131) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.",
+      "impact": "minor",
+      "source": "Quality control"
+    },
+    {
+      "area": "Data",
+      "text": "Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high); LBXPLTSI (0 low, 1 high)",
+      "impact": "minor",
+      "source": "Quality control"
+    }
+  ],
+  "certainty": {
+    "framework": "GRADE-informed, single cross-sectional study",
+    "start": "Low (observational)",
+    "level": "Moderate",
+    "symbol": "\u2295\u2295\u2295\u25ef",
+    "meaning": "The true association is probably close to the estimate, but may be substantially different.",
+    "domains": [
+      {
+        "domain": "Risk of bias",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Cross-sectional design already reflected in the Low starting level; adjusted, pre-specified analysis with design audit passed."
+      },
+      {
+        "domain": "Inconsistency",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "Direction and inference stable across 4 sensitivity analyses."
+      },
+      {
+        "domain": "Indirectness",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "US civilian non-institutionalised population; outcome measured directly."
+      },
+      {
+        "domain": "Imprecision",
+        "rating": "Not serious",
+        "change": 0,
+        "reason": "95% CI 1.16-1.23 excludes no effect and is reasonably narrow."
+      },
+      {
+        "domain": "Publication bias",
+        "rating": "Not assessable",
+        "change": 0,
+        "reason": "Cannot be judged from a single study; pre-registration by plan hash reduces selective reporting."
+      }
+    ],
+    "rating_up": [
+      {
+        "domain": "Dose-response",
+        "change": 1,
+        "reason": "Gradient across exposure quartiles (P for trend .004)."
+      }
+    ],
+    "net_down": 0,
+    "net_up": 1,
+    "caveat": "GRADE rates bodies of evidence; this single-study rating summarises how much this analysis can contribute and should be re-rated in any systematic review.",
+    "assessed": true
+  },
+  "power": {
+    "settings": {
+      "alpha": 0.05,
+      "power": 0.8,
+      "target_ratio": 1.5,
+      "target_sd": 0.2,
+      "target_halfwidth": 0.02,
+      "deff": 1.8,
+      "multiplicity": "bonferroni",
+      "p0_assumed": 0.1
+    },
+    "assumptions": [
+      "Outcome prevalence assumed 10% (run the blinded probe for the real rate band).",
+      "Design effect 1.8 (typical for NHANES; the post-run check uses the actual design-based SE)."
+    ],
+    "comparisons": [],
+    "basis": "assumed",
+    "outcome_type": "binary",
+    "verdict": "Adequately powered for the target effect (from the run's design-based standard errors)",
+    "post_run": [
+      {
+        "label": "Liver stiffness (VCTE median) (per 5 kPa)",
+        "estimate": 1.195,
+        "se_log": 0.0161,
+        "mde": 1.046,
+        "power_at_target": 1.0,
+        "target": 1.5,
+        "ci_excludes_null": true
+      }
+    ]
+  }
+}

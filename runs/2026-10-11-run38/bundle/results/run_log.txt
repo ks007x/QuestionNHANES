@@ -1,0 +1,29 @@
+03:50:54  Plan plan_b2cc741679 (hash 0f5ba7ba4cf7) loaded
+03:50:54  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_ALQ.xpt
+03:50:55  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_HEQ.xpt
+03:50:55  Downloading https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_LUX.xpt
+03:50:55  Loaded 15,560 records from 9 file(s)
+03:50:56  Derived 22 analysis variables
+03:50:56  Analytic population: 7,978
+03:50:57  Computed 6 prevalence estimates
+03:50:57  Fitted 3 models (family quasipoisson)
+03:50:57  Sensitivity analysis 1 of 6: Exclude heavy alcohol (>2 drinks/day men, >1 women) ...
+03:50:57     done in 0.1 s
+03:50:57  Sensitivity analysis 2 of 6: Exclude self-reported hepatitis B or C ...
+03:50:58     done in 0.1 s
+03:50:58  Sensitivity analysis 3 of 6: Logistic regression (odds ratio) ...
+03:50:58     done in 0.1 s
+03:50:58  Sensitivity analysis 4 of 6: Multiple imputation of missing covariates (m = 10) ...
+03:51:01     done in 3.6 s
+03:51:01  Sensitivity analysis 5 of 6: Exposure in weighted quartiles (Q4 vs Q1, P for trend) ...
+03:51:01     done in 0.2 s
+03:51:01  Sensitivity analysis 6 of 6: Unweighted analysis (design ignored) ...
+03:51:01     done in 0.0 s
+03:51:01  Ran 6 sensitivity analyses
+`height` was translated to `width`.
+`height` was translated to `width`.
+03:51:03  QC: 19 checks, 0 fail, 2 warn
+03:51:03  Results written to /home/runner/work/QuestionNHANES/QuestionNHANES/workspace/projects/prj_d997aa0b2c/runs/run_80504146/out/results.json
+Warning message:
+`geom_errorbarh()` was deprecated in ggplot2 4.0.0.
+ℹ Please use the `orientation` argument of `geom_errorbar()` instead.

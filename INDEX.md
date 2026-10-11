@@ -1,5 +1,6 @@
 # Q2E study runs
 
+- [2026-10-11-run38](runs/2026-10-11-run38/README.md): Is higher liver stiffness associated with thrombocytopenia in US adults?
 - [2026-10-11-run37](runs/2026-10-11-run37/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-11-run36](runs/2026-10-11-run36/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-11-run35](runs/2026-10-11-run35/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
