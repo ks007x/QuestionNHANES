@@ -1020,7 +1020,9 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     for d, cfg in zip(domains, dom_cfgs):
         # a domain's required measures apply only when the outcome/exposure is built from them (the iron panel
         # is required for iron deficiency, not for anemia, which needs only hemoglobin)
-        req = [r for r in cfg.get("required_measures", []) if not used_raw or _raw_dependencies(r, k) <= used_raw]
+        used_files = {k.dictionary[r]["file"] for r in used_raw if r in k.dictionary}
+        req = [r for r in cfg.get("required_measures", [])
+               if not used_raw or {k.dictionary[x]["file"] for x in _raw_dependencies(r, k) if x in k.dictionary} & used_files]
         if req:
             if req == ["lsm_valid"]:
                 expr, label = "lsm_valid == 1", "Reliable liver elastography (complete exam, IQR/median <30%)"

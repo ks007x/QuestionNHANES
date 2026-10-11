@@ -123,6 +123,17 @@ def run_item(item: dict) -> dict:
             out["comparisons"].append(row)
         out["seconds"] = round(time.time() - t0, 1)
         return out
+    if measure == "anchor":
+        # regression anchors: Q2E's own earlier real-data results, which must not drift without an explanation
+        pe = res.get("primary_estimate") or {}
+        a = item["anchor"]
+        ok = pe.get("est") is not None and abs(pe["est"] - a["est"]) <= a.get("tol", 1e-3)
+        out["comparisons"].append({"group": "primary", "published": a["est"], "pub_lcl": a["est"], "pub_ucl": a["est"], "units": True,
+                                   "q2e": pe.get("est"), "q2e_lcl": pe.get("lcl"), "q2e_ucl": pe.get("ucl"), "n": pe.get("n"),
+                                   "diff_pts": None if pe.get("est") is None else round(pe["est"] - a["est"], 6), "within_pub_ci": ok, "ci_overlap": ok,
+                                   "anchor": True, "anchor_n": a.get("n")})
+        out["seconds"] = round(time.time() - t0, 1)
+        return out
     if measure == "comparison":
         cmp = res.get("comparison") or {}
         cs = cmp.get("contrasts") or []
@@ -199,7 +210,8 @@ def summarize(items: list[dict]) -> dict:
             "all_answered": stats(comps), "right_definition_only": stats(matched),
             "by_estimand": {k: stats([c for it in items if it["status"] == "answered" and _kind(it) == k for c in it["comparisons"]
                                       if c.get("q2e") is not None and not c.get("units")])
-                            for k in sorted({_kind(it) for it in items}) if k != "mean"},
+                            for k in sorted({_kind(it) for it in items}) if k not in ("mean", "anchor")},
+            "anchors": [{"id": it["id"], **c} for it in items if _kind(it) == "anchor" for c in it["comparisons"]],
             "means": [{"id": it["id"], **c} for it in items if _kind(it) == "mean" for c in it["comparisons"]],
             "significance": {"checked": sum(1 for it in items if it.get("significance")),
                              "agree": sum(1 for it in items if (it.get("significance") or {}).get("agrees"))}}
@@ -211,6 +223,8 @@ def _kind(it: dict) -> str:
         return f"trend ({m.replace('_', '-')})"
     if m == "mean":
         return "mean"
+    if m == "anchor":
+        return "anchor"
     if m == "comparison":
         return "group comparison"
     subgroup = any(c["group"] not in ("overall", "Male", "Female") for c in it.get("comparisons", []))
@@ -229,6 +243,8 @@ def _estimand_lines(summ: dict) -> list[str]:
     for m in summ.get("means") or []:
         if m.get("q2e") is not None:
             L.append(f"| mean ({m['id']}, {m['group']}) | 1 | {'yes' if m['within_pub_ci'] else 'no'} | published {m['published']} vs Q2E {m['q2e']} | {abs(m['diff_pts'])} (units) |")
+    for a in summ.get("anchors") or []:
+        L.append(f"| regression anchor ({a['id']}) | 1 | {'unchanged' if a['within_pub_ci'] else '**CHANGED**'} | earlier {a['published']} vs now {a['q2e']} | n {a.get('anchor_n')} vs {a.get('n')} |")
     sig = summ.get("significance") or {}
     if sig.get("checked"):
         L += ["", f"Published significance conclusions reproduced: {_pct(sig['agree'], sig['checked'])}"]

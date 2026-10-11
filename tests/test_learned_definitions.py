@@ -91,3 +91,11 @@ def test_ages_missing_from_public_files_are_flagged():
     assert any(i["severity"] == "blocker" and "12-17" in i["title"] for i in p["review"])
     p = _plan("What is the prevalence of depression among US adolescents and adults aged 12 and over?", ["L"])
     assert "age >= 18" in _crit(p) and any(i["severity"] == "major" for i in p["review"] if i["id"].startswith("data_limit"))
+
+
+def test_domain_quality_requirements_still_apply_to_their_own_measures():
+    # regression: scoping the iron-panel requirement must not drop elastography or dietary-recall quality rules
+    assert "lsm_valid == 1" in _crit(_plan("Is higher liver stiffness associated with thrombocytopenia in US adults?"))
+    assert "diet_reliable == 1" in _crit(_plan("What is the average sodium intake among US adults?"))
+    assert any("ferritin" in e for e in _crit(_plan("What is the prevalence of iron deficiency among US women?")))
+    assert not any("ferritin" in e for e in _crit(_plan("What is the prevalence of anemia among US adults?", ["L"])))

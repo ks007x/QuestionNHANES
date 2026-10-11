@@ -40,6 +40,9 @@ sources:
   nhsr122:
     citation: "NCHS. Anthropometric reference data for children and adults: United States, 2015-2018. National Health Statistics Reports no. 122."
     url: "https://stacks.cdc.gov/view/cdc/100478"
+  q2e_runs:
+    citation: "Q2E's own earlier runs on CDC data (results branch), kept as regression anchors."
+    url: "https://github.com/ks007x/QuestionNHANES/tree/results/runs"
   tawfik2024:
     citation: "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and functional iron deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126."
     url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
@@ -760,3 +763,25 @@ items:
       overall: {est: 20.7, lcl: 18.8, ucl: 22.8}
       Male: {est: 18.9, lcl: 16.5, ucl: 21.5}
       Female: {est: 22.8, lcl: 19.8, ucl: 26.0}
+
+  # ---------------- REGRESSION ANCHORS: Q2E's own earlier real-data association results ----------------
+  - id: anchor_waist_hba1c_P
+    set: anchors
+    measure: anchor
+    source: q2e_runs
+    cycles: [P]
+    question: "I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight."
+    expected_definition: null
+    anchor: {est: 0.1506, tol: 0.0006, n: null}       # results branch runs 12-36: beta per 10 cm 0.1506 (0.0956-0.2056)
+    published:
+      overall: {est: 0.1506, lcl: 0.1506, ucl: 0.1506}
+  - id: anchor_lsm_thrombocytopenia_P
+    set: anchors
+    measure: anchor
+    source: q2e_runs
+    cycles: [P]
+    question: "Is higher liver stiffness associated with thrombocytopenia in US adults?"
+    expected_definition: null
+    anchor: {est: 1.1848, tol: 0.0006, n: 6425}       # results branch run 31: PR per 5 kPa 1.1848 (1.1339-1.2380), n = 6,425
+    published:
+      overall: {est: 1.1848, lcl: 1.1848, ucl: 1.1848}

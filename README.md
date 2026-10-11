@@ -220,10 +220,11 @@ can be **imported from pasted text** by an LLM curator. They are stored as *prop
 investigator approves them. **Guideline watch** queries PubMed for publications newer than each library entry.
 
 ## Accuracy against published NHANES estimates
-Q2E is benchmarked against official NCHS prevalence figures and a JAMA Network Open paper: 34 plain-language
-questions, run on CDC data with no per-question tuning. After learning from the first run, every estimate fell
-inside the published 95% CI, including 8 hold-out questions never used for tuning (mean difference about 0.2
-percentage points). Details, the failures that were fixed, and limits: [docs/ACCURACY.md](docs/ACCURACY.md).
+Q2E is benchmarked against official NCHS figures and a JAMA Network Open paper: 58 plain-language questions across
+crude and age-adjusted prevalence, trends 1999-2018, group comparisons, the hypertension care cascade and means, run
+on CDC data with no per-question tuning. In the latest run all 245 estimates fell inside the published 95% CIs (mean
+difference 0.17 percentage points), including hold-out questions never used for tuning. Details, the failures that
+were fixed, the estimands supported and the pitfalls Q2E checks for: [docs/ACCURACY.md](docs/ACCURACY.md).
 
 ## AI providers & integrations
 `Q2E_LLM_PROVIDER = offline | anthropic | azure_openai | bedrock | openai | ollama`. See `.env.example`.
