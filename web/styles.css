@@ -222,6 +222,10 @@ table.t td .tiny { word-break: break-word; overflow-wrap: anywhere; }
 .headline { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; }
 .headline .big { font: 500 52px/1 var(--serif); color: var(--ink); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .headline .ci { color: var(--ink-2); font-size: 15px; }
+.headline .unit { font: 400 16px var(--sans, inherit); color: var(--ink-2); margin-left: 6px; letter-spacing: 0; }
+.headline.cmp .pair { display: flex; align-items: flex-start; gap: 16px; }
+.headline.cmp .who { color: var(--ink-2); font-size: 14px; margin-top: 6px; text-align: center; }
+.headline.cmp .vs { font: italic 400 22px var(--serif); color: var(--ink-3); padding-top: 14px; }
 .bench { display: grid; gap: 8px; }
 .bench .bar { position: relative; height: 24px; background: var(--line-2); border-radius: 3px; }
 .bench .bar i { position: absolute; top: 6px; height: 12px; border-radius: 2px; }

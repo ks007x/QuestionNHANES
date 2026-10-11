@@ -1385,8 +1385,30 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
             rng = f"Aged {lo}-{hi} Years" if lo is not None and hi is not None else (f"Aged {lo} Years or Older" if lo is not None else f"Younger Than {hi + 1} Years")
             pop_short = f"US {noun} {rng}"
         title = f"Prevalence of {_title(_join(names))} Among {_title(pop_short)}: A Cross-Sectional Analysis of {_cycle_text(cycles, k)}"
-        pico = {"population": pop_text, "exposure": "Not applicable (descriptive prevalence); subgroups: " + (_join([k.label(s) for s in subgroups]) or "none"),
-                "comparator": "Subgroup contrasts (prevalence ratios)", "outcome": f"{olabel}",
+        cb = parsed.get("compare_by")
+        if cb:
+            # the question compares groups: say so in the question, the hypothesis and the title
+            from .report import group_words
+            gl = (cb.get("label") or {"sex": "sex", "race_eth": "race and ethnicity", "pir_cat": "income", "educ": "education"}
+                  .get(cb["group_var"], "age group")).lower()
+            a = group_words(cb.get("level"), {"population": criteria}) if cb.get("level") else ""
+            b = group_words(cb.get("reference"), {"population": criteria}) if cb.get("reference") else ""
+            between = f"between {a} and {b}" if a and b else f"across {gl} groups"
+            refined = (f"Among {pop_text}, does the survey-weighted prevalence of {_lc(outcome['concept_label'])} "
+                       f"({_crit(outcome, k)}) differ {between}?")
+            ql = question.lower()
+            if a and b and re.search(r"\b(?:more common|more prevalent|higher|greater|more likely)\b", ql):
+                hypothesis = f"{outcome['concept_label']} is more common in {a} than in {b}."
+            elif a and b and re.search(r"\b(?:less common|less prevalent|lower|less likely)\b", ql):
+                hypothesis = f"{outcome['concept_label']} is less common in {a} than in {b}."
+            else:
+                hypothesis = f"The prevalence of {_lc(outcome['concept_label'])} differs {between}."
+            hypothesis = hypothesis[0].upper() + hypothesis[1:]
+            lead = {"sex": "Sex Differences in", "race_eth": "Racial and Ethnic Differences in", "pir_cat": "Income Differences in",
+                    "educ": "Educational Differences in"}.get(cb["group_var"], "Age Differences in")
+            title = f"{lead} the Prevalence of {_title(_join(names))} Among {_title(pop_short)}: A Cross-Sectional Analysis of {_cycle_text(cycles, k)}"
+        pico = {"population": pop_text, "exposure": (f"Group: {between}" if cb else "Not applicable (descriptive prevalence); subgroups: " + (_join([k.label(s) for s in subgroups]) or "none")),
+                "comparator": (f"Reference group: {b or 'first group'} (difference in percentage points and prevalence ratio)" if cb else "Subgroup contrasts (prevalence ratios)"), "outcome": f"{olabel}",
                 "covariates": _join([k.label(c) for c in adjustment_sets[0]["covariates"]]) if adjustment_sets else "None (descriptive)",
                 "design": "Cross-sectional, nationally representative complex survey"}
     else:

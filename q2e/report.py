@@ -113,6 +113,11 @@ def build_sections(project: dict, results: dict, narrative: dict | None = None) 
                        f"({pe.get('effect_label', '').split('(')[-1].rstrip(')')}; P for linear trend {_p(pe.get('p'))})")
         elif pe.get("effect") in ("mean", "median"):
             finding = f"the {pe['effect_label'].lower()} {_lc(out_concept)} was {pe['est']:.2f} (95% CI {pe['lcl']:.2f}-{pe['ucl']:.2f})"
+        elif pe.get("effect") == "difference":
+            cw = comparison_words(pe, plan)
+            basis = f"{pe.get('basis', '')} " if pe.get("basis") and pe.get("basis") != "crude" else ""
+            finding = (f"the weighted {basis}{'prevalence' if pe.get('binary', True) else 'mean'} of {_lc(out_concept)} was "
+                       + cw["formal"])
         if pe.get("count_millions") is not None:
             finding += f", about {pe['count_millions']:.1f} million people (95% CI {pe['count_lcl']:.1f}-{pe['count_ucl']:.1f})"
         elif pe.get("pop_millions"):
@@ -197,11 +202,74 @@ def _pop_noun(plan: dict) -> str:
     return "US adults"
 
 
+# ---------------------------------------------------------------- group comparisons in words
+_GROUP_WORDS = {"Male": "men", "Female": "women"}
+
+
+def group_words(level: str | None, plan: dict) -> str:
+    """'Male' -> 'men' (adults) / 'boys' (children); age bands -> 'adults aged 60+'; other labels as written."""
+    if level is None:
+        return ""
+    lo = (plan.get("age_range") or [None])[0] if isinstance(plan.get("age_range"), (list, tuple)) else None
+    kids = any("children" in (c.get("label", "") or "").lower() or "<18" in (c.get("expr", "") or "")
+               for c in plan.get("population", []) if c.get("enabled"))
+    if level in _GROUP_WORDS:
+        return {"men": "boys", "women": "girls"}[_GROUP_WORDS[level]] if kids else _GROUP_WORDS[level]
+    if level[:1].isdigit() or level.startswith("<"):
+        return f"people aged {level.replace('-', '–')}" + ("" if level.endswith("+") or "-" in level else " years")
+    if level.startswith("<1.30") or level == "<1.30":
+        return "people with income below 130% of the poverty level"
+    return level
+
+
+def comparison_words(pe: dict, plan: dict) -> dict:
+    """Plain and formal wording for a two-group comparison of a proportion or a mean (numbers only from R)."""
+    a, b = group_words(pe.get("level"), plan), group_words(pe.get("reference"), plan)
+    binary = pe.get("binary", True)
+    fmt = (lambda x: f"{100 * x:.1f}%") if binary else (lambda x: f"{x:.2f}")
+    d, lo, hi = pe.get("est"), pe.get("lcl"), pe.get("ucl")
+    unit = " percentage points" if binary else ""
+    dd = (lambda x: f"{100 * x:+.1f}".replace("+-", "-")) if binary else (lambda x: f"{x:+.2f}")
+    sig = lo is not None and hi is not None and (lo > 0 or hi < 0)
+    r, rl, ru = pe.get("ratio"), pe.get("ratio_lcl"), pe.get("ratio_ucl")
+    rel = ""
+    if r:
+        rel = f"{abs(r - 1) * 100:.0f}% {'higher' if r >= 1 else 'lower'}"
+    ratio_txt = (f"prevalence ratio, {r:.2f}" + (f" [95% CI, {rl:.2f}-{ru:.2f}]" if rl and ru else "")) if r and binary else ""
+    p = pe.get("p")
+    p_txt = "P < .001" if p is not None and p < 0.001 else (f"P = {p:.2f}".replace("0.", ".") if p is not None else "")
+    formal = (f"{fmt(pe.get('est_level'))} in {a} and {fmt(pe.get('est_ref'))} in {b} "
+              f"(difference, {dd(d)}{unit} [95% CI, {dd(lo)} to {dd(hi)}]" + (f"; {ratio_txt}" if ratio_txt else "")
+              + (f"; {p_txt}" if p_txt else "") + ")")
+    if binary:
+        n1, n2 = int(100 * (pe.get("est_level") or 0) + 0.5), int(100 * (pe.get("est_ref") or 0) + 0.5)
+        plain = f"About {n1} in every 100 {a} and about {n2} in every 100 {b} had this."
+    else:
+        plain = f"The average was {fmt(pe.get('est_level'))} in {a} and {fmt(pe.get('est_ref'))} in {b}."
+    if sig:
+        plain += (f" That is {rel} in {a}, and a difference this large is unlikely to be due to chance alone." if rel
+                  else " A difference this large is unlikely to be due to chance alone.")
+    else:
+        plain += " The difference is small enough that it could be due to chance; the data are also consistent with no difference."
+    return {"a": a, "b": b, "formal": formal, "plain": plain, "significant": sig, "relative": rel}
+
+
 def _plain_language(plan, pe, n, synthetic) -> str:
     x = plan.get("exposure")
-    if plan["study_type"] == "prevalence":
+    concept = _lc(plan["outcome"].get("concept_label", plan["outcome"]["label"]))
+    if plan["study_type"] == "prevalence" and pe.get("effect") == "difference":
+        cw = comparison_words(pe, plan)
+        s = (f"We looked at {n:,} people in a national health survey to compare {concept} between {cw['a']} and {cw['b']}. "
+             + cw["plain"].replace(" had this.", f" had {concept}.") + " ") if n else ""
+    elif plan["study_type"] == "prevalence" and pe.get("effect") == "change":
+        ch = 100 * pe["est"] if pe.get("binary") else pe["est"]
+        s = (f"We looked at {n:,} people across several survey cycles. The share with {concept} changed by about "
+             f"{ch:+.1f}{' percentage points' if pe.get('binary') else ''} over the period. ") if n else ""
+    elif plan["study_type"] == "prevalence" and pe.get("effect") in ("mean", "median", "percentile"):
+        s = f"We looked at {n:,} people in a national health survey. The {pe['effect_label'].lower()} {concept} was {pe['est']:.2f}. " if n else ""
+    elif plan["study_type"] == "prevalence":
         s = (f"We looked at {n:,} people in a national health survey. About {100 * pe.get('est', 0):.0f} in every 100 adults "
-             f"met the definition of {_lc(plan['outcome'].get('concept_label', plan['outcome']['label']))}. ") if n else ""
+             f"met the definition of {concept}. ") if n else ""
     else:
         s = (f"We looked at {n:,} people in a national health survey. People with higher {_lc(x['label'])} tended to have "
              f"{'higher' if (pe.get('est', 0) > (1 if pe.get('effect') in ('PR', 'OR') else 0)) else 'lower'} "

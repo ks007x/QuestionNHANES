@@ -595,6 +595,21 @@ def report_summary(pid: str, rid: str):
     return report.build_sections(proj, results, narr)
 
 
+@app.get("/api/projects/{pid}/runs/{rid}/explain")
+def report_explain(pid: str, rid: str, refresh: bool = False):
+    """AI (Amazon Bedrock) plain-language summary of a finished run; numbers are checked against the R results."""
+    proj, r, results, narr = _report(pid, rid, False)
+    cache = Path(r["dir"]) / "explain.json"
+    if cache.exists() and not refresh:
+        return json.loads(cache.read_text(encoding="utf-8"))
+    out = agents.explain(proj["plan"], results, report.build_sections(proj, results, narr))
+    if out.get("available"):
+        cache.write_text(json.dumps(out), encoding="utf-8")
+        store.event(proj, "agents", "summary_explained", {"run_id": rid, "rejected": out.get("rejected", [])})
+        store.save(proj)
+    return out
+
+
 @app.get("/api/projects/{pid}/runs/{rid}/analysis.R", response_class=PlainTextResponse)
 def analysis_r(pid: str, rid: str, download: bool = False):
     """Stand-alone, readable R script that repeats this run (survey + haven only)."""

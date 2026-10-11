@@ -989,15 +989,49 @@ function viewRun() {
   }
 }
 
+/* Plain-language summary: rule-written by default; Amazon Bedrock can rewrite it, with every number checked against R. */
+function explainBlock(sm) {
+  const X = S.explain && S.explain._rid === latestRun()?.id ? S.explain : null;
+  const ai = X && X.available;
+  const text = ai ? X.plain : sm.plain_language || "";
+  const btn = S.meta?.llm?.enabled ? `<button class="btn sm ghost" data-act="explain">${ai ? "Rewrite again" : "Rewrite with AI (Amazon Bedrock)"}</button>` : "";
+  return `<p style="margin:0 0 6px">${nice(text)}</p>
+    ${ai ? `<p class="tiny muted" style="margin:0 0 6px"><span class="chip accent" style="font-size:10px;padding:0 6px">AI · ${esc(X.ai.model)}</span> ${esc(X.checked)}${X.rejected?.length ? " Kept standard wording for: " + esc(X.rejected.join("; ")) + "." : ""}</p>
+      <p class="tiny" style="margin:0 0 8px"><b>Key point (AI):</b> ${nice(X.key_point)}</p>` : X && !X.available ? `<p class="tiny muted">${esc(X.reason)}</p>` : ""}
+    ${btn}`;
+}
+
+/* A two-group comparison: lead with each group's value, then the difference (percentage points for proportions)
+   and the ratio (with its CI, in words), then whether chance can explain it. */
+const GROUP_WORD = { Male: "Men", Female: "Women" };
+function groupWord(l) { if (!l) return ""; if (GROUP_WORD[l]) return GROUP_WORD[l]; return /^[<\d]/.test(l) ? `Ages ${l}` : l; }
+function comparisonHeadline(pe) {
+  const bin = pe.binary !== false; const f = bin ? pct : fx;
+  const d = (x) => bin ? (x >= 0 ? "+" : "−") + Math.abs(100 * x).toFixed(1) : (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(2);
+  const unit = bin ? " percentage points" : "";
+  const A = groupWord(pe.level), B = groupWord(pe.reference);
+  const sig = pe.lcl > 0 || pe.ucl < 0;
+  const rel = pe.ratio ? `${Math.abs((pe.ratio - 1) * 100).toFixed(0)}% ${pe.ratio >= 1 ? "higher" : "lower"} in ${A.toLowerCase()}` : "";
+  const ratioName = bin ? "Prevalence ratio" : "Ratio of means";
+  return `<div class="headline cmp"><div class="pair">
+      <div><div class="big">${f(pe.est_level)}</div><div class="who">${esc(A)}</div></div><div class="vs">vs</div>
+      <div><div class="big">${f(pe.est_ref)}</div><div class="who">${esc(B)}</div></div></div>
+    <div><b>${nice(pe.label)}</b>${pe.basis ? ` <span class="chip" style="font-size:11px">${esc(pe.basis)}</span>` : ""}
+      <div class="ci">Difference <b>${d(pe.est)}${unit}</b> (95% CI ${d(pe.lcl)} to ${d(pe.ucl)}) · P ${pfmt(pe.p)}</div>
+      ${pe.ratio ? `<div class="ci">${ratioName} <b>${fx(pe.ratio)}</b>${pe.ratio_lcl != null ? ` (95% CI ${fx(pe.ratio_lcl)}–${fx(pe.ratio_ucl)})` : ""} · ${esc(rel)}</div>` : ""}
+      <div class="tiny ${sig ? "" : "muted"}" style="margin-top:4px">${sig ? "The groups differ beyond what chance alone would explain." : "Not statistically significant: the data are consistent with no difference between the groups."}${pe.p_any != null && (S.results?.comparison?.levels || []).length > 2 ? ` Any difference across all groups: P ${pfmt(pe.p_any)}.` : ""}</div>
+      <div class="tiny muted">n = ${pe.n?.toLocaleString()}${bin ? " · a difference between two percentages is in percentage points; the ratio gives the relative difference" : ""}</div></div></div>`;
+}
+
 /* ------------------------------------------------------------------ RESULTS */
 function headline() {
   const R = S.results; const pe = R.primary_estimate || {}; const p = S.project.plan;
   const cnt = pe.count_millions != null ? ` · about ${fx(pe.count_millions, 1)} million people (95% CI ${fx(pe.count_lcl, 1)}-${fx(pe.count_ucl, 1)})` : (pe.pop_millions ? ` · ≈${fx(pe.pop_millions, 1)} million people` : "");
   if (pe.effect === "prevalence") return `<div class="headline"><div class="big">${pct(pe.est)}</div><div><b>${esc(pe.effect_label === "Age-adjusted prevalence" ? "Age-adjusted prevalence · " : "")}${nice(pe.label)}</b><div class="ci">95% CI ${pct(pe.lcl)}-${pct(pe.ucl)} · n = ${pe.n?.toLocaleString()}${cnt}</div>${pe.crude_est != null ? `<div class="tiny muted">Crude ${pct(pe.crude_est)} (${pct(pe.crude_lcl)}-${pct(pe.crude_ucl)}) · standardized to the ${esc(pe.standard || "")}</div>` : ""}</div></div>`;
-  if (pe.effect === "change") { const f = pe.binary ? (x) => (x >= 0 ? "+" : "") + (100 * x).toFixed(1) + " pts" : (x) => (x >= 0 ? "+" : "") + fx(x);
-    return `<div class="headline"><div class="big">${f(pe.est)}</div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${f(pe.lcl)} to ${f(pe.ucl)} · P for linear trend ${pfmt(pe.p)} · n = ${pe.n?.toLocaleString()}</div></div></div>`; }
-  if (pe.effect === "difference") { const f = pe.binary ? (x) => (x >= 0 ? "+" : "") + (100 * x).toFixed(1) + " pts" : (x) => (x >= 0 ? "+" : "") + fx(x);
-    return `<div class="headline"><div class="big">${f(pe.est)}</div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${f(pe.lcl)} to ${f(pe.ucl)} · P ${pfmt(pe.p)}${pe.p_any != null ? ` · any difference across groups P ${pfmt(pe.p_any)}` : ""} · ${pe.binary ? `${pct(pe.est_level)} vs ${pct(pe.est_ref)}` : `${fx(pe.est_level)} vs ${fx(pe.est_ref)}`}${pe.ratio ? ` · ratio ${fx(pe.ratio)}` : ""}</div></div></div>`; }
+  const sgn = (x, d = 1) => (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d);
+  if (pe.effect === "change") { const f = pe.binary ? (x) => sgn(100 * x) : (x) => sgn(x, 2); const unit = pe.binary ? " percentage points" : "";
+    return `<div class="headline"><div class="big">${f(pe.est)}<span class="unit">${unit}</span></div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${f(pe.lcl)} to ${f(pe.ucl)}${unit} · P for linear trend ${pfmt(pe.p)} · n = ${pe.n?.toLocaleString()}</div></div></div>`; }
+  if (pe.effect === "difference") return comparisonHeadline(pe);
   if (pe.effect === "mean" || pe.effect === "median" || pe.effect === "percentile") return `<div class="headline"><div class="big">${fx(pe.est)}</div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${fx(pe.lcl)} to ${fx(pe.ucl)} · n = ${pe.n?.toLocaleString()}</div></div></div>`;
   const nm = { PR: "Prevalence ratio", OR: "Odds ratio", Beta: "Mean difference" }[pe.effect] || pe.effect;
   return `<div class="headline"><div class="big">${fx(pe.est)}</div><div><b>${esc(nm)} · ${nice(pe.label)}</b> → ${nice(p.outcome.label)}<div class="ci">95% CI ${fx(pe.lcl)} to ${fx(pe.ucl)} · P ${pfmt(pe.p)} · n = ${pe.n?.toLocaleString()} · fully adjusted</div>${R.evalue ? `<div class="tiny muted">E-value ${fx(R.evalue.point)} (CI ${fx(R.evalue.ci)})</div>` : ""}</div></div>`;
@@ -1056,7 +1090,7 @@ function viewResults() {
   return { title: "Results", lede: nice(p.refined_question), parts: [
     { id: "main", title: "The main finding", help: "The headline number, then the same result in plain words. Press Listen to hear it.",
       html: `${synth}<div class="card">${headline()}</div>
-  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3><p style="margin:0 0 10px">${nice(sm.plain_language || "")}</p>
+  <div class="card" style="margin-top:14px"><h3 class="sub" style="margin-top:0">Plain-language summary</h3>${explainBlock(sm)}
     <div class="row"><button class="btn sm" data-act="listen">Listen${S.meta.voice ? " (ElevenLabs)" : ""}</button><span class="tiny muted">Key point: ${nice(sm.key_points?.findings || "")}</span></div></div>` },
     { id: "evidence", title: "Checked against published NHANES studies", help: "The Librarian agent finds NHANES papers on the same question in high-impact journals (JAMA Network, Lancet group, NEJM, BMJ, Annals and society journals such as JACC, Stroke, Blood, ACG and J Hepatol), reads their abstracts, and checks whether your estimate agrees with theirs.",
       html: evidenceCard() },
@@ -1071,9 +1105,9 @@ function viewResults() {
   ${mrows ? `<h3 class="sub">Table 3. Regression (${esc(R.models[0].effect_label)})</h3><div class="tablewrap"><table class="t"><thead><tr><th>Model</th><th>Term</th><th>n</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${mrows}</tbody></table></div>` : ""}
   ${R.interactions.length ? `<h3 class="sub">Effect modification</h3><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}` },
     R.comparison && R.comparison.contrasts && R.comparison.contrasts.length && { id: "comparison", title: `Comparison by ${esc(R.comparison.group_label || "")}`, help: "Each group against the reference group: the difference and the ratio, crude and age-adjusted, with a design-based test of whether the groups differ at all.",
-      html: `<div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Group vs reference</th><th>Basis</th><th>Group</th><th>Reference</th><th>Difference (95% CI)</th><th>Ratio</th><th>P</th></tr></thead><tbody>${R.comparison.contrasts.map((c) => { const f = R.comparison.binary ? (x) => (100 * x).toFixed(1) : (x) => fx(x);
-        return `<tr><td>${esc(c.level)} vs ${esc(c.reference)}</td><td>${esc(c.basis)}</td><td class="num">${f(c.est_level)}</td><td class="num">${f(c.est_ref)}</td><td class="num">${f(c.difference)} (${f(c.diff_lcl)} to ${f(c.diff_ucl)})</td><td class="num">${c.ratio != null ? fx(c.ratio) : "-"}</td><td class="num">${pfmt(c.p)}</td></tr>`; }).join("")}</tbody></table></div>
-        <p class="tiny muted">${R.comparison.binary ? "Percent and percentage points. " : ""}Test of any difference across all groups: P ${pfmt(R.comparison.p_any_difference)}.</p></div>` },
+      html: `<div class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Group vs reference</th><th>Basis</th><th>Group</th><th>Reference</th><th>Difference (95% CI)</th><th>Ratio (95% CI)</th><th>P</th></tr></thead><tbody>${R.comparison.contrasts.map((c) => { const f = R.comparison.binary ? (x) => (100 * x).toFixed(1) : (x) => fx(x);
+        return `<tr><td>${esc(groupWord(c.level))} vs ${esc(groupWord(c.reference))}</td><td>${esc(c.basis)}</td><td class="num">${f(c.est_level)}</td><td class="num">${f(c.est_ref)}</td><td class="num">${f(c.difference)} (${f(c.diff_lcl)} to ${f(c.diff_ucl)})</td><td class="num">${c.ratio != null ? fx(c.ratio) + (c.ratio_lcl != null ? ` (${fx(c.ratio_lcl)}-${fx(c.ratio_ucl)})` : "") : "-"}</td><td class="num">${pfmt(c.p)}</td></tr>`; }).join("")}</tbody></table></div>
+        <p class="tiny muted">${R.comparison.binary ? "Group values in percent; differences in percentage points; the ratio is the prevalence ratio. " : ""}Test of any difference across all groups: P ${pfmt(R.comparison.p_any_difference)}.</p></div>` },
     R.trend && R.trend.rows && R.trend.rows.length && { id: "trend", title: "Change over time", help: "One estimate per survey cycle (age-adjusted when the population spans NCHS age groups), the change from the first to the last cycle, and a test for a linear trend.",
       html: trendCard(R.trend, p) },
     R.arms && R.arms.vs_reference && { id: "arms", title: "Comparison groups", help: "Each group against the control group, every pair of groups, and an overall test of whether the groups differ.",
@@ -1612,6 +1646,12 @@ const A = {
   watch: async (el) => { el.disabled = true; el.innerHTML = `<span class="spinner"></span> Checking PubMed…`; S.watch = await api("/api/guidelines/watch"); rerender(); },
   importDef: async () => { try { S.proposal = await api("/api/guidelines/import", { method: "POST", body: { text: $("#gtext").value } }); rerender(); } catch (e) { toast(e.message, true); } },
   approveDef: async () => { try { await api("/api/guidelines/approve", { method: "POST", body: { id: S.proposal.id, by: $("#propBy").value || "investigator" } }); S.proposal = null; S.meta = await api("/api/meta"); toast("Definition added to library"); rerender(); } catch (e) { toast(e.message, true); } },
+};
+A.explain = async (el) => {
+  const lr = latestRun(); el.disabled = true; el.innerHTML = `<span class="spinner"></span> Asking Amazon Bedrock…`;
+  try { S.explain = { ...(await api(`/api/projects/${S.project.id}/runs/${lr.id}/explain${S.explain ? "?refresh=true" : ""}`)), _rid: lr.id }; }
+  catch (e) { toast(e.message, true); }
+  rerender();
 };
 A.aiSetup = () => aiSetupOpen();
 A.aiClose = () => aiSetupClose();

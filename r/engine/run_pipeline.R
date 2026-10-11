@@ -164,7 +164,8 @@ run_pipeline <- function(plan_path, outdir) {
     z <- pick[[1]]
     pe <- list(effect = "difference", effect_label = sprintf("%s vs %s (%s)", z$level, z$reference, z$basis), term = y,
                label = .var_label(spec, y), est = z$difference, lcl = z$diff_lcl, ucl = z$diff_ucl, p = z$p,
-               est_level = z$est_level, est_ref = z$est_ref, ratio = z$ratio, binary = results$comparison$binary,
+               est_level = z$est_level, est_ref = z$est_ref, ratio = z$ratio, ratio_lcl = z$ratio_lcl %||% NA, ratio_ucl = z$ratio_ucl %||% NA, binary = results$comparison$binary,
+               level = z$level, reference = z$reference, basis = z$basis, group_label = results$comparison$group_label,
                p_any = results$comparison$p_any_difference, n = sum(des$variables$.in_analytic))
   }
   if (!is.null(results$trend) && length(results$trend$tests)) {

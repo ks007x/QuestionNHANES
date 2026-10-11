@@ -144,9 +144,16 @@ comparison_estimates <- function(des, spec, y, g, ref = NULL, binary = TRUE, pop
     for (l in setdiff(nm, ref)) {
       w <- setNames(rep(0, length(nm)), nm); w[l] <- 1; w[ref] <- -1
       dif <- sum(w * co); se <- sqrt(as.numeric(t(w) %*% vc %*% w))
-      out[[length(out) + 1]] <- list(level = l, reference = ref, basis = basis, est_level = unname(co[l]), est_ref = unname(co[ref]),
+      # ratio CI on the log scale (delta method with the design-based covariance of the two estimates)
+      a <- unname(co[l]); b <- unname(co[ref]); r_l <- NA; r_u <- NA; rat <- NA
+      if (is.finite(a) && is.finite(b) && a > 0 && b > 0) {
+        rat <- a / b
+        v_lr <- vc[l, l] / a^2 + vc[ref, ref] / b^2 - 2 * vc[l, ref] / (a * b)
+        if (is.finite(v_lr) && v_lr >= 0) { r_l <- exp(log(rat) - tq * sqrt(v_lr)); r_u <- exp(log(rat) + tq * sqrt(v_lr)) }
+      }
+      out[[length(out) + 1]] <- list(level = l, reference = ref, basis = basis, est_level = a, est_ref = b,
                                      difference = dif, diff_lcl = dif - tq * se, diff_ucl = dif + tq * se, p = 2 * stats::pt(-abs(dif / se), ddf),
-                                     ratio = if (co[ref] > 0) unname(co[l] / co[ref]) else NA)
+                                     ratio = rat, ratio_lcl = r_l, ratio_ucl = r_u)
     }
     out
   }

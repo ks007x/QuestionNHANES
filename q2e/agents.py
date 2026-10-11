@@ -350,3 +350,90 @@ def import_guideline(text: str, provider: str | None = None) -> dict:
     expressions.validate(d.get("expr", ""), set(k.blocks) | set(k.definitions))
     d["status"] = "proposed"
     return d
+
+
+_CAUSAL_EXTRA = re.compile(r"\b(?:caus(?:es|ed|ing)|leads? to|led to|results? in|prevents?|protects? against|protective|"
+                          r"(?:reduc|increas|rais|lower)\w*\s+(?:the\s+|their\s+|your\s+)?(?:\w+\s+){0,2}risk)\b", re.I)
+_NUM = re.compile(r"(?<![\w.])[-+−]?\d+(?:\.\d+)?")
+
+
+def _numbers(text: str) -> set[str]:
+    return {n.replace("−", "-").lstrip("+") for n in _NUM.findall(text or "")}
+
+
+def explain(plan: dict, results: dict, sections: dict, provider: str | None = None) -> dict:
+    """Amazon Bedrock rewrites the plain-language summary and key point for a clinician audience. It receives only
+    the rule-written sentences (aggregate numbers from R) and may not introduce any number: every number in its text
+    must already appear in those sentences, otherwise the rule-written text is kept."""
+    client = LLMClient(provider)
+    if not client.enabled:
+        return {"available": False, "reason": "AI is off - connect Amazon Bedrock to rewrite this summary."}
+    src_plain = sections.get("plain_language", "")
+    src_key = (sections.get("key_points") or {}).get("findings", "")
+    pe = results.get("primary_estimate") or {}
+    facts = {"question": plan.get("refined_question"), "plain_summary": src_plain, "key_point": src_key,
+             "effect": pe.get("effect"), "statistically_significant": bool(pe.get("lcl") is not None and pe.get("ucl") is not None
+                                                                         and (pe["lcl"] > (1 if pe.get("effect") in ("PR", "OR") else 0)
+                                                                              or pe["ucl"] < (1 if pe.get("effect") in ("PR", "OR") else 0))),
+             "synthetic_data": results.get("meta", {}).get("synthetic", False)}
+    user = ("Rewrite these two texts from a survey-weighted NHANES analysis.\n" + json.dumps(facts, default=str, indent=1) +
+            "\n\nReturn JSON {plain: 2-3 short sentences a patient or busy clinician understands at once, key_point: one "
+            "precise sentence for a clinician}. Rules: use ONLY numbers that appear in plain_summary or key_point, copied "
+            "exactly (you may drop numbers, never add or change them); differences between two percentages are 'percentage "
+            "points'; say plainly when a difference is not statistically significant; cross-sectional, so associational "
+            "language only (no 'causes', 'leads to', 'reduces risk'); if synthetic_data is true say the numbers are illustrative.")
+    try:
+        out = client.complete_json("Explainer", SYSTEM_BASE, user, max_tokens=600)
+    except LLMError as e:
+        return {"available": False, "reason": f"AI unavailable: {str(e)[:160]}"}
+    allowed = _numbers(src_plain) | _numbers(src_key) | {"100"}
+    res: dict = {"available": True, "ai": {"provider": client.provider.name, "model": client.provider.model}, "rejected": []}
+    for key, fallback in (("plain", src_plain), ("key_point", src_key)):
+        txt = str(out.get(key) or "").strip()
+        extra = _numbers(txt) - allowed
+        if not txt or len(txt) > 700:
+            res[key] = fallback
+            res["rejected"].append(f"{key}: empty or too long")
+        elif extra:
+            res[key] = fallback
+            res["rejected"].append(f"{key}: introduced numbers not in the results ({', '.join(sorted(extra))})")
+        elif scan_causal(re.sub(r"due to (?:chance|random variation|sampling)", "", txt, flags=re.I)) or _CAUSAL_EXTRA.search(txt):
+            res[key] = fallback
+            res["rejected"].append(f"{key}: causal wording")
+        elif _wrong_direction(txt, pe, plan):
+            res[key] = fallback
+            res["rejected"].append(f"{key}: stated the difference in the wrong direction")
+        else:
+            res[key] = txt
+    res["checked"] = "Every number was checked against the R results; anything that did not match was replaced by the standard wording."
+    return res
+
+
+def _wrong_direction(text: str, pe: dict, plan: dict) -> bool:
+    """For a two-group comparison, catch 'more common in men' when men were lower (or the reverse)."""
+    if pe.get("effect") != "difference" or pe.get("est") in (None, 0):
+        return False
+    from .report import group_words
+    a, b = group_words(pe.get("level"), plan).lower(), group_words(pe.get("reference"), plan).lower()
+    if not a or not b:
+        return False
+    t = " " + text.lower() + " "
+    up = r"(?:more common|more prevalent|more frequent|higher|greater|more likely)"
+    down = r"(?:less common|less prevalent|less frequent|lower|smaller|less likely)"
+    grp = re.compile(rf"\b(?:in|among|for)\s+(?:the\s+)?({re.escape(a)}|{re.escape(b)})\b")
+    a_higher = a_lower = False
+    for word, sign in ((up, 1), (down, -1)):
+        for m in re.finditer(word, t):
+            g = grp.search(t, m.end(), m.end() + 30)            # the group this word is about: the first one named after it
+            if not g:
+                g2 = re.search(rf"\b({re.escape(a)}|{re.escape(b)})\b[^.;]{{0,25}}$", t[max(0, m.start() - 40):m.start()])
+                who = g2.group(1) if g2 else None               # "men had higher ..."
+            else:
+                who = g.group(1)
+            if who is None:
+                continue
+            if (who == a) == (sign == 1):
+                a_higher = True
+            else:
+                a_lower = True
+    return (pe["est"] < 0 and a_higher and not a_lower) or (pe["est"] > 0 and a_lower and not a_higher)
