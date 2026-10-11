@@ -20,7 +20,8 @@ compared with the published crude estimate.
 
 | 5 | New estimands: age-adjusted prevalence (36 estimates), trends 1999-2018 by cycle (60), NCHS age groups, a mean with percentiles | New-estimand items 104/104 (100%); all items 220/220 | 0.13 points (new) |
 | 6 | Group comparisons (difference and ratio, crude and age-adjusted) | Comparison items 16/16; a published non-significant sex difference reproduced (P = 0.24) | 0.12 points (comparisons) |
-| 7 | Hypertension care cascade; fixes from a 65-question stress test | **58 questions, 245/245 estimates (100%)**, 241 within 1 point | **0.17 points** |
+| 7 | Hypertension care cascade; fixes from a 65-question stress test | 58 questions, 245/245 estimates (100%), 241 within 1 point | 0.17 points |
+| 8 | Regression caught on real data (elastography quality rule dropped by run-7 change) fixed; Q2E's earlier association results added as regression anchors | **245/245 (100%)**; both anchors unchanged (PR 1.1848, n = 6,425; beta 0.1506) | **0.17 points** |
 
 Women's mean height 2015-2018: 161.26 cm vs published 161.3 cm, same sample size (5,510), 5th/50th/95th percentiles
 149.9/161.3/172.5 vs 149.8/161.3/172.5.

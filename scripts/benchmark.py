@@ -203,7 +203,7 @@ def summarize(items: list[dict]) -> dict:
     return {"questions": len(items),
             "answered_as_prevalence": sum(it["status"] == "answered" for it in items),
             "right_definition": sum(it["definition_match"] for it in items if it["status"] not in ("flagged_limit", "missed_limit")),
-            "no_matching_definition_in_q2e": sum(not it.get("expected_definition") for it in items),
+            "no_matching_definition_in_q2e": sum(not it.get("expected_definition") and it.get("measure") not in ("anchor", "mean") for it in items),
             "status": {s: sum(it["status"] == s for it in items) for s in sorted({it["status"] for it in items})},
             "public_data_limits": {"expected": sum(1 for it in items if it["status"] in ("flagged_limit", "missed_limit")),
                                    "flagged": sum(1 for it in items if it["status"] == "flagged_limit")},
