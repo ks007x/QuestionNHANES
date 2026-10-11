@@ -59,10 +59,17 @@ def run_item(item: dict) -> dict:
            "q2e_population": [c["expr"] for c in plan.get("population", [])],
            "expected_definition": item.get("expected_definition"), "comparisons": []}
     out["definition_match"] = bool(item.get("expected_definition")) and out["q2e_definition"] == item["expected_definition"]
+    out["data_limits"] = [f"{d['severity']}: {d['title']}" for d in plan.get("data_limits") or []]
     proj = store.create(item["question"], plan, APPROVER)
     proj = _approve(proj)
     blockers = [i["title"] for i in proj["plan"]["review"] if i["severity"] == "blocker"]
-    if blockers:
+    if item.get("expect_limit"):
+        # the published figure uses restricted (RDC) data: the right answer is to flag or decline, not to match it
+        out.update(status="flagged_limit" if out["data_limits"] else "missed_limit",
+                   note="; ".join(out["data_limits"]) or "did not flag that the public files cannot reproduce this population")
+        if blockers or not out["data_limits"]:
+            return out
+    elif blockers:
         out.update(status="blocked", note="; ".join(blockers))
         return out
     try:
@@ -84,7 +91,8 @@ def run_item(item: dict) -> dict:
         out.update(status="wrong_measure",
                    note=f"Q2E reported {pe.get('effect_label') or pe.get('effect')} of {pe.get('label')} = {pe.get('est')}, not a prevalence")
         return out
-    out["status"] = "answered"
+    if out.get("status") not in ("flagged_limit", "missed_limit"):
+        out["status"] = "answered"
     for grp, pub in item["published"].items():
         if grp == "overall":
             q = next((p for p in prev if p.get("group_var") == "Overall"), None)
@@ -119,9 +127,11 @@ def summarize(items: list[dict]) -> dict:
                 "max_abs_diff_pts": round(max(ad), 2), "within_1pt": sum(a <= 1 for a in ad), "within_2pt": sum(a <= 2 for a in ad)}
     return {"questions": len(items),
             "answered_as_prevalence": sum(it["status"] == "answered" for it in items),
-            "right_definition": sum(it["definition_match"] for it in items),
+            "right_definition": sum(it["definition_match"] for it in items if it["status"] not in ("flagged_limit", "missed_limit")),
             "no_matching_definition_in_q2e": sum(not it.get("expected_definition") for it in items),
             "status": {s: sum(it["status"] == s for it in items) for s in sorted({it["status"] for it in items})},
+            "public_data_limits": {"expected": sum(1 for it in items if it["status"] in ("flagged_limit", "missed_limit")),
+                                   "flagged": sum(1 for it in items if it["status"] == "flagged_limit")},
             "all_answered": stats(comps), "right_definition_only": stats(matched)}
 
 
@@ -131,8 +141,11 @@ def _pct(a, b):
 
 def _summary_lines(summ: dict) -> list[str]:
     s, m = summ["all_answered"], summ["right_definition_only"]
-    L = [f"* Questions answered as a prevalence: {_pct(summ['answered_as_prevalence'], summ['questions'])}",
-         f"* Questions where Q2E picked the published case definition: {_pct(summ['right_definition'], summ['questions'])}"
+    lim = summ.get("public_data_limits") or {}
+    L = [f"* Questions answered as a prevalence: {_pct(summ['answered_as_prevalence'], summ['questions'] - lim.get('expected', 0))}"
+         + (f"; questions the public files cannot answer as published, correctly flagged or declined: {_pct(lim['flagged'], lim['expected'])}"
+            if lim.get("expected") else ""),
+         f"* Questions where Q2E picked the published case definition: {_pct(summ['right_definition'], summ['questions'] - lim.get('expected', 0))}"
          f" ({summ['no_matching_definition_in_q2e']} published definitions are not in Q2E's library)", ""]
     for title, st in (("When Q2E used the published definition", m), ("All estimates Q2E produced", s)):
         if st["n"]:
@@ -149,14 +162,15 @@ def to_markdown(items: list[dict], summ: dict, meta: dict) -> str:
          f"Run {meta['date']} on CDC public-use files. Published crude prevalence estimates from NCHS reports and JAMA Network "
          "Open; each question asked once in plain language; Q2E auto-approved with no per-item tuning; crude weighted "
          "prevalence compared with the published figure (overall, men, women).", ""]
-    for key, title in (("core", "Original questions"), ("holdout", "Hold-out questions (added after the fixes, never used to tune Q2E)"),
-                       ("all", "All questions")):
+    for key, title in (("core", "Original questions"),
+                       ("holdout", "Hold-out set 1 (added after the first fixes; its three failures were then fixed, so no longer unseen)"),
+                       ("holdout2", "Hold-out set 2 (added last; never used to tune Q2E)"), ("all", "All questions")):
         if key in summ and summ[key]["questions"]:
             L += [f"## {title}", ""] + _summary_lines(summ[key])
     L += ["## Item by item", "", "| Item | Group | Published % (95% CI) | Q2E % (95% CI) | Diff (pts) | In CI | Q2E definition |",
           "|---|---|---|---|---|---|---|"]
     for it in items:
-        tag = " (hold-out)" if it.get("set") == "holdout" else ""
+        tag = {"holdout": " (hold-out 1)", "holdout2": " (hold-out 2)"}.get(it.get("set"), "")
         dn = f"{it['q2e_label']}" + ("" if it["definition_match"] else (" - **differs**" if it.get("expected_definition") else " - **no matching definition**"))
         if it["status"] != "answered":
             L.append(f"| {it['id']}{tag} | - | {it.get('published_overall', '')} | **{it['status']}**: {it.get('note', '')} | | | {dn} |")
@@ -200,8 +214,9 @@ def main() -> int:
         r["set"] = it.get("set", "core")
         r["published_overall"] = it["published"]["overall"]["est"]
         items.append(r)
-    summ = {"core": summarize([i for i in items if i.get("set") != "holdout"]),
-            "holdout": summarize([i for i in items if i.get("set") == "holdout"]), "all": summarize(items)}
+    summ = {"core": summarize([i for i in items if i.get("set", "core") == "core"]),
+            "holdout": summarize([i for i in items if i.get("set") == "holdout"]),
+            "holdout2": summarize([i for i in items if i.get("set") == "holdout2"]), "all": summarize(items)}
     meta = {"date": dt.date.today().isoformat(), "sources": cfg["sources"]}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)

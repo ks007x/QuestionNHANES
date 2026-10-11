@@ -90,3 +90,32 @@ definitions:
     status: verified
     benchmarks:
       - {label: "NCHS Data Brief 515, adults 20+, Aug 2021-Aug 2023 (crude)", cycles: [L], min_age: 20, estimate: 0.138, lcl: 0.121, ucl: 0.157}
+
+  - id: diabetes_diagnosed
+    concept: diagnosed_diabetes
+    label: "Diagnosed diabetes - ever told by a doctor (other than during pregnancy)"
+    short: "Diagnosed diabetes"
+    type: binary
+    expr: "dm_selfreport"
+    criteria_text: "Self-report of a doctor's diagnosis of diabetes, other than during pregnancy (DIQ010)."
+    operational_notes:
+      - "NCHS reports diagnosed diabetes within the fasting subsample; Q2E uses all interviewed participants (same question, larger sample)."
+    source:
+      citation: "NCHS Data Brief no. 516 (2024)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
+      year: 2024
+    status: verified
+
+  - id: diabetes_undiagnosed
+    concept: undiagnosed_diabetes
+    label: "Undiagnosed diabetes - no diagnosis, but fasting plasma glucose >=126 mg/dL or HbA1c >=6.5%"
+    short: "Undiagnosed diabetes"
+    type: binary
+    expr: "ifelse(coalesce(dm_selfreport, 0) == 1, 0, any_of(fpg >= 126, hba1c >= 6.5))"
+    criteria_text: "Never told they have diabetes, with fasting plasma glucose >=126 mg/dL or HbA1c >=6.5% (ADA criteria). Fasting subsample weights."
+    operational_notes: []
+    source:
+      citation: "NCHS Data Brief no. 516 (2024)."
+      url: "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
+      year: 2024
+    status: verified

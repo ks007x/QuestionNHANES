@@ -117,6 +117,16 @@ concepts:
     synonyms: ["obesity", "obese"]
     definitions: [obesity_bmi30, obesity_cdc]
     domain: anthropometry
+  - id: diagnosed_diabetes
+    label: "Diagnosed diabetes"
+    synonyms: ["diagnosed diabetes", "self-reported diabetes", "doctor-diagnosed diabetes", "known diabetes"]
+    definitions: [diabetes_diagnosed]
+    domain: glycemia
+  - id: undiagnosed_diabetes
+    label: "Undiagnosed diabetes"
+    synonyms: ["undiagnosed diabetes", "unrecognized diabetes", "undetected diabetes"]
+    definitions: [diabetes_undiagnosed]
+    domain: glycemia
   - id: severe_obesity
     label: "Severe obesity"
     synonyms: ["severe obesity", "severely obese", "class 3 obesity", "class iii obesity", "morbid obesity", "morbidly obese"]

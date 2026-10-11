@@ -81,7 +81,8 @@ control controlled uncontrolled history problem problems condition conditions di
 factor factors cell cells count counts level levels value values score scores total infection infections outcome outcomes exposure
 recommendation recommendations visit visits change changes seropositivity seroprevalence seropositive seronegative serostatus
 antibody antibodies positivity positive negative prevalence deficiency deficiencies deficient insufficiency
-insufficient excess dietary intake intakes consumption serum plasma blood urinary urine level levels concentration concentrations""".split())
+insufficient excess dietary intake intakes consumption serum plasma blood urinary urine level levels concentration concentrations
+percentage percentages percent proportion proportions share fraction rate rates number numbers common many""".split())
 
 
 class HardStop(ValueError):
@@ -108,6 +109,8 @@ AGE_PATTERNS = [
 ]
 
 
+# items released in the public-use files only from a given age (younger respondents: NCHS Research Data Center)
+PUBLIC_MIN_AGE = {f"DPQ0{i}0": 18 for i in range(1, 10)} | {"DPQ100": 18}
 # questionnaire items NHANES administers only from a given age (participants below it are missing by design)
 ADULT_ONLY_ITEMS = {"DMDEDUC2": 20, "SMQ020": 18, "SMQ040": 18, "ALQ111": 18, "ALQ121": 18, "ALQ130": 18,
                     "DMDMARTZ": 20, "DMDMARTL": 20}
@@ -974,6 +977,34 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
     for i, c in enumerate(criteria):
         c.setdefault("enabled", True)
         c["id"] = f"c{i + 1}"
+    # public-use files release some items only from a given age (e.g. PHQ-9 18+; ages 12-17 are RDC-only)
+    data_limits: list[dict] = []
+    floor = max([PUBLIC_MIN_AGE[r] for r in used_raw if r in PUBLIC_MIN_AGE] or [0])
+    if floor and (dataset or {}).get("type", "nhanes") == "nhanes":
+        for c in criteria:
+            m = re.fullmatch(r"age >= (\d+)(?: & age (<=|<) (\d+))?", c["expr"].strip())
+            if not m or not c.get("enabled", True):
+                continue
+            lo = int(m.group(1))
+            hi = (int(m.group(3)) - (1 if m.group(2) == "<" else 0)) if m.group(3) else None
+            if lo >= floor:
+                break
+            items = sorted({r for r in used_raw if r in PUBLIC_MIN_AGE})
+            what = f"{', '.join(items[:3])}{'...' if len(items) > 3 else ''}"
+            if hi is not None and (hi < floor or (hi - floor + 1) * 2 < (hi - lo + 1)):
+                data_limits.append({"severity": "blocker", "title": f"Public NHANES files have no data for ages {lo}-{floor - 1}",
+                                    "detail": f"{what} are released only for ages {floor}+ in the public files; younger participants' "
+                                              f"answers are available only through the NCHS Research Data Center. Answering with ages "
+                                              f"{floor}-{hi} alone would not represent ages {lo}-{hi}."})
+            else:
+                c["expr"] = f"age >= {floor}" + (f" & age <= {hi}" if hi is not None else "")
+                c["label"] = f"Age >={floor} years" + (f" and <={hi}" if hi is not None else "") + f" (public files: {what} {floor}+ only)"
+                data_limits.append({"severity": "warning", "title": f"Ages {lo}-{floor - 1} are not in the public files",
+                                    "detail": f"{what} are released only for ages {floor}+ (younger ages: NCHS Research Data Center). "
+                                              f"The population was restricted to {floor}+, so estimates describe adults {floor}+ "
+                                              f"and are not comparable with published figures that include ages {lo}-{floor - 1}."})
+                agent_notes.append({"agent": "Data Steward", "message": data_limits[-1]["detail"]})
+            break
     single_sex = any(p in pops for p in ("women", "men", "women_repro", "pregnant"))
 
     # ---------------- covariates ----------------
@@ -1309,6 +1340,7 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         "rationale": {"statistician": rationale, "epidemiologist": epi_rationale},
         "limitations": limitations,
         "agent_notes": agent_notes,
+        "data_limits": data_limits,
         "acknowledgements": {},
         "approvals": [],
         "parsed": parsed,
@@ -1429,6 +1461,8 @@ def review_plan(plan: dict, k: Knowledge | None = None) -> list[dict]:
         issues.append({"id": iid or f"r{len(issues) + 1}", "severity": sev, "agent": "Reviewer", "title": title,
                        "detail": detail, "fix": fix})
 
+    for i, lim in enumerate(plan.get("data_limits") or []):
+        add(lim["severity"], lim["title"], lim["detail"], None, f"data_limit_{i}")
     cycles = plan["dataset"].get("cycles", [])
     if plan["dataset"].get("type") == "generic":
         gm = plan.get("generic_mapping", {}) or {}

@@ -73,3 +73,21 @@ def test_papers_that_only_cite_nhanes_are_not_compared():
     assert not is_nhanes_analysis({"title": "Prevalence and Severity of Chronic Kidney Disease in Haiti.",
                                    "abstract": "Rates were compared with US NHANES data."})
     assert is_nhanes_analysis({"title": "CKD awareness among US adults", "abstract": "Data from NHANES 2017-2020 were analysed."})
+
+
+def test_survey_wording_is_not_read_as_a_variable():
+    p = _plan("What percentage of US adults aged 60 and over have severe obesity?")
+    assert p["outcome"]["variable"] == "severe_obesity_cdc" and p["study_type"] == "prevalence"
+
+
+def test_diagnosed_and_undiagnosed_diabetes():
+    assert _plan("Prevalence of diagnosed diabetes among US adults aged 20 and over", ["L"])["outcome"]["variable"] == "diabetes_diagnosed"
+    p = _plan("Prevalence of undiagnosed diabetes among US adults aged 20 and over", ["L"])
+    assert p["outcome"]["variable"] == "diabetes_undiagnosed" and compile_plan(p)["weight_level"] == "fasting"
+
+
+def test_ages_missing_from_public_files_are_flagged():
+    p = _plan("What is the prevalence of depression among US adolescents aged 12 to 19?", ["L"])
+    assert any(i["severity"] == "blocker" and "12-17" in i["title"] for i in p["review"])
+    p = _plan("What is the prevalence of depression among US adolescents and adults aged 12 and over?", ["L"])
+    assert "age >= 18" in _crit(p) and any(i["severity"] == "warning" for i in p["review"] if i["id"].startswith("data_limit"))

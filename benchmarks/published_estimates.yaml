@@ -8,7 +8,9 @@
 # unchanged (no item-specific tuning). `expected_definition` is the Q2E definition that matches the report, or
 # null when Q2E has no matching definition (coverage gap). Run 1 (2026-10-11) used the library as it was then;
 # the definitions learned from these NCHS reports were added afterwards, so items marked `set: holdout` (added
-# after the fixes, never used to tune Q2E) are the fair test of whether the fixes generalize.
+# after the fixes, never used to tune Q2E) are the fair test of whether the fixes generalize. Hold-out set 1
+# exposed three more gaps that were then fixed, so it is no longer unseen; `set: holdout2` items were added after
+# that and are the current untouched test.
 
 sources:
   nhsr158:
@@ -194,6 +196,7 @@ items:
     source: db527
     table: "Data table for Figure 1 (SE only)"
     cycles: [L]
+    expect_limit: true   # public DPQ files hold ages 18+ only; NCHS used RDC data for 12-17
     question: "What is the prevalence of depression among US adolescents and adults aged 12 and over?"
     definition: "PHQ-9 score >=10; 12+"
     expected_definition: depression_phq9
@@ -318,6 +321,7 @@ items:
     source: db527
     table: "Data table for Figure 1 (SE only)"
     cycles: [L]
+    expect_limit: true   # public DPQ files hold ages 18+ only; NCHS used RDC data for 12-17
     question: "What is the prevalence of depression among US adolescents aged 12 to 19?"
     expected_definition: depression_phq9
     published:
@@ -344,3 +348,89 @@ items:
     expected_definition: anemia_who
     published:
       overall: {est: 14.0, se: 0.7}
+
+  # ---------------- HOLD-OUT 2: added after the hold-out-1 fixes; untouched ----------------
+  - id: h2_hypertension_40_59_L
+    set: holdout2
+    source: db511
+    table: "Table 1"
+    cycles: [L]
+    question: "How many US adults aged 40 to 59 have hypertension?"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 52.5, lcl: 49.5, ucl: 55.4}
+      Male: {est: 55.9, lcl: 50.6, ucl: 61.1}
+      Female: {est: 49.0, lcl: 45.8, ucl: 52.3}
+  - id: h2_diabetes_40_59_L
+    set: holdout2
+    source: db516
+    table: "Total diabetes by age (crude)"
+    cycles: [L]
+    question: "What share of US adults aged 40 to 59 have diabetes?"
+    expected_definition: diabetes_nchs
+    published:
+      overall: {est: 17.7, lcl: 14.7, ucl: 21.0}
+  - id: h2_diabetes_20_39_L
+    set: holdout2
+    source: db516
+    table: "Total diabetes by age (crude)"
+    cycles: [L]
+    question: "Prevalence of diabetes in young adults aged 20 to 39 in the US"
+    expected_definition: diabetes_nchs
+    published:
+      overall: {est: 3.6, lcl: 2.0, ucl: 5.9}
+  - id: h2_severe_obesity_40_59_L
+    set: holdout2
+    source: db508
+    table: "Data table for Figure 3 (crude; SE only)"
+    cycles: [L]
+    question: "What proportion of US adults aged 40 to 59 have class 3 obesity?"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 12.0, se: 1.0}
+      Male: {est: 9.2, se: 1.3}
+      Female: {est: 14.7, se: 1.4}
+  - id: h2_severe_obesity_20_39_P
+    set: holdout2
+    source: nhsr158
+    table: "Table 6"
+    cycles: [P]
+    question: "What is the prevalence of severe obesity among adults aged 20 to 39?"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 9.7, lcl: 7.7, ucl: 12.0}
+      Male: {est: 7.0, lcl: 4.7, ucl: 10.1}
+      Female: {est: 12.4, lcl: 9.8, ucl: 15.3}
+  - id: h2_anemia_60plus_L
+    set: holdout2
+    source: db519
+    table: "Table 1 (SE only)"
+    cycles: [L]
+    question: "How common is anemia among Americans aged 60 and older?"
+    expected_definition: anemia_who
+    published:
+      overall: {est: 12.5, se: 0.9}
+      Male: {est: 12.8, se: 1.1}
+      Female: {est: 12.4, se: 1.2}
+  - id: h2_child_obesity_6_11_P
+    set: holdout2
+    source: nhsr158
+    table: "Table 3"
+    cycles: [P]
+    question: "What percentage of US children aged 6 to 11 years have obesity?"
+    expected_definition: obesity_cdc
+    published:
+      overall: {est: 20.7, lcl: 17.9, ucl: 23.7}
+      Male: {est: 22.9, lcl: 19.5, ucl: 26.5}
+      Female: {est: 18.5, lcl: 15.2, ucl: 22.1}
+  - id: h2_depression_40_59_L
+    set: holdout2
+    source: db527
+    table: "Data table for Figure 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of depression among US adults aged 40 to 59?"
+    expected_definition: depression_phq9
+    published:
+      overall: {est: 10.8, se: 0.8}
+      Male: {est: 7.9, se: 1.2}
+      Female: {est: 13.8, se: 1.3}
