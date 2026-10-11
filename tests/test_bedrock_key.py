@@ -83,12 +83,31 @@ def test_rejects_bad_input(bedrock, key, region, msg):
     assert bedrock["calls"] == []
 
 
-def test_only_this_computer_may_set_the_key(bedrock):
-    remote = types.SimpleNamespace(client=types.SimpleNamespace(host="203.0.113.9"), headers={})
-    with pytest.raises(Exception) as e:
-        server._may_set_keys(remote)
-    assert getattr(e.value, "status_code", None) == 403
-    server._may_set_keys(types.SimpleNamespace(client=types.SimpleNamespace(host="127.0.0.1"), headers={}))
+def _req(host, **headers):
+    return types.SimpleNamespace(client=types.SimpleNamespace(host=host), headers=headers)
+
+
+def test_remote_browser_needs_the_terminal_setup_code(bedrock, monkeypatch):
+    monkeypatch.setitem(server._SETUP, "fails", 0)
+    server._may_set_keys(_req("127.0.0.1"))                                   # same computer: no code needed
+    for req in (_req("203.0.113.9"), _req("127.0.0.1", **{"x-forwarded-for": "203.0.113.9"})):   # remote / Codespaces proxy
+        with pytest.raises(Exception) as e:
+            server._may_set_keys(req)
+        assert e.value.status_code == 403 and "setup code" in e.value.detail
+    server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": server._SETUP["code"]}))
+    for _ in range(10):
+        with pytest.raises(Exception):
+            server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": "0000-0000x"}))
+    with pytest.raises(Exception) as e:                                         # locked after 10 wrong tries
+        server._may_set_keys(_req("203.0.113.9", **{"x-bedside-setup-code": server._SETUP["code"]}))
+    assert e.value.status_code == 429
+
+
+def test_meta_says_when_a_code_is_needed(bedrock):
+    c = TestClient(server.app)
+    assert c.get("/api/meta").json()["ai_setup"]["needs_code"] is False
+    assert c.get("/api/meta", headers={"x-forwarded-for": "203.0.113.9"}).json()["ai_setup"]["needs_code"] is True
+    assert server._SETUP["code"] not in c.get("/api/meta").text
 
 
 def test_example_env_holds_no_key():

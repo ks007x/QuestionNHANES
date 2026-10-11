@@ -13,7 +13,7 @@ const store = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch {
 
 async function api(path, opts = {}) {
   const o = { ...opts };
-  if (o.body && !(o.body instanceof FormData)) { o.headers = { "content-type": "application/json" }; o.body = JSON.stringify(o.body); }
+  if (o.body && !(o.body instanceof FormData)) { o.headers = { ...(o.headers || {}), "content-type": "application/json" }; o.body = JSON.stringify(o.body); }
   const r = await fetch(path, o);
   const ct = r.headers.get("content-type") || "";
   const data = ct.includes("json") ? await r.json() : await r.text();
@@ -201,6 +201,8 @@ function aiSetupOpen() {
         <label class="field">AWS region<select id="bkRegion">${AWS_REGIONS.map((r) => `<option ${r === (S.aiRegion || "us-east-1") ? "selected" : ""}>${r}</option>`).join("")}</select></label>
         <label class="field">Model id (optional)<input id="bkModel" spellcheck="false" placeholder="Automatic: a Claude model" value="${esc(on ? l.model : "")}"></label>
       </div>
+      ${S.meta?.ai_setup?.needs_code || S.aiNeedsCode ? `<label class="field" style="margin-top:10px">Setup code<input id="bkCode" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1234-5678" style="max-width:200px">
+        <span class="tiny muted">Printed in the terminal where BEDSIDE is running (look for "BEDSIDE setup code"). Needed because this browser is not on the same computer.</span></label>` : ""}
       <label class="small" style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" id="bkRemember" checked> <span>Remember on this computer (saved in the local <code>.env</code> file, which is never uploaded to GitHub)</span></label>
       <div id="aiMsg" style="margin-top:10px"></div>
       <div class="row" style="margin-top:12px;gap:8px;justify-content:flex-end">
@@ -219,6 +221,7 @@ function aiSetupOpen() {
   box.querySelector("#aiForm").addEventListener("submit", aiConnect);
   setTimeout(() => box.querySelector("#bkKey")?.focus(), 0);
 }
+function aiCodeHeader() { const c = $("#bkCode")?.value.trim(); return c ? { "x-bedside-setup-code": c } : {}; }
 function aiSetupClose() { document.querySelector("#aiOverlay")?.remove(); }
 async function aiConnect(e) {
   e.preventDefault();
@@ -226,13 +229,19 @@ async function aiConnect(e) {
   S.aiRegion = $("#bkRegion").value;
   go.disabled = true; go.innerHTML = `<span class="spinner"></span> Testing the key…`; msg.innerHTML = "";
   try {
-    const r = await api("/api/ai/bedrock", { method: "POST", body: { api_key: key.value.trim(), region: S.aiRegion, model_id: $("#bkModel").value.trim() || null, remember: $("#bkRemember").checked } });
+    const r = await api("/api/ai/bedrock", { method: "POST", headers: aiCodeHeader(), body: { api_key: key.value.trim(), region: S.aiRegion, model_id: $("#bkModel").value.trim() || null, remember: $("#bkRemember").checked } });
     key.value = "";
     S.meta = await api("/api/meta"); renderBoundary(); aiSetupClose();
     toast(`Amazon Bedrock connected: ${r.model} (${r.region})${r.remembered ? ", saved on this computer" : ""}`);
     if (route().view === "ask") render();
   } catch (err) {
-    msg.innerHTML = `<div class="banner bad small">${esc(String(err.message).replace(/^"|"$/g, ""))}</div>`;
+    const text = String(err.message).replace(/^"|"$/g, "");
+    if (/setup code/i.test(text) && !$("#bkCode")) {   // the server wants the terminal's code: show the box, keep what was typed
+      S.aiNeedsCode = true; const keep = { key: key.value, model: $("#bkModel").value }; aiSetupOpen();
+      $("#bkKey").value = keep.key; $("#bkModel").value = keep.model; $("#bkCode").focus();
+      $("#aiMsg").innerHTML = `<div class="banner warn small">${esc(text)}</div>`; return;
+    }
+    msg.innerHTML = `<div class="banner bad small">${esc(text)}</div>`;
     go.disabled = false; go.textContent = "Test and connect";
   }
 }
@@ -1608,7 +1617,7 @@ A.aiSetup = () => aiSetupOpen();
 A.aiClose = () => aiSetupClose();
 A.aiOff = async () => {
   const forget = confirm("Turn the AI off?\n\nOK also removes the saved key from this computer's .env file. Cancel keeps it saved for next time.");
-  try { await api(`/api/ai/bedrock?forget=${forget ? "true" : "false"}`, { method: "DELETE" }); S.meta = await api("/api/meta"); renderBoundary(); aiSetupClose(); toast("AI off: rule-based agents only"); if (route().view === "ask") render(); }
+  try { await api(`/api/ai/bedrock?forget=${forget ? "true" : "false"}`, { method: "DELETE", headers: aiCodeHeader() }); S.meta = await api("/api/meta"); renderBoundary(); aiSetupClose(); toast("AI off: rule-based agents only"); if (route().view === "ask") render(); }
   catch (err) { toast(err.message, true); }
 };
 document.addEventListener("keydown", (e) => {

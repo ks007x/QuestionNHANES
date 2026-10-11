@@ -7,6 +7,7 @@ from __future__ import annotations
 import datetime as _dt
 import hashlib
 import json
+import secrets
 from pathlib import Path
 from typing import Any
 
@@ -65,7 +66,7 @@ def index():
 
 # ------------------------------------------------------------------ meta
 @app.get("/api/meta")
-def meta():
+def meta(request: Request):
     k = get_knowledge()
     client = LLMClient()
     local = Path(settings.nhanes_dir)
@@ -73,7 +74,7 @@ def meta():
             "boundary": privacy.boundary_summary(client.provider.name), "voice": voice.enabled(),
             "data": {"local_dir": str(local), "local_files": len(list(local.glob("*.xpt")) + list(local.glob("*.XPT"))) if local.exists() else 0,
                      "synthetic_ready": (settings.synthetic_dir / "P_DEMO.xpt").exists(), "allow_download": settings.allow_download},
-            "datasets": generic.list_datasets(), "r": r_status()}
+            "datasets": generic.list_datasets(), "r": r_status(), "ai_setup": {"needs_code": not _is_local(request)}}
 
 
 class BedrockKey(BaseModel):
@@ -83,14 +84,41 @@ class BedrockKey(BaseModel):
     remember: bool = False
 
 
-def _may_set_keys(request: Request) -> None:
-    """Only the person at this computer (or a caller holding Q2E_TOOL_KEY) may change the AI login."""
+# A setup code printed in the terminal running BEDSIDE. The person who started the server can read it; a stranger who
+# can only reach the web page cannot. Needed only when the browser is not on the same computer (Codespaces, a forwarded
+# port, another machine on the network).
+_SETUP = {"code": f"{secrets.randbelow(10 ** 4):04d}-{secrets.randbelow(10 ** 4):04d}", "fails": 0}
+_LOOPBACK = {"127.0.0.1", "::1", "localhost", "testclient"}
+
+
+def _is_local(request: Request) -> bool:
     host = (request.client.host if request.client else "") or ""
-    if host in ("127.0.0.1", "::1", "localhost", "testclient"):
+    forwarded = request.headers.get("x-forwarded-for") or request.headers.get("x-forwarded-host")
+    return host in _LOOPBACK and not forwarded
+
+
+def _may_set_keys(request: Request) -> None:
+    """Only the person running BEDSIDE may change the AI login: same computer, the terminal's setup code, or Q2E_TOOL_KEY."""
+    if _is_local(request):
         return
     if settings.tool_key and request.headers.get("x-q2e-key") == settings.tool_key:
         return
-    _bad("For safety, the Bedrock key can only be entered on the computer running BEDSIDE (or put it in its .env file).", 403)
+    if _SETUP["fails"] >= 10:
+        _bad("Too many wrong setup codes. Restart BEDSIDE to get a new code.", 429)
+    code = (request.headers.get("x-bedside-setup-code") or "").strip().replace(" ", "")
+    if code and secrets.compare_digest(code, _SETUP["code"]):
+        return
+    if code:
+        _SETUP["fails"] += 1
+        _bad("That setup code is not right. It is printed in the terminal where BEDSIDE is running (like 1234-5678).", 403)
+    _bad("Enter the setup code printed in the terminal where BEDSIDE is running (like 1234-5678). It proves you are the "
+         "person running BEDSIDE.", 403)
+
+
+@app.on_event("startup")
+def _announce_setup_code() -> None:
+    print(f"\n  BEDSIDE setup code: {_SETUP['code']}\n  (type it in the browser only if it asks, when connecting "
+          f"Amazon Bedrock from another computer or a Codespace)\n", flush=True)
 
 
 @app.post("/api/ai/bedrock")

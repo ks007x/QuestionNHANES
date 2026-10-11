@@ -30,8 +30,17 @@ or `AI off · rule-based agents`. The model advisor and evidence cards also say 
 
 BEDSIDE sends one tiny test request before it keeps the key. The key is never shown again, never written to a
 project, log or GitHub, and is saved only in this folder's `.env` file if *Remember on this computer* is ticked
-(`.env` is in `.gitignore`). For safety the key can only be entered from the computer running BEDSIDE. *Turn AI off*
-in the same dialog disconnects and can also remove the saved key.
+(`.env` is in `.gitignore`). *Turn AI off* in the same dialog disconnects and can also remove the saved key.
+
+**Setup code.** If the browser is not on the computer running BEDSIDE (GitHub Codespaces, a forwarded port, another
+machine), the dialog also asks for a setup code. BEDSIDE prints it in its terminal when it starts:
+
+```
+  BEDSIDE setup code: 1234-5678
+```
+
+Only the person who started BEDSIDE can see it, so a stranger who can reach the web page cannot change the AI login.
+After 10 wrong codes the dialog locks until BEDSIDE is restarted (which prints a new code).
 
 From a terminal instead: `python -m q2e bedrock-connect` asks for the key without showing it, tests it and saves it.
 
