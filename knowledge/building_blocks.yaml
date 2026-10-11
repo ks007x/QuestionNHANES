@@ -82,6 +82,8 @@ blocks:
   # ================= derived (dataset-agnostic) =================
   - {name: sex, tier: derived, type: categorical, label: "Sex", expr: 'cases(female == 0, "Male", female == 1, "Female")'}
   - {name: agecat, tier: derived, type: categorical, label: "Age group", units: "y", expr: 'cases(age < 18, "<18", age < 40, "18-39", age < 65, "40-64", age >= 65, "65+")'}
+  - {name: agecat_nchs20, tier: derived, type: categorical, label: "Age group", units: "y", expr: 'cases(age < 20, "<20", age < 40, "20-39", age < 60, "40-59", age >= 60, "60+")'}
+  - {name: agecat_nchs18, tier: derived, type: categorical, label: "Age group", units: "y", expr: 'cases(age < 18, "<18", age < 40, "18-39", age < 60, "40-59", age >= 60, "60+")'}
   - {name: pir_cat, tier: derived, type: categorical, label: "Income-to-poverty ratio", expr: 'cases(pir < 1.3, "<1.30", pir < 3.5, "1.30-3.49", pir >= 3.5, "3.50+")'}
   - {name: tsat, tier: derived, type: continuous, units: "%", label: "Transferrin saturation", expr: "coalesce(tsat_reported, 100 * serum_iron / tibc)"}
   - {name: log_ferritin, tier: derived, type: continuous, label: "log(ferritin)", expr: "log(ferritin)"}

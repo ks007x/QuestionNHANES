@@ -109,7 +109,7 @@ load_nhanes <- function(spec, log = message) {
     merged$.wt_raw <- merged[[wvar]]
     merged$.weight_var <- wvar
     merged$.psu <- merged[[cm$psu]]
-    merged$.strata <- merged[[cm$strata]]
+    merged$.strata <- paste0(cy, "_", merged[[cm$strata]])   # strata codes must stay distinct when cycles are pooled
     merged$.years <- cm$years
     per_cycle[[cy]] <- merged
   }

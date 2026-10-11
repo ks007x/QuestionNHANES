@@ -909,9 +909,38 @@ function viewRun() {
 /* ------------------------------------------------------------------ RESULTS */
 function headline() {
   const R = S.results; const pe = R.primary_estimate || {}; const p = S.project.plan;
-  if (pe.effect === "prevalence") return `<div class="headline"><div class="big">${pct(pe.est)}</div><div><b>${nice(pe.label)}</b><div class="ci">95% CI ${pct(pe.lcl)}-${pct(pe.ucl)} · n = ${pe.n?.toLocaleString()}${pe.pop_millions ? ` · ≈${fx(pe.pop_millions, 1)} million people` : ""}</div></div></div>`;
+  const cnt = pe.count_millions != null ? ` · about ${fx(pe.count_millions, 1)} million people (95% CI ${fx(pe.count_lcl, 1)}-${fx(pe.count_ucl, 1)})` : (pe.pop_millions ? ` · ≈${fx(pe.pop_millions, 1)} million people` : "");
+  if (pe.effect === "prevalence") return `<div class="headline"><div class="big">${pct(pe.est)}</div><div><b>${esc(pe.effect_label === "Age-adjusted prevalence" ? "Age-adjusted prevalence · " : "")}${nice(pe.label)}</b><div class="ci">95% CI ${pct(pe.lcl)}-${pct(pe.ucl)} · n = ${pe.n?.toLocaleString()}${cnt}</div>${pe.crude_est != null ? `<div class="tiny muted">Crude ${pct(pe.crude_est)} (${pct(pe.crude_lcl)}-${pct(pe.crude_ucl)}) · standardized to the ${esc(pe.standard || "")}</div>` : ""}</div></div>`;
+  if (pe.effect === "change") { const f = pe.binary ? (x) => (x >= 0 ? "+" : "") + (100 * x).toFixed(1) + " pts" : (x) => (x >= 0 ? "+" : "") + fx(x);
+    return `<div class="headline"><div class="big">${f(pe.est)}</div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${f(pe.lcl)} to ${f(pe.ucl)} · P for linear trend ${pfmt(pe.p)} · n = ${pe.n?.toLocaleString()}</div></div></div>`; }
+  if (pe.effect === "mean" || pe.effect === "median") return `<div class="headline"><div class="big">${fx(pe.est)}</div><div><b>${esc(pe.effect_label)} · ${nice(pe.label)}</b><div class="ci">95% CI ${fx(pe.lcl)} to ${fx(pe.ucl)} · n = ${pe.n?.toLocaleString()}</div></div></div>`;
   const nm = { PR: "Prevalence ratio", OR: "Odds ratio", Beta: "Mean difference" }[pe.effect] || pe.effect;
   return `<div class="headline"><div class="big">${fx(pe.est)}</div><div><b>${esc(nm)} · ${nice(pe.label)}</b> → ${nice(p.outcome.label)}<div class="ci">95% CI ${fx(pe.lcl)} to ${fx(pe.ucl)} · P ${pfmt(pe.p)} · n = ${pe.n?.toLocaleString()} · fully adjusted</div>${R.evalue ? `<div class="tiny muted">E-value ${fx(R.evalue.point)} (CI ${fx(R.evalue.ci)})</div>` : ""}</div></div>`;
+}
+const CYCLE_LABEL = { A: "1999-2000", B: "2001-2002", C: "2003-2004", D: "2005-2006", E: "2007-2008", F: "2009-2010", G: "2011-2012", H: "2013-2014", I: "2015-2016", J: "2017-2018", P: "2017-Mar 2020", L: "2021-2023" };
+function trendCard(T, p) {
+  const f = T.binary ? (x) => (x == null ? "-" : (100 * x).toFixed(1)) : (x) => (x == null ? "-" : fx(x));
+  const groups = [...new Set(T.rows.map((r) => r.group))];
+  const val = (r) => (T.age_adjusted && r.adj_est != null ? r.adj_est : r.est);
+  const all = T.rows.flatMap((r) => [r.adj_lcl ?? r.lcl, r.adj_ucl ?? r.ucl]).filter((x) => x != null);
+  const lo = Math.min(...all), hi = Math.max(...all), W = 640, H = 220, pad = 34;
+  const xs = (i) => pad + (i * (W - 2 * pad)) / Math.max(T.cycles.length - 1, 1), ys = (v) => H - pad - ((v - lo) / ((hi - lo) || 1)) * (H - 2 * pad);
+  const colors = ["var(--accent)", "#8A5D00", "#4F5D6B"];
+  const lines = groups.map((g, gi) => { const pts = T.cycles.map((c, i) => { const r = T.rows.find((x) => x.cycle === c && x.group === g); return r && val(r) != null ? [xs(i), ys(val(r))] : null; }).filter(Boolean);
+    return `<polyline fill="none" stroke="${colors[gi % 3]}" stroke-width="${gi ? 1.5 : 2.5}" points="${pts.map((q) => q.join(",")).join(" ")}"/>${pts.map((q) => `<circle cx="${q[0]}" cy="${q[1]}" r="${gi ? 2.5 : 3.5}" fill="${colors[gi % 3]}"/>`).join("")}<text x="${W - pad + 4}" y="${pts.length ? pts[pts.length - 1][1] + 4 : 0}" font-size="11" fill="${colors[gi % 3]}">${esc(g)}</text>`; }).join("");
+  const axis = T.cycles.map((c, i) => `<text x="${xs(i)}" y="${H - 10}" font-size="10" text-anchor="middle" fill="var(--ink-3)">${esc((CYCLE_LABEL[c] || c).slice(0, 4))}</text>`).join("");
+  const tick = [lo, (lo + hi) / 2, hi].map((v) => `<text x="4" y="${ys(v) + 3}" font-size="10" fill="var(--ink-3)">${f(v)}</text><line x1="${pad}" x2="${W - pad}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--line-2)"/>`).join("");
+  const rows = T.cycles.map((c) => `<tr><td>${esc(CYCLE_LABEL[c] || c)}</td>${groups.map((g) => { const r = T.rows.find((x) => x.cycle === c && x.group === g); return `<td class="num">${r ? `${f(r.est)}${T.age_adjusted ? ` / <b>${f(r.adj_est)}</b>` : ""}` : "-"}</td>`; }).join("")}</tr>`).join("");
+  const tests = (T.tests || []).map((t) => `<li><b>${esc(t.group)}</b>: change ${CYCLE_LABEL[t.first_cycle] || t.first_cycle} to ${CYCLE_LABEL[t.last_cycle] || t.last_cycle} ${T.binary ? (100 * t.change).toFixed(1) + " points" : fx(t.change)} (95% CI ${T.binary ? (100 * t.change_lcl).toFixed(1) : fx(t.change_lcl)} to ${T.binary ? (100 * t.change_ucl).toFixed(1) : fx(t.change_ucl)}), ${esc(t.basis)}; P for linear trend ${pfmt(t.p_linear_trend)}</li>`).join("");
+  return `<div class="card"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Estimate by survey cycle">${tick}${lines}${axis}</svg>
+    <ul class="small" style="margin:8px 0 10px;padding-left:18px">${tests}</ul>
+    <details><summary class="small">Estimates by cycle (${T.binary ? "%" : "units"}; crude${T.age_adjusted ? " / <b>age-adjusted</b>" : ""})</summary><div class="tablewrap"><table class="t"><thead><tr><th>Cycle</th>${groups.map((g) => `<th>${esc(g)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details></div>`;
+}
+function meansTable(M, p) {
+  const q = (m, pr) => { const x = (m.quantiles || []).find((z) => Math.abs(z.p - pr) < 1e-6); return x ? fx(x.est) : "-"; };
+  const adj = M.some((m) => m.adj_est != null);
+  return `<h3 class="sub">Table 2. Distribution of ${nice(p.outcome.label)}</h3><div class="tablewrap"><table class="t"><thead><tr><th>Group</th><th>n</th><th>Mean (95% CI)</th>${adj ? "<th>Age-adjusted mean</th>" : ""}<th>5th</th><th>25th</th><th>Median</th><th>75th</th><th>95th</th></tr></thead><tbody>${M.map((m) =>
+    `<tr><td>${esc(m.group_var === "Overall" ? "Overall" : m.group)}</td><td class="num">${m.n?.toLocaleString()}</td><td class="num">${fx(m.mean)} (${fx(m.mean_lcl)}-${fx(m.mean_ucl)})</td>${adj ? `<td class="num">${m.adj_est != null ? fx(m.adj_est) : "-"}</td>` : ""}<td class="num">${q(m, 0.05)}</td><td class="num">${q(m, 0.25)}</td><td class="num">${q(m, 0.5)}</td><td class="num">${q(m, 0.75)}</td><td class="num">${q(m, 0.95)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function benchCards() {
   return (S.results.benchmarks || []).map((b) => {
@@ -934,7 +963,8 @@ function viewResults() {
   const R = S.results; const p = S.project.plan; const lr = latestRun(); const sm = S.summary || {};
   if (!R) return { title: "Results", parts: [{ id: "none", title: "No results yet", html: `<div class="empty">Run the analysis first.</div>`, noTalk: true }] };
   const base = `/api/projects/${S.project.id}/runs/${lr.id}`;
-  const prevRows = R.prevalence.map((x) => `<tr><td>${nice(x.outcome_label)}${x.outcome_level ? " - " + esc(x.outcome_level) : ""}</td><td>${esc(x.group_var === "Overall" ? "" : x.group_label)}</td><td>${esc(x.group)}</td><td class="num">${x.n.toLocaleString()}</td><td class="num">${pct(x.est)} (${pct(x.lcl)}-${pct(x.ucl)})</td><td class="num">${x.pop_millions ?? ""}</td><td>${x.nchs === "meets standard" ? `<span class="chip ok" style="font-size:10.5px">ok</span>` : `<span class="chip warn" style="font-size:10.5px" title="${esc(x.nchs)}">flag</span>`}</td></tr>`).join("");
+  const anyAdj = R.prevalence.some((x) => x.adj_est != null);
+  const prevRows = R.prevalence.map((x) => `<tr><td>${nice(x.outcome_label)}${x.outcome_level ? " - " + esc(x.outcome_level) : ""}</td><td>${esc(x.group_var === "Overall" ? "" : x.group_label)}</td><td>${esc(x.group)}</td><td class="num">${x.n.toLocaleString()}</td><td class="num">${pct(x.est)} (${pct(x.lcl)}-${pct(x.ucl)})</td>${anyAdj ? `<td class="num">${x.adj_est != null ? `${pct(x.adj_est)} (${pct(x.adj_lcl)}-${pct(x.adj_ucl)})` : `<span class="muted">-</span>`}</td>` : ""}<td class="num">${x.pop_millions ?? ""}</td><td>${x.nchs === "meets standard" ? `<span class="chip ok" style="font-size:10.5px">ok</span>` : `<span class="chip warn" style="font-size:10.5px" title="${esc(x.nchs)}">flag</span>`}</td></tr>`).join("");
   const mrows = R.models.flatMap((m) => m.terms.filter((t) => t.term !== "(Intercept)" && (p.study_type !== "association" || t.variable === R.primary_estimate?.term)).map((t) => `<tr><td>${esc(m.label)}</td><td>${nice(t.label)}</td><td class="num">${m.n.toLocaleString()}</td><td class="num">${fx(t.est)} (${fx(t.lcl)} to ${fx(t.ucl)})</td><td class="num">${pfmt(t.p)}</td></tr>`)).join("");
   const srows = R.sensitivity.map((s) => `<tr><td>${nice(s.label)}</td><td class="num">${s.n?.toLocaleString() ?? ""}</td><td class="num">${s.error ? `<span style="color:var(--bad)">${esc(s.error)}</span>` : s.effect === "prevalence" ? `${pct(s.est)} (${pct(s.lcl)}-${pct(s.ucl)})` : `${esc(s.effect)} ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`}</td><td class="tiny">${esc(s.note || "")}</td></tr>`).join("");
   const synth = R.meta.synthetic ? `<div class="banner warn">Synthetic demonstration data - illustrative estimates only.</div>` : "";
@@ -951,9 +981,12 @@ function viewResults() {
       html: `<div class="grid g2">${R.figures.map((f, i) => `<figure class="fig"><img src="${base}/files/${f.file}" alt="${esc(f.title)}" loading="lazy"><figcaption><b>Figure ${i + 1}.</b> ${nice(f.title)}</figcaption></figure>`).join("")}</div>` },
     { id: "tables", title: "Tables", help: "Table 1 describes the people in the study; the other tables give the detailed numbers.",
       html: `<h3 class="sub" style="margin-top:0">Table 1. Characteristics${R.table1?.by_label ? " by " + nice(R.table1.by_label) : ""}</h3>${table1()}
-  ${prevRows ? `<h3 class="sub">Table 2. Weighted prevalence</h3><div class="tablewrap"><table class="t"><thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>n</th><th>Weighted % (95% CI)</th><th>Millions</th><th>NCHS</th></tr></thead><tbody>${prevRows}</tbody></table></div>` : ""}
+  ${prevRows ? `<h3 class="sub">Table 2. Weighted prevalence</h3><div class="tablewrap"><table class="t"><thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>n</th><th>Weighted % (95% CI)</th>${anyAdj ? "<th>Age-adjusted % (95% CI)</th>" : ""}<th>Millions</th><th>NCHS</th></tr></thead><tbody>${prevRows}</tbody></table></div>${anyAdj ? `<p class="tiny muted">Age-adjusted by direct standardization to the ${esc(p.age_adjust?.standard || "2000 U.S. standard population")} (${(p.age_adjust?.bands || []).map((b) => `${esc(b.label)} ${b.proportion}`).join(", ")}); age-group rows are not adjusted.</p>` : ""}` : ""}
+  ${R.means && R.means.length ? meansTable(R.means, p) : ""}
   ${mrows ? `<h3 class="sub">Table 3. Regression (${esc(R.models[0].effect_label)})</h3><div class="tablewrap"><table class="t"><thead><tr><th>Model</th><th>Term</th><th>n</th><th>Estimate (95% CI)</th><th>P</th></tr></thead><tbody>${mrows}</tbody></table></div>` : ""}
   ${R.interactions.length ? `<h3 class="sub">Effect modification</h3><div class="card">${R.interactions.map((it) => `<p class="small" style="margin:0 0 6px"><b>${esc(it.label)}</b> · P<sub>interaction</sub> ${pfmt(it.p_interaction)} · ${it.strata.map((s) => `${esc(s.level)}: ${fx(s.est)} (${fx(s.lcl)} to ${fx(s.ucl)})`).join(" · ")}</p>`).join("")}</div>` : ""}` },
+    R.trend && R.trend.rows && R.trend.rows.length && { id: "trend", title: "Change over time", help: "One estimate per survey cycle (age-adjusted when the population spans NCHS age groups), the change from the first to the last cycle, and a test for a linear trend.",
+      html: trendCard(R.trend, p) },
     R.arms && R.arms.vs_reference && { id: "arms", title: "Comparison groups", help: "Each group against the control group, every pair of groups, and an overall test of whether the groups differ.",
       html: armsResults(R.arms) },
     { id: "sensitivity", title: "Extra checks (sensitivity analyses)", help: "If these give similar answers to the main finding, the result is more trustworthy.",

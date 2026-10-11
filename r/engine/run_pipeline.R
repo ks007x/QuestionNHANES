@@ -80,6 +80,22 @@ run_pipeline <- function(plan_path, outdir) {
   if (length(prev_outcomes)) tr(sprintf("svyciprop(~I(%s == 1), subset(des, analytic), method = 'beta')  # by %s", prev_outcomes[1],
                                          paste(unlist(spec$analysis$prevalence$by), collapse = ", ")))
   log(sprintf("Computed %d prevalence estimates", length(results$prevalence)))
+  results$prevalence <- tryCatch(add_age_adjusted(results$prevalence, des, spec),
+                                 error = function(e) { log("Age adjustment failed: ", conditionMessage(e)); results$prevalence })
+  if (isTRUE(spec$analysis$age_adjust$enabled)) {
+    tr(sprintf("svystandardize(subset(des, analytic), by = ~agegroup, over = ~group, population = c(%s))  # %s",
+               paste(vapply(spec$analysis$age_adjust$bands, function(b) format(b$population), ""), collapse = ", "), spec$analysis$age_adjust$standard))
+    log("Age-adjusted estimates: direct standardization to the ", spec$analysis$age_adjust$standard)
+  }
+  if (isTRUE(spec$analysis$trend$enabled)) {
+    results$trend <- tryCatch(trend_estimates(des, spec, spec$outcome$name, binary = identical(spec$outcome$type, "binary")),
+                              error = function(e) { log("Trend analysis failed: ", conditionMessage(e)); NULL })
+    if (!is.null(results$trend)) log(sprintf("Trend across %d cycles", length(results$trend$cycles)))
+  }
+  if (identical(spec$outcome$type, "continuous") && is.null(spec$exposure)) {
+    results$means <- tryCatch(mean_estimates(des, spec, spec$outcome$name, unlist(spec$analysis$prevalence$by)),
+                              error = function(e) { log("Means failed: ", conditionMessage(e)); list() })
+  }
 
   # ---- 6. models ---------------------------------------------------------------
   y <- spec$outcome$name
@@ -124,6 +140,38 @@ run_pipeline <- function(plan_path, outdir) {
     ov <- Filter(function(p) p$outcome == y && p$group_var == "Overall", results$prevalence)
     if (length(ov)) pe <- list(effect = "prevalence", effect_label = "Weighted prevalence", term = y, label = ov[[1]]$outcome_label,
                                est = ov[[1]]$est, lcl = ov[[1]]$lcl, ucl = ov[[1]]$ucl, n = ov[[1]]$n, pop_millions = ov[[1]]$pop_millions)
+  }
+  # estimand-specific headline: age-adjusted prevalence, change over time, mean/median, or number of people
+  ov_adj <- Filter(function(p) p$outcome == y && p$group_var == "Overall" && !is.null(p$adj_est), results$prevalence)
+  if (!is.null(pe) && identical(pe$effect, "prevalence") && isTRUE(spec$analysis$age_adjust$primary) && length(ov_adj)) {
+    pe <- c(list(effect = "prevalence", effect_label = "Age-adjusted prevalence", crude_est = pe$est, crude_lcl = pe$lcl, crude_ucl = pe$ucl),
+            pe[setdiff(names(pe), c("effect", "effect_label", "est", "lcl", "ucl"))],
+            list(est = ov_adj[[1]]$adj_est, lcl = ov_adj[[1]]$adj_lcl, ucl = ov_adj[[1]]$adj_ucl, standard = ov_adj[[1]]$adj_standard))
+  }
+  if (!is.null(results$trend) && length(results$trend$tests)) {
+    t0 <- results$trend$tests[[1]]
+    pe <- list(effect = "change", effect_label = sprintf("Change %s to %s (%s)", t0$first_cycle, t0$last_cycle, t0$basis), term = y,
+               label = .var_label(spec, y), est = t0$change, lcl = t0$change_lcl, ucl = t0$change_ucl, p = t0$p_linear_trend,
+               p_change = t0$p_change, binary = results$trend$binary, n = sum(des$variables$.in_analytic))
+  }
+  if (is.null(pe) && length(results$means)) {
+    m0 <- results$means[[1]]
+    med <- Filter(function(q) q$p == 0.5, m0$quantiles)
+    if (isTRUE(spec$analysis$median) && length(med)) {
+      pe <- list(effect = "median", effect_label = "Weighted median", term = y, label = .var_label(spec, y), est = med[[1]]$est,
+                 lcl = med[[1]]$lcl, ucl = med[[1]]$ucl, n = m0$n)
+    } else {
+      pe <- list(effect = "mean", effect_label = if (isTRUE(spec$analysis$age_adjust$primary) && !is.null(m0$adj_est)) "Age-adjusted mean" else "Weighted mean",
+                 term = y, label = .var_label(spec, y), n = m0$n,
+                 est = if (isTRUE(spec$analysis$age_adjust$primary) && !is.null(m0$adj_est)) m0$adj_est else m0$mean,
+                 lcl = if (isTRUE(spec$analysis$age_adjust$primary) && !is.null(m0$adj_est)) m0$adj_lcl else m0$mean_lcl,
+                 ucl = if (isTRUE(spec$analysis$age_adjust$primary) && !is.null(m0$adj_est)) m0$adj_ucl else m0$mean_ucl)
+    }
+  }
+  if (!is.null(pe) && identical(pe$effect, "prevalence") && isTRUE(spec$analysis$count)) {
+    des$variables$.cnt <- as.integer(des$variables[[y]] == 1)
+    ce <- tryCatch(count_estimate(des, ".cnt", des$variables$.in_analytic), error = function(e) NULL)
+    if (!is.null(ce)) pe <- c(pe, list(count_millions = ce$millions, count_lcl = ce$lcl, count_ucl = ce$ucl))
   }
   if (is.null(pe) && identical(spec$outcome$type, "continuous")) {
     dm <- subset(des, des$variables$.in_analytic)

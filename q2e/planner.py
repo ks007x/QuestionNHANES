@@ -26,7 +26,8 @@ from .knowledge import CYCLE_ORDER, Knowledge, RAW_VAR_RANK, get_knowledge
 from .language_guard import scan_causal
 
 PREVALENCE_CUES = ["prevalence", "to estimate", "estimate the", "describe", "characterize", "cascade", "how common", "how many", "proportion", "burden", "frequency", "how frequent",
-                   "percentage", "percent of", "what share", "estimate the number", "rate of", "distribution of"]
+                   "percentage", "percent of", "what share", "estimate the number", "rate of", "distribution of",
+                   "average", "mean ", "median", "typical", "percentile", "reference value", "normal range", "trend", "changed", "over time"]
 ASSOC_CUES = ["associat", "relationship", "related to", "relation", "linked", "link between", "correlat", "risk of",
               "worse", "better", "higher", "lower", "greater", "predict", "effect", "impact", "influence", "affect",
               "compare", "versus", " vs ", "differ", "tied to", "connected"]
@@ -82,7 +83,9 @@ factor factors cell cells count counts level levels value values score scores to
 recommendation recommendations visit visits change changes seropositivity seroprevalence seropositive seronegative serostatus
 antibody antibodies positivity positive negative prevalence deficiency deficiencies deficient insufficiency
 insufficient excess dietary intake intakes consumption serum plasma blood urinary urine level levels concentration concentrations
-percentage percentages percent proportion proportions share fraction rate rates number numbers common many""".split())
+percentage percentages percent proportion proportions share fraction rate rates number numbers common many
+average averages mean means median medians typical percentile percentiles quartile quartiles distribution reference normal
+range trend trends changed change time adjusted standardized standardised crude""".split())
 
 
 class HardStop(ValueError):
@@ -890,6 +893,8 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
                 else:
                     exposure = nv
     cycle_note = None
+    from . import estimands as _est
+    est_cues = _est.detect(question, parsed["study_type"], outcome.get("type"))
     if user_cycles is None and (dataset or {}).get("type", "nhanes") == "nhanes":
         core = [v for v in (outcome, exposure) if v]
         custom = {v["custom"]["name"]: v["custom"] for v in core if v.get("custom")}
@@ -897,7 +902,15 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
             for c in v.get("arm_custom") or []:
                 custom[c["name"]] = c
         usable = usable_cycles([v["variable"] for v in core], k, custom)
-        if usable and not set(cycles) <= usable:
+        if est_cues["trend"]:
+            tc = _est.trend_cycles(question, usable or None)
+            if len(tc) >= 2:
+                cycles = tc
+                cycle_note = (f"Trend question: {len(tc)} two-year cycles, {k.cycles[tc[0]]['label']} to {k.cycles[tc[-1]]['label']} "
+                              f"(the 2017-March 2020 file overlaps 2017-2018 and is not used for trends).")
+                if dataset:
+                    dataset = {**dataset, "cycles": cycles}
+        elif usable and not set(cycles) <= usable:
             new = best_cycles(usable, k)
             cycle_note = (f"{', '.join(v['concept_label'] for v in core)} {'is' if len(core) == 1 else 'are'} measured with usable weights only in "
                           f"{', '.join(k.cycles[c]['label'] for c in sorted(usable, key=CYCLE_ORDER.index))}; using {', '.join(k.cycles[c]['label'] for c in new)}.")
@@ -1314,6 +1327,27 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
             agent_notes.append({"agent": "Epidemiologist", "message": f"Scope: {m}. Q2E will estimate cross-sectional associations only."})
 
     epi_rationale = _epi_rationale(outcome, exposure, covs, cov_notes, k)
+    trend_cfg = {"enabled": bool(est_cues["trend"] and study_type != "association" and len(cycles) >= 2
+                                 and all(c in _est.CYCLE_YEARS for c in cycles) and not ("P" in cycles and "J" in cycles)),
+                 "cycles": [c for c in _est.TREND_ORDER + ["P"] if c in cycles]}
+    if est_cues["trend"] and not trend_cfg["enabled"] and study_type != "association":
+        agent_notes.append({"agent": "Statistician", "message": "A trend needs at least two survey cycles; choose more cycles on the Plan page to estimate change over time."})
+    age_adjust = _est.age_adjust_config(criteria, study_type, est_cues["age_adjusted_requested"], trend_cfg["enabled"])
+    if age_adjust.get("enabled"):
+        # descriptive adult estimates are shown in the NCHS age groups that the standardization uses
+        nchs_age = "agecat_nchs18" if age_adjust["bands"][0]["lo"] == 18 else "agecat_nchs20"
+        swap = lambda xs: [nchs_age if x == "agecat" else x for x in xs]   # noqa: E731
+        subgroups, t1 = swap(subgroups), swap(t1)
+        prevalence_outcomes = [x for x in prevalence_outcomes]
+        age_adjust["not_by"] = ["agecat", "age", nchs_age]
+    if est_cues["crude_requested"] and age_adjust.get("enabled"):
+        age_adjust["primary"] = False
+    if age_adjust.get("requested") and not age_adjust.get("enabled"):
+        agent_notes.append({"agent": "Statistician", "message": age_adjust.get("reason", "")})
+    estimand_cfg = {"kind": ("trend" if trend_cfg["enabled"] else "association" if study_type == "association" else
+                             "mean" if outcome["type"] == "continuous" else "prevalence"),
+                    "median": est_cues["median"], "count": est_cues["count"] and study_type != "association",
+                    "age_adjusted_primary": bool(age_adjust.get("primary"))}
     plan = {
         "plan_id": "plan_" + uuid.uuid4().hex[:10], "version": 1, "status": "draft", "created": _now(),
         "question": question, "refined_question": refined, "title": title, "hypothesis": hypothesis,
@@ -1341,6 +1375,9 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         "limitations": limitations,
         "agent_notes": agent_notes,
         "data_limits": data_limits,
+        "age_adjust": age_adjust,
+        "trend": trend_cfg,
+        "estimand": estimand_cfg,
         "acknowledgements": {},
         "approvals": [],
         "parsed": parsed,
@@ -1461,8 +1498,12 @@ def review_plan(plan: dict, k: Knowledge | None = None) -> list[dict]:
         issues.append({"id": iid or f"r{len(issues) + 1}", "severity": sev, "agent": "Reviewer", "title": title,
                        "detail": detail, "fix": fix})
 
+    _ack = plan.get("acknowledgements", {}) or {}
     for i, lim in enumerate(plan.get("data_limits") or []):
-        add(lim["severity"], lim["title"], lim["detail"], None, f"data_limit_{i}")
+        if lim["severity"] == "blocker":
+            add("blocker", lim["title"], lim["detail"], None, f"data_limit_{i}")
+        elif not _ack.get(f"data_limit_{i}"):
+            add("major", lim["title"], lim["detail"], {"op": "acknowledge", "key": f"data_limit_{i}"}, f"data_limit_{i}")
     cycles = plan["dataset"].get("cycles", [])
     if plan["dataset"].get("type") == "generic":
         gm = plan.get("generic_mapping", {}) or {}
@@ -1572,6 +1613,17 @@ def review_plan(plan: dict, k: Knowledge | None = None) -> list[dict]:
                 f"Matched from the {'curated' if row.get('curated') else 'uncurated NHANES catalog'} dictionary; coded as {c['expr']} "
                 f"({c['type']}). Check the CDC codebook for coding, eligible ages and non-response codes before approving.",
                 {"op": "acknowledge", "key": f"custom_{c['name']}"}, f"custom_{c['name']}")
+    # traps that NHANES analysts commonly fall into (measurement changes, recalibration, top-coding ...)
+    from . import pitfalls as _pit
+    for h in _pit.check(plan, k):
+        if not _ack.get(h["id"]):
+            issues.append(h)
+    if (plan.get("age_adjust") or {}).get("enabled"):
+        aa = plan["age_adjust"]
+        issues.append({"id": "age_adjust", "severity": "info", "agent": "Statistician",
+                       "title": "Age-adjusted estimates included" + (" (primary)" if aa.get("primary") else ""),
+                       "detail": f"Directly standardized to the {aa['standard']}: " + ", ".join(f"{b['label']} ({b['proportion']:.3f})" for b in aa["bands"])
+                                 + ". Crude estimates are reported too; age-group estimates are not adjusted.", "fix": None})
     return issues
 
 

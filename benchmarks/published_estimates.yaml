@@ -34,6 +34,12 @@ sources:
   db527:
     citation: "NCHS. Depression prevalence in adolescents and adults: United States, August 2021-August 2023. NCHS Data Brief no. 527. 2025."
     url: "https://www.cdc.gov/nchs/products/databriefs/db527.htm"
+  hestat_obesity:
+    citation: "NCHS Health E-Stats. Prevalence of overweight, obesity, and severe obesity among adults aged 20 and over: United States, 1960-1962 through 2017-2018. Table 1."
+    url: "https://www.cdc.gov/nchs/data/hestat/obesity-adult-17-18/obesity-adult.htm"
+  nhsr122:
+    citation: "NCHS. Anthropometric reference data for children and adults: United States, 2015-2018. National Health Statistics Reports no. 122."
+    url: "https://stacks.cdc.gov/view/cdc/100478"
   tawfik2024:
     citation: "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and functional iron deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126."
     url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
@@ -51,6 +57,9 @@ items:
       overall: {est: 41.9, lcl: 39.4, ucl: 44.3}
       Male: {est: 41.6, lcl: 37.4, ucl: 45.8}
       Female: {est: 42.1, lcl: 39.6, ucl: 44.8}
+      "20-39": {est: 39.8, lcl: 35.3, ucl: 44.3}
+      "40-59": {est: 44.3, lcl: 41.3, ucl: 47.4}
+      "60+": {est: 41.5, lcl: 38.4, ucl: 44.7}
   - id: severe_obesity_P
     source: nhsr158
     table: "Table 6 (crude)"
@@ -62,6 +71,9 @@ items:
       overall: {est: 9.0, lcl: 7.8, ucl: 10.3}
       Male: {est: 6.4, lcl: 5.1, ucl: 8.0}
       Female: {est: 11.4, lcl: 9.7, ucl: 13.3}
+      "20-39": {est: 9.7, lcl: 7.7, ucl: 12.0}
+      "40-59": {est: 10.7, lcl: 8.9, ucl: 12.8}
+      "60+": {est: 6.1, lcl: 5.2, ucl: 7.2}
   - id: hypertension_P
     source: nhsr158
     table: "Table 7 (crude)"
@@ -73,6 +85,9 @@ items:
       overall: {est: 48.1, lcl: 45.4, ucl: 50.8}
       Male: {est: 50.5, lcl: 46.9, ucl: 54.2}
       Female: {est: 45.7, lcl: 42.8, ucl: 48.6}
+      "18-39": {est: 23.4, lcl: 20.5, ucl: 26.5}
+      "40-59": {est: 52.4, lcl: 48.7, ucl: 56.2}
+      "60+": {est: 74.1, lcl: 71.4, ucl: 76.7}
   - id: diabetes_P
     source: nhsr158
     table: "Table 8 (crude)"
@@ -84,6 +99,9 @@ items:
       overall: {est: 16.2, lcl: 14.2, ucl: 18.3}
       Male: {est: 17.7, lcl: 15.5, ucl: 20.2}
       Female: {est: 14.8, lcl: 12.2, ucl: 17.7}
+      "20-39": {est: 4.4, lcl: 2.9, ucl: 6.2}
+      "40-59": {est: 16.4, lcl: 13.4, ucl: 19.9}
+      "60+": {est: 30.0, lcl: 27.2, ucl: 32.9}
   - id: child_obesity_P
     source: nhsr158
     table: "Table 3"
@@ -126,6 +144,9 @@ items:
       overall: {est: 40.3, se: 1.8}
       Male: {est: 39.2, se: 1.9}
       Female: {est: 41.3, se: 2.2}
+      "20-39": {est: 35.5, se: 3.0}
+      "40-59": {est: 46.4, se: 1.8}
+      "60+": {est: 38.9, se: 1.5}
   - id: severe_obesity_L
     source: db508
     table: "Data table for Figure 3 (crude; SE only)"
@@ -137,6 +158,9 @@ items:
       overall: {est: 9.4, se: 0.7}
       Male: {est: 6.7, se: 0.7}
       Female: {est: 12.1, se: 0.9}
+      "20-39": {est: 9.5, se: 1.0}
+      "40-59": {est: 12.0, se: 1.0}
+      "60+": {est: 6.6, se: 0.6}
   - id: hypertension_L
     source: db511
     table: "Table 1 (crude)"
@@ -148,6 +172,9 @@ items:
       overall: {est: 47.7, lcl: 45.4, ucl: 49.9}
       Male: {est: 50.8, lcl: 48.4, ucl: 53.2}
       Female: {est: 44.6, lcl: 41.4, ucl: 47.8}
+      "18-39": {est: 23.4, lcl: 20.2, ucl: 26.9}
+      "40-59": {est: 52.5, lcl: 49.5, ucl: 55.4}
+      "60+": {est: 71.6, lcl: 68.7, ucl: 74.3}
   - id: diabetes_L
     source: db516
     table: "Total diabetes (crude)"
@@ -159,6 +186,9 @@ items:
       overall: {est: 15.8, lcl: 13.6, ucl: 18.2}
       Male: {est: 18.0, lcl: 15.7, ucl: 20.4}
       Female: {est: 13.7, lcl: 11.0, ucl: 16.7}
+      "20-39": {est: 3.6, lcl: 2.0, ucl: 5.9}
+      "40-59": {est: 17.7, lcl: 14.7, ucl: 21.0}
+      "60+": {est: 27.3, lcl: 23.0, ucl: 31.9}
   - id: high_cholesterol_L
     source: db515
     table: "Table 1 (crude)"
@@ -434,3 +464,213 @@ items:
       overall: {est: 10.8, se: 0.8}
       Male: {est: 7.9, se: 1.2}
       Female: {est: 13.8, se: 1.3}
+
+  # ---------------- NEW ESTIMANDS (first run of each feature; nothing tuned on these) ----------------
+  - id: aa_obesity_P
+    set: estimands
+    measure: age_adjusted
+    source: nhsr158
+    cycles: [P]
+    question: "What is the age-adjusted prevalence of obesity among US adults aged 20 and over?"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 41.9, lcl: 39.4, ucl: 44.3}
+      Male: {est: 41.8, lcl: 37.7, ucl: 45.9}
+      Female: {est: 41.8, lcl: 39.3, ucl: 44.4}
+  - id: aa_severe_obesity_P
+    set: estimands
+    measure: age_adjusted
+    source: nhsr158
+    cycles: [P]
+    question: "What is the age-adjusted prevalence of severe obesity among US adults aged 20 and over?"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 9.2, lcl: 8.0, ucl: 10.6}
+      Male: {est: 6.6, lcl: 5.3, ucl: 8.1}
+      Female: {est: 11.7, lcl: 10.0, ucl: 13.7}
+  - id: aa_hypertension_P
+    set: estimands
+    measure: age_adjusted
+    source: nhsr158
+    cycles: [P]
+    question: "What is the age-adjusted prevalence of hypertension among US adults aged 18 and over?"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 45.1, lcl: 42.5, ucl: 47.6}
+      Male: {est: 48.7, lcl: 44.8, ucl: 52.6}
+      Female: {est: 41.2, lcl: 38.5, ucl: 44.0}
+  - id: aa_diabetes_P
+    set: estimands
+    measure: age_adjusted
+    source: nhsr158
+    cycles: [P]
+    question: "What is the age-adjusted prevalence of diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_nchs
+    published:
+      overall: {est: 14.8, lcl: 13.1, ucl: 16.7}
+      Male: {est: 16.3, lcl: 14.2, ucl: 18.7}
+      Female: {est: 13.4, lcl: 11.0, ucl: 16.1}
+  - id: aa_obesity_L
+    set: estimands
+    measure: age_adjusted
+    source: db508
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of obesity among US adults aged 20 and over?"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 40.3, se: 1.9}
+      Male: {est: 39.3, se: 1.9}
+      Female: {est: 41.4, se: 2.3}
+  - id: aa_severe_obesity_L
+    set: estimands
+    measure: age_adjusted
+    source: db508
+    cycles: [L]
+    question: "Age-standardized prevalence of severe obesity in US adults aged 20 and over"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 9.7, se: 0.7}
+      Male: {est: 6.8, se: 0.7}
+      Female: {est: 12.6, se: 1.0}
+  - id: aa_hypertension_L
+    set: estimands
+    measure: age_adjusted
+    source: db511
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of hypertension among US adults aged 18 and over?"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 44.5, lcl: 42.1, ucl: 46.9}
+      Male: {est: 48.8, lcl: 46.2, ucl: 51.4}
+      Female: {est: 40.1, lcl: 37.2, ucl: 43.1}
+  - id: aa_diabetes_L
+    set: estimands
+    measure: age_adjusted
+    source: db516
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of total diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_nchs
+    published:
+      overall: {est: 14.3, lcl: 12.1, ucl: 16.7}
+      Male: {est: 16.6, lcl: 14.0, ucl: 19.4}
+      Female: {est: 12.2, lcl: 9.9, ucl: 14.8}
+  - id: aa_diagnosed_diabetes_L
+    set: estimands
+    measure: age_adjusted
+    source: db516
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of diagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_diagnosed
+    published:
+      overall: {est: 10.1, lcl: 8.3, ucl: 12.1}
+      Male: {est: 11.7, lcl: 9.9, ucl: 13.7}
+      Female: {est: 8.6, lcl: 6.7, ucl: 10.9}
+  - id: aa_undiagnosed_diabetes_L
+    set: estimands
+    measure: age_adjusted
+    source: db516
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of undiagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_undiagnosed
+    published:
+      overall: {est: 4.2, lcl: 2.9, ucl: 5.7}
+      Male: {est: 4.9, lcl: 3.3, ucl: 6.9}
+      Female: {est: 3.5, lcl: 2.4, ucl: 5.1}
+  - id: aa_high_cholesterol_L
+    set: estimands
+    measure: age_adjusted
+    source: db515
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?"
+    expected_definition: high_tc_240
+    published:
+      overall: {est: 11.2, lcl: 9.9, ucl: 12.7}
+      Male: {est: 11.0, lcl: 9.2, ucl: 13.1}
+      Female: {est: 11.3, lcl: 9.9, ucl: 12.8}
+  - id: aa_low_hdl_L
+    set: estimands
+    measure: age_adjusted
+    source: db515
+    cycles: [L]
+    question: "What is the age-adjusted prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?"
+    expected_definition: low_hdl_40
+    published:
+      overall: {est: 14.2, lcl: 12.5, ucl: 15.9}
+      Male: {est: 21.8, lcl: 19.1, ucl: 24.7}
+      Female: {est: 6.8, lcl: 5.6, ucl: 8.2}
+  - id: diagnosed_diabetes_agegroups_L
+    set: estimands
+    source: db516
+    cycles: [L]
+    question: "What is the prevalence of diagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_diagnosed
+    published:
+      overall: {est: 11.3, lcl: 9.3, ucl: 13.5}
+      "20-39": {est: 2.2, lcl: 1.1, ucl: 4.0}
+      "40-59": {est: 12.1, lcl: 10.0, ucl: 14.5}
+      "60+": {est: 20.5, lcl: 16.2, ucl: 25.3}
+  - id: undiagnosed_diabetes_agegroups_L
+    set: estimands
+    source: db516
+    cycles: [L]
+    question: "What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?"
+    expected_definition: diabetes_undiagnosed
+    published:
+      overall: {est: 4.5, lcl: 3.3, ucl: 5.9}
+      "20-39": {est: 1.3, lcl: 0.5, ucl: 3.0}
+      "40-59": {est: 5.6, lcl: 3.3, ucl: 8.9}
+      "60+": {est: 6.8, lcl: 5.3, ucl: 8.5}
+  - id: trend_obesity_1999_2018
+    set: estimands
+    measure: age_adjusted
+    trend: true
+    source: hestat_obesity
+    table: "Health E-Stat Table 1, adults 20 and over (age-adjusted; SE only)"
+    cycles: [A, B, C, D, E, F, G, H, I, J]
+    question: "How has the age-adjusted prevalence of obesity among US adults aged 20 and over changed from 1999 to 2018?"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 30.5, se: 1.5}
+    by_cycle:
+      A: {overall: {est: 30.5, se: 1.5}, Male: {est: 27.5, se: 1.5}, Female: {est: 33.4, se: 1.7}}
+      B: {overall: {est: 30.5, se: 1.1}, Male: {est: 27.7, se: 1.0}, Female: {est: 33.2, se: 1.5}}
+      C: {overall: {est: 32.2, se: 1.2}, Male: {est: 31.1, se: 1.3}, Female: {est: 33.2, se: 1.7}}
+      D: {overall: {est: 34.3, se: 1.4}, Male: {est: 33.3, se: 2.0}, Female: {est: 35.3, se: 1.4}}
+      E: {overall: {est: 33.7, se: 1.1}, Male: {est: 32.2, se: 1.4}, Female: {est: 35.4, se: 1.1}}
+      F: {overall: {est: 35.7, se: 0.9}, Male: {est: 35.5, se: 1.7}, Female: {est: 35.8, se: 0.9}}
+      G: {overall: {est: 34.9, se: 1.4}, Male: {est: 33.5, se: 1.4}, Female: {est: 36.1, se: 1.7}}
+      H: {overall: {est: 37.7, se: 0.9}, Male: {est: 35.0, se: 1.1}, Female: {est: 40.4, se: 1.3}}
+      I: {overall: {est: 39.6, se: 1.6}, Male: {est: 37.9, se: 2.3}, Female: {est: 41.1, se: 1.6}}
+      J: {overall: {est: 42.4, se: 1.8}, Male: {est: 43.0, se: 2.7}, Female: {est: 41.9, se: 2.0}}
+  - id: trend_severe_obesity_1999_2018
+    set: estimands
+    measure: age_adjusted
+    trend: true
+    source: hestat_obesity
+    table: "Health E-Stat Table 1, adults 20 and over (age-adjusted; SE only)"
+    cycles: [A, B, C, D, E, F, G, H, I, J]
+    question: "Trend in severe obesity among US adults aged 20 and over from 1999-2000 through 2017-2018"
+    expected_definition: severe_obesity_cdc
+    published:
+      overall: {est: 4.7, se: 0.6}
+    by_cycle:
+      A: {overall: {est: 4.7, se: 0.6}, Male: {est: 3.1, se: 0.7}, Female: {est: 6.2, se: 0.7}}
+      B: {overall: {est: 5.1, se: 0.5}, Male: {est: 3.6, se: 0.6}, Female: {est: 6.5, se: 0.6}}
+      C: {overall: {est: 4.8, se: 0.6}, Male: {est: 2.8, se: 0.4}, Female: {est: 6.9, se: 0.9}}
+      D: {overall: {est: 5.9, se: 0.5}, Male: {est: 4.2, se: 0.5}, Female: {est: 7.4, se: 0.7}}
+      E: {overall: {est: 5.7, se: 0.4}, Male: {est: 4.2, se: 0.5}, Female: {est: 7.3, se: 0.6}}
+      F: {overall: {est: 6.3, se: 0.2}, Male: {est: 4.4, se: 0.3}, Female: {est: 8.1, se: 0.5}}
+      G: {overall: {est: 6.4, se: 0.6}, Male: {est: 4.4, se: 0.9}, Female: {est: 8.3, se: 0.7}}
+      H: {overall: {est: 7.7, se: 0.7}, Male: {est: 5.5, se: 0.6}, Female: {est: 9.9, se: 0.9}}
+      I: {overall: {est: 7.7, se: 0.6}, Male: {est: 5.6, se: 0.7}, Female: {est: 9.7, se: 0.7}}
+      J: {overall: {est: 9.2, se: 0.9}, Male: {est: 6.9, se: 1.0}, Female: {est: 11.5, se: 1.3}}
+  - id: mean_height_women_2015_2018
+    set: estimands
+    measure: mean
+    source: nhsr122
+    table: "Table 9 (women 20 and over, cm)"
+    cycles: [I, J]
+    question: "What is the average height of US women aged 20 and over?"
+    expected_definition: null
+    published:
+      overall: {est: 161.3, se: 0.19, quantiles: {"0.05": 149.8, "0.5": 161.3, "0.95": 172.5}}

@@ -90,4 +90,4 @@ def test_ages_missing_from_public_files_are_flagged():
     p = _plan("What is the prevalence of depression among US adolescents aged 12 to 19?", ["L"])
     assert any(i["severity"] == "blocker" and "12-17" in i["title"] for i in p["review"])
     p = _plan("What is the prevalence of depression among US adolescents and adults aged 12 and over?", ["L"])
-    assert "age >= 18" in _crit(p) and any(i["severity"] == "warning" for i in p["review"] if i["id"].startswith("data_limit"))
+    assert "age >= 18" in _crit(p) and any(i["severity"] == "major" for i in p["review"] if i["id"].startswith("data_limit"))

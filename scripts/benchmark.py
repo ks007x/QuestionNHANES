@@ -36,6 +36,20 @@ def _ci(p: dict) -> tuple[float, float, str]:
     return p["est"] - 1.96 * p["se"], p["est"] + 1.96 * p["se"], "est +/- 1.96 SE"
 
 
+def _compare(grp: str, pub: dict, q: dict | None, key: str = "") -> dict:
+    lcl, ucl, ci_src = _ci(pub)
+    row = {"group": grp, "published": pub["est"], "pub_lcl": round(lcl, 2), "pub_ucl": round(ucl, 2), "pub_ci_source": ci_src}
+    if q is None or q.get(key + "est") is None:
+        row.update(q2e=None)
+        return row
+    e, l, u = 100 * q[key + "est"], 100 * q[key + "lcl"], 100 * q[key + "ucl"]
+    se_pub = (ucl - lcl) / (2 * 1.96)
+    row.update(q2e=round(e, 2), q2e_lcl=round(l, 2), q2e_ucl=round(u, 2), n=q.get("n"),
+               diff_pts=round(e - pub["est"], 2), rel_diff_pct=round(100 * (e - pub["est"]) / pub["est"], 1) if pub["est"] else None,
+               within_pub_ci=lcl <= e <= ucl, ci_overlap=l <= ucl and lcl <= u, z=round((e - pub["est"]) / se_pub, 2) if se_pub > 0 else None)
+    return row
+
+
 def _approve(proj: dict) -> dict:
     for issue in list(proj["plan"]["review"]):
         if (issue.get("fix") or {}).get("op") == "acknowledge":
@@ -85,38 +99,67 @@ def run_item(item: dict) -> dict:
     out["weight"] = (res.get("design") or {}).get("weight_variable")
     out["n_analytic"] = (res.get("primary_estimate") or {}).get("n")
     y = proj["plan"]["outcome"].get("variable")
+    if out.get("status") not in ("flagged_limit", "missed_limit"):
+        out["status"] = "answered"
+    measure = item.get("measure", "crude")
+    out["measure"] = measure
+    if measure == "mean":
+        means = res.get("means") or []
+        if not means:
+            pe = res.get("primary_estimate") or {}
+            out.update(status="wrong_measure", note=f"Q2E reported {pe.get('effect_label')} = {pe.get('est')}, not a mean")
+            return out
+        for grp, pub in item["published"].items():
+            m = next((x for x in means if (x["group_var"] == "Overall" and grp == "overall") or str(x["group"]) in SEX.get(grp, (grp,))), None)
+            lcl, ucl, ci_src = _ci(pub)
+            row = {"group": grp, "published": pub["est"], "pub_lcl": round(lcl, 3), "pub_ucl": round(ucl, 3), "pub_ci_source": ci_src, "units": True}
+            if m:
+                row.update(q2e=round(m["mean"], 3), q2e_lcl=round(m["mean_lcl"], 3), q2e_ucl=round(m["mean_ucl"], 3), n=m.get("n"),
+                           diff_pts=round(m["mean"] - pub["est"], 3), within_pub_ci=lcl <= m["mean"] <= ucl,
+                           ci_overlap=m["mean_lcl"] <= ucl and lcl <= m["mean_ucl"])
+                if pub.get("quantiles"):
+                    qs = {round(q["p"], 2): q["est"] for q in m.get("quantiles", [])}
+                    row["quantiles"] = {str(k): {"published": v, "q2e": qs.get(round(float(k), 2))} for k, v in pub["quantiles"].items()}
+            out["comparisons"].append(row)
+        out["seconds"] = round(time.time() - t0, 1)
+        return out
+    if item.get("trend"):
+        tr = res.get("trend") or {}
+        if not tr.get("rows"):
+            out.update(status="wrong_measure", note="Q2E did not produce per-cycle estimates")
+            return out
+        out["trend_tests"] = tr.get("tests")
+        key = "adj_" if measure == "age_adjusted" else ""
+        for cy, groups in item["by_cycle"].items():
+            for grp, pub in groups.items():
+                r = next((x for x in tr["rows"] if x["cycle"] == cy and ((grp == "overall" and x["group_var"] == "Overall")
+                                                                           or str(x["group"]) in SEX.get(grp, (grp,)))), None)
+                out["comparisons"].append(_compare(f"{cy} {grp}", pub, r, key))
+        out["seconds"] = round(time.time() - t0, 1)
+        return out
     prev = [p for p in res.get("prevalence", []) if p.get("outcome") == y]
     if out["q2e_type"] != "binary" or not prev:
         pe = res.get("primary_estimate") or {}
         out.update(status="wrong_measure",
                    note=f"Q2E reported {pe.get('effect_label') or pe.get('effect')} of {pe.get('label')} = {pe.get('est')}, not a prevalence")
         return out
-    if out.get("status") not in ("flagged_limit", "missed_limit"):
-        out["status"] = "answered"
+    key = "adj_" if measure == "age_adjusted" else ""
     for grp, pub in item["published"].items():
         if grp == "overall":
             q = next((p for p in prev if p.get("group_var") == "Overall"), None)
-        else:
+        elif grp in SEX:
             q = next((p for p in prev if p.get("group_var") == "sex" and str(p.get("group")) in SEX[grp]), None)
-        lcl, ucl, ci_src = _ci(pub)
-        row = {"group": grp, "published": pub["est"], "pub_lcl": round(lcl, 2), "pub_ucl": round(ucl, 2), "pub_ci_source": ci_src}
-        if q is None or q.get("est") is None:
-            row.update(q2e=None)
-        else:
-            e, l, u = 100 * q["est"], 100 * q["lcl"], 100 * q["ucl"]
-            se_pub = (ucl - lcl) / (2 * 1.96)
-            row.update(q2e=round(e, 2), q2e_lcl=round(l, 2), q2e_ucl=round(u, 2), n=q.get("n"),
-                       diff_pts=round(e - pub["est"], 2), rel_diff_pct=round(100 * (e - pub["est"]) / pub["est"], 1),
-                       within_pub_ci=lcl <= e <= ucl, ci_overlap=l <= ucl and lcl <= u,
-                       z=round((e - pub["est"]) / se_pub, 2) if se_pub > 0 else None)
-        out["comparisons"].append(row)
+        else:   # age groups and other published subgroups, matched by label
+            q = next((p for p in prev if p.get("group_var") not in ("Overall", "sex") and str(p.get("group")) == grp), None)
+        out["comparisons"].append(_compare(grp, pub, q, key))
     out["seconds"] = round(time.time() - t0, 1)
     return out
 
 
 def summarize(items: list[dict]) -> dict:
-    comps = [c for it in items if it["status"] == "answered" for c in it["comparisons"] if c.get("q2e") is not None]
-    matched = [c for it in items if it["status"] == "answered" and it["definition_match"] for c in it["comparisons"] if c.get("q2e") is not None]
+    comps = [c for it in items if it["status"] == "answered" for c in it["comparisons"] if c.get("q2e") is not None and not c.get("units")]
+    matched = [c for it in items if it["status"] == "answered" and it["definition_match"] for c in it["comparisons"]
+               if c.get("q2e") is not None and not c.get("units")]
 
     def stats(cs):
         if not cs:
@@ -132,11 +175,36 @@ def summarize(items: list[dict]) -> dict:
             "status": {s: sum(it["status"] == s for it in items) for s in sorted({it["status"] for it in items})},
             "public_data_limits": {"expected": sum(1 for it in items if it["status"] in ("flagged_limit", "missed_limit")),
                                    "flagged": sum(1 for it in items if it["status"] == "flagged_limit")},
-            "all_answered": stats(comps), "right_definition_only": stats(matched)}
+            "all_answered": stats(comps), "right_definition_only": stats(matched),
+            "by_estimand": {k: stats([c for it in items if it["status"] == "answered" and _kind(it) == k for c in it["comparisons"]
+                                      if c.get("q2e") is not None and not c.get("units")])
+                            for k in sorted({_kind(it) for it in items}) if k != "mean"},
+            "means": [{"id": it["id"], **c} for it in items if _kind(it) == "mean" for c in it["comparisons"]]}
+
+
+def _kind(it: dict) -> str:
+    m = it.get("measure", "crude")
+    if it.get("trend"):
+        return f"trend ({m.replace('_', '-')})"
+    if m == "mean":
+        return "mean"
+    subgroup = any(c["group"] not in ("overall", "Male", "Female") for c in it.get("comparisons", []))
+    return m.replace("_", "-") + (" incl. age groups" if subgroup and m == "crude" else "")
 
 
 def _pct(a, b):
     return f"{a}/{b} ({100 * a / b:.0f}%)" if b else "-"
+
+
+def _estimand_lines(summ: dict) -> list[str]:
+    L = ["| Estimand | Estimates | Inside published 95% CI | Within 1 point | Mean abs. difference (pts) |", "|---|---|---|---|---|"]
+    for k, st in (summ.get("by_estimand") or {}).items():
+        if st.get("n"):
+            L.append(f"| {k} | {st['n']} | {_pct(st['within_published_ci'], st['n'])} | {_pct(st['within_1pt'], st['n'])} | {st['mean_abs_diff_pts']} |")
+    for m in summ.get("means") or []:
+        if m.get("q2e") is not None:
+            L.append(f"| mean ({m['id']}, {m['group']}) | 1 | {'yes' if m['within_pub_ci'] else 'no'} | published {m['published']} vs Q2E {m['q2e']} | {abs(m['diff_pts'])} (units) |")
+    return L + [""]
 
 
 def _summary_lines(summ: dict) -> list[str]:
@@ -164,13 +232,14 @@ def to_markdown(items: list[dict], summ: dict, meta: dict) -> str:
          "prevalence compared with the published figure (overall, men, women).", ""]
     for key, title in (("core", "Original questions"),
                        ("holdout", "Hold-out set 1 (added after the first fixes; its three failures were then fixed, so no longer unseen)"),
-                       ("holdout2", "Hold-out set 2 (added last; never used to tune Q2E)"), ("all", "All questions")):
+                       ("holdout2", "Hold-out set 2 (added last; never used to tune Q2E)"),
+                       ("estimands", "New estimands: age-adjusted prevalence, trends, age groups, means (first run)"), ("all", "All questions")):
         if key in summ and summ[key]["questions"]:
-            L += [f"## {title}", ""] + _summary_lines(summ[key])
+            L += [f"## {title}", ""] + _summary_lines(summ[key]) + (["**By estimand:**", ""] + _estimand_lines(summ[key]) if key == "all" else [])
     L += ["## Item by item", "", "| Item | Group | Published % (95% CI) | Q2E % (95% CI) | Diff (pts) | In CI | Q2E definition |",
           "|---|---|---|---|---|---|---|"]
     for it in items:
-        tag = {"holdout": " (hold-out 1)", "holdout2": " (hold-out 2)"}.get(it.get("set"), "")
+        tag = {"holdout": " (hold-out 1)", "holdout2": " (hold-out 2)", "estimands": " (new estimand)"}.get(it.get("set"), "")
         dn = f"{it['q2e_label']}" + ("" if it["definition_match"] else (" - **differs**" if it.get("expected_definition") else " - **no matching definition**"))
         if it["status"] != "answered":
             L.append(f"| {it['id']}{tag} | - | {it.get('published_overall', '')} | **{it['status']}**: {it.get('note', '')} | | | {dn} |")
@@ -212,11 +281,14 @@ def main() -> int:
             print(f"   {c['group']:8} published {c['published']:5.1f}  Q2E {c.get('q2e')}  diff {c.get('diff_pts')}  in CI {c.get('within_pub_ci')}", flush=True)
         print(f"   status {r['status']}  definition {r.get('q2e_definition')} (expected {r.get('expected_definition')})  {r.get('note', '')}", flush=True)
         r["set"] = it.get("set", "core")
-        r["published_overall"] = it["published"]["overall"]["est"]
+        r["published_overall"] = (it.get("published") or {}).get("overall", {}).get("est")
+        r["measure"] = it.get("measure", "crude")
+        r["trend"] = bool(it.get("trend"))
         items.append(r)
     summ = {"core": summarize([i for i in items if i.get("set", "core") == "core"]),
             "holdout": summarize([i for i in items if i.get("set") == "holdout"]),
-            "holdout2": summarize([i for i in items if i.get("set") == "holdout2"]), "all": summarize(items)}
+            "holdout2": summarize([i for i in items if i.get("set") == "holdout2"]),
+            "estimands": summarize([i for i in items if i.get("set") == "estimands"]), "all": summarize(items)}
     meta = {"date": dt.date.today().isoformat(), "sources": cfg["sources"]}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,64 @@
+# Known NHANES traps, checked against every plan before it runs (q2e/pitfalls.py).
+# kinds:
+#   spans_boundary  - variables whose measurement changed at `boundary`; warn when the selected cycles fall on both sides
+#   in_cycles       - variables that need a documented correction in the listed cycles
+#   pooled_cycles   - a specific combination of cycles needs special weights when pooled (not for per-cycle trends)
+#   uses_variable   - a variable with a general caveat
+#   age_over        - analyses that reach an age where RIDAGEYR is top-coded
+pitfalls:
+  - id: bp_mode
+    kind: spans_boundary
+    vars: [BPXSY1, BPXSY2, BPXSY3, BPXDI1, BPXDI2, BPXDI3, BPXOSY1, BPXOSY2, BPXOSY3, BPXODI1, BPXODI2, BPXODI3]
+    boundary: J
+    title: "Blood pressure method changed (auscultatory to oscillometric)"
+    detail: "Through 2015-2016 BP was measured by auscultation (mercury sphygmomanometer); from 2017-2018 an oscillometric device was used. Readings differ systematically, so trends or pooled estimates across this change mix two methods."
+    action: "Report the two periods separately, or restrict to one method; describe the change in Methods."
+  - id: creatinine_recal
+    kind: in_cycles
+    vars: [LBXSCR, LBXCRP, URXUCR]
+    cycles: [A, D]
+    applies_to: [LBXSCR]
+    title: "Serum creatinine needs recalibration in 1999-2000 and 2005-2006"
+    detail: "NHANES laboratory documentation provides calibration equations for serum creatinine in 1999-2000 and 2005-2006 so that eGFR is comparable with other cycles; Q2E uses the released values."
+    action: "Apply the NHANES recalibration equations or exclude these cycles from eGFR-based analyses."
+  - id: lab_methods
+    kind: spans_boundary
+    vars: [LBXGLU, LBXGH, LBDHDD, LBXTC, LBXFER, LBXSCR]
+    boundary: E
+    title: "Laboratory methods changed across these cycles"
+    detail: "Several analytes changed laboratory, instrument or method between cycles; NHANES documents crossover studies and, for some, adjustment equations."
+    action: "Check each analyte's lab documentation for crossover equations before reporting trends."
+  - id: paq_gpaq
+    kind: spans_boundary
+    vars: [PAD200, PAD320, PAQ100, PAQ180, PAQ605, PAQ620, PAQ635, PAQ650, PAQ665]
+    boundary: E
+    title: "Physical-activity questionnaire was replaced in 2007-2008"
+    detail: "From 2007-2008 NHANES uses a GPAQ-based questionnaire; earlier cycles asked different questions, so activity measures are not comparable across 2005-2006 and 2007-2008."
+    action: "Analyse 2007 onward, or earlier cycles alone."
+  - id: four_year_weights
+    kind: pooled_cycles
+    cycles: [A, B]
+    title: "1999-2002 pooled data should use the 4-year weights"
+    detail: "NCHS provides 4-year weights (WTMEC4YR, WTINT4YR) for 1999-2002 because the two cycles used different population controls; halving the 2-year weights is close but not identical."
+    action: "Acceptable for most purposes; for exact replication of NCHS 1999-2002 estimates use the 4-year weights."
+  - id: race_asian
+    kind: uses_variable
+    vars: [RIDRETH3]
+    before: G
+    title: "Non-Hispanic Asian is a separate category only from 2011-2012"
+    detail: "Before 2011-2012 Asian participants are grouped in 'Other race, including multiracial' (RIDRETH1). Trends or pooled estimates by race cannot show Non-Hispanic Asian adults for earlier cycles."
+    action: "Report race and Hispanic origin with the RIDRETH1 categories for trends that start before 2011."
+  - id: age_topcode
+    kind: age_over
+    age: 80
+    title: "Age is top-coded at 80 (85 before 2007)"
+    detail: "RIDAGEYR is 80 for everyone 80 or older from 2007-2008 (85 for 1999-2006), so ages above 80 cannot be separated."
+    action: "Use '80 and over' as the oldest group."
+  - id: pandemic_cycles
+    kind: in_cycles
+    vars: []
+    cycles: [P, L]
+    applies_to: []
+    title: "Pandemic-era data"
+    detail: "2017-March 2020 combines 2017-2018 with a partial 2019-2020 sample; August 2021-August 2023 had lower response rates and protocol changes. NCHS cautions about comparing these files with earlier cycles."
+    action: "Note the response rates and protocol changes; avoid over-interpreting small changes against earlier cycles."

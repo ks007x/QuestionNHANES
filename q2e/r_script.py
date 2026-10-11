@@ -238,7 +238,7 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
         w("    f <- read_nhanes(fn, cm$files[[fn]]$url, cm$files[[fn]]$vars)")
         w("    d <- if (is.null(d)) f else merge(d, f, by = \"SEQN\", all.x = TRUE, sort = FALSE)")
         w("  }")
-        w("  d$.cycle <- cy; d$.psu <- d[[cm$psu]]; d$.strata <- d[[cm$strata]]")
+        w("  d$.cycle <- cy; d$.psu <- d[[cm$psu]]; d$.strata <- paste0(cy, \"_\", d[[cm$strata]])   # distinct strata across cycles")
         w(f"  d$.wt <- d[[cm$weight]] * cm$years / {total_years:g}   # " + ("multi-cycle weight: share of the total years covered"
                                                                          if len(cyc) > 1 else "single cycle: weight used as is"))
         w("  d")
@@ -344,7 +344,46 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
                 w(f"print(svyby(~{ind}, ~{g}, subset(des, .in_analytic & !is.na({ind})), svyciprop, method = \"beta\", vartype = \"ci\"))")
     if spec["outcome"]["type"] == "continuous":
         w(f"print(svymean(~{y}, d_an, na.rm = TRUE))")
+        w(f"print(svyquantile(~{y}, d_an, c(0.05, 0.25, 0.5, 0.75, 0.95), ci = TRUE, na.rm = TRUE))   # percentiles")
     w("")
+    aa = an.get("age_adjust") or {}
+    if aa.get("enabled"):
+        bands = aa["bands"]
+        w("# ---- 5b. Age-adjusted estimates (direct standardization) -------------------------------------------------")
+        w(f"# Standard: {aa['standard']}. Each age group gets its share of the standard population within every comparison group.")
+        w("std_pop <- c(" + ", ".join(f"`{b['label']}` = {b['population']}" for b in bands) + ")   # thousands")
+        cuts = [b["lo"] for b in bands] + ["Inf" if bands[-1].get("hi") is None else bands[-1]["hi"] + 1]
+        w(f"des$variables$agestd <- cut(des$variables${aa.get('age_var', 'age')}, c({', '.join(str(c) for c in cuts)}), right = FALSE, labels = names(std_pop))")
+        targets = ([f".ind_{p}" for p in sorted(prev, key=lambda v: v != y) if (dtype.get(p) or {}).get("type") != "categorical"][:1]
+                   if prev else ([y] if spec["outcome"]["type"] == "continuous" else []))
+        for t in targets:
+            stat = "svyciprop(~{t}, d_std, method = \"beta\")" if t.startswith(".ind_") else "svymean(~{t}, d_std)"
+            w(f"d_std <- svystandardize(subset(des, .in_analytic & !is.na({t}) & !is.na(agestd)), by = ~agestd, over = ~1, population = std_pop)")
+            w(f"aa_overall <- {stat.format(t=t)}; print(aa_overall)   # age-adjusted, overall")
+            for g in (an.get("prevalence") or {}).get("by") or []:
+                if g in (aa.get("not_by") or []) or g == y:
+                    continue
+                fun = "svyciprop, method = \"beta\"" if t.startswith(".ind_") else "svymean"
+                w(f"d_std_g <- svystandardize(subset(des, .in_analytic & !is.na({t}) & !is.na(agestd) & !is.na({g})), by = ~agestd, over = ~{g}, population = std_pop)")
+                w(f"print(svyby(~{t}, ~{g}, d_std_g, {fun}, vartype = \"ci\"))   # age-adjusted by {g}")
+        w("")
+    tr = an.get("trend") or {}
+    if tr.get("enabled") and prev or (tr.get("enabled") and spec["outcome"]["type"] == "continuous"):
+        t = f".ind_{y}" if spec["outcome"]["type"] == "binary" else y
+        if spec["outcome"]["type"] == "binary" and f".ind_{y}" not in [f".ind_{p}" for p in prev]:
+            w(f"des$variables${t} <- as.integer(des$variables${y} == 1)")
+        w("# ---- 5c. Trend across survey cycles ------------------------------------------------------------------------")
+        w(f"des$variables$cycle <- factor(des$variables$.cycle, levels = {_vec(tr['cycles'])})")
+        w("des$variables$period <- as.integer(des$variables$cycle) - 1")
+        fun = "svyciprop, method = \"beta\"" if t.startswith(".ind_") else "svymean"
+        w(f"print(svyby(~{t}, ~cycle, subset(des, .in_analytic & !is.na({t})), {fun}, vartype = \"ci\"))   # crude, by cycle")
+        if aa.get("enabled"):
+            w(f"d_trend <- svystandardize(subset(des, .in_analytic & !is.na({t}) & !is.na(agestd)), by = ~agestd, over = ~cycle, population = std_pop)")
+            w(f"print(svyby(~{t}, ~cycle, d_trend, {fun}, vartype = \"ci\"))   # age-adjusted, by cycle")
+        fam_t = "quasibinomial()" if t.startswith(".ind_") else "gaussian()"
+        w(f"trend_fit <- svyglm({t} ~ period{' + agestd' if aa.get('enabled') else ''}, design = subset(des, .in_analytic & !is.na({t})), family = {fam_t})")
+        w("print(regTermTest(trend_fit, ~period))   # test for linear trend over cycles")
+        w("")
 
     # ---------------------------------------------------------------- 6. models
     if x:

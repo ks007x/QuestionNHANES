@@ -102,7 +102,20 @@ def build_sections(project: dict, results: dict, narrative: dict | None = None) 
 
     if plan["study_type"] == "prevalence":
         finding = f"the weighted prevalence of {_lc(out_concept)} was {ci_pct(pe.get('est'), pe.get('lcl'), pe.get('ucl'))}"
-        if pe.get("pop_millions"):
+        if pe.get("effect_label") == "Age-adjusted prevalence":
+            finding = (f"the age-adjusted prevalence of {_lc(out_concept)} was {ci_pct(pe.get('est'), pe.get('lcl'), pe.get('ucl'))} "
+                       f"(crude {ci_pct(pe.get('crude_est'), pe.get('crude_lcl'), pe.get('crude_ucl'))})")
+        elif pe.get("effect") == "change":
+            T = results.get("trend") or {}
+            fmt = (lambda x: f"{100 * x:+.1f} percentage points") if pe.get("binary") else (lambda x: f"{x:+.2f}")
+            finding = (f"{_lc(out_concept)} changed by {fmt(pe['est'])} (95% CI {fmt(pe['lcl'])} to {fmt(pe['ucl'])}) between "
+                       f"{_CY.get((T.get('cycles') or ['?'])[0])} and {_CY.get((T.get('cycles') or ['?'])[-1])} "
+                       f"({pe.get('effect_label', '').split('(')[-1].rstrip(')')}; P for linear trend {_p(pe.get('p'))})")
+        elif pe.get("effect") in ("mean", "median"):
+            finding = f"the {pe['effect_label'].lower()} {_lc(out_concept)} was {pe['est']:.2f} (95% CI {pe['lcl']:.2f}-{pe['ucl']:.2f})"
+        if pe.get("count_millions") is not None:
+            finding += f", about {pe['count_millions']:.1f} million people (95% CI {pe['count_lcl']:.1f}-{pe['count_ucl']:.1f})"
+        elif pe.get("pop_millions"):
             finding += f", corresponding to approximately {pe['pop_millions']:.1f} million people"
         subg = [p for p in results.get("prevalence", []) if p["outcome"] == plan["outcome"]["variable"] and p["group_var"] != "Overall" and p.get("nchs") == "meets standard"]
         hi = max(subg, key=lambda p: p["est"]) if subg else None
@@ -235,16 +248,66 @@ def _prev_html(results, plan) -> str:
     if not rows:
         return ""
     outs = []
+    adj = any(p.get("adj_est") is not None for p in rows)
     for p in rows:
         lvl = f" - {p['outcome_level']}" if p.get("outcome_level") else ""
         flag = "" if p["nchs"] == "meets standard" else f" <span class='flag'>{esc(p['nchs'])}</span>"
+        acell = (f"<td>{ci_pct(p['adj_est'], p['adj_lcl'], p['adj_ucl'])}</td>" if p.get("adj_est") is not None else "<td>-</td>") if adj else ""
         outs.append(f"<tr><td>{esc(p['outcome_label'])}{esc(lvl)}</td><td>{esc(p['group_label'] if p['group_var'] != 'Overall' else '')}</td>"
                     f"<td>{esc(p['group'])}</td><td>{p['n']:,}</td><td>{p['events']:,}</td>"
-                    f"<td>{_pci(p)}{flag}</td>"
+                    f"<td>{_pci(p)}{flag}</td>{acell}"
                     f"<td>{_popm(p)}</td></tr>")
+    aa = plan.get("age_adjust") or {}
+    note = (f" Age-adjusted estimates: direct standardization to the {esc(aa.get('standard', ''))} ("
+            + ", ".join(f"{esc(b['label'])} {b['proportion']}" for b in aa.get("bands", [])) + "); age-group rows are not adjusted.") if adj else ""
     return ("<table class='tbl'><caption><b>Table 2.</b> Survey-weighted prevalence, overall and by subgroup</caption>"
-            "<thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>No.</th><th>Cases</th><th>Weighted % (95% CI)</th><th>Population, millions</th></tr></thead>"
-            f"<tbody>{''.join(outs)}</tbody></table><p class='note'>Korn-Graubard 95% CIs. Estimates not meeting NCHS Data Presentation Standards for Proportions are flagged.</p>")
+            "<thead><tr><th>Outcome</th><th>Subgroup</th><th>Level</th><th>No.</th><th>Cases</th><th>Weighted % (95% CI)</th>"
+            + ("<th>Age-adjusted % (95% CI)</th>" if adj else "") + "<th>Population, millions</th></tr></thead>"
+            f"<tbody>{''.join(outs)}</tbody></table><p class='note'>Korn-Graubard 95% CIs. Estimates not meeting NCHS Data Presentation Standards for Proportions are flagged.{note}</p>"
+            + _trend_html(results) + _means_html(results, plan))
+
+
+_CY = {"A": "1999-2000", "B": "2001-2002", "C": "2003-2004", "D": "2005-2006", "E": "2007-2008", "F": "2009-2010", "G": "2011-2012",
+       "H": "2013-2014", "I": "2015-2016", "J": "2017-2018", "P": "2017-March 2020", "L": "August 2021-August 2023"}
+
+
+def _trend_html(results) -> str:
+    T = results.get("trend") or {}
+    if not T.get("rows"):
+        return ""
+    groups = list(dict.fromkeys(r["group"] for r in T["rows"]))
+    f = (lambda x: "-" if x is None else f"{100 * x:.1f}") if T.get("binary") else (lambda x: "-" if x is None else f"{x:.2f}")
+    body = "".join(f"<tr><td>{_CY.get(c, c)}</td>" + "".join(
+        (lambda r: f"<td>{f(r.get('est'))}" + (f" / <b>{f(r.get('adj_est'))}</b>" if T.get('age_adjusted') else "") + "</td>" if r else "<td>-</td>")(
+            next((x for x in T["rows"] if x["cycle"] == c and x["group"] == g), None)) for g in groups) + "</tr>" for c in T["cycles"])
+    tests = "".join(f"<li>{esc(t['group'])}: change {_CY.get(t['first_cycle'])} to {_CY.get(t['last_cycle'])} {f(t['change'])} (95% CI {f(t['change_lcl'])} to {f(t['change_ucl'])}), {t['basis']}; P for linear trend {_p(t.get('p_linear_trend'))}</li>" for t in T.get("tests", []))
+    return (f"<table class='tbl'><caption><b>Table 2b.</b> Estimates by survey cycle ({'%' if T.get('binary') else 'units'}; crude"
+            f"{' / <b>age-adjusted</b>' if T.get('age_adjusted') else ''})</caption><thead><tr><th>Cycle</th>"
+            + "".join(f"<th>{esc(g)}</th>" for g in groups) + f"</tr></thead><tbody>{body}</tbody></table><ul class='note'>{tests}</ul>")
+
+
+def _num(x, d=2) -> str:
+    return "-" if x is None else f"{x:.{d}f}"
+
+
+def _p(p) -> str:
+    if p is None:
+        return "NA"
+    return "<.001" if p < 0.001 else f"{p:.3f}"
+
+
+def _means_html(results, plan) -> str:
+    M = results.get("means") or []
+    if not M:
+        return ""
+    def q(m, p):
+        x = next((z for z in m.get("quantiles", []) if abs(z["p"] - p) < 1e-6), None)
+        return f"{x['est']:.1f}" if x and x.get("est") is not None else "-"
+    rows = "".join(f"<tr><td>{esc('Overall' if m['group_var'] == 'Overall' else str(m['group']))}</td><td>{m['n']:,}</td>"
+                   f"<td>{m['mean']:.2f} ({m['mean_lcl']:.2f}-{m['mean_ucl']:.2f})</td><td>{_num(m.get('adj_est'))}</td>"
+                   f"<td>{q(m, .05)}</td><td>{q(m, .5)}</td><td>{q(m, .95)}</td></tr>" for m in M)
+    return ("<table class='tbl'><caption><b>Table 2c.</b> Distribution of " + esc(plan['outcome']['label']) + "</caption><thead><tr><th>Group</th><th>n</th>"
+            "<th>Mean (95% CI)</th><th>Age-adjusted mean</th><th>5th</th><th>Median</th><th>95th</th></tr></thead><tbody>" + rows + "</tbody></table>")
 
 
 def _models_html(results, plan) -> str:
@@ -483,9 +546,30 @@ def build_markdown(project: dict, run: dict, results: dict, narrative: dict | No
     lines.append("\n## Results\n")
     pe = results.get("primary_estimate") or {}
     lines.append(sec["abstract"]["Results"] + "\n")
-    lines.append("| Outcome | Subgroup | Level | n | Weighted % (95% CI) | NCHS |\n|---|---|---|---|---|---|")
+    lines.append("| Outcome | Subgroup | Level | n | Weighted % (95% CI) | Age-adjusted % (95% CI) | NCHS |\n|---|---|---|---|---|---|---|")
     for p in results.get("prevalence", []):
-        lines.append(f"| {p['outcome_label']}{(' - ' + str(p['outcome_level'])) if p.get('outcome_level') else ''} | {p['group_label'] if p['group_var'] != 'Overall' else ''} | {p['group']} | {p['n']:,} | {_pci(p)} | {p['nchs']} |")
+        aa = ci_pct(p["adj_est"], p["adj_lcl"], p["adj_ucl"]) if p.get("adj_est") is not None else "-"
+        lines.append(f"| {p['outcome_label']}{(' - ' + str(p['outcome_level'])) if p.get('outcome_level') else ''} | {p['group_label'] if p['group_var'] != 'Overall' else ''} | {p['group']} | {p['n']:,} | {_pci(p)} | {aa} | {p['nchs']} |")
+    T = results.get("trend") or {}
+    if T.get("rows"):
+        f = (lambda x: "-" if x is None else f"{100 * x:.1f}") if T.get("binary") else (lambda x: "-" if x is None else f"{x:.2f}")
+        groups = list(dict.fromkeys(r["group"] for r in T["rows"]))
+        lines.append("\n**By survey cycle** (crude" + (" / age-adjusted" if T.get("age_adjusted") else "") + ")\n")
+        lines.append("| Cycle | " + " | ".join(groups) + " |\n|---|" + "---|" * len(groups))
+        for c in T["cycles"]:
+            cells = []
+            for g in groups:
+                r = next((x for x in T["rows"] if x["cycle"] == c and x["group"] == g), None)
+                cells.append("-" if not r else f(r.get("est")) + (f" / {f(r.get('adj_est'))}" if T.get("age_adjusted") else ""))
+            lines.append(f"| {_CY.get(c, c)} | " + " | ".join(cells) + " |")
+        for t in T.get("tests", []):
+            lines.append(f"- {t['group']}: change {f(t['change'])} (95% CI {f(t['change_lcl'])} to {f(t['change_ucl'])}), {t['basis']}; P for linear trend {_p(t.get('p_linear_trend'))}")
+    for m in results.get("means") or []:
+        if m["group_var"] == "Overall":
+            med = next((z for z in m.get("quantiles", []) if abs(z["p"] - 0.5) < 1e-6), None)
+            lines.append(f"\nMean {m['mean']:.2f} (95% CI {m['mean_lcl']:.2f}-{m['mean_ucl']:.2f})"
+                         + (f"; median {med['est']:.1f}" if med and med.get("est") is not None else "")
+                         + (f"; age-adjusted mean {m['adj_est']:.2f}" if m.get("adj_est") is not None else "") + f"; n = {m['n']:,}.")
     if results.get("models"):
         lines.append("\n| Model | Term | n | Estimate (95% CI) | P |\n|---|---|---|---|---|")
         for m in results["models"]:

@@ -14,7 +14,7 @@ from .knowledge import RAW_VAR_RANK, Knowledge, get_knowledge
 
 HASH_FIELDS = ["dataset", "outcome", "exposure", "population", "covariates", "subgroups", "interactions", "model",
                "adjustment_sets", "missing_data", "prevalence_outcomes", "prevalence_by", "sensitivity", "table1_vars",
-               "table1_by", "benchmarks", "custom_variables", "generic_mapping"]
+               "table1_by", "benchmarks", "custom_variables", "generic_mapping", "age_adjust", "trend", "estimand"]
 
 
 class CompileError(ValueError):
@@ -268,6 +268,10 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
             "sensitivity": sens_out,
             "benchmarks": plan.get("benchmarks", []),
             "distribution_var": None,
+            "age_adjust": plan.get("age_adjust") if (plan.get("age_adjust") or {}).get("enabled") and is_nhanes else {"enabled": False},
+            "trend": plan.get("trend") if (plan.get("trend") or {}).get("enabled") and is_nhanes else {"enabled": False},
+            "median": bool((plan.get("estimand") or {}).get("median")),
+            "count": bool((plan.get("estimand") or {}).get("count")),
         },
         "options": {"seed": 2026, "alpha": 0.05},
         "weight_notes": weight_notes + [f"'{meta.get(v, {}).get('label', v)}' left out of descriptive tables: it is measured in a subsample "
