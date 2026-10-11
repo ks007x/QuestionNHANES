@@ -278,7 +278,7 @@ items:
     table: "Diagnosed diabetes (crude)"
     cycles: [L]
     question: "What is the prevalence of diagnosed diabetes among US adults aged 20 and over?"
-    expected_definition: null
+    expected_definition: diabetes_diagnosed
     published:
       overall: {est: 11.3, lcl: 9.3, ucl: 13.5}
       Male: {est: 12.9, lcl: 11.0, ucl: 15.0}
@@ -289,7 +289,7 @@ items:
     table: "Undiagnosed diabetes (crude)"
     cycles: [L]
     question: "What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?"
-    expected_definition: null
+    expected_definition: diabetes_undiagnosed
     published:
       overall: {est: 4.5, lcl: 3.3, ucl: 5.9}
       Male: {est: 5.1, lcl: 3.6, ucl: 6.9}

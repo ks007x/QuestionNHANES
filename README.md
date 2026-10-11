@@ -219,6 +219,12 @@ publication. Confirm them against the full text before submission; Q2E shows thi
 can be **imported from pasted text** by an LLM curator. They are stored as *proposed* and cannot run until an
 investigator approves them. **Guideline watch** queries PubMed for publications newer than each library entry.
 
+## Accuracy against published NHANES estimates
+Q2E is benchmarked against official NCHS prevalence figures and a JAMA Network Open paper: 34 plain-language
+questions, run on CDC data with no per-question tuning. After learning from the first run, every estimate fell
+inside the published 95% CI, including 8 hold-out questions never used for tuning (mean difference about 0.2
+percentage points). Details, the failures that were fixed, and limits: [docs/ACCURACY.md](docs/ACCURACY.md).
+
 ## AI providers & integrations
 `Q2E_LLM_PROVIDER = offline | anthropic | azure_openai | bedrock | openai | ollama`. See `.env.example`.
 **Step-by-step Bedrock setup (local, Codespaces and the GitHub workflow): [docs/BEDROCK.md](docs/BEDROCK.md).**
