@@ -1,0 +1,27 @@
+AI agents: off - rule-based agents only
+
+== Association of Abdominal Obesity (Waist Circumference) With Glycemic Control (HbA1c) Among US Adults: NHANES 2017-March 2020 pre-pandemic
+   Among noninstitutionalized US participants in NHANES 2017-March 2020 pre-pandemic (Age >=18 years; excluding pregnant at examination), is greater waist circumference (per 10 cm) associated with higher HbA1c, after adjustment for age, sex, race and ethnicity, income-to-poverty ratio, educational attainment, smoking status, and body mass index?
+   feasibility 100/100 (High)
+   novelty 18/100 (Low) - 11 PubMed NHANES paper(s) on the full question in 10 years (7 in the last 3). By element - Abdominal obesity (waist circumference) x Glycemic control (HbA1c): 11 NHANES / 352 any data.
+   [Investigator] I read this as an association question. Outcome: HbA1c. Exposure: Waist circumference (per 10 cm). Population: Age >=18 years.
+   [Data Steward] Mapped 13 analysis variables (4 direct NHANES measures, 9 derived/guideline definitions) onto 12 raw variables in 4 files: P_BMX, P_DEMO, P_GHB, P_SMQ.
+   [Investigator] First clinical concept treated as exposure, second as outcome (swap in the UI if needed).
+   [Epidemiologist] Diabetes (self-report, medication, or HbA1c >=6.5%): Diabetes status is defined partly by HbA1c and lies on the causal path; adjusting for it is over-adjustment
+   [Epidemiologist] Body mass index: BMI adjustment isolates the contribution of central adiposity beyond overall weight ('at similar weight'). Expect collinearity with waist (VIF 
+   [Statistician] Continuous outcome: survey-weighted linear regression (design-based Taylor-series SEs) estimates adjusted mean differences. A binary clinical threshold of the o
+   [Reviewer] Critique: 0 blocker, 0 major, 1 minor issue(s). Resolve blockers and acknowledge operational assumptions before approval.
+   [Design auditor] Design audit vs common EHR-network study criticisms: Defensible with caveats (4 pass, 4 caution, 0 fail).
+   [Epidemiologist] Can NHANES answer this? Answerable with caveats (0 blocking, 2 caveat(s)). Run the blinded feasibility probe to check real counts and power before approving.
+   Alpha 0.05 (two-sided), power 80%, target 0.2 SD, DEFF 1.8: Minimum detectable difference estimated from the run's design-based standard errors. After the run: Waist circumference (per 10 cm): minimum detectable difference 0.0786 (outcome units).
+   Certainty of evidence (GRADE-informed, single study): Moderate ⊕⊕⊕◯. Started Low (observational); rated up for dose-response. The true association is probably close to the estimate, but may be substantially different.
+   Published evidence: Published studies found, but none report a comparable estimate in the abstract (12 papers, 0 comparable, 0 same direction)
+   Model advisor: Survey linear regression - mean difference scores highest (81/100) for this outcome; used in 1 of 12 similar NHANES papers in high-impact journals. The plan already uses it. [rule-based]
+
+   Primary: Waist circumference (per 10 cm): 0.1506 (0.0956-0.2056) [Beta]
+   QC WARN  Complete-case loss: 17.3% of the analytic sample (1378) lack >=1 covariate. Multiple-imputation sensitivity analysis recommended.
+   QC WARN  Raw values within plausible ranges: Out-of-range values: BMXBMI (0 low, 1 high); LBXGH (1 low, 0 high)
+   QC WARN  Collinearity (generalized VIF): Maximum VIF 8.46 (waist_per10). Consider removing/combining collinear covariates or interpreting with care.
+   QC WARN  Sensitivity analyses agree with primary result: 7 of 8 sensitivity analyses agree in direction (associations) or magnitude (prevalence). Divergent: Alternative exposure: Central adiposity 
+   QC INFO  Age top-coding: NHANES top-codes age at 80 years; age is modelled as continuous with this censoring.
+   Outputs: outputs/real/manuscript.html, manuscript.md, analysis.R, bundle.zip  (project prj_76f4e5b827)

@@ -1,0 +1,238 @@
+Records loaded: 15560 
+                                       step     n
+                            In source files 15560
+  Examined in the MEC (positive MEC weight) 14300
+                             Age >=18 years  8965
+          Excluded: Pregnant at examination  8878
+                Non-missing outcome (HbA1c)  8388
+ Non-missing exposure (Waist circumference)  7988
+     Complete covariate data (model sample)  6610
+
+Design df: 25   model-sample df: 25 
+                                    2.5%  97.5%
+.ind_poor_glycemic_control 0.0979 0.0875 0.1090
+          sex .ind_poor_glycemic_control       ci_l      ci_u
+Male     Male                  0.1109658 0.09849848 0.1244196
+Female Female                  0.0853609 0.07177647 0.1005763
+      agecat .ind_poor_glycemic_control      ci_l       ci_u
+18-39  18-39                 0.01883952 0.0130028 0.02635682
+40-64  40-64                 0.12071729 0.1016857 0.14188730
+65+      65+                 0.19591158 0.1794123 0.21323513
+                                 race_eth .ind_poor_glycemic_control       ci_l
+Hispanic                         Hispanic                  0.1057995 0.09299719
+Non-Hispanic Asian     Non-Hispanic Asian                  0.1219611 0.10393148
+Non-Hispanic Black     Non-Hispanic Black                  0.1267821 0.10939755
+Non-Hispanic White     Non-Hispanic White                  0.0862315 0.07044368
+Other or multiracial Other or multiracial                  0.1379054 0.10030838
+                          ci_u
+Hispanic             0.1197074
+Non-Hispanic Asian   0.1418749
+Non-Hispanic Black   0.1458273
+Non-Hispanic White   0.1042325
+Other or multiracial 0.1831285
+        mean     SE
+hba1c 5.6653 0.0177
+
+hba1c ~ waist_per10   [n = 6,610, design df = 25, effect = mean difference]
+        term    est    lcl   ucl        p
+ (Intercept) 4.2270 4.0800 4.374 2.11e-28
+ waist_per10 0.1441 0.1292 0.159 7.37e-17
+
+hba1c ~ waist_per10 + age + sex + race_eth   [n = 6,610, design df = 25, effect = mean difference]
+                         term      est      lcl      ucl        p
+                  (Intercept)  3.88900  3.69700  4.08000 1.10e-24
+                  waist_per10  0.12280  0.10750  0.13810 5.85e-15
+                          age  0.01566  0.01467  0.01664 4.40e-22
+                    sexFemale -0.03299 -0.09098  0.02499 2.52e-01
+   race_ethNon-Hispanic Asian  0.07729 -0.03372  0.18830 1.64e-01
+   race_ethNon-Hispanic Black  0.05045 -0.03116  0.13210 2.15e-01
+   race_ethNon-Hispanic White -0.29840 -0.39570 -0.20120 1.29e-06
+ race_ethOther or multiracial -0.05972 -0.19200  0.07254 3.61e-01
+
+hba1c ~ waist_per10 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 6,610, design df = 25, effect = mean difference]
+                          term       est       lcl       ucl        p
+                   (Intercept)  3.977000  3.718000  4.236000 1.06e-21
+                   waist_per10  0.150600  0.095640  0.205600 7.16e-06
+                           age  0.015250  0.014160  0.016340 9.89e-21
+                     sexFemale -0.016990 -0.081320  0.047340 5.91e-01
+    race_ethNon-Hispanic Asian  0.140100  0.024370  0.255800 1.96e-02
+    race_ethNon-Hispanic Black  0.068770 -0.001341  0.138900 5.42e-02
+    race_ethNon-Hispanic White -0.245600 -0.332000 -0.159200 4.19e-06
+  race_ethOther or multiracial -0.041430 -0.168700  0.085870 5.09e-01
+              pir_cat1.30-3.49 -0.037080 -0.110700  0.036520 3.09e-01
+                  pir_cat3.50+ -0.088090 -0.165000 -0.011180 2.65e-02
+        educHigh school or GED -0.082740 -0.193400  0.027940 1.36e-01
+              educSome college -0.151400 -0.218200 -0.084630 8.80e-05
+ educCollege graduate or above -0.188700 -0.291500 -0.085940 8.67e-04
+                 smokingFormer -0.021560 -0.093070  0.049960 5.40e-01
+                smokingCurrent  0.046870 -0.033510  0.127200 2.41e-01
+                           bmi -0.007282 -0.019660  0.005099 2.37e-01
+
+PRIMARY ESTIMATE: waist_per10 0.1506 (95% CI 0.0956 to 0.2056), p = 7.16e-06
+Wald test for waist_per10:sex
+ in svyglm(formula = f, design = design, family = fam, start = start)
+F =  1.083243  on  1  and  25  df: p= 0.30793 
+Wald test for waist_per10:agecat
+ in svyglm(formula = f, design = design, family = fam, start = start)
+F =  13.0648  on  2  and  25  df: p= 0.00013057 
+
+poor_glycemic_control ~ waist_per10 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 6,610, design df = 25, effect = prevalence ratio]
+                          term       est       lcl       ucl        p
+                   (Intercept) 0.0003445 0.0001288 0.0009211 4.56e-15
+                   waist_per10 1.6310000 1.3870000 1.9170000 1.66e-06
+                           age 1.0430000 1.0370000 1.0490000 2.46e-14
+                     sexFemale 0.8884000 0.7061000 1.1180000 2.99e-01
+    race_ethNon-Hispanic Asian 1.5050000 1.2180000 1.8610000 5.36e-04
+    race_ethNon-Hispanic Black 0.9362000 0.7726000 1.1340000 4.86e-01
+    race_ethNon-Hispanic White 0.5366000 0.3974000 0.7244000 2.46e-04
+  race_ethOther or multiracial 0.8872000 0.6089000 1.2930000 5.18e-01
+              pir_cat1.30-3.49 0.9464000 0.7556000 1.1850000 6.19e-01
+                  pir_cat3.50+ 0.9211000 0.7297000 1.1630000 4.74e-01
+        educHigh school or GED 0.9580000 0.7173000 1.2790000 7.63e-01
+              educSome college 0.7809000 0.6323000 0.9644000 2.35e-02
+ educCollege graduate or above 0.6820000 0.4870000 0.9552000 2.76e-02
+                 smokingFormer 0.9054000 0.6943000 1.1810000 4.48e-01
+                smokingCurrent 1.0810000 0.7564000 1.5450000 6.57e-01
+                           bmi 0.9649000 0.9335000 0.9975000 3.59e-02
+         term      est      lcl      ucl            p
+2 waist_per10 1.630621 1.386889 1.917187 1.660699e-06
+
+hba1c ~ waist_per10 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 5,664, design df = 25, effect = mean difference]
+                          term       est       lcl      ucl        p
+                   (Intercept)  4.462000  4.239000  4.68500 1.65e-24
+                   waist_per10  0.053120  0.012190  0.09405 1.30e-02
+                           age  0.010340  0.009313  0.01138 3.15e-17
+                     sexFemale  0.016960 -0.033070  0.06699 4.92e-01
+    race_ethNon-Hispanic Asian  0.116500  0.015270  0.21770 2.58e-02
+    race_ethNon-Hispanic Black  0.064600  0.002311  0.12690 4.27e-02
+    race_ethNon-Hispanic White -0.160500 -0.214000 -0.10700 1.84e-06
+  race_ethOther or multiracial  0.030000 -0.104900  0.16490 6.51e-01
+              pir_cat1.30-3.49 -0.001396 -0.061330  0.05853 9.62e-01
+                  pir_cat3.50+ -0.036000 -0.091670  0.01967 1.95e-01
+        educHigh school or GED -0.057180 -0.127500  0.01312 1.06e-01
+              educSome college -0.109000 -0.166700 -0.05134 6.53e-04
+ educCollege graduate or above -0.085760 -0.157600 -0.01396 2.12e-02
+                 smokingFormer -0.009379 -0.063690  0.04493 7.25e-01
+                smokingCurrent  0.100300  0.048110  0.15260 5.54e-04
+                           bmi  0.005779 -0.003304  0.01486 2.02e-01
+         term        est        lcl        ucl          p
+2 waist_per10 0.05312383 0.01219339 0.09405427 0.01304467
+
+hba1c ~ waist_per10 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 5,913, design df = 25, effect = mean difference]
+                          term       est       lcl       ucl        p
+                   (Intercept)  3.991000  3.707000  4.276000 9.74e-21
+                   waist_per10  0.145500  0.085960  0.204900 3.40e-05
+                           age  0.015230  0.013920  0.016540 8.74e-19
+                     sexFemale -0.010660 -0.079750  0.058440 7.53e-01
+    race_ethNon-Hispanic Asian  0.139900  0.017790  0.262100 2.64e-02
+    race_ethNon-Hispanic Black  0.081140  0.001011  0.161300 4.74e-02
+    race_ethNon-Hispanic White -0.242900 -0.334700 -0.151100 1.17e-05
+  race_ethOther or multiracial -0.045360 -0.172000  0.081320 4.68e-01
+              pir_cat1.30-3.49 -0.049080 -0.132400  0.034200 2.36e-01
+                  pir_cat3.50+ -0.089840 -0.176400 -0.003256 4.26e-02
+        educHigh school or GED -0.071610 -0.192400  0.049190 2.34e-01
+              educSome college -0.154800 -0.214000 -0.095460 1.41e-05
+ educCollege graduate or above -0.192500 -0.294900 -0.090050 6.92e-04
+                 smokingFormer -0.026300 -0.110000  0.057430 5.24e-01
+                smokingCurrent  0.054920 -0.037150  0.147000 2.31e-01
+                           bmi -0.006156 -0.019810  0.007497 3.62e-01
+         term      est        lcl       ucl            p
+2 waist_per10 0.145454 0.08596184 0.2049462 3.400797e-05
+
+hba1c ~ waist_per10_q + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 6,610, design df = 25, effect = mean difference]
+                          term       est       lcl       ucl        p
+                   (Intercept)  4.913000  4.603000  5.223000 4.99e-22
+               waist_per10_qQ2  0.070530 -0.023700  0.164800 1.36e-01
+               waist_per10_qQ3  0.213600  0.061390  0.365800 7.85e-03
+               waist_per10_qQ4  0.471200  0.238300  0.704100 3.22e-04
+                           age  0.016220  0.015200  0.017240 4.79e-22
+                     sexFemale -0.050240 -0.105300  0.004792 7.18e-02
+    race_ethNon-Hispanic Asian  0.141300  0.021870  0.260600 2.23e-02
+    race_ethNon-Hispanic Black  0.058220 -0.007517  0.124000 8.01e-02
+    race_ethNon-Hispanic White -0.241000 -0.326200 -0.155800 4.49e-06
+  race_ethOther or multiracial -0.030440 -0.159900  0.099020 6.32e-01
+              pir_cat1.30-3.49 -0.037470 -0.109700  0.034780 2.96e-01
+                  pir_cat3.50+ -0.083480 -0.159700 -0.007265 3.31e-02
+        educHigh school or GED -0.081190 -0.194800  0.032460 1.54e-01
+              educSome college -0.150100 -0.220700 -0.079520 1.86e-04
+ educCollege graduate or above -0.185300 -0.289700 -0.080810 1.20e-03
+                 smokingFormer -0.024470 -0.102500  0.053590 5.24e-01
+                smokingCurrent  0.057790 -0.025100  0.140700 1.63e-01
+                           bmi  0.004683 -0.007051  0.016420 4.19e-01
+
+hba1c ~ abd_obesity_atp3 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 6,610, design df = 25, effect = mean difference]
+                          term       est       lcl      ucl        p
+                   (Intercept)  4.507000  4.261000  4.75300 1.46e-23
+              abd_obesity_atp3  0.073500 -0.031860  0.17890 1.63e-01
+                           age  0.017110  0.016200  0.01803 8.81e-24
+                     sexFemale -0.113000 -0.180600 -0.04538 2.04e-03
+    race_ethNon-Hispanic Asian  0.141900  0.025230  0.25850 1.91e-02
+    race_ethNon-Hispanic Black  0.059870 -0.009077  0.12880 8.58e-02
+    race_ethNon-Hispanic White -0.220200 -0.308400 -0.13190 2.60e-05
+  race_ethOther or multiracial -0.022110 -0.147100  0.10290 7.19e-01
+              pir_cat1.30-3.49 -0.039280 -0.111700  0.03319 2.75e-01
+                  pir_cat3.50+ -0.092990 -0.168500 -0.01748 1.78e-02
+        educHigh school or GED -0.076050 -0.187300  0.03522 1.72e-01
+              educSome college -0.148000 -0.214300 -0.08165 1.06e-04
+ educCollege graduate or above -0.186700 -0.291200 -0.08228 1.12e-03
+                 smokingFormer -0.008764 -0.083400  0.06587 8.11e-01
+                smokingCurrent  0.062060 -0.022290  0.14640 1.42e-01
+                           bmi  0.022310  0.015550  0.02907 3.99e-07
+              term        est         lcl       ucl         p
+2 abd_obesity_atp3 0.07350035 -0.03186488 0.1788656 0.1632047
+
+hba1c ~ whtr_05 + age + sex + race_eth + pir_cat + educ + smoking + bmi   [n = 6,610, design df = 25, effect = mean difference]
+                          term      est      lcl      ucl        p
+                   (Intercept)  4.42300  4.23600  4.61000 2.72e-26
+                       whtr_05 -0.06223 -0.14230  0.01783 1.22e-01
+                           age  0.01786  0.01658  0.01913 9.96e-21
+                     sexFemale -0.10240 -0.16130 -0.04353 1.44e-03
+    race_ethNon-Hispanic Asian  0.13110  0.01108  0.25120 3.35e-02
+    race_ethNon-Hispanic Black  0.05076 -0.02266  0.12420 1.67e-01
+    race_ethNon-Hispanic White -0.22300 -0.30870 -0.13740 1.46e-05
+  race_ethOther or multiracial -0.02417 -0.14500  0.09662 6.84e-01
+              pir_cat1.30-3.49 -0.04096 -0.11370  0.03177 2.57e-01
+                  pir_cat3.50+ -0.09386 -0.16880 -0.01890 1.62e-02
+        educHigh school or GED -0.07594 -0.18680  0.03488 1.70e-01
+              educSome college -0.14800 -0.21370 -0.08223 9.58e-05
+ educCollege graduate or above -0.18890 -0.29430 -0.08345 1.09e-03
+                 smokingFormer -0.00944 -0.08388  0.06500 7.96e-01
+                smokingCurrent  0.06248 -0.02251  0.14750 1.43e-01
+                           bmi  0.02716  0.02273  0.03159 2.42e-12
+     term         est        lcl        ucl         p
+2 whtr_05 -0.06222702 -0.1422814 0.01782737 0.1219617
+                                 Estimate   Std. Error     t value
+(Intercept)                    3.74103933 0.1034254470 36.17136246
+waist_per10                    0.21493157 0.0215378479  9.97925002
+age                            0.01581251 0.0008367007 18.89864715
+sexFemale                     -0.00724416 0.0284267634 -0.25483591
+race_ethNon-Hispanic Asian     0.08599779 0.0485800698  1.77022783
+race_ethNon-Hispanic Black    -0.00134650 0.0386076544 -0.03487652
+race_ethNon-Hispanic White    -0.33962960 0.0367797920 -9.23413587
+race_ethOther or multiracial  -0.02456775 0.0645757386 -0.38044858
+pir_cat1.30-3.49              -0.05668616 0.0324979172 -1.74430126
+pir_cat3.50+                  -0.11393222 0.0376445714 -3.02652446
+educHigh school or GED        -0.09838384 0.0413784955 -2.37765630
+educSome college              -0.14115730 0.0404438949 -3.49020056
+educCollege graduate or above -0.20941774 0.0456210923 -4.59037093
+smokingFormer                 -0.05724254 0.0323750085 -1.76810874
+smokingCurrent                -0.03167741 0.0362278087 -0.87439493
+bmi                           -0.01782721 0.0049631366 -3.59192393
+                                   Pr(>|t|)
+(Intercept)                   1.625698e-261
+waist_per10                    2.746571e-23
+age                            1.279880e-77
+sexFemale                      7.988578e-01
+race_ethNon-Hispanic Asian     7.673539e-02
+race_ethNon-Hispanic Black     9.721793e-01
+race_ethNon-Hispanic White     3.444112e-20
+race_ethOther or multiracial   7.036247e-01
+pir_cat1.30-3.49               8.115317e-02
+pir_cat3.50+                   2.483377e-03
+educHigh school or GED         1.745140e-02
+educSome college               4.858151e-04
+educCollege graduate or above  4.506603e-06
+smokingFormer                  7.708896e-02
+smokingCurrent                 3.819351e-01
+bmi                            3.306365e-04
+Matches the Q2E run: TRUE 

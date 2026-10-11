@@ -1,5 +1,6 @@
 # Q2E study runs
 
+- [2026-10-11-run36](runs/2026-10-11-run36/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-11-run35](runs/2026-10-11-run35/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run9](runs/2026-10-10-run9/README.md): I have noticed that adults with greater abdominal obesity may have worse blood sugar control even at similar weight.
 - [2026-10-10-run8](runs/2026-10-10-run8/README.md): What is the prevalence of functional iron deficiency among US adults?
