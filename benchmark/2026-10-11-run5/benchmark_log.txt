@@ -1,0 +1,687 @@
+== obesity_P: What is the prevalence of obesity among US adults aged 20 and over?
+   overall  published  41.9  Q2E 41.87  diff -0.03  in CI True
+   Male     published  41.6  Q2E 41.58  diff -0.02  in CI True
+   Female   published  42.1  Q2E 42.14  diff 0.04  in CI True
+   20-39    published  39.8  Q2E 39.75  diff -0.05  in CI True
+   40-59    published  44.3  Q2E 44.33  diff 0.03  in CI True
+   60+      published  41.5  Q2E 41.54  diff 0.04  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== severe_obesity_P: What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?
+   overall  published   9.0  Q2E 8.98  diff -0.02  in CI True
+   Male     published   6.4  Q2E 6.43  diff 0.03  in CI True
+   Female   published  11.4  Q2E 11.38  diff -0.02  in CI True
+   20-39    published   9.7  Q2E 9.67  diff -0.03  in CI True
+   40-59    published  10.7  Q2E 10.72  diff 0.02  in CI True
+   60+      published   6.1  Q2E 6.12  diff 0.02  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== hypertension_P: What is the prevalence of hypertension among US adults aged 18 and over?
+   overall  published  48.1  Q2E 49.01  diff 0.91  in CI True
+   Male     published  50.5  Q2E 51.19  diff 0.69  in CI True
+   Female   published  45.7  Q2E 46.91  diff 1.21  in CI True
+   18-39    published  23.4  Q2E 23.77  diff 0.37  in CI True
+   40-59    published  52.4  Q2E 53.01  diff 0.61  in CI True
+   60+      published  74.1  Q2E 74.95  diff 0.85  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== diabetes_P: What is the prevalence of diabetes among US adults aged 20 and over?
+   overall  published  16.2  Q2E 16.16  diff -0.04  in CI True
+   Male     published  17.7  Q2E 17.7  diff -0.0  in CI True
+   Female   published  14.8  Q2E 14.69  diff -0.11  in CI True
+   20-39    published   4.4  Q2E 4.32  diff -0.08  in CI True
+   40-59    published  16.4  Q2E 16.42  diff 0.02  in CI True
+   60+      published  30.0  Q2E 29.95  diff -0.05  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== child_obesity_P: What is the prevalence of obesity among US children and adolescents aged 2 to 19 years?
+   overall  published  19.7  Q2E 19.83  diff 0.13  in CI True
+   Male     published  20.9  Q2E 21.08  diff 0.18  in CI True
+   Female   published  18.5  Q2E 18.56  diff 0.06  in CI True
+   status answered  definition obesity_cdc (expected obesity_cdc)  
+== absolute_iron_deficiency_P: What is the prevalence of absolute iron deficiency (ferritin below 30 ng/mL) among US adults?
+   overall  published  14.0  Q2E 13.75  diff -0.25  in CI True
+   status answered  definition aid_tawfik2024 (expected aid_tawfik2024)  
+== functional_iron_deficiency_P: What is the prevalence of functional iron deficiency among US adults?
+   overall  published  15.0  Q2E 15.44  diff 0.44  in CI True
+   status answered  definition fid_tawfik2024 (expected fid_tawfik2024)  
+== obesity_L: What is the prevalence of obesity among US adults aged 20 and over?
+   overall  published  40.3  Q2E 40.26  diff -0.04  in CI True
+   Male     published  39.2  Q2E 39.2  diff 0.0  in CI True
+   Female   published  41.3  Q2E 41.28  diff -0.02  in CI True
+   20-39    published  35.5  Q2E 35.53  diff 0.03  in CI True
+   40-59    published  46.4  Q2E 46.38  diff -0.02  in CI True
+   60+      published  38.9  Q2E 38.9  diff -0.0  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== severe_obesity_L: What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?
+   overall  published   9.4  Q2E 9.41  diff 0.01  in CI True
+   Male     published   6.7  Q2E 6.65  diff -0.05  in CI True
+   Female   published  12.1  Q2E 12.07  diff -0.03  in CI True
+   20-39    published   9.5  Q2E 9.5  diff -0.0  in CI True
+   40-59    published  12.0  Q2E 11.96  diff -0.04  in CI True
+   60+      published   6.6  Q2E 6.55  diff -0.05  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== hypertension_L: What is the prevalence of hypertension among US adults aged 18 and over?
+   overall  published  47.7  Q2E 48.03  diff 0.33  in CI True
+   Male     published  50.8  Q2E 51.1  diff 0.3  in CI True
+   Female   published  44.6  Q2E 45.07  diff 0.47  in CI True
+   18-39    published  23.4  Q2E 23.64  diff 0.24  in CI True
+   40-59    published  52.5  Q2E 52.63  diff 0.13  in CI True
+   60+      published  71.6  Q2E 71.95  diff 0.35  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== diabetes_L: What is the prevalence of diabetes among US adults aged 20 and over?
+   overall  published  15.8  Q2E 15.78  diff -0.02  in CI True
+   Male     published  18.0  Q2E 17.94  diff -0.06  in CI True
+   Female   published  13.7  Q2E 13.66  diff -0.04  in CI True
+   20-39    published   3.6  Q2E 3.56  diff -0.04  in CI True
+   40-59    published  17.7  Q2E 17.7  diff 0.0  in CI True
+   60+      published  27.3  Q2E 27.26  diff -0.04  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== high_cholesterol_L: What is the prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?
+   overall  published  11.3  Q2E 11.16  diff -0.14  in CI True
+   Male     published  10.6  Q2E 10.6  diff 0.0  in CI True
+   Female   published  11.9  Q2E 11.7  diff -0.2  in CI True
+   status answered  definition high_tc_240 (expected high_tc_240)  
+== low_hdl_L: What is the prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?
+   overall  published  13.8  Q2E 13.97  diff 0.17  in CI True
+   Male     published  21.5  Q2E 21.47  diff -0.03  in CI True
+   Female   published   6.6  Q2E 6.76  diff 0.16  in CI True
+   status answered  definition low_hdl_40 (expected low_hdl_40)  
+== anemia_L: What is the prevalence of anemia in the US population aged 2 years and older?
+   overall  published   9.3  Q2E 9.13  diff -0.17  in CI True
+   Male     published   5.5  Q2E 5.4  diff -0.1  in CI True
+   Female   published  13.0  Q2E 12.79  diff -0.21  in CI True
+   status answered  definition anemia_who (expected anemia_who)  
+== depression_L: What is the prevalence of depression among US adolescents and adults aged 12 and over?
+   overall  published  13.1  Q2E 12.78  diff -0.32  in CI True
+   Male     published  10.1  Q2E 10.05  diff -0.05  in CI True
+   Female   published  16.0  Q2E 15.43  diff -0.57  in CI True
+   status flagged_limit  definition depression_phq9 (expected depression_phq9)  warning: Ages 12-17 are not in the public files
+== holdout_obesity_20_39_L: What is the prevalence of obesity among US adults aged 20 to 39 years?
+   overall  published  35.5  Q2E 35.53  diff 0.03  in CI True
+   Male     published  34.3  Q2E 34.3  diff -0.0  in CI True
+   Female   published  36.8  Q2E 36.82  diff 0.02  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== holdout_obesity_60plus_L: How common is obesity in US adults aged 60 and older?
+   overall  published  38.9  Q2E 38.9  diff -0.0  in CI True
+   Male     published  38.0  Q2E 38.04  diff 0.04  in CI True
+   Female   published  39.6  Q2E 39.63  diff 0.03  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== holdout_severe_obesity_60plus_P: What percentage of US adults aged 60 and over have severe obesity?
+   overall  published   6.1  Q2E 6.12  diff 0.02  in CI True
+   Male     published   3.5  Q2E 3.5  diff -0.0  in CI True
+   Female   published   8.3  Q2E 8.3  diff 0.0  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== holdout_hypertension_18_39_L: What is the prevalence of hypertension in US adults aged 18 to 39?
+   overall  published  23.4  Q2E 23.64  diff 0.24  in CI True
+   Male     published  30.0  Q2E 30.02  diff 0.02  in CI True
+   Female   published  16.4  Q2E 16.94  diff 0.54  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== holdout_hypertension_60plus_P: How common is high blood pressure among US adults aged 60 and older?
+   overall  published  74.1  Q2E 74.95  diff 0.85  in CI True
+   Male     published  73.1  Q2E 73.66  diff 0.56  in CI True
+   Female   published  75.0  Q2E 76.04  diff 1.04  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== holdout_diabetes_60plus_P: What is the prevalence of diabetes among US adults aged 60 and over?
+   overall  published  30.0  Q2E 29.95  diff -0.05  in CI True
+   Male     published  36.3  Q2E 36.31  diff 0.01  in CI True
+   Female   published  24.4  Q2E 24.36  diff -0.04  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== holdout_diagnosed_diabetes_L: What is the prevalence of diagnosed diabetes among US adults aged 20 and over?
+   overall  published  11.3  Q2E 11.23  diff -0.07  in CI True
+   Male     published  12.9  Q2E 11.79  diff -1.11  in CI True
+   Female   published   9.7  Q2E 10.69  diff 0.99  in CI True
+   status answered  definition diabetes_diagnosed (expected diabetes_diagnosed)  
+== holdout_undiagnosed_diabetes_L: What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?
+   overall  published   4.5  Q2E 4.48  diff -0.02  in CI True
+   Male     published   5.1  Q2E 5.06  diff -0.04  in CI True
+   Female   published   3.9  Q2E 3.92  diff 0.02  in CI True
+   status answered  definition diabetes_undiagnosed (expected diabetes_undiagnosed)  
+== holdout_child_obesity_12_19_P: What is the prevalence of obesity among US adolescents aged 12 to 19?
+   overall  published  22.2  Q2E 22.13  diff -0.07  in CI True
+   Male     published  22.6  Q2E 22.34  diff -0.26  in CI True
+   Female   published  21.7  Q2E 21.9  diff 0.2  in CI True
+   status answered  definition obesity_cdc (expected obesity_cdc)  
+== holdout_child_obesity_2_5_P: How common is obesity in US children aged 2 to 5 years?
+   overall  published  12.7  Q2E 12.67  diff -0.03  in CI True
+   Male     published  13.6  Q2E 13.98  diff 0.38  in CI True
+   Female   published  11.8  Q2E 11.4  diff -0.4  in CI True
+   status answered  definition obesity_cdc (expected obesity_cdc)  
+== holdout_depression_12_19_L: What is the prevalence of depression among US adolescents aged 12 to 19?
+   status flagged_limit  definition depression_phq9 (expected depression_phq9)  blocker: Public NHANES files have no data for ages 12-17
+== holdout_depression_60plus_L: What is the prevalence of depression in US adults aged 60 and older?
+   overall  published   8.7  Q2E 8.58  diff -0.12  in CI True
+   Male     published   6.5  Q2E 6.33  diff -0.17  in CI True
+   Female   published  10.6  Q2E 10.53  diff -0.07  in CI True
+   status answered  definition depression_phq9 (expected depression_phq9)  
+== holdout_anemia_women_20_59_L: What is the prevalence of anemia among US women aged 20 to 59?
+   overall  published  14.0  Q2E 13.87  diff -0.13  in CI True
+   status answered  definition anemia_who (expected anemia_who)  
+== h2_hypertension_40_59_L: How many US adults aged 40 to 59 have hypertension?
+   overall  published  52.5  Q2E 52.63  diff 0.13  in CI True
+   Male     published  55.9  Q2E 56.2  diff 0.3  in CI True
+   Female   published  49.0  Q2E 49.1  diff 0.1  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== h2_diabetes_40_59_L: What share of US adults aged 40 to 59 have diabetes?
+   overall  published  17.7  Q2E 17.7  diff 0.0  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== h2_diabetes_20_39_L: Prevalence of diabetes in young adults aged 20 to 39 in the US
+   overall  published   3.6  Q2E 3.56  diff -0.04  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== h2_severe_obesity_40_59_L: What proportion of US adults aged 40 to 59 have class 3 obesity?
+   overall  published  12.0  Q2E 11.96  diff -0.04  in CI True
+   Male     published   9.2  Q2E 9.2  diff -0.0  in CI True
+   Female   published  14.7  Q2E 14.68  diff -0.02  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== h2_severe_obesity_20_39_P: What is the prevalence of severe obesity among adults aged 20 to 39?
+   overall  published   9.7  Q2E 9.67  diff -0.03  in CI True
+   Male     published   7.0  Q2E 7.02  diff 0.02  in CI True
+   Female   published  12.4  Q2E 12.4  diff 0.0  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== h2_anemia_60plus_L: How common is anemia among Americans aged 60 and older?
+   overall  published  12.5  Q2E 12.07  diff -0.43  in CI True
+   Male     published  12.8  Q2E 12.3  diff -0.5  in CI True
+   Female   published  12.4  Q2E 11.88  diff -0.52  in CI True
+   status answered  definition anemia_who (expected anemia_who)  
+== h2_child_obesity_6_11_P: What percentage of US children aged 6 to 11 years have obesity?
+   overall  published  20.7  Q2E 21.23  diff 0.53  in CI True
+   Male     published  22.9  Q2E 23.68  diff 0.78  in CI True
+   Female   published  18.5  Q2E 18.7  diff 0.2  in CI True
+   status answered  definition obesity_cdc (expected obesity_cdc)  
+== h2_depression_40_59_L: What is the prevalence of depression among US adults aged 40 to 59?
+   overall  published  10.8  Q2E 11.0  diff 0.2  in CI True
+   Male     published   7.9  Q2E 8.07  diff 0.17  in CI True
+   Female   published  13.8  Q2E 13.97  diff 0.17  in CI True
+   status answered  definition depression_phq9 (expected depression_phq9)  
+== aa_obesity_P: What is the age-adjusted prevalence of obesity among US adults aged 20 and over?
+   overall  published  41.9  Q2E 41.87  diff -0.03  in CI True
+   Male     published  41.8  Q2E 41.8  diff -0.0  in CI True
+   Female   published  41.8  Q2E 41.85  diff 0.05  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== aa_severe_obesity_P: What is the age-adjusted prevalence of severe obesity among US adults aged 20 and over?
+   overall  published   9.2  Q2E 9.24  diff 0.04  in CI True
+   Male     published   6.6  Q2E 6.62  diff 0.02  in CI True
+   Female   published  11.7  Q2E 11.75  diff 0.05  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== aa_hypertension_P: What is the age-adjusted prevalence of hypertension among US adults aged 18 and over?
+   overall  published  45.1  Q2E 45.6  diff 0.5  in CI True
+   Male     published  48.7  Q2E 49.17  diff 0.47  in CI True
+   Female   published  41.2  Q2E 41.86  diff 0.66  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== aa_diabetes_P: What is the age-adjusted prevalence of diabetes among US adults aged 20 and over?
+   overall  published  14.8  Q2E 14.76  diff -0.04  in CI True
+   Male     published  16.3  Q2E 16.33  diff 0.03  in CI True
+   Female   published  13.4  Q2E 13.39  diff -0.01  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== aa_obesity_L: What is the age-adjusted prevalence of obesity among US adults aged 20 and over?
+   overall  published  40.3  Q2E 40.34  diff 0.04  in CI True
+   Male     published  39.3  Q2E 39.29  diff -0.01  in CI True
+   Female   published  41.4  Q2E 41.39  diff -0.01  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== aa_severe_obesity_L: Age-standardized prevalence of severe obesity in US adults aged 20 and over
+   overall  published   9.7  Q2E 9.73  diff 0.03  in CI True
+   Male     published   6.8  Q2E 6.85  diff 0.05  in CI True
+   Female   published  12.6  Q2E 12.59  diff -0.01  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== aa_hypertension_L: What is the age-adjusted prevalence of hypertension among US adults aged 18 and over?
+   overall  published  44.5  Q2E 44.75  diff 0.25  in CI True
+   Male     published  48.8  Q2E 48.93  diff 0.13  in CI True
+   Female   published  40.1  Q2E 40.47  diff 0.37  in CI True
+   status answered  definition htn_accaha2017 (expected htn_accaha2017)  
+== aa_diabetes_L: What is the age-adjusted prevalence of total diabetes among US adults aged 20 and over?
+   overall  published  14.3  Q2E 14.31  diff 0.01  in CI True
+   Male     published  16.6  Q2E 16.56  diff -0.04  in CI True
+   Female   published  12.2  Q2E 12.16  diff -0.04  in CI True
+   status answered  definition diabetes_nchs (expected diabetes_nchs)  
+== aa_diagnosed_diabetes_L: What is the age-adjusted prevalence of diagnosed diabetes among US adults aged 20 and over?
+   overall  published  10.1  Q2E 10.11  diff 0.01  in CI True
+   Male     published  11.7  Q2E 10.8  diff -0.9  in CI True
+   Female   published   8.6  Q2E 9.48  diff 0.88  in CI True
+   status answered  definition diabetes_diagnosed (expected diabetes_diagnosed)  
+== aa_undiagnosed_diabetes_L: What is the age-adjusted prevalence of undiagnosed diabetes among US adults aged 20 and over?
+   overall  published   4.2  Q2E 4.18  diff -0.02  in CI True
+   Male     published   4.9  Q2E 4.86  diff -0.04  in CI True
+   Female   published   3.5  Q2E 3.54  diff 0.04  in CI True
+   status answered  definition diabetes_undiagnosed (expected diabetes_undiagnosed)  
+== aa_high_cholesterol_L: What is the age-adjusted prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?
+   overall  published  11.2  Q2E 11.05  diff -0.15  in CI True
+   Male     published  11.0  Q2E 11.04  diff 0.04  in CI True
+   Female   published  11.3  Q2E 10.92  diff -0.38  in CI True
+   status answered  definition high_tc_240 (expected high_tc_240)  
+== aa_low_hdl_L: What is the age-adjusted prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?
+   overall  published  14.2  Q2E 14.32  diff 0.12  in CI True
+   Male     published  21.8  Q2E 21.84  diff 0.04  in CI True
+   Female   published   6.8  Q2E 6.98  diff 0.18  in CI True
+   status answered  definition low_hdl_40 (expected low_hdl_40)  
+== diagnosed_diabetes_agegroups_L: What is the prevalence of diagnosed diabetes among US adults aged 20 and over?
+   overall  published  11.3  Q2E 11.23  diff -0.07  in CI True
+   20-39    published   2.2  Q2E 2.23  diff 0.03  in CI True
+   40-59    published  12.1  Q2E 12.16  diff 0.06  in CI True
+   60+      published  20.5  Q2E 20.29  diff -0.21  in CI True
+   status answered  definition diabetes_diagnosed (expected diabetes_diagnosed)  
+== undiagnosed_diabetes_agegroups_L: What is the prevalence of undiagnosed diabetes among US adults aged 20 and over?
+   overall  published   4.5  Q2E 4.48  diff -0.02  in CI True
+   20-39    published   1.3  Q2E 1.33  diff 0.03  in CI True
+   40-59    published   5.6  Q2E 5.6  diff -0.0  in CI True
+   60+      published   6.8  Q2E 6.79  diff -0.01  in CI True
+   status answered  definition diabetes_undiagnosed (expected diabetes_undiagnosed)  
+== trend_obesity_1999_2018: How has the age-adjusted prevalence of obesity among US adults aged 20 and over changed from 1999 to 2018?
+   A overall published  30.5  Q2E 30.16  diff -0.34  in CI True
+   A Male   published  27.5  Q2E 26.93  diff -0.57  in CI True
+   A Female published  33.4  Q2E 33.25  diff -0.15  in CI True
+   B overall published  30.5  Q2E 29.99  diff -0.51  in CI True
+   B Male   published  27.7  Q2E 27.14  diff -0.56  in CI True
+   B Female published  33.2  Q2E 32.7  diff -0.5  in CI True
+   C overall published  32.2  Q2E 31.87  diff -0.33  in CI True
+   C Male   published  31.1  Q2E 30.77  diff -0.33  in CI True
+   C Female published  33.2  Q2E 32.92  diff -0.28  in CI True
+   D overall published  34.3  Q2E 33.9  diff -0.4  in CI True
+   D Male   published  33.3  Q2E 32.73  diff -0.57  in CI True
+   D Female published  35.3  Q2E 35.04  diff -0.26  in CI True
+   E overall published  33.7  Q2E 33.56  diff -0.14  in CI True
+   E Male   published  32.2  Q2E 32.02  diff -0.18  in CI True
+   E Female published  35.4  Q2E 35.23  diff -0.17  in CI True
+   F overall published  35.7  Q2E 35.6  diff -0.1  in CI True
+   F Male   published  35.5  Q2E 35.23  diff -0.27  in CI True
+   F Female published  35.8  Q2E 35.8  diff 0.0  in CI True
+   G overall published  34.9  Q2E 34.9  diff 0.0  in CI True
+   G Male   published  33.5  Q2E 33.54  diff 0.04  in CI True
+   G Female published  36.1  Q2E 36.14  diff 0.04  in CI True
+   H overall published  37.7  Q2E 37.74  diff 0.04  in CI True
+   H Male   published  35.0  Q2E 35.05  diff 0.05  in CI True
+   H Female published  40.4  Q2E 40.38  diff -0.02  in CI True
+   I overall published  39.6  Q2E 39.56  diff -0.04  in CI True
+   I Male   published  37.9  Q2E 37.89  diff -0.01  in CI True
+   I Female published  41.1  Q2E 41.1  diff -0.0  in CI True
+   J overall published  42.4  Q2E 42.44  diff 0.04  in CI True
+   J Male   published  43.0  Q2E 43.0  diff 0.0  in CI True
+   J Female published  41.9  Q2E 41.87  diff -0.03  in CI True
+   status answered  definition obesity_bmi30 (expected obesity_bmi30)  
+== trend_severe_obesity_1999_2018: Trend in severe obesity among US adults aged 20 and over from 1999-2000 through 2017-2018
+   A overall published   4.7  Q2E 4.69  diff -0.01  in CI True
+   A Male   published   3.1  Q2E 3.08  diff -0.02  in CI True
+   A Female published   6.2  Q2E 6.23  diff 0.03  in CI True
+   B overall published   5.1  Q2E 5.01  diff -0.09  in CI True
+   B Male   published   3.6  Q2E 3.62  diff 0.02  in CI True
+   B Female published   6.5  Q2E 6.27  diff -0.23  in CI True
+   C overall published   4.8  Q2E 4.83  diff 0.03  in CI True
+   C Male   published   2.8  Q2E 2.82  diff 0.02  in CI True
+   C Female published   6.9  Q2E 6.86  diff -0.04  in CI True
+   D overall published   5.9  Q2E 5.77  diff -0.13  in CI True
+   D Male   published   4.2  Q2E 4.09  diff -0.11  in CI True
+   D Female published   7.4  Q2E 7.29  diff -0.11  in CI True
+   E overall published   5.7  Q2E 5.64  diff -0.06  in CI True
+   E Male   published   4.2  Q2E 4.05  diff -0.15  in CI True
+   E Female published   7.3  Q2E 7.21  diff -0.09  in CI True
+   F overall published   6.3  Q2E 6.26  diff -0.04  in CI True
+   F Male   published   4.4  Q2E 4.34  diff -0.06  in CI True
+   F Female published   8.1  Q2E 8.06  diff -0.04  in CI True
+   G overall published   6.4  Q2E 6.35  diff -0.05  in CI True
+   G Male   published   4.4  Q2E 4.36  diff -0.04  in CI True
+   G Female published   8.3  Q2E 8.28  diff -0.02  in CI True
+   H overall published   7.7  Q2E 7.74  diff 0.04  in CI True
+   H Male   published   5.5  Q2E 5.48  diff -0.02  in CI True
+   H Female published   9.9  Q2E 9.94  diff 0.04  in CI True
+   I overall published   7.7  Q2E 7.72  diff 0.02  in CI True
+   I Male   published   5.6  Q2E 5.61  diff 0.01  in CI True
+   I Female published   9.7  Q2E 9.72  diff 0.02  in CI True
+   J overall published   9.2  Q2E 9.24  diff 0.04  in CI True
+   J Male   published   6.9  Q2E 6.94  diff 0.04  in CI True
+   J Female published  11.5  Q2E 11.47  diff -0.03  in CI True
+   status answered  definition severe_obesity_cdc (expected severe_obesity_cdc)  
+== mean_height_women_2015_2018: What is the average height of US women aged 20 and over?
+   overall  published 161.3  Q2E 161.259  diff -0.041  in CI True
+   status answered  definition nh_bmxht (expected None)  
+{
+  "core": {
+    "questions": 15,
+    "answered_as_prevalence": 14,
+    "right_definition": 14,
+    "no_matching_definition_in_q2e": 0,
+    "status": {
+      "answered": 14,
+      "flagged_limit": 1
+    },
+    "public_data_limits": {
+      "expected": 1,
+      "flagged": 1
+    },
+    "all_answered": {
+      "n": 62,
+      "within_published_ci": 62,
+      "ci_overlap": 62,
+      "mean_abs_diff_pts": 0.16,
+      "median_abs_diff_pts": 0.05,
+      "max_abs_diff_pts": 1.21,
+      "within_1pt": 61,
+      "within_2pt": 62
+    },
+    "right_definition_only": {
+      "n": 62,
+      "within_published_ci": 62,
+      "ci_overlap": 62,
+      "mean_abs_diff_pts": 0.16,
+      "median_abs_diff_pts": 0.05,
+      "max_abs_diff_pts": 1.21,
+      "within_1pt": 61,
+      "within_2pt": 62
+    },
+    "by_estimand": {
+      "crude": {
+        "n": 14,
+        "within_published_ci": 14,
+        "ci_overlap": 14,
+        "mean_abs_diff_pts": 0.16,
+        "median_abs_diff_pts": 0.17,
+        "max_abs_diff_pts": 0.44,
+        "within_1pt": 14,
+        "within_2pt": 14
+      },
+      "crude incl. age groups": {
+        "n": 48,
+        "within_published_ci": 48,
+        "ci_overlap": 48,
+        "mean_abs_diff_pts": 0.16,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 47,
+        "within_2pt": 48
+      }
+    },
+    "means": []
+  },
+  "holdout": {
+    "questions": 13,
+    "answered_as_prevalence": 12,
+    "right_definition": 12,
+    "no_matching_definition_in_q2e": 0,
+    "status": {
+      "answered": 12,
+      "flagged_limit": 1
+    },
+    "public_data_limits": {
+      "expected": 1,
+      "flagged": 1
+    },
+    "all_answered": {
+      "n": 34,
+      "within_published_ci": 34,
+      "ci_overlap": 34,
+      "mean_abs_diff_pts": 0.22,
+      "median_abs_diff_pts": 0.07,
+      "max_abs_diff_pts": 1.11,
+      "within_1pt": 32,
+      "within_2pt": 34
+    },
+    "right_definition_only": {
+      "n": 34,
+      "within_published_ci": 34,
+      "ci_overlap": 34,
+      "mean_abs_diff_pts": 0.22,
+      "median_abs_diff_pts": 0.07,
+      "max_abs_diff_pts": 1.11,
+      "within_1pt": 32,
+      "within_2pt": 34
+    },
+    "by_estimand": {
+      "crude": {
+        "n": 34,
+        "within_published_ci": 34,
+        "ci_overlap": 34,
+        "mean_abs_diff_pts": 0.22,
+        "median_abs_diff_pts": 0.07,
+        "max_abs_diff_pts": 1.11,
+        "within_1pt": 32,
+        "within_2pt": 34
+      }
+    },
+    "means": []
+  },
+  "holdout2": {
+    "questions": 8,
+    "answered_as_prevalence": 8,
+    "right_definition": 8,
+    "no_matching_definition_in_q2e": 0,
+    "status": {
+      "answered": 8
+    },
+    "public_data_limits": {
+      "expected": 0,
+      "flagged": 0
+    },
+    "all_answered": {
+      "n": 20,
+      "within_published_ci": 20,
+      "ci_overlap": 20,
+      "mean_abs_diff_pts": 0.21,
+      "median_abs_diff_pts": 0.17,
+      "max_abs_diff_pts": 0.78,
+      "within_1pt": 20,
+      "within_2pt": 20
+    },
+    "right_definition_only": {
+      "n": 20,
+      "within_published_ci": 20,
+      "ci_overlap": 20,
+      "mean_abs_diff_pts": 0.21,
+      "median_abs_diff_pts": 0.17,
+      "max_abs_diff_pts": 0.78,
+      "within_1pt": 20,
+      "within_2pt": 20
+    },
+    "by_estimand": {
+      "crude": {
+        "n": 20,
+        "within_published_ci": 20,
+        "ci_overlap": 20,
+        "mean_abs_diff_pts": 0.21,
+        "median_abs_diff_pts": 0.17,
+        "max_abs_diff_pts": 0.78,
+        "within_1pt": 20,
+        "within_2pt": 20
+      }
+    },
+    "means": []
+  },
+  "estimands": {
+    "questions": 17,
+    "answered_as_prevalence": 17,
+    "right_definition": 16,
+    "no_matching_definition_in_q2e": 1,
+    "status": {
+      "answered": 17
+    },
+    "public_data_limits": {
+      "expected": 0,
+      "flagged": 0
+    },
+    "all_answered": {
+      "n": 104,
+      "within_published_ci": 104,
+      "ci_overlap": 104,
+      "mean_abs_diff_pts": 0.13,
+      "median_abs_diff_pts": 0.04,
+      "max_abs_diff_pts": 0.9,
+      "within_1pt": 104,
+      "within_2pt": 104
+    },
+    "right_definition_only": {
+      "n": 104,
+      "within_published_ci": 104,
+      "ci_overlap": 104,
+      "mean_abs_diff_pts": 0.13,
+      "median_abs_diff_pts": 0.04,
+      "max_abs_diff_pts": 0.9,
+      "within_1pt": 104,
+      "within_2pt": 104
+    },
+    "by_estimand": {
+      "age-adjusted": {
+        "n": 36,
+        "within_published_ci": 36,
+        "ci_overlap": 36,
+        "mean_abs_diff_pts": 0.16,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 0.9,
+        "within_1pt": 36,
+        "within_2pt": 36
+      },
+      "crude incl. age groups": {
+        "n": 8,
+        "within_published_ci": 8,
+        "ci_overlap": 8,
+        "mean_abs_diff_pts": 0.05,
+        "median_abs_diff_pts": 0.03,
+        "max_abs_diff_pts": 0.21,
+        "within_1pt": 8,
+        "within_2pt": 8
+      },
+      "trend (age-adjusted)": {
+        "n": 60,
+        "within_published_ci": 60,
+        "ci_overlap": 60,
+        "mean_abs_diff_pts": 0.13,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 0.57,
+        "within_1pt": 60,
+        "within_2pt": 60
+      }
+    },
+    "means": [
+      {
+        "id": "mean_height_women_2015_2018",
+        "group": "overall",
+        "published": 161.3,
+        "pub_lcl": 160.928,
+        "pub_ucl": 161.672,
+        "pub_ci_source": "est +/- 1.96 SE",
+        "units": true,
+        "q2e": 161.259,
+        "q2e_lcl": 160.872,
+        "q2e_ucl": 161.646,
+        "n": 5510,
+        "diff_pts": -0.041,
+        "within_pub_ci": true,
+        "ci_overlap": true,
+        "quantiles": {
+          "0.05": {
+            "published": 149.8,
+            "q2e": 149.9
+          },
+          "0.5": {
+            "published": 161.3,
+            "q2e": 161.3
+          },
+          "0.95": {
+            "published": 172.5,
+            "q2e": 172.5
+          }
+        }
+      }
+    ]
+  },
+  "all": {
+    "questions": 53,
+    "answered_as_prevalence": 51,
+    "right_definition": 50,
+    "no_matching_definition_in_q2e": 1,
+    "status": {
+      "answered": 51,
+      "flagged_limit": 2
+    },
+    "public_data_limits": {
+      "expected": 2,
+      "flagged": 2
+    },
+    "all_answered": {
+      "n": 220,
+      "within_published_ci": 220,
+      "ci_overlap": 220,
+      "mean_abs_diff_pts": 0.16,
+      "median_abs_diff_pts": 0.04,
+      "max_abs_diff_pts": 1.21,
+      "within_1pt": 217,
+      "within_2pt": 220
+    },
+    "right_definition_only": {
+      "n": 220,
+      "within_published_ci": 220,
+      "ci_overlap": 220,
+      "mean_abs_diff_pts": 0.16,
+      "median_abs_diff_pts": 0.04,
+      "max_abs_diff_pts": 1.21,
+      "within_1pt": 217,
+      "within_2pt": 220
+    },
+    "by_estimand": {
+      "age-adjusted": {
+        "n": 36,
+        "within_published_ci": 36,
+        "ci_overlap": 36,
+        "mean_abs_diff_pts": 0.16,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 0.9,
+        "within_1pt": 36,
+        "within_2pt": 36
+      },
+      "crude": {
+        "n": 68,
+        "within_published_ci": 68,
+        "ci_overlap": 68,
+        "mean_abs_diff_pts": 0.21,
+        "median_abs_diff_pts": 0.13,
+        "max_abs_diff_pts": 1.11,
+        "within_1pt": 66,
+        "within_2pt": 68
+      },
+      "crude incl. age groups": {
+        "n": 56,
+        "within_published_ci": 56,
+        "ci_overlap": 56,
+        "mean_abs_diff_pts": 0.14,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 1.21,
+        "within_1pt": 55,
+        "within_2pt": 56
+      },
+      "trend (age-adjusted)": {
+        "n": 60,
+        "within_published_ci": 60,
+        "ci_overlap": 60,
+        "mean_abs_diff_pts": 0.13,
+        "median_abs_diff_pts": 0.04,
+        "max_abs_diff_pts": 0.57,
+        "within_1pt": 60,
+        "within_2pt": 60
+      }
+    },
+    "means": [
+      {
+        "id": "mean_height_women_2015_2018",
+        "group": "overall",
+        "published": 161.3,
+        "pub_lcl": 160.928,
+        "pub_ucl": 161.672,
+        "pub_ci_source": "est +/- 1.96 SE",
+        "units": true,
+        "q2e": 161.259,
+        "q2e_lcl": 160.872,
+        "q2e_ucl": 161.646,
+        "n": 5510,
+        "diff_pts": -0.041,
+        "within_pub_ci": true,
+        "ci_overlap": true,
+        "quantiles": {
+          "0.05": {
+            "published": 149.8,
+            "q2e": 149.9
+          },
+          "0.5": {
+            "published": 161.3,
+            "q2e": 161.3
+          },
+          "0.95": {
+            "published": 172.5,
+            "q2e": 172.5
+          }
+        }
+      }
+    ]
+  }
+}
