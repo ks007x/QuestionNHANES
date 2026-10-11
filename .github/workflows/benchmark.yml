@@ -1,0 +1,79 @@
+name: Accuracy benchmark against published NHANES estimates
+
+# Actions -> "Accuracy benchmark ..." -> Run workflow. Asks Q2E every question in benchmarks/published_estimates.yaml
+# on real CDC data and compares the answers with the published NCHS / journal estimates.
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated item ids to run (blank = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      Q2E_ALLOW_DOWNLOAD: "true"
+      Q2E_LLM_PROVIDER: offline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::survey
+            any::jsonlite
+            any::haven
+            any::ggplot2
+            any::mice
+            any::mitools
+            any::yaml
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python packages
+        run: pip install -r requirements.txt
+      - name: Reuse previously downloaded CDC files
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: nhanes-bench-${{ github.run_id }}
+          restore-keys: |
+            nhanes-bench-
+            nhanes-
+      - name: Run the benchmark
+        env:
+          ONLY: ${{ inputs.only }}
+        run: python scripts/benchmark.py --only "$ONLY" --out outputs/benchmark 2>&1 | tee benchmark_log.txt
+      - name: Summary
+        if: always()
+        run: cat outputs/benchmark/benchmark.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-${{ github.run_number }}
+          path: |
+            outputs/benchmark
+            benchmark_log.txt
+      - name: Save to the 'results' branch
+        if: success()
+        run: |
+          dest="benchmark/$(date -u +%Y-%m-%d)-run${{ github.run_number }}"
+          mkdir -p /tmp/pub && cp -r outputs/benchmark/. /tmp/pub/ && cp benchmark_log.txt /tmp/pub/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3 4; do
+            git fetch -q --depth 1 origin results && git checkout -q -f -B results FETCH_HEAD
+            mkdir -p "$dest" && cp -r /tmp/pub/. "$dest/"
+            git add -f "$dest" && git commit -qm "Benchmark: run ${{ github.run_number }}"
+            if git push -q origin results; then echo "Saved to results/$dest"; exit 0; fi
+            sleep $((attempt * 5))
+          done
+          exit 1

@@ -1,0 +1,201 @@
+# Published NHANES prevalence estimates used to measure Q2E's accuracy.
+#
+# Every number was copied from the official report or article (crude, i.e. not age-adjusted, because Q2E reports
+# crude prevalence). Percentages. When a report gives only standard errors, `se` is stored and the 95% CI is
+# taken as estimate +/- 1.96 SE (NCHS itself uses Korn-Graubard intervals, which are slightly asymmetric).
+#
+# Each item is asked of Q2E as a plain-language question, exactly as a clinician would type it. Q2E is run
+# unchanged (no item-specific tuning). `expected_definition` is the Q2E definition that matches the report, or
+# null when Q2E has no matching definition (coverage gap).
+
+sources:
+  nhsr158:
+    citation: "Stierman B, Afful J, Carroll MD, et al. National Health and Nutrition Examination Survey 2017-March 2020 prepandemic data files: development of files and prevalence estimates for selected health outcomes. National Health Statistics Reports no. 158. NCHS; 2021."
+    url: "https://stacks.cdc.gov/view/cdc/106273"
+  db508:
+    citation: "NCHS. Obesity and severe obesity prevalence in adults: United States, August 2021-August 2023. NCHS Data Brief no. 508. 2024."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db508.htm"
+  db511:
+    citation: "NCHS. Hypertension in adults: United States, August 2021-August 2023. NCHS Data Brief no. 511. 2024."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db511.htm"
+  db515:
+    citation: "NCHS. Total and high-density lipoprotein cholesterol in adults: United States, August 2021-August 2023. NCHS Data Brief no. 515. 2024."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db515.htm"
+  db516:
+    citation: "NCHS. Prevalence of total, diagnosed, and undiagnosed diabetes in adults: United States, August 2021-August 2023. NCHS Data Brief no. 516. 2024."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db516.htm"
+  db519:
+    citation: "NCHS. Anemia prevalence: United States, August 2021-August 2023. NCHS Data Brief no. 519. 2024."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db519.htm"
+  db527:
+    citation: "NCHS. Depression prevalence in adolescents and adults: United States, August 2021-August 2023. NCHS Data Brief no. 527. 2025."
+    url: "https://www.cdc.gov/nchs/products/databriefs/db527.htm"
+  tawfik2024:
+    citation: "Tawfik YMK, Billingsley H, Bhatt AS, et al. Absolute and functional iron deficiency in the US, 2017-2020. JAMA Netw Open. 2024;7(9):e2433126."
+    url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2823909"
+
+items:
+  # ---------------- NHANES 2017-March 2020 (P) ----------------
+  - id: obesity_P
+    source: nhsr158
+    table: "Table 5 (crude)"
+    cycles: [P]
+    question: "What is the prevalence of obesity among US adults aged 20 and over?"
+    definition: "BMI >=30 kg/m2; adults 20+; pregnant women excluded"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 41.9, lcl: 39.4, ucl: 44.3}
+      Male: {est: 41.6, lcl: 37.4, ucl: 45.8}
+      Female: {est: 42.1, lcl: 39.6, ucl: 44.8}
+  - id: severe_obesity_P
+    source: nhsr158
+    table: "Table 6 (crude)"
+    cycles: [P]
+    question: "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?"
+    definition: "BMI >=40 kg/m2; adults 20+"
+    expected_definition: null
+    published:
+      overall: {est: 9.0, lcl: 7.8, ucl: 10.3}
+      Male: {est: 6.4, lcl: 5.1, ucl: 8.0}
+      Female: {est: 11.4, lcl: 9.7, ucl: 13.3}
+  - id: hypertension_P
+    source: nhsr158
+    table: "Table 7 (crude)"
+    cycles: [P]
+    question: "What is the prevalence of hypertension among US adults aged 18 and over?"
+    definition: "Mean of up to 3 oscillometric readings >=130/80 mm Hg or taking BP medication (ACC/AHA 2017); 18+"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 48.1, lcl: 45.4, ucl: 50.8}
+      Male: {est: 50.5, lcl: 46.9, ucl: 54.2}
+      Female: {est: 45.7, lcl: 42.8, ucl: 48.6}
+  - id: diabetes_P
+    source: nhsr158
+    table: "Table 8 (crude)"
+    cycles: [P]
+    question: "What is the prevalence of diabetes among US adults aged 20 and over?"
+    definition: "Diagnosed (self-report, not pregnancy) or fasting plasma glucose >=126 mg/dL or HbA1c >=6.5%; fasting weights; 20+"
+    expected_definition: diabetes_ada
+    published:
+      overall: {est: 16.2, lcl: 14.2, ucl: 18.3}
+      Male: {est: 17.7, lcl: 15.5, ucl: 20.2}
+      Female: {est: 14.8, lcl: 12.2, ucl: 17.7}
+  - id: child_obesity_P
+    source: nhsr158
+    table: "Table 3"
+    cycles: [P]
+    question: "What is the prevalence of obesity among US children and adolescents aged 2 to 19 years?"
+    definition: "BMI >= sex- and age-specific 95th percentile of the 2000 CDC growth charts; 2-19 y"
+    expected_definition: null
+    published:
+      overall: {est: 19.7, lcl: 17.9, ucl: 21.6}
+      Male: {est: 20.9, lcl: 18.9, ucl: 22.9}
+      Female: {est: 18.5, lcl: 16.3, ucl: 21.0}
+  - id: absolute_iron_deficiency_P
+    source: tawfik2024
+    table: "Abstract (rounded to whole %)"
+    cycles: [P]
+    question: "What is the prevalence of absolute iron deficiency (ferritin below 30 ng/mL) among US adults?"
+    definition: "Ferritin <30 ng/mL; adults 18+ with ferritin, iron and UIBC"
+    expected_definition: aid_tawfik2024
+    published:
+      overall: {est: 14.0, lcl: 13.0, ucl: 15.0}
+  - id: functional_iron_deficiency_P
+    source: tawfik2024
+    table: "Abstract (rounded to whole %)"
+    cycles: [P]
+    question: "What is the prevalence of functional iron deficiency among US adults?"
+    definition: "Ferritin >=30 ng/mL and TSAT <20%; adults 18+"
+    expected_definition: fid_tawfik2024
+    published:
+      overall: {est: 15.0, lcl: 14.0, ucl: 17.0}
+
+  # ---------------- NHANES August 2021-August 2023 (L) ----------------
+  - id: obesity_L
+    source: db508
+    table: "Data table for Figure 1 (crude; SE only)"
+    cycles: [L]
+    question: "What is the prevalence of obesity among US adults aged 20 and over?"
+    definition: "BMI >=30 kg/m2; 20+; pregnant women excluded"
+    expected_definition: obesity_bmi30
+    published:
+      overall: {est: 40.3, se: 1.8}
+      Male: {est: 39.2, se: 1.9}
+      Female: {est: 41.3, se: 2.2}
+  - id: severe_obesity_L
+    source: db508
+    table: "Data table for Figure 3 (crude; SE only)"
+    cycles: [L]
+    question: "What is the prevalence of severe obesity (BMI 40 or higher) among US adults aged 20 and over?"
+    definition: "BMI >=40 kg/m2; 20+; pregnant women excluded"
+    expected_definition: null
+    published:
+      overall: {est: 9.4, se: 0.7}
+      Male: {est: 6.7, se: 0.7}
+      Female: {est: 12.1, se: 0.9}
+  - id: hypertension_L
+    source: db511
+    table: "Table 1 (crude)"
+    cycles: [L]
+    question: "What is the prevalence of hypertension among US adults aged 18 and over?"
+    definition: "Mean of up to 3 oscillometric readings >=130/80 mm Hg or currently taking BP medication; 18+; pregnant women excluded"
+    expected_definition: htn_accaha2017
+    published:
+      overall: {est: 47.7, lcl: 45.4, ucl: 49.9}
+      Male: {est: 50.8, lcl: 48.4, ucl: 53.2}
+      Female: {est: 44.6, lcl: 41.4, ucl: 47.8}
+  - id: diabetes_L
+    source: db516
+    table: "Total diabetes (crude)"
+    cycles: [L]
+    question: "What is the prevalence of diabetes among US adults aged 20 and over?"
+    definition: "Diagnosed (self-report) or FPG >=126 mg/dL or HbA1c >=6.5%; fasting weights; 20+; pregnant women excluded"
+    expected_definition: diabetes_ada
+    published:
+      overall: {est: 15.8, lcl: 13.6, ucl: 18.2}
+      Male: {est: 18.0, lcl: 15.7, ucl: 20.4}
+      Female: {est: 13.7, lcl: 11.0, ucl: 16.7}
+  - id: high_cholesterol_L
+    source: db515
+    table: "Table 1 (crude)"
+    cycles: [L]
+    question: "What is the prevalence of high total cholesterol (240 mg/dL or higher) among US adults aged 20 and over?"
+    definition: "Serum total cholesterol >=240 mg/dL; 20+"
+    expected_definition: null
+    published:
+      overall: {est: 11.3, lcl: 9.8, ucl: 12.9}
+      Male: {est: 10.6, lcl: 8.6, ucl: 12.9}
+      Female: {est: 11.9, lcl: 10.3, ucl: 13.6}
+  - id: low_hdl_L
+    source: db515
+    table: "Table 2 (crude)"
+    cycles: [L]
+    question: "What is the prevalence of low HDL cholesterol (below 40 mg/dL) among US adults aged 20 and over?"
+    definition: "HDL-C <40 mg/dL (single threshold); 20+"
+    expected_definition: null
+    published:
+      overall: {est: 13.8, lcl: 12.1, ucl: 15.7}
+      Male: {est: 21.5, lcl: 18.6, ucl: 24.6}
+      Female: {est: 6.6, lcl: 5.4, ucl: 8.0}
+  - id: anemia_L
+    source: db519
+    table: "Table 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of anemia in the US population aged 2 years and older?"
+    definition: "WHO Hb thresholds by age/sex, smoking-adjusted Hb; 2+; pregnant women excluded"
+    expected_definition: anemia_who
+    published:
+      overall: {est: 9.3, se: 0.5}
+      Male: {est: 5.5, se: 0.5}
+      Female: {est: 13.0, se: 0.6}
+  - id: depression_L
+    source: db527
+    table: "Data table for Figure 1 (SE only)"
+    cycles: [L]
+    question: "What is the prevalence of depression among US adolescents and adults aged 12 and over?"
+    definition: "PHQ-9 score >=10; 12+"
+    expected_definition: depression_phq9
+    published:
+      overall: {est: 13.1, se: 0.7}
+      Male: {est: 10.1, se: 0.9}
+      Female: {est: 16.0, se: 0.9}
