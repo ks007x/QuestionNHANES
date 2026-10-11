@@ -270,7 +270,10 @@ def compile_plan(plan: dict, k: Knowledge | None = None) -> dict[str, Any]:
             "distribution_var": None,
             "age_adjust": plan.get("age_adjust") if (plan.get("age_adjust") or {}).get("enabled") and is_nhanes else {"enabled": False},
             "trend": plan.get("trend") if (plan.get("trend") or {}).get("enabled") and is_nhanes else {"enabled": False},
+            "comparison": ({"enabled": True, **{k2: v for k2, v in plan["estimand"]["comparison"].items() if k2 in ("group_var", "level", "reference", "levels")}}
+                           if (plan.get("estimand") or {}).get("comparison") else {"enabled": False}),
             "median": bool((plan.get("estimand") or {}).get("median")),
+            "percentile": (plan.get("estimand") or {}).get("percentile"),
             "count": bool((plan.get("estimand") or {}).get("count")),
         },
         "options": {"seed": 2026, "alpha": 0.05},

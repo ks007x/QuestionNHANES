@@ -68,3 +68,28 @@ def test_age_adjusted_and_mean_estimands_run():
         run = get_run(proj["id"], start_run(proj["id"], wait=True)["id"])
         assert run["status"] == "completed", run.get("error")
         assert check(load_results(proj["id"], run["id"])), q
+
+
+def test_group_comparisons_are_not_populations():
+    p = _plan("Do women have higher rates of depression than men?")
+    assert p["estimand"]["kind"] == "comparison" and p["estimand"]["comparison"]["group_var"] == "sex"
+    assert not any(c["expr"] in ("female == 1", "female == 0") for c in p["population"])
+    v = _plan("Is vitamin D deficiency more common in Black adults than White adults?", ["L"])
+    assert v["outcome"]["variable"] == "vitd_deficiency" and v["estimand"]["comparison"]["reference"] == "Non-Hispanic White"
+    h = _plan("Compare obesity prevalence between Hispanic and non-Hispanic white adults")
+    assert h["estimand"]["comparison"]["level"] == "Hispanic" and h["estimand"]["comparison"]["reference"] == "Non-Hispanic White"
+
+
+def test_anticipated_question_problems():
+    assert "age >= 65" in [c["expr"] for c in _plan("prevalence of obesity in adults 65 years and older")["population"]]
+    assert _plan("What is the age-adjusted mean systolic blood pressure among adults 18 and over", ["L"])["outcome"]["variable"] == "sbp"
+    assert _plan("prevalence of hypertension among adults aged 18-39 in 2021-2023", None)["dataset"]["cycles"] == ["L"]
+    p = _plan("Did obesity prevalence differ between 2017-2018 and 2021-2023?", None)
+    assert p["trend"]["enabled"] and p["dataset"]["cycles"] == ["J", "L"]
+    assert "diabetes == 0" in [c["expr"] for c in _plan("Prevalence of insulin resistance in non-diabetic adults")["population"]]
+    assert any(i["id"] == "circular" for i in _plan("Is serum uric acid associated with gout?")["review"])
+    assert any(i["id"] == "adult_def_children" and i["severity"] == "blocker" for i in _plan("How common is hypertension in children aged 8 to 17?")["review"])
+    assert any(i["id"] == "unmapped_topic" for i in _plan("Is coffee consumption associated with liver stiffness?")["review"])
+    assert _plan("What is the 95th percentile of blood lead in adults?")["estimand"]["percentile"] == 0.95
+    assert _plan("Prevalence of hepatitis C antibody among US adults")["outcome"]["variable"] == "hcv_antibody"
+    assert _plan("median urinary albumin-to-creatinine ratio in adults with diabetes")["outcome"]["variable"] == "uacr"

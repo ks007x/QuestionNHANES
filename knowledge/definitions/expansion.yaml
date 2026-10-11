@@ -3,6 +3,8 @@ definitions:
     concept: hypertension
     label: "Hypertension - ACC/AHA 2017 (BP >=130/80 mm Hg or antihypertensive use)"
     short: "ACC/AHA 2017"
+    adult_only: true
+    child_note: "AAP 2017 blood-pressure percentiles by age, sex and height for ages 1-17"
     type: binary
     expr: "any_of(sbp >= 130, dbp >= 80, bp_meds)"
     criteria_text: "Mean SBP >=130 or DBP >=80 mm Hg, or current antihypertensive medication."
@@ -18,6 +20,8 @@ definitions:
     concept: hypertension
     label: "Hypertension - JNC7 (BP >=140/90 mm Hg or antihypertensive use)"
     short: "JNC7 140/90"
+    adult_only: true
+    child_note: "AAP 2017 blood-pressure percentiles by age, sex and height for ages 1-17"
     type: binary
     expr: "any_of(sbp >= 140, dbp >= 90, bp_meds)"
     criteria_text: "Mean SBP >=140 or DBP >=90 mm Hg, or current antihypertensive medication."
@@ -28,6 +32,8 @@ definitions:
     concept: metabolic_syndrome
     label: "Metabolic syndrome - harmonized/ATP III (>=3 of 5 criteria)"
     short: "Harmonized MetS"
+    adult_only: true
+    child_note: "pediatric metabolic syndrome definitions such as IDF 2007 for ages 10-16"
     type: binary
     expr: "(coalesce(ifelse(female == 1, waist > 88, waist > 102), 0) + coalesce(tg >= 150, 0) + coalesce(ifelse(female == 1, hdl < 50, hdl < 40), 0) + coalesce(any_of(sbp >= 130, dbp >= 85, bp_meds), 0) + coalesce(any_of(fpg >= 100, dm_pills, insulin_use), 0)) >= 3"
     criteria_text: "Three or more of: waist >102/88 cm; triglycerides >=150 mg/dL; HDL <40/50 mg/dL; BP >=130/85 or treated; fasting glucose >=100 mg/dL or treated."
@@ -114,6 +120,8 @@ definitions:
     concept: uncontrolled_htn
     label: "Uncontrolled blood pressure - mean SBP >=130 or DBP >=80 mm Hg"
     short: "BP >=130/80"
+    adult_only: true
+    child_note: "AAP 2017 blood-pressure percentiles by age, sex and height for ages 1-17"
     type: binary
     expr: "any_of(sbp >= 130, dbp >= 80)"
     criteria_text: "Mean measured SBP >=130 mm Hg or DBP >=80 mm Hg (ACC/AHA 2017 threshold), regardless of treatment."

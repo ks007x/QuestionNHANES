@@ -367,6 +367,24 @@ def build(spec: dict, proj: dict | None = None, results: dict | None = None) -> 
                 w(f"d_std_g <- svystandardize(subset(des, .in_analytic & !is.na({t}) & !is.na(agestd) & !is.na({g})), by = ~agestd, over = ~{g}, population = std_pop)")
                 w(f"print(svyby(~{t}, ~{g}, d_std_g, {fun}, vartype = \"ci\"))   # age-adjusted by {g}")
         w("")
+    cmpc = an.get("comparison") or {}
+    if cmpc.get("enabled"):
+        g = cmpc["group_var"]
+        t = f".ind_{y}" if spec["outcome"]["type"] == "binary" else y
+        if spec["outcome"]["type"] == "binary" and y not in prev:
+            w(f"des$variables${t} <- as.integer(des$variables${y} == 1)")
+        w(f"# ---- 5d. Group comparison by {g} ------------------------------------------------------------------------")
+        w(f"d_cmp <- subset(des, .in_analytic & !is.na({t}) & !is.na({g}))")
+        w(f"cmp_est <- svyby(~{t}, ~{g}, d_cmp, svymean); print(cmp_est)")
+        if cmpc.get("level") and cmpc.get("reference"):
+            w(f"print(svycontrast(cmp_est, c(`{cmpc['level']}` = 1, `{cmpc['reference']}` = -1)))   # difference, {cmpc['level']} minus {cmpc['reference']}")
+        w(f"print(svychisq(~{t} + {g}, d_cmp))" if spec["outcome"]["type"] == "binary" else f"print(regTermTest(svyglm({t} ~ {g}, d_cmp), ~{g}))")
+        if aa.get("enabled"):
+            w(f"d_cmp_std <- svystandardize(subset(des, .in_analytic & !is.na({t}) & !is.na({g}) & !is.na(agestd)), by = ~agestd, over = ~{g}, population = std_pop)")
+            w(f"cmp_aa <- svyby(~{t}, ~{g}, d_cmp_std, svymean); print(cmp_aa)   # age-adjusted")
+            if cmpc.get("level") and cmpc.get("reference"):
+                w(f"print(svycontrast(cmp_aa, c(`{cmpc['level']}` = 1, `{cmpc['reference']}` = -1)))")
+        w("")
     tr = an.get("trend") or {}
     if tr.get("enabled") and prev or (tr.get("enabled") and spec["outcome"]["type"] == "continuous"):
         t = f".ind_{y}" if spec["outcome"]["type"] == "binary" else y

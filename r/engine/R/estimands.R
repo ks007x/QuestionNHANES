@@ -82,6 +82,7 @@ trend_estimates <- function(des, spec, y, binary = TRUE, by = "sex", pop_flag = 
 
 # Means, medians and percentiles of a continuous measurement.
 mean_estimates <- function(des, spec, y, by_vars, pop_flag = ".in_analytic", probs = c(0.05, 0.25, 0.5, 0.75, 0.95)) {
+  if (!is.null(spec$analysis$percentile)) probs <- sort(unique(c(probs, as.numeric(spec$analysis$percentile))))
   out <- list()
   f <- stats::as.formula(paste0("~", y))
   one <- function(d, gv, g, n) {
@@ -119,4 +120,48 @@ count_estimate <- function(des, col, sel) {
   t <- survey::svytotal(stats::as.formula(paste0("~", col)), d, na.rm = TRUE)
   ci <- stats::confint(t, df = max(survey::degf(d), 1))
   list(millions = as.numeric(t) / 1e6, lcl = ci[1] / 1e6, ucl = ci[2] / 1e6)
+}
+
+# Group comparison (e.g. women vs men, Non-Hispanic Black vs Non-Hispanic White): each level against the
+# reference level as a difference (percentage points or units) and a ratio, crude and age-adjusted, with a
+# design-based test of any difference across all levels.
+comparison_estimates <- function(des, spec, y, g, ref = NULL, binary = TRUE, pop_flag = ".in_analytic") {
+  v <- des$variables
+  if (!g %in% names(v)) return(NULL)
+  des$variables$.cy <- if (binary) as.integer(v[[y]] == 1) else as.numeric(v[[y]])
+  des$variables$.cg <- droplevels(factor(v[[g]]))
+  sel <- des$variables[[pop_flag]] & !is.na(des$variables$.cy) & !is.na(des$variables$.cg)
+  des$variables$.csel2 <- sel
+  d <- subset(des, .csel2)
+  lv <- levels(droplevels(des$variables$.cg[sel]))
+  if (length(lv) < 2) return(NULL)
+  ref <- if (!is.null(ref) && ref %in% lv) ref else lv[1]
+  ddf <- max(survey::degf(d), 1); tq <- stats::qt(0.975, ddf)
+  contrasts_for <- function(design, basis) {
+    est <- survey::svyby(~.cy, ~.cg, design, survey::svymean, na.rm = TRUE)
+    nm <- as.character(est$.cg); co <- stats::coef(est); vc <- stats::vcov(est)
+    out <- list()
+    for (l in setdiff(nm, ref)) {
+      w <- setNames(rep(0, length(nm)), nm); w[l] <- 1; w[ref] <- -1
+      dif <- sum(w * co); se <- sqrt(as.numeric(t(w) %*% vc %*% w))
+      out[[length(out) + 1]] <- list(level = l, reference = ref, basis = basis, est_level = unname(co[l]), est_ref = unname(co[ref]),
+                                     difference = dif, diff_lcl = dif - tq * se, diff_ucl = dif + tq * se, p = 2 * stats::pt(-abs(dif / se), ddf),
+                                     ratio = if (co[ref] > 0) unname(co[l] / co[ref]) else NA)
+    }
+    out
+  }
+  res <- contrasts_for(d, "crude")
+  cfg <- spec$analysis$age_adjust
+  if (!is.null(cfg) && isTRUE(cfg$enabled) && !g %in% (unlist(cfg$not_by) %||% character(0))) {
+    des$variables$.agestd <- .agestd_factor(v[[cfg$age_var %||% "age"]], cfg$bands)
+    des$variables$.csel2 <- sel & !is.na(des$variables$.agestd)
+    d2 <- subset(des, .csel2)
+    pops <- vapply(cfg$bands, function(b) as.numeric(b$population), 0)
+    ds <- tryCatch(survey::svystandardize(d2, by = ~.agestd, over = ~.cg, population = pops), error = function(e) NULL)
+    if (!is.null(ds)) res <- c(res, tryCatch(contrasts_for(ds, "age-adjusted"), error = function(e) list()))
+  }
+  p_global <- tryCatch(if (binary) as.numeric(survey::svychisq(~.cy + .cg, d)$p.value) else
+                         as.numeric(survey::regTermTest(survey::svyglm(.cy ~ .cg, d), ~.cg)$p), error = function(e) NA)
+  list(group_var = g, group_label = .var_label(spec, g), reference = ref, levels = as.list(lv), contrasts = res,
+       p_any_difference = p_global, binary = binary)
 }

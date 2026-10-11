@@ -117,6 +117,16 @@ concepts:
     synonyms: ["obesity", "obese"]
     definitions: [obesity_bmi30, obesity_cdc]
     domain: anthropometry
+  - id: hcv_antibody
+    label: "Hepatitis C antibody"
+    synonyms: ["hepatitis c antibody", "anti-hcv", "hcv antibody", "hcv seropositivity", "hepatitis c seropositivity", "ever infected with hepatitis c"]
+    block: hcv_antibody
+    domain: infection
+  - id: hcv_rna
+    label: "Current hepatitis C infection (HCV RNA)"
+    synonyms: ["hepatitis c rna", "hcv rna", "current hepatitis c", "chronic hepatitis c", "active hepatitis c", "hepatitis c infection", "hepatitis c"]
+    block: hcv_rna
+    domain: infection
   - id: diagnosed_diabetes
     label: "Diagnosed diabetes"
     synonyms: ["diagnosed diabetes", "self-reported diabetes", "doctor-diagnosed diabetes", "known diabetes"]
@@ -210,7 +220,7 @@ concepts:
   - {id: prediabetes, label: "Prediabetes (self-reported)", synonyms: ["prediabetes", "pre-diabetes", "borderline diabetes"], block: prediabetes_selfreport, domain: glycemia}
   - {id: hyperuricemia, label: "Hyperuricemia", synonyms: ["hyperuricemia", "high uric acid", "gout"], definitions: [hyperuricemia], domain: kidney}
   - {id: uric_acid, label: "Serum uric acid", synonyms: ["uric acid", "urate"], block: uric_acid, domain: kidney}
-  - {id: albuminuria, label: "Albuminuria (UACR)", synonyms: ["albuminuria", "proteinuria", "uacr", "urine albumin"], block: uacr, domain: kidney, default_scale: 30}
+  - {id: albuminuria, label: "Albuminuria (UACR)", synonyms: ["albuminuria", "proteinuria", "uacr", "urine albumin", "urinary albumin-to-creatinine ratio", "albumin-to-creatinine ratio", "urine albumin-to-creatinine ratio", "albumin to creatinine ratio", "urinary albumin"], block: uacr, domain: kidney, default_scale: 30}
   - {id: kidney_stones, label: "Kidney stones", synonyms: ["kidney stones", "nephrolithiasis", "renal stones"], block: kidney_stones, domain: kidney}
   - {id: depression, label: "Depression (PHQ-9)", synonyms: ["depression", "depressive symptoms", "depressed", "phq-9", "phq9"], definitions: [depression_phq9, depression_phq8], domain: mental_health}
   - {id: short_sleep, label: "Short sleep", synonyms: ["short sleep duration", "short sleep", "insufficient sleep", "sleep deprivation", "sleeping less than 7 hours"], definitions: [short_sleep_lt7], domain: behaviour}
@@ -404,7 +414,7 @@ component_synonyms:
   - {phrases: ["medications", "prescription drugs", "statin use", "polypharmacy", "metformin", "ppi use", "aspirin use"], tables: [RXQ_RX, RXQASA], note: "Prescription medication file (30-day use, drug names/classes)"}
   - {phrases: ["supplements", "supplement use", "iron supplements", "multivitamin"], tables: [DSQTOT, DSQIDS, DS1TOT], note: "Dietary supplement use (30-day and 24-h)"}
   - {phrases: ["health care utilization", "hospitalization", "hospital admissions", "emergency department visits"], tables: [HUQ], note: "Self-reported hospital use in past 12 months (no claims data)"}
-  - {phrases: ["hepatitis b", "hepatitis b serology", "hepatitis c antibody", "hcv rna"], tables: [HEPBD, HEPB_S, HEPC], note: "Hepatitis serology"}
+  - {phrases: ["hepatitis b", "hepatitis b serology"], tables: [HEPBD, HEPB_S, HEPC], note: "Hepatitis serology"}
   - {phrases: ["hiv"], tables: [HIV], note: "HIV antibody (adults 18-59, selected cycles)"}
   - {phrases: ["pfas", "perfluoroalkyl", "phthalates", "bisphenol", "pesticides", "arsenic", "volatile organic compounds"], tables: [PFAS, PHTHTE, EPHPP, UAS, UVOC], note: "Environmental chemicals (one-third subsamples, special weights)"}
   - {phrases: ["testosterone", "estradiol", "sex hormones", "shbg"], tables: [TST], note: "Sex steroid hormones (selected cycles)"}

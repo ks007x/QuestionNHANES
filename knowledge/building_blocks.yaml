@@ -71,6 +71,8 @@ blocks:
   - {name: stroke, tier: measure, type: binary, label: "Stroke (self-report)", nhanes: "MCQ160F == 1", match_terms: [stroke]}
   - {name: cancer_hx, tier: measure, type: binary, label: "History of cancer (self-report)", nhanes: "MCQ220 == 1", match_terms: [cancer, malignancy]}
   - {name: htn_selfreport, tier: measure, type: binary, label: "Self-reported hypertension", nhanes: "BPQ020 == 1", match_terms: [high blood pressure, hypertension]}
+  - {name: hcv_antibody, tier: measure, type: binary, label: "Hepatitis C antibody positive (confirmed)", nhanes: "coalesce(LBDHCI, LBDHCV) == 1", match_terms: [hepatitis c antibody, anti-hcv]}
+  - {name: hcv_rna, tier: measure, type: binary, label: "Hepatitis C RNA positive (current infection)", nhanes: "LBXHCR == 1", match_terms: [hepatitis c rna, hcv rna]}
   - {name: age_months, tier: measure, type: continuous, units: months, label: "Age in months at examination (2-19 y)", nhanes: "coalesce(RIDEXAGM, ifelse(RIDAGEYR < 20, RIDAGEYR * 12 + 6, NA))", match_terms: [age in months]}
   - {name: current_smoker, tier: measure, type: binary, label: "Current cigarette smoker (self-report)", nhanes: "SMQ040 %in% c(1, 2)", match_terms: [current smoker]}
   - {name: smoking, tier: measure, type: categorical, label: "Smoking status",

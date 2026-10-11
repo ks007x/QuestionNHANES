@@ -674,3 +674,56 @@ items:
     expected_definition: null
     published:
       overall: {est: 161.3, se: 0.19, quantiles: {"0.05": 149.8, "0.5": 161.3, "0.95": 172.5}}
+  - id: cmp_hypertension_sex_L
+    set: estimands
+    measure: comparison
+    source: db511
+    cycles: [L]
+    question: "Is hypertension more common in men than in women among US adults aged 18 and over?"
+    expected_definition: htn_accaha2017
+    published:
+      Male: {est: 50.8, lcl: 48.4, ucl: 53.2}
+      Female: {est: 44.6, lcl: 41.4, ucl: 47.8}
+    published_aa:
+      Male: {est: 48.8, lcl: 46.2, ucl: 51.4}
+      Female: {est: 40.1, lcl: 37.2, ucl: 43.1}
+  - id: cmp_undiagnosed_diabetes_sex_L
+    set: estimands
+    measure: comparison
+    source: db516
+    cycles: [L]
+    question: "Do men have higher rates of undiagnosed diabetes than women, among US adults aged 20 and over?"
+    expected_definition: diabetes_undiagnosed
+    published_significant: false     # "the difference ... between men and women was not significant" (Data Brief 516)
+    published:
+      Male: {est: 5.1, lcl: 3.6, ucl: 6.9}
+      Female: {est: 3.9, lcl: 2.8, ucl: 5.3}
+    published_aa:
+      Male: {est: 4.9, lcl: 3.3, ucl: 6.9}
+      Female: {est: 3.5, lcl: 2.4, ucl: 5.1}
+  - id: cmp_low_hdl_sex_L
+    set: estimands
+    measure: comparison
+    source: db515
+    cycles: [L]
+    question: "Is low HDL cholesterol (below 40 mg/dL) more common in men than women aged 20 and over?"
+    expected_definition: low_hdl_40
+    published:
+      Male: {est: 21.5, lcl: 18.6, ucl: 24.6}
+      Female: {est: 6.6, lcl: 5.4, ucl: 8.0}
+    published_aa:
+      Male: {est: 21.8, lcl: 19.1, ucl: 24.7}
+      Female: {est: 6.8, lcl: 5.6, ucl: 8.2}
+  - id: cmp_severe_obesity_sex_L
+    set: estimands
+    measure: comparison
+    source: db508
+    cycles: [L]
+    question: "Is severe obesity more common in women than men among US adults aged 20 and over?"
+    expected_definition: severe_obesity_cdc
+    published:
+      Female: {est: 12.1, se: 0.9}
+      Male: {est: 6.7, se: 0.7}
+    published_aa:
+      Female: {est: 12.6, se: 1.0}
+      Male: {est: 6.8, se: 0.7}

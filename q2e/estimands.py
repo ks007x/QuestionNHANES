@@ -85,7 +85,9 @@ def detect(question: str, study_type: str, outcome_type: str | None) -> dict[str
     return {
         "age_adjusted_requested": bool(AGE_ADJ_CUES.search(q)),
         "crude_requested": bool(CRUDE_CUES.search(q)),
-        "trend": bool(TREND_CUES.search(q)) and study_type != "association",
+        "trend": (bool(TREND_CUES.search(q)) or (len(cycles_named(q)) >= 2 and bool(re.search(
+            r"differ|chang|compar|between|\bvs\.?\b|versus|increas|decreas|rise|declin", q, re.I)))) and study_type != "association",
+        "percentile": (lambda m: float(m.group(1)) / 100 if m else None)(re.search(r"\b(\d{1,2}(?:\.\d)?)(?:st|nd|rd|th)\s+percentile", q, re.I)),
         "mean": bool(MEAN_CUES.search(q)) and outcome_type == "continuous",
         "median": bool(re.search(r"\bmedian\b", q, re.I)),
         "count": bool(COUNT_CUES.search(q)),
@@ -113,3 +115,68 @@ def age_adjust_config(criteria: list[dict], study_type: str, requested: bool, tr
         return {"enabled": False, "reason": f"Not age-adjusted: {why}.", "requested": requested}
     return {"enabled": True, "standard": STANDARD_LABEL, "bands": bands, "age_var": "age", "not_by": ["agecat", "age"],
             "primary": bool(requested or trend), "requested": requested}
+
+
+# ---------------------------------------------------------------------------
+# Group comparisons ("more common in women than men", "compare ... between Hispanic and non-Hispanic white")
+# ---------------------------------------------------------------------------
+COMPARE_CUES = re.compile(r"more common (in|among)|less common (in|among)|(higher|lower|greater|smaller) (rates?|prevalence|levels?|risk|proportion|"
+                          r"percentage|share|burden)|\bcompar\w+|\bdiffer\w*|disparit\w*|gap between|\bthan\b|\bvs\.?\b|\bversus\b|"
+                          r"by (sex|gender|race|ethnicity|race and (hispanic|ethnic)\w*|income|poverty|education)|"
+                          r"(sex|gender|racial|ethnic|income|educational|socioeconomic) (difference|gap|disparit)", re.I)
+_LEVELS = {
+    "sex": [(r"\b(women|woman|females?|girls)\b", "Female"), (r"\b(men|man|males?|boys)\b", "Male"), (r"\b(sex|gender)\b", None)],
+    "race_eth": [(r"\bnon-?\s?hispanic white|\bwhite\b", "Non-Hispanic White"), (r"\bnon-?\s?hispanic black|\bblack\b|african american", "Non-Hispanic Black"),
+                 (r"\bnon-?\s?hispanic asian|\basian\b", "Non-Hispanic Asian"), (r"(?<!non-)(?<!non )\bhispanic\b|\blatino|\bmexican", "Hispanic"),
+                 (r"\brac(e|ial)\b|\bethnic", None)],
+    "pir_cat": [(r"\b(low|lower)[- ]income\b|\bpoverty\b|\bpoor\b", "<1.30"), (r"\b(high|higher)[- ]income\b", "3.50+"), (r"\bincome\b", None)],
+    "educ": [(r"\bcollege (graduates?|degree)", "College graduate or above"), (r"\b(less than high school|no high school)", "Less than high school"),
+             (r"\beducation", None)],
+}
+GROUP_RAW = {"sex": {"RIAGENDR"}, "race_eth": {"RIDRETH1", "RIDRETH3"}, "pir_cat": {"INDFMPIR"}, "educ": {"DMDEDUC2", "DMDEDUC3"}}
+
+
+def detect_comparison(question: str) -> dict | None:
+    q = " " + question.lower() + " "
+    if not COMPARE_CUES.search(q):
+        return None
+    best = None
+    for var, pats in _LEVELS.items():
+        found, used = [], []
+        for pat, lvl in pats:
+            for m in re.finditer(pat, q):
+                if any(a <= m.start() < b for a, b in used):
+                    continue
+                used.append((m.start(), m.end()))
+                found.append((m.start(), lvl))
+        if found:
+            levels = [l for _, l in sorted(found) if l]
+            levels = list(dict.fromkeys(levels))
+            cand = {"group_var": var, "levels": levels, "hits": len(found)}
+            if best is None or cand["hits"] > best["hits"]:
+                best = cand
+    if not best:
+        return None
+    lv = best["levels"]
+    ref = None
+    if best["group_var"] == "race_eth" and "Non-Hispanic White" in lv:
+        ref = "Non-Hispanic White"
+    elif len(lv) >= 2:
+        ref = lv[1]
+    level = next((l for l in lv if l != ref), None)
+    return {"enabled": True, "group_var": best["group_var"], "levels": lv, "level": level, "reference": ref}
+
+
+def cycles_named(question: str) -> list[str]:
+    """Survey cycles a question names explicitly ('in 2021-2023', 'NHANES 2017-2018', '2015 to 2018')."""
+    out = []
+    for a, b in re.findall(r"\b((?:19|20)\d\d)\s*(?:-|–|to|through)\s*((?:19|20)?\d\d)\b", question):
+        a = int(a)
+        b = int(b) if len(b) == 4 else int(str(a)[:2] + b)
+        if b < a:
+            continue
+        hits = [c for c in TREND_ORDER if CYCLE_YEARS[c][0] >= a and CYCLE_YEARS[c][1] <= b + (1 if b == 2020 else 0)]
+        if a == 2017 and b in (2020,):
+            hits = ["P"]
+        out += [c for c in hits if c not in out]
+    return out

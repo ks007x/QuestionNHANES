@@ -123,6 +123,27 @@ def run_item(item: dict) -> dict:
             out["comparisons"].append(row)
         out["seconds"] = round(time.time() - t0, 1)
         return out
+    if measure == "comparison":
+        cmp = res.get("comparison") or {}
+        cs = cmp.get("contrasts") or []
+        if not cs:
+            out.update(status="wrong_measure", note="Q2E did not produce a group comparison")
+            return out
+        vals = {}
+        for c in cs:
+            vals[(c["basis"], c["level"])] = c["est_level"]
+            vals[(c["basis"], c["reference"])] = c["est_ref"]
+        for basis, key in (("crude", "published"), ("age-adjusted", "published_aa")):
+            for grp, pub in (item.get(key) or {}).items():
+                v = vals.get((basis, grp))
+                out["comparisons"].append(_compare(f"{grp} ({basis})", pub, {"est": v, "lcl": v, "ucl": v} if v is not None else None))
+        if "published_significant" in item:
+            ps = [c["p"] for c in cs if c["basis"] == "crude"]
+            q2e_sig = bool(ps) and min(ps) < 0.05
+            out["significance"] = {"published": item["published_significant"], "q2e": q2e_sig, "p": min(ps) if ps else None,
+                                   "agrees": q2e_sig == item["published_significant"]}
+        out["seconds"] = round(time.time() - t0, 1)
+        return out
     if item.get("trend"):
         tr = res.get("trend") or {}
         if not tr.get("rows"):
@@ -188,6 +209,8 @@ def _kind(it: dict) -> str:
         return f"trend ({m.replace('_', '-')})"
     if m == "mean":
         return "mean"
+    if m == "comparison":
+        return "group comparison"
     subgroup = any(c["group"] not in ("overall", "Male", "Female") for c in it.get("comparisons", []))
     return m.replace("_", "-") + (" incl. age groups" if subgroup and m == "crude" else "")
 
@@ -210,7 +233,7 @@ def _estimand_lines(summ: dict) -> list[str]:
 def _summary_lines(summ: dict) -> list[str]:
     s, m = summ["all_answered"], summ["right_definition_only"]
     lim = summ.get("public_data_limits") or {}
-    L = [f"* Questions answered as a prevalence: {_pct(summ['answered_as_prevalence'], summ['questions'] - lim.get('expected', 0))}"
+    L = [f"* Questions answered with the requested estimand: {_pct(summ['answered_as_prevalence'], summ['questions'] - lim.get('expected', 0))}"
          + (f"; questions the public files cannot answer as published, correctly flagged or declined: {_pct(lim['flagged'], lim['expected'])}"
             if lim.get("expected") else ""),
          f"* Questions where Q2E picked the published case definition: {_pct(summ['right_definition'], summ['questions'] - lim.get('expected', 0))}"
@@ -252,8 +275,8 @@ def to_markdown(items: list[dict], summ: dict, meta: dict) -> str:
             L.append(f"| {it['id']}{tag} | {c['group']} | {c['published']:.1f} ({c['pub_lcl']:.1f}-{c['pub_ucl']:.1f}) | {q} | {d} | {inci} | "
                      f"{dn if c['group'] == 'overall' else ''} |")
     L += ["", "## Sources", ""] + [f"* {v['citation']} {v['url']}" for v in meta["sources"].values()]
-    L += ["", "_CIs from reports that give only standard errors are estimate +/- 1.96 SE. Q2E reports crude (not age-adjusted) prevalence, "
-          "so crude published figures are used throughout._"]
+    L += ["", "_CIs from reports that give only standard errors are estimate +/- 1.96 SE. Crude items are compared with crude published "
+          "figures, age-adjusted items with age-adjusted figures (direct standardization to the 2000 U.S. standard population)._"]
     return "\n".join(L) + "\n"
 
 
@@ -281,7 +304,7 @@ def main() -> int:
             print(f"   {c['group']:8} published {c['published']:5.1f}  Q2E {c.get('q2e')}  diff {c.get('diff_pts')}  in CI {c.get('within_pub_ci')}", flush=True)
         print(f"   status {r['status']}  definition {r.get('q2e_definition')} (expected {r.get('expected_definition')})  {r.get('note', '')}", flush=True)
         r["set"] = it.get("set", "core")
-        r["published_overall"] = (it.get("published") or {}).get("overall", {}).get("est")
+        r["published_overall"] = ((it.get("published") or {}).get("overall") or {}).get("est")
         r["measure"] = it.get("measure", "crude")
         r["trend"] = bool(it.get("trend"))
         items.append(r)

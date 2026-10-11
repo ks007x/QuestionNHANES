@@ -74,6 +74,8 @@ definitions:
     concept: ckd
     label: "CKD - eGFR <60 or UACR >=30 mg/g (single measurement)"
     short: "KDIGO CKD"
+    adult_only: true
+    child_note: "eGFR in children uses the bedside Schwartz or CKiD U25 equations"
     type: binary
     expr: "any_of(egfr < 60, uacr >= 30)"
     criteria_text: "eGFR (CKD-EPI 2021) <60 mL/min/1.73m2 or UACR >=30 mg/g."

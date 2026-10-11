@@ -92,6 +92,12 @@ run_pipeline <- function(plan_path, outdir) {
                               error = function(e) { log("Trend analysis failed: ", conditionMessage(e)); NULL })
     if (!is.null(results$trend)) log(sprintf("Trend across %d cycles", length(results$trend$cycles)))
   }
+  cmp <- spec$analysis$comparison
+  if (!is.null(cmp) && isTRUE(cmp$enabled)) {
+    results$comparison <- tryCatch(comparison_estimates(des, spec, spec$outcome$name, cmp$group_var, cmp$reference,
+                                                        binary = identical(spec$outcome$type, "binary")),
+                                   error = function(e) { log("Group comparison failed: ", conditionMessage(e)); NULL })
+  }
   if (identical(spec$outcome$type, "continuous") && is.null(spec$exposure)) {
     results$means <- tryCatch(mean_estimates(des, spec, spec$outcome$name, unlist(spec$analysis$prevalence$by)),
                               error = function(e) { log("Means failed: ", conditionMessage(e)); list() })
@@ -148,6 +154,19 @@ run_pipeline <- function(plan_path, outdir) {
             pe[setdiff(names(pe), c("effect", "effect_label", "est", "lcl", "ucl"))],
             list(est = ov_adj[[1]]$adj_est, lcl = ov_adj[[1]]$adj_lcl, ucl = ov_adj[[1]]$adj_ucl, standard = ov_adj[[1]]$adj_standard))
   }
+  if (!is.null(results$comparison) && length(results$comparison$contrasts)) {
+    cs <- results$comparison$contrasts
+    target <- spec$analysis$comparison$level
+    pick <- Filter(function(z) (is.null(target) || identical(z$level, target)) &&
+                     identical(z$basis, if (isTRUE(spec$analysis$age_adjust$primary) || isTRUE(spec$analysis$age_adjust$enabled)) "age-adjusted" else "crude"), cs)
+    if (!length(pick)) pick <- Filter(function(z) is.null(target) || identical(z$level, target), cs)
+    if (!length(pick)) pick <- cs
+    z <- pick[[1]]
+    pe <- list(effect = "difference", effect_label = sprintf("%s vs %s (%s)", z$level, z$reference, z$basis), term = y,
+               label = .var_label(spec, y), est = z$difference, lcl = z$diff_lcl, ucl = z$diff_ucl, p = z$p,
+               est_level = z$est_level, est_ref = z$est_ref, ratio = z$ratio, binary = results$comparison$binary,
+               p_any = results$comparison$p_any_difference, n = sum(des$variables$.in_analytic))
+  }
   if (!is.null(results$trend) && length(results$trend$tests)) {
     t0 <- results$trend$tests[[1]]
     pe <- list(effect = "change", effect_label = sprintf("Change %s to %s (%s)", t0$first_cycle, t0$last_cycle, t0$basis), term = y,
@@ -157,7 +176,11 @@ run_pipeline <- function(plan_path, outdir) {
   if (is.null(pe) && length(results$means)) {
     m0 <- results$means[[1]]
     med <- Filter(function(q) q$p == 0.5, m0$quantiles)
-    if (isTRUE(spec$analysis$median) && length(med)) {
+    pq <- if (!is.null(spec$analysis$percentile)) Filter(function(q) abs(q$p - as.numeric(spec$analysis$percentile)) < 1e-9, m0$quantiles) else list()
+    if (length(pq)) {
+      pe <- list(effect = "percentile", effect_label = sprintf("Weighted %gth percentile", 100 * pq[[1]]$p), term = y, label = .var_label(spec, y),
+                 est = pq[[1]]$est, lcl = pq[[1]]$lcl, ucl = pq[[1]]$ucl, n = m0$n)
+    } else if (isTRUE(spec$analysis$median) && length(med)) {
       pe <- list(effect = "median", effect_label = "Weighted median", term = y, label = .var_label(spec, y), est = med[[1]]$est,
                  lcl = med[[1]]$lcl, ucl = med[[1]]$ucl, n = m0$n)
     } else {

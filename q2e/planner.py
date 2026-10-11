@@ -107,6 +107,10 @@ AGE_PATTERNS = [
     (r"aged?\s+(\d{1,2})\s*(?:to|-|–|through|and)\s*(\d{1,2})", "range"),
     (r"(\d{1,2})\s*(?:to|-|–)\s*(\d{1,2})\s*(?:years|y\b|yrs)", "range"),
     (r"aged?\s+(\d{1,2})\s*(?:years\s*)?(?:and|or)\s*(?:older|over|above)", "min"),
+    (r"(?:adults|people|persons|individuals|those|participants|patients|men|women|americans|children|adolescents|population|ages)\s+"
+     r"(\d{1,2})\s*(?:years?\s*(?:of age\s*|old\s*)?)?(?:and|or)\s*(?:older|over|above)", "min"),
+    (r"(\d{1,2})\s*years?\s*(?:of age\s*|old\s*)?(?:and|or)\s*(?:older|over|above)", "min"),
+    (r"(?:adults|people|persons|individuals|participants|men|women|americans|children|adolescents)\s+(\d{1,2})\s*(?:to|-|–|through)\s*(\d{1,2})\b", "range"),
     (r"(?:>=|≥|older than|over)\s*(\d{1,2})\s*(?:years|y\b|yrs)", "min"),
     (r"(?:<|younger than|under)\s*(\d{1,2})\s*(?:years|y\b|yrs)", "max"),
 ]
@@ -297,8 +301,9 @@ def find_thresholds(q: str) -> list[dict]:
         for m in re.finditer(pat, q):
             if any(a <= m.start() < b for a, b in taken):
                 continue
-            before, after = q[max(0, m.start() - 14): m.start()], q[m.end(): m.end() + 8]
-            if re.search(r"\b(aged?|ages)\s*$", before) or re.search(r"\b(aged?|ages)\b", before[-8:]) or \
+            before, after = q[max(0, m.start() - 24): m.start()], q[m.end(): m.end() + 8]
+            if re.search(r"\b(aged?|ages|adults?|people|persons|individuals|those|participants|patients|men|women|americans|"
+                         r"children|adolescents|population|older|younger)\s*$", before) or re.search(r"\b(aged?|ages)\b", before[-8:]) or \
                re.match(r"\s*(years?|yrs?|y\b|months?|-year)", q[m.start("num") + len(m.group("num")):][:8]) or re.search(r"\byears?\b", after[:6]):
                 continue
             taken.append((m.start(), m.end()))
@@ -369,6 +374,8 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         for sp in _spans(q, phrase):
             if phrase.startswith("with ") and re.search(r"(associat\w*|link\w*|relat\w*|correlat\w*|connect\w*)\s*$", q[:sp[0]]):
                 continue   # "associated with CKD" is an outcome, not a population
+            if re.search(r"(\bnon-?|\bwithout\s|\bno\s)$", q[:sp[0]]):
+                continue   # "non-diabetic adults" is the opposite population
             if not _overlaps(sp, taken):
                 taken.append(sp)
                 pops.append((sp[0], pid))
@@ -487,11 +494,33 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
     for _, pid in pops:
         if pid not in pop_ids:
             pop_ids.append(pid)
+    # group comparisons ("more common in women than men"): the groups are a comparison, not a population filter
+    # (women AND men) and not a second topic (race matched to RIDRETH3)
+    from . import estimands as _est
+    compare_by = _est.detect_comparison(question)
+    if compare_by:
+        graw = _est.GROUP_RAW.get(compare_by["group_var"], set())
+
+        def _is_group(c):
+            cid = c["concept"]
+            if cid.startswith("dict:"):
+                return cid[5:] in graw
+            cc = _concept(cid, k)
+            return cc.get("domain") in DEMOGRAPHIC_DOMAINS and (cc.get("block") == compare_by["group_var"] or
+                                                               bool(graw & _raw_dependencies(cc.get("block") or "", k)))
+        gpats = [pat for pat, _ in _est._LEVELS[compare_by["group_var"]]]
+        ordered = [c for c in ordered if not _is_group(c) and not any(re.search(pt, " " + c["phrase"] + " ") for pt in gpats)]
+        if compare_by["group_var"] == "sex":
+            pop_ids = [p for p in pop_ids if p not in ("women", "men")]
     clinical = [c for c in ordered if _concept(c["concept"], k).get("domain") not in DEMOGRAPHIC_DOMAINS]
     demographic = [c for c in ordered if _concept(c["concept"], k).get("domain") in DEMOGRAPHIC_DOMAINS]
     has_prev = any(cue in q for cue in PREVALENCE_CUES)
     has_assoc = any(cue in q for cue in ASSOC_CUES)
-    if len(clinical) >= 2 and (has_assoc or not has_prev):
+    if compare_by and len(clinical) != 1:
+        compare_by = None
+    if compare_by:
+        study_type = "prevalence"
+    elif len(clinical) >= 2 and (has_assoc or not has_prev):
         study_type = "association"
     elif len(clinical) == 1 and demographic and has_assoc and not has_prev:
         study_type = "association"
@@ -555,6 +584,7 @@ def parse_question(question: str, k: Knowledge | None = None) -> dict[str, Any]:
         "association_cue": has_assoc and not has_prev,
         "age_range": parse_age(q),
         "hard_stop": [n for n in not_in if n.get("hard_stop")],
+        "compare_by": compare_by,
     }
 
 
@@ -904,12 +934,21 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         usable = usable_cycles([v["variable"] for v in core], k, custom)
         if est_cues["trend"]:
             tc = _est.trend_cycles(question, usable or None)
+            named = _est.cycles_named(question)
+            if len(named) >= 2 and not re.search(r"\b(from|since|through|over)\b", question.lower()):
+                tc = [c for c in named if not usable or c in usable]     # "between 2017-2018 and 2021-2023": just those cycles
             if len(tc) >= 2:
                 cycles = tc
                 cycle_note = (f"Trend question: {len(tc)} two-year cycles, {k.cycles[tc[0]]['label']} to {k.cycles[tc[-1]]['label']} "
                               f"(the 2017-March 2020 file overlaps 2017-2018 and is not used for trends).")
                 if dataset:
                     dataset = {**dataset, "cycles": cycles}
+        elif _est.cycles_named(question) and (not usable or set(_est.cycles_named(question)) <= usable):
+            named = _est.cycles_named(question)
+            cycles = named
+            cycle_note = f"Cycles named in the question: {', '.join(k.cycles[c]['label'] for c in named)}."
+            if dataset:
+                dataset = {**dataset, "cycles": cycles}
         elif usable and not set(cycles) <= usable:
             new = best_cycles(usable, k)
             cycle_note = (f"{', '.join(v['concept_label'] for v in core)} {'is' if len(core) == 1 else 'are'} measured with usable weights only in "
@@ -1344,10 +1383,18 @@ def build_plan(question: str, parsed: dict, cycles: list[str] | None = None, dat
         age_adjust["primary"] = False
     if age_adjust.get("requested") and not age_adjust.get("enabled"):
         agent_notes.append({"agent": "Statistician", "message": age_adjust.get("reason", "")})
-    estimand_cfg = {"kind": ("trend" if trend_cfg["enabled"] else "association" if study_type == "association" else
+    cmp = parsed.get("compare_by") if study_type != "association" else None
+    if cmp:
+        g = cmp["group_var"]
+        subgroups = [g] + [x for x in subgroups if x != g]
+        cmp = {**cmp, "label": k.label(g)}
+        agent_notes.append({"agent": "Statistician", "message": (f"Group comparison by {k.label(g).lower()}: "
+                            + (f"{cmp['level']} vs {cmp['reference']}" if cmp.get("level") and cmp.get("reference") else "each group vs the reference")
+                            + ", as a difference and a ratio, crude and age-adjusted, with a design-based test of any difference.")})
+    estimand_cfg = {"kind": ("comparison" if cmp else "trend" if trend_cfg["enabled"] else "association" if study_type == "association" else
                              "mean" if outcome["type"] == "continuous" else "prevalence"),
-                    "median": est_cues["median"], "count": est_cues["count"] and study_type != "association",
-                    "age_adjusted_primary": bool(age_adjust.get("primary"))}
+                    "median": est_cues["median"], "percentile": est_cues.get("percentile"), "count": est_cues["count"] and study_type != "association",
+                    "age_adjusted_primary": bool(age_adjust.get("primary")), "comparison": cmp}
     plan = {
         "plan_id": "plan_" + uuid.uuid4().hex[:10], "version": 1, "status": "draft", "created": _now(),
         "question": question, "refined_question": refined, "title": title, "hypothesis": hypothesis,
@@ -1613,6 +1660,39 @@ def review_plan(plan: dict, k: Knowledge | None = None) -> list[dict]:
                 f"Matched from the {'curated' if row.get('curated') else 'uncurated NHANES catalog'} dictionary; coded as {c['expr']} "
                 f"({c['type']}). Check the CDC codebook for coding, eligible ages and non-response codes before approving.",
                 {"op": "acknowledge", "key": f"custom_{c['name']}"}, f"custom_{c['name']}")
+    # the question asks about an association, but one of its topics was not found: say so instead of quietly
+    # answering a different (descriptive) question
+    parsed = plan.get("parsed") or {}
+    if plan["study_type"] != "association" and parsed.get("association_cue") and parsed.get("unmapped_terms") and not _ack.get("unmapped_topic"):
+        terms = ", ".join(f"'{t}'" for t in parsed["unmapped_terms"][:3])
+        add("major", f"Part of the question was not found in NHANES: {terms}",
+            f"The question reads as an association, but {terms} did not match an NHANES variable, so this plan only describes "
+            f"{plan['outcome']['label'].lower()}. Rephrase with the NHANES measure (e.g. a dietary or questionnaire item), or approve to "
+            f"continue with the descriptive estimate.", {"op": "acknowledge", "key": "unmapped_topic"}, "unmapped_topic")
+    # outcome and exposure built from the same measurement (e.g. hyperuricemia vs serum uric acid) is circular
+    if plan.get("exposure") and not plan.get("arms"):
+        cust = {c["name"]: c for c in plan.get("custom_variables", [])}
+        ro = _raw_dependencies(plan["outcome"]["variable"], k, cust) - {"RIAGENDR", "RIDAGEYR", "RIDEXPRG"}
+        rx = _raw_dependencies(plan["exposure"]["variable"], k, cust) - {"RIAGENDR", "RIDAGEYR", "RIDEXPRG"}
+        if ro and rx and (rx <= ro or ro <= rx):
+            add("blocker", "Outcome and exposure are the same measurement",
+                f"{plan['outcome']['label']} and {plan['exposure']['label']} are both built from {', '.join(sorted(ro & rx))}, so their "
+                f"association is true by definition. Choose a different outcome (e.g. a clinical diagnosis) or exposure.", None, "circular")
+    # adult case definitions applied to children
+    out_def = k.definitions.get(plan["outcome"].get("definition_id") or "", {})
+    if out_def.get("adult_only"):
+        ages = [int(m.group(1)) for c in plan.get("population", []) if c.get("enabled", True) and c.get("kind") != "exclusion"
+                for m in [re.search(r"age\s*>=\s*(\d+)", c["expr"])] if m]
+        lo = min(ages) if ages else 18
+        his = [int(m.group(1)) for c in plan.get("population", []) if c.get("enabled", True)
+               for m in [re.search(r"age\s*<=?\s*(\d+)", c["expr"])] if m]
+        if lo < 18:
+            sev = "blocker" if his and max(his) < 18 else "major"
+            add(sev, f"{out_def.get('short', out_def['id'])} is an adult definition",
+                f"{out_def['label']} applies to adults. Children and adolescents need age-specific criteria"
+                + (f" ({out_def['child_note']})" if out_def.get("child_note") else "") + ". Restrict the population to 18+"
+                + (" or choose a pediatric definition." if sev == "blocker" else "; approve only if the adult cut-points are intended."),
+                None if sev == "blocker" else {"op": "acknowledge", "key": "adult_def_children"}, "adult_def_children")
     # traps that NHANES analysts commonly fall into (measurement changes, recalibration, top-coding ...)
     from . import pitfalls as _pit
     for h in _pit.check(plan, k):
