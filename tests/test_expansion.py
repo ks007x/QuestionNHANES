@@ -238,7 +238,7 @@ def test_jama_style_objectives():
     assert "ida_ash2026" in p["prevalence_outcomes"] and "Females Aged 12-21" in p["title"]
     p = planner.draft("To estimate awareness of hypertension status, treatment recommendations, and antihypertensive medication use "
                       "among US adults with uncontrolled hypertension.")
-    assert p["study_type"] == "prevalence" and p["prevalence_outcomes"][:3] == ["htn_selfreport", "bp_meds_advised", "bp_meds"]
+    assert p["study_type"] == "prevalence" and p["prevalence_outcomes"][:3] == ["htn_aware", "bp_meds_advised", "bp_meds"]
     assert any("sbp >= 130" in c["expr"] for c in p["population"])
 
 
